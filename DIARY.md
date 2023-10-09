@@ -14,8 +14,14 @@ Over the weekend, I added insights on why, despite some concerns, many still pre
 Next I will clarify whether I should consider implementing a self-made big number library as part of the project and hopefully advance significantly in the creation of the project plan.
 
 
-
-
 ## Diary Entry - Week of 25th September - 1st October 2023
 
 Met with my supervisor for initial meeting. Discussed potential extensions to the original project specifications and in general what the project entails. Refocused and refined the project plan, emphasising deterministic RSA hash-and-sign schemes, especially PKCS#1 v1.5. Made structural changes to the introduction and abstract, enhancing clarity. Set up the Maven project directory on GitLab and further developed the project timeline. Transitioned all documentation from Microsoft Word to latex, drafting the literature review in the process. By week's end, automated referencing in latex for enhanced efficiency.
+
+## Diary Entry - Week of 2nd October - 6th October 2023
+
+This week, I refined and expanded the Risks and mitigation section, established a risk quantification table, and deepened my understanding of digital signature schemes. The literature review for the interim report was integrated, and significant progress was made in drafting the cryptographic foundation of the report. By the weekend, focus was channeled into classifying digital signature schemes and laying out a clear structure for detailed exploration of specific signature schemes in upcoming sessions. Next I will begin writing the introductory section on digital signatures for my report.
+
+
+
+
