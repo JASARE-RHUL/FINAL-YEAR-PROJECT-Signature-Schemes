@@ -1,0 +1,428 @@
+\documentclass[]{final_report}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{titlesec}
+\usepackage[utf8]{inputenc}
+\usepackage[backend=biber, style=ieee]{biblatex}
+\usepackage{amsmath}
+
+\addbibresource{fyp.bib}
+\usepackage{amsthm}
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}[chapter]
+\newtheorem{basic}{Basic Definition}
+
+%%%%%%%%%%%%%%%%%%%%%%
+%%% Input project details
+\def\studentname{Jude Asare}
+\def\reportyear{2023/2024}
+\def\projecttitle{Implementing the PKCS\#1 v1.5 Signature Scheme with provably secure parameters}
+\def\supervisorname{Saqib Kakvi}
+\def\degree{MSci (Hons) in Computer Science (Information Security)}
+\def\fullOrHalfUnit{MSci} % indicate if you are doing the project as a Full Unit or Half Unit
+\def\finalOrInterim{Interim Report} % indicate if this document is your Final Report or Interim Report
+
+\begin{document}
+
+\maketitle
+
+%%%%%%%%%%%%%%%%%%%%%%
+%%% Declaration
+
+\chapter*{Declaration}
+
+This report has been prepared on the basis of my own work. Where other published and unpublished source materials have been used, these have been acknowledged.
+
+\vskip3em
+
+Word Count: 
+
+\vskip3em
+
+Student Name: \studentname
+
+\vskip3em
+
+Date of Submission: 
+
+\vskip3em
+
+Signature:
+
+\newpage
+
+%%%%%%%%%%%%%%%%%%%%%%
+%%% Table of Contents
+\tableofcontents\pdfbookmark[0]{Table of Contents}{toc}\newpage
+
+%%%%%%%%%%%%%%%%%%%%%%
+%%% Your Abstract here
+
+\begin{abstract}
+
+
+
+The PKCS\#1 v1.5 digital signature scheme has been widely utilised in protocols such as SSH, DNSSEC, IKE, and most prominently, in TLS up to version 1.2. Since its inception in 1998 \cite{rfc2313} it has played a pivotal role in the landscape of digital security comprising the most widely used digital signature scheme in practice. The scheme, renowned for its straightforwardness and expedited verification capabilities, has seen persistent integration across diverse cryptographic systems. 
+
+Nevertheless, amidst its widespread acceptance, it's been marred by several challenges.Among these are the targeting of latent vulnerabilities \cite{bleichenbacher1998chosen, coppersmith1996low, coron2000new, 10.1007/978-3-540-45238-6_33, degabriele2012joint, bardou2012efficient, meyer2014revisiting, zhang2014cross, jager2015security, jager2015practical, bock2018return} inherent to its associated encryption paradigm \cite{rfc2313} which aided in revealing potential weaknesses in the signature scheme itself (\cite{finney2006bleichenbacher}, \cite{kuhn2008variants}, \cite{cve-2006-4790, cve-2006-4340, bugzilla-1064636, intel-berserk-vulnerability, josefsson-signature-forgery, valsorda-bleichenbacher-forgery}) and a glaring absence of a rigorous security proof that validates its resilience.
+
+Even though alternatives like RSA-PSS offer provable security (\cite{bellare1996exact}, \cite{jonsson2001security}), they come with inherent problem, such as the introduction of randomness and a hike in computational complexity. These issues have created reservations for its wholesale adoption in place of PKCS\#1 v1.5 e.g., RSA-PSS and was only upgraded to a requirement for new applications in PKCS\#1 v2.2 \cite{rfc8017} long after initially being suggested as the replacement for PKCS\#1 v1.5 in PKCS\#1 v2.1 \cite{rfc3447}.Imperative requirements of backward compatibility and interoperability have been the main detractors of the aversion to replacing PKCS\#1 v1.5 and while RSA-PSS is now required in new applications, they entail retaining PKCS\#1 v1.5 in some form at the very least, as a preferable choice.
+ 
+A significant breakthrough came in 2018 when Jager, Kakvi, and May \cite{jager2018security} provided a security proof for the PKCS\#1 v1.5 Signature scheme building on the work of Coron \cite{coron2002security}. Although still requiring the adoption of larger cryptographic parameters deviating slightly from standard use, their methods were flexible enough to show instantiations in practice such that the improved proofs apply. Benefits not limited to PKCS\#1 v1.5, their work also offered insights enabling the proof to apply to other deterministic RSA signature schemes, with similar construction patterns including ISO/IEC 9796-2 and ANSI X9.31 schemes.
+
+Guided by this revelation, this project seeks to concretely implement these signature schemes, with a primary emphasis on the PKCS\#1 v1.5 signature scheme, using the aforementioned provably secure parameters. This project aims not only to showcase its practicality, but also as a primary objective dissect the computational burdens these parameters introduce into deterministic RSA schemes. This objective is supported by supporting  objectives to produce algorithms that facilitate its implementation with both provably secure parameters and separately standard parameters. From there the aim is to produce an all-incorporative user-interfaced benchmarking program to explore aforementioned overhead across standards. 
+\newpage
+
+\textbf{\textit{The PKCS\#1 v1.5 digital signature scheme, initiated in 1998, has been pivotal in digital security, integral to protocols like SSH, DNSSEC, IKE, and TLS up to version 1.2. Its ease of integration and swift verification have made it the preferred choice across various cryptographic systems. However, its adoption hasn't been without challenges. Latent vulnerabilities [2]–[12] with its accompanying encryption framework have exposed potential signature scheme weaknesses ([13], [14], [15]–[20]), coupled with a  absence of a security proof. Alternatives such as RSA-PSS bring forth provable security but introduce challenges, such as randomness and increased computational complexity. This has somewhat delayed their universal adoption, as showcased by the upgrade timeline from PKCS\#1 v1.5 to RSA-PSS in PKCS\#1 versions [23, 24]. A transformative moment was the 2018 revelation by Jager, Kakvi, and May [25], which presented a security proof for PKCS\#1 v1.5, albeit with larger cryptographic parameters. Their insights have implications for other deterministic RSA signature schemes, including ISO/IEC 9796-2 and ANSI X9.31. This project seeks to concretely implement these signature schemes, with a primary emphasis on the PKCS\#1 v1.5 signature scheme, using the aforementioned provably secure parameters. This project aims not only to showcase its practicality, but also as a primary objective dissect the computational burdens these parameters introduce into deterministic RSA schemes. This objective is supported by supporting  objectives to produce algorithms that facilitate its implementation with both provably secure parameters and separately standard parameters. From there the aim is to produce an all-incorporative user-interfaced benchmarking program to explore aforementioned overhead across standards.}}
+
+\end{abstract}
+\newpage
+
+%%%%%%%%%%%%%%%%%%%%%%
+%%% Project Spec
+
+\chapter*{Project Specification}
+\addcontentsline{toc}{chapter}{Project Specification}
+% Begin reduced spacing
+{
+\titlespacing*{\section}
+{0pt}{1.4ex plus 1ex minus .2ex}{1.0ex plus .2ex}
+
+\section*{Background:}
+The PKCS\#1 v1.5 signature scheme is one of the most widely used signature schemes in practice, mainly due to its use in TLS. While it has been used for decades, there was no security proof for the scheme, which cast some doubt on its usability. Although RSA-PSS has been suggested as a replacement, it is randomised and is more computationally expensive, so keeping PKCS\#1 is preferable. in 2018 Jager, Kakvi and May presented a proof of security for the PKCS\#1 v1.5 signature schemes, but only if larger parameters are used. The question to be answered is how much of an overhead is introduced by using the provably secure parameters.
+
+\section*{Prerequisites:}
+Some undergraduate mathematical background e.g. linear algebra, number theory is useful. Experience implementing programs that work with large numbers is a bonus.
+
+\section*{Early Deliverables}
+\begin{enumerate}
+    \item A report describing provable security and how it affects parameter choices.
+    \item A report motivating the use of provably secure parameters.
+    \item Proof of concept implementation of parametrisable RSA key generation.
+\end{enumerate}
+
+\section*{Final Deliverables}
+\begin{enumerate}
+    \item An implementation of PKCS\#1 v1.5 signatures scheme with provably secure and standard parameters.
+    \item A benchmarking program to compare the scheme with provably secure parameters and standard ones.
+    \item Report explaining the implementation of RSA based schemes.
+    \item Report explaining relevant cryptographic concepts e.g. definitions of digital signatures, notions of security, etc.
+\end{enumerate}
+
+\section*{Reading}
+\begin{itemize}
+    \item \href{https://eprint.iacr.org/2018/855.pdf}{https://eprint.iacr.org/2018/855.pdf}
+    \item \href{https://datatracker.ietf.org/doc/html/rfc8017}{https://datatracker.ietf.org/doc/html/rfc8017}
+    \item \href{https://www.ecrypt.eu.org/csa/documents/D5.4-FinalAlgKeySizeProt.pdf}{https://www.ecrypt.eu.org/csa/documents/D5.4-FinalAlgKeySizeProt.pdf}
+    \item \href{https://www.openssl.org/docs/manmaster/man1/openssl-speed.html}{https://www.openssl.org/docs/manmaster/man1/openssl-speed.html}
+\end{itemize}
+}
+% End reduced spacing
+
+%%%%%%%%%%%%%%%%%%%%%%
+%%% Introduction
+\chapter{Introduction}
+
+
+
+
+\section{Importance}
+
+The PKCS\#1 v1.5 digital signature scheme, rooted in RSA's hash-and-sign framework, has emerged as the de facto standard for digital signatures since its 1998 introduction \cite{rfc2313}, despite lacking formal security proofs. Essential in security-focused network protocols like SSH, DNSSEC, IKE, and pre\-TLS 1.3 X.509 certificates \cite{schaad2005additional}, its simplicity fosters broad adoption from its outset, straightforward implementation across programming languages, and speedy verifications relative to alternatives like DSA or ECDS  \cite{jager2018security}. Many legacy systems and protocols continue to rely on RSA PKCS\#1 v1.5 signatures for the sake of backward compatibility alone. The deep integration of this scheme into various applications, sometimes even at the hardware level, suggests that PKCS\#1 v1.5 is likely to remain in use for the foreseeable future.
+
+\section{Security Concerns and the Drive for Provable Security}
+This extensive usage has not been without its share of security concerns. Several studies \cite{bleichenbacher1998chosen, coppersmith1996low, coron2000new, 10.1007/978-3-540-45238-6_33, degabriele2012joint, bardou2012efficient, meyer2014revisiting, zhang2014cross, jager2015security, jager2015practical, bock2018return} have highlighted vulnerabilities in the accompanying PKCS\#1 v1.5 encryption scheme, primarily due to the Bleichenbacher padding oracle attacks \cite{bleichenbacher1998chosen}. Although these attacks did not directly compromise the PKCS\#1 v1.5 signature scheme, they did reveal potential weaknesses (\cite{finney2006bleichenbacher}, \cite{kuhn2008variants}, \cite{cve-2006-4790, cve-2006-4340, bugzilla-1064636, intel-berserk-vulnerability, josefsson-signature-forgery, valsorda-bleichenbacher-forgery}) related to certain checks omitted in signature verification implementations. These weaknesses could potentially be exploited for signature forgery attacks. Nevertheless, while specific implementations are vulnerable, correctly implemented, the scheme itself remains unbroken, and major PKCS\#1 v1.5 implementations have generally stayed secure.
+Such assumptions fall short of the sufficient robustness, and notable failures have indeed occurred in major implementations, as witnessed in the case of python-rsa in 2016  \cite{valsorda-bleichenbacher-forgery}. Furthermore, until 2018 no formal security proof accompanied the underlying PKCS\#1 v1.5 signature scheme something attributed to the scheme's use of deterministic padding, which makes the application standard proof techniques inapplicable. Given these various factors that raise doubts about its security, the RSA-PSS scheme was proposed as a replacement in 2003 \cite{rfc3447} before becoming a requirement for new applications 2016 \cite{rfc8017}. RSA-PSS offers the advantage of being provably secure  (\cite{bellare1996exact}, \cite{jonsson2001security}), but it introduces randomness and incurs higher complexity in regard to its implementation. A combination of this and further imperative requirements of backward compatibility and interoperability, means retaining PKCS\#1 v1.5 scheme remains a preferable choice.
+A landmark development came in 2018 when Jager, Kakvi, and May \cite{jager2018security} provided a security proof for the PKCS\#1 v1.5 signature scheme but only if larger parameters are used. Their work offered insights that also apply to other deterministic RSA signature schemes, including ISO/IEC 9796-2 Scheme and ANSI X9.31.
+
+\section{Project Objectives}
+With this, the aim is to bridge the theoretical findings of Jager, Kakvi, and May \cite{jager2018security} with practical implementation. The \textbf{principal objective} of this project was to \textit{\textbf{explore the extent of the overhead in computational cost introduced by using provably secure parameters with emphasis on the PKCS standard}}. More specifically other supplementary objectives are:
+
+\begin{itemize}
+    \item Develop concrete implementations of the PKCS\#1 v1.5 signature schemes using both standard and provably secure parameters.
+    \item Develop concrete implementations of  the ISO/IEC 9796-2 Scheme, and separately the ANSI X9.31 signature schemes using both standard and provably secure parameters.
+    \item Demonstrate in practice, with larger parameters, deterministic schemes, particularly the PKCS\#1 v1.5 signature scheme  can achieve a security level on par with less-practical, signature schemes, such as RSA-PSS.
+
+    \item Create a user-interfaced benchmarking program that incorporates all objectives of the project to assess this overhead in various scenarios across standards
+\end{itemize}
+
+
+
+ 
+\chapter{Literature Review/Related Work}
+RSASSA-PKCS1-v1.5 remains unbroken. There are no real attacks able to successfully exploit the scheme free of implementation errors. This distinction of being free of implementation errors is crucial. Potential proofs consider only forgeries that are accepted by a correct verification algorithm. It is now well established from a variety of follow up studies all originating from \cite{bleichenbacher1998chosen} that vulnerable implementations of a flawed signature verification algorithm for RSASSA-PKCS1-v1.5 can be exploited. Bleichenbacher presented a low-exponent attack on RSA-PKCS\#1 v1.5 signatures at the CRYPTO 2006 rump session. This attack was later described by Finney \cite{finney2006bleichenbacher} in a posting to the OpenPGP mailing list. In general terms some implementations fail to discard additional bytes that come after a corresponding AS (ASN.1 structure, containing metadata indicating H and the actual H(m)), and these bytes can take an arbitrary value. Due to this laxity in the checking mechanism, forging signatures becomes feasible, especially when e has a small value like 3. Interestingly, with such implementation errors, opting for a longer modulus, might actually benefit the adversary.
+
+It was not until the efforts of Coron \cite{coron2002security} in 2002 that a security proof applicable to RSASSA-PKCS1-v1.5 arrived. This was due to the issue of deterministic padding scheme that RSASSA-PKCS1-v1.5 uses rendering standard proof techniques void. Coron presented a security proof for RSASSA-PKCS1-v1.5 (and ISO/IEC 9796-2 signatures) albeit with a restriction that e = 2, i.e. the Rabin-Williams variant \cite{coron2002security} which is secure based on the factoring assumption. 
+The proofs' exclusive and/or restrictive value of e aside, a further caveat was that the output size of the hash function needed to be 2/3 of the bit length of the modulus N. These restrictions diverge largely from the parameters used in the instantiation of RSA-PKCS\#1 v1.5 signatures in practice. 
+
+Much later, Jager, Kakvi and May \cite{jager2018security} showed an improved security proof for RSASSA-PKCS1-v1 5 with less restrictive conditions.
+It sufficed that e more generally be a small prime (Kakvi and Kiltz \cite{kakvi2018optimal}). Still requiring a large hash function output, Jager, Kakvi and May achieved an improvement in hash function output requiring only 1/2 of the modulus size. The modulus effectively doubles in bit length when compared to the norm with a newly introduced third prime factor necessitating the increase in bits.
+Withstanding the improvement and as a consequence of the proofs being founded in the random oracle model, the larger cryptographic parameters still deviate slightly from the standard parameters used in practice. Nonetheless this was sufficient enough for the authors to demonstrate how RSA-PKCS\#1 v1.5 signatures can be instantiated in practice such that the improved proofs apply. 
+
+To all intents and purposes, regardless of the proofs being presented primarily for RSASSA-PKCS1-v1.5, uniformity in construction philosophy means other signature standards of the same deterministic RSA type (ISO/IEC 9796-2 signatures and ANSI X9.31 rDSA) still match the setting required for proofs to be applicable to them. For example theorem statements used in construction of Corons' proof \cite{coron2002security} are general enough that corresponding proof theorems can also be presented for the remaining standards of deterministic signatures, notably ANSI X9.31 rDSA signatures directly. Although not explicitly stated, it is clear the improved proof methodology descending from \cite{coron2002security} also applies to the ISO/IEC 9796-2 and additionally ANSI X9.31 schemes with certain adjustments.
+
+The PKCS\#1 standards also specify encryption schemes \cite{rfc2313}. The RSA-PKCS\#1 v1.5 encryption scheme differs from RSA-PKCS\#1 v1.5 signatures by part due to the fact that it employs probabilistic padding. This type of padding introduces a marked difference from the signature scheme. However, a consequence of this choice for the encryption scheme is its vulnerability; PKCS\#1 v1.5 encryption is provably insecure. There are many examples of chosen-ciphertext attacks that break PKCS\#1 v1.5 encryption \cite{bleichenbacher1998chosen, coppersmith1996low, coron2000new, 10.1007/978-3-540-45238-6_33, degabriele2012joint, bardou2012efficient, meyer2014revisiting, zhang2014cross, jager2015security, jager2015practical, bock2018return}. 
+
+A full discussion of provable security extending to non-deterministic schemes lies beyond the scope of this project. Probabilistic padding poses an issue since generating sources of randomness, particularly on constrained devices is an ongoing challenge. Moreover RSA-PSS, the sole RSA-based randomised digital signature scheme uses two hash functions. This makes it difficult to compare with the deterministic schemes that use only one. This project focused on standardised deterministic schemes which are directly comparable and subversion resistant \cite{ateniese2015subversion} by default of not having to generate randomness. This lends well to the issue of examining computational overhead from various perspectives of the different deterministic standards.
+
+
+
+\chapter{Cryptographic Foundations}
+Theory: Background on digital signature Schemes (generalised, RSA hash-and-sign signatures, Message Recovery, appendix).
+\section{Introduction to Generalised Digital Signature Schemes}
+Not every security issue revolves around confidentiality, and adversaries are not restricted to merely passive surveillance. In numerous scenarios, safeguarding the authenticity and integrity of communications from active opponents, who might manipulate or introduce unauthorised messages into the transmission, is paramount or even more critical. In the public key setting, the cryptographic primitive used to provide data integrity is a digital signature scheme. Digital signature applications in information security also include authentication and Non-repudiation. In the case of non-repudiation, significantly digital signatures can be used as certificates in a public key infrastructure e.g., consider a scenario where Alice signs a message and sends it to Bob, then Bob can prove to a third party (who also knows Alice) the validity of the signature.
+More Generally, Digital signatures function as a means binding an identity to specific information. A signature process consists of transforming the relevant message and the entity's confidential details to produce tag named a signature.  
+\begin{basic}
+\label{basicDef:digital signature}
+A \textit{digital signature} is a data string that denominates the linking between a digital message and its originating source.
+\end{basic}
+A potential scenario of the use of Digital signatures can be defined. Signature schemes allow an author A who has established a public key pk to "sign" a document using the associated private key sk in such a way that anyone who knows pk (and knows that this public key was established by A) can verify that the document originated from A and was not altered.
+Consider a writer who wants to release their writings to fans in a verified manner. When the author shares a new piece of writing, it should be possible for any reader to verify its authenticity, ensuring no malicious party has tampered with the content or falsely claimed it as their own. To achieve this, the author can create a public key pk along with a private key sk, and distribute pk to readers through trusted channels, like a verified website or a publisher, while keeping sk confidential. When sharing a short story m, the author computes a digital signature s on m using the private key sk, and releases (m, s) to the readers. Each reader can ascertain the genuineness of m by verifying that s is an authentic signature on m using the public key pk. 
+
+
+
+\begin{basic}
+A signature generation algorithm is a method for producing a digital signature.
+\end{basic}
+
+\begin{basic}
+ A verification algorithm is a method for verifying that a digital signature is authentic (i.e., was indeed created by the specified entity).
+\end{basic}
+
+\begin{basic}
+\label{basicDef:scheme}
+A \textit{digital signature scheme} comprises an algorithm for creating signatures and a corresponding algorithm for verifying them.
+\end{basic}
+
+\begin{definition}
+\label{def:digital signature}
+A (digital) signature scheme consists of three probabilistic polynomial-time algorithms (Gen, Sign, Vrfy) such that:
+\begin{enumerate}
+    \item Gen (key-generation algorithm): takes as input a security parameter $1^n$ and outputs a pair of keys $(sk ,vk)$, where $sk$ is the signing key and $vk$ is the verification key.
+    \item Sign (signing algorithm): takes as input a private key $sk$ and a message $m$ and outputs a signature $\sigma$. ($\sigma \leftarrow \text{Sign}_{sk}(m)$).
+    \item Vrfy (deterministic verification algorithm):  takes as input a public key $pk$, a message $m$, and a signature $\sigma$; outputs a boolean ($b := \text{Vrfy}_{pk}(m, \sigma)$).
+\end{enumerate}
+\end{definition}
+
+\begin{basic}
+A \textit{digital signature signing process} consists of a generation algorithm, along with a method for formatting data into messages which can be signed.
+\end{basic}
+
+\begin{basic}
+\label{basicDef:vrfy}
+A \textit{digital signature verification process} consists of a verification algorithm, along with a method for recovering data from the message.
+\end{basic}
+
+Correctness: It is required that except with negligible probability over (pk, sk) output by Gen($1^n$), it holds that $\text{Vrfy}_{pk} (m, \text{Sign}_{sk}(m)$) = 1 for every (legal) message m.
+
+Such a signature scheme can be utilised in the following way.
+Bob (sender) runs Gen($1^n$) in turn generating the keys (pk, sk). Bob then makes his public key (pk) available to everyone, including Alice (receiver). Just like in public-key encryption scenarios it can be assumed that any other party (including Alice) is able to obtain a legitimate copy of Bobs' public key. 
+When Bob wants to send a message m to Alice and ensure it's authentic, he generates a signature $\sigma$ for that message using his private key: $\sigma \leftarrow \text{Sign}_{sk}(m)$. He then sends both the message and its signature, (m, $\sigma$), to Alice.
+
+Upon receipt of (m, $\sigma$), Alice, who already knows Bob's public key can verify the authenticity of m by checking whether $\text{Vrfy}_{pk} (m, \text{Sign}_{sk}(m)$) $\stackrel{?}{=} 1$. This assures Alice both that Bob sent m, and additionally that m was not modified in transit
+
+\section{Security of signature schemes}
+Security for a signature scheme, represented as (Gen, Sign, Vrfy), is depicted through a contest between a challenger and an Adversary A (probabilistic machine operating within polynomial time). This contest emulates a situation in which A endeavours to compromise the signature scheme by employing a specific attack model. 
+\subsection{Security Attacks}
+
+Goldwasser, Micali, and Rivest systematise a hierarchy (in decreasing strength) of attack models against digital signatures that distinguishes between two basic kinds of attacks denoting the power of an adversary i.e., the environment the Adversary acts in:
+\begin{enumerate}
+    \item Key-only attacks. Adversary's knowledge is limited to public-key corresponding to the secret signing key of the real signer.
+    \item Message attacks. Adversary is able to examine signatures corresponding either to known or chosen messages before a subsequent  attempt to break the scheme.
+\end{enumerate}
+Message attacks can be further classified into three main types:
+\begin{itemize}
+    \item [(a)] known-message attack. An adversary has signatures for a set of messages which are known to the adversary but not chosen by him.
+    \item [(b)] chosen-message attack. An adversary obtains valid signatures from a chosen list of messages before attempting to break the signature scheme. 
+    \item [(c)] adaptive chosen-message attack. An adversary is allowed to use the signer as an oracle. Adversary can ask for signatures on messages influenced by the signer's public key, and they can also seek signatures for messages that are based on prior signatures or messages.
+\end{itemize}
+\subsection{ Adversary Attack goals}
+\begin{basic}
+Signature Forgery. For a given public key pk that was created by signer S, a forgery consists of a message m accompanied by a legitimate signature $\sigma$, even though m was never originally signed by S.
+\end{basic}
+Goldwasser, Micali, and Rivest also systematise a hierarchy (in decreasing strength) of attack goals:
+\begin{enumerate}
+    \item A total break. Adversary recovers secret signing key and thus able to falsely sign arbitrary messages in the name of the signer.
+    \item Universal forgery. Adversary is able to forge the signature of any message, despite lack of secret key,
+    \item Selective forgery. Adversary is able to forge the signature of some messages of their choice e.g., some selected messages or a particular class of messages.
+    \item Existential forgery. Adversary is able to forge the signature of at least one message, although not necessarily the one of its choice. Existential forgery can be further subdivided into two classes:
+\begin{itemize}
+    \item [(a)] (Weak) Existential forgery. The adversary is able to produce at least one valid signature for a message not already submitted to the signing oracle.
+    \item [(b)] Strong existential forgery. The adversary is able to produce a valid signature for a message different from any signature they have seen. It is possible that the message corresponding to the forged signature may already have been signed 
+\end{itemize}
+\end{enumerate}
+
+\subsection{Default notion of Secure Signatures}
+The intuitive idea behind the default notion of security for digital signature schemes is that no efficient adversary should be able to generate valid digital signature for any "new" document that was not previously signed by the original signer.
+An adversary might see all documents and their associated signatures (with aid of sign oracle) and even influence document content (Replay Attacks).
+To simulate this, Let DS = (Gen, Sign, Vrfy) be an arbitrary digital signature scheme. The adversary's activities can be split into two main stages:
+\begin{enumerate}
+    \item Learning Phase:
+\begin{itemize}
+    \item The adversary is granted the ability to interact with a signing oracle $\text{Sign}_{sk}(\cdot$) associated with a key pair $(pk ,sk)$ randomly selected according to Gen.
+    \item The adversary can pose up to q queries to this oracle. However these queries must be restricted to the underlying message space Messages(pk) corresponding to this key. 
+\end{itemize}
+    \item Forgery Phase:
+\begin{itemize}
+    \item After the learning, the adversary then tries to produce a forged message-signature pair, denoted as (M, $\sigma$).
+    \item The adversary is successful if M $\in$ Messages(pk), $\text{Vrfy}_{pk} (M, \sigma$) = 1 and M was not a query made by the adversary to the signing oracle.
+\end{itemize}
+\end{enumerate}
+
+A robust digital signature system, resistant to such forgeries, is termed existentially unforgeable under an adaptive chosen-message attack. "Existentially unforgeable" signifies that the adversary cannot produce a valid signature on any document. The protection should remain intact even if the adversary can carry out an adaptive chosen-message attack by which it is able to obtain signatures on arbitrary messages chosen adaptively during its attack.
+
+Let DS = (Gen, Sign, Vrfy) be a signature scheme, and consider the following experiment for an adversary A and parameter n:
+\begin{definition}
+\label{def:EF-CMA}
+
+\begin{basic}
+\textit{asymptotic security}. A scheme is secure if any probabilistic polynomial-time (PPT) adversary succeeds in breaking the scheme with at most negligible probability.
+\end{basic}
+\begin{basic}
+A \textit{efficient adversary} is a probabilistic algorithm that runs in polynomial time with respect to a given security parameter n i.e., there exists some polynomial function p such that the running time of the adversary is bounded by p(n) when considering the security parameter n.
+\end{basic}
+\begin{basic}
+A function \( f \) from the natural numbers to the non-negative real numbers is \textit{negligible} if for every polynomial \( p \) there exists an \( N \) such that for all \( n > N \), it holds that:
+\[ f(n) < \frac{1}{p(n)} \] when considering the security parameter n.
+\end{basic}
+
+
+
+The signature experiment $\textbf{Sig-Exp}_{A,DS}^{EF-CMA}(n)$
+\begin{enumerate}
+    \item Gen($1^n$) is run to obtain keys $(pk, sk)$.
+    \item \((M, \sigma) \leftarrow A_{\text{Sign}_{sk}(\cdot)}(pk)\)
+    \item If the following are true return 1 else return 0: 
+    \begin{itemize}
+    \item [-] $\text{Vrfy}_{pk} (M, \sigma$) = 1
+    \item [-] M $\in$ Messages(pk)
+    \item [-] M was not a query of A to its oracle
+   \end{itemize}
+\end{enumerate}
+
+\begin{definition}
+A signature scheme DS = (Gen, Sign, Vrfy) is existentially unforgeable under an adaptive chosen-message attack (EF-CMA), if for all probabilistic polynomial-time adversaries A, there is a negligible function negl such that:
+\[ Pr[\textbf{Sig-Exp}_{A,DS}^{EF-CMA}(n)] \leq negl(n) \]
+
+\end{definition}
+
+\end{definition}
+
+\subsection{Stronger notion of Secure Signatures}
+A secure digital signature ensures that an adversary cannot generate a valid signature for a message that was never previously signed. However, it doesn't rule out the possibility that an attacker might be able to generate a new, valid signature for a previously signed message.
+
+Consider a modified experiment Strong-Sig-Exp that is defined in exactly the same way as Sig-Exp, except that now queries are to be restricted to an underlying Signature-Messages(pk) space containing pairs of oracle queries and their associated responses.  The adversary A succeeds (and experiment Strong-Sig-Exp evaluates to 1) if and only if A outputs (M, $\sigma$) such that $\text{Vrfy}_{pk} (M, \sigma$) = 1 and (M, $\sigma$) $\notin$ Signature-Messages(pk).
+ \begin{definition}
+A signature scheme DS = (Gen, Sign, Vrfy) is Strong existentially unforgeable under an adaptive chosen-message attack (EF-CMA), if for all probabilistic polynomial-time adversaries A, there is a negligible function negl such that:
+\[ Pr[\textbf{Strong-Sig-Exp}_{A,DS}^{SEF-CMA}(n)] \leq negl(n) \]
+
+\end{definition}
+
+
+
+\section{Classification of Digital Signature Schemes}
+Digital Signature schemes can be divided according to two general classes
+\begin{enumerate}
+    \item \begin{basic} 
+\textit{Digital signature schemes with appendix}. Digital signature schemes that require the original message as input to the verification algorithm.
+\end{basic}
+    \item \begin{basic}
+\textit{Digital signature schemes with message recovery}. Digital signature schemes of which additional data in the form of redundancy is utilised for verification of correctness. A priori knowledge of the message is not required for the verification algorithm and the original message is recovered from the signature itself.
+\end{basic}
+
+\end{enumerate}
+
+Digital signature schemes with appendix are the most commonly used in practice. They rely on cryptographic hash functions rather than customised redundancy functions, and are less prone to existential forgery attacks
+
+\subsection{Digital Signature Schemes with Appendix}
+\textbf{Signing Process (by Sender):}
+\begin{enumerate}
+    \item Compute the hash value, \( H(m) \), of the message, \( m \).
+    \item Optionally pad the hash value to obtain \( P(H(m)) \).
+    \item Apply the private-key operation to the (padded) hash value to generate a signature (\( \sigma \leftarrow Sign_{sk}(P(H(m))) \)).  
+     \item Transmit both the original message and the computed signature, ($M, \sigma$) to the receiver.
+\end{enumerate}
+
+\textbf{Verification Process (by Receiver):}
+\begin{enumerate}
+    \item Apply the public-key operation to verify the signature \( m' \leftarrow Verify_{pk}(\sigma) \) .
+    \item Accept the signature if and only if \( m' \) matches the hash of the message, \( H(m) \).
+\end{enumerate}
+
+\subsection{Digital Signature Schemes with Message Recovery}
+Where the redundancy function R and its inverse $R^{-1}$ are publicly known:
+
+\textbf{Signing Process (by Sender):}
+\begin{enumerate}
+    \item Add redundancy, \( R(m) \), to the message, \( m \).
+    \item Apply the private-key operation to the padded message to generate a signature \( \sigma \leftarrow Sign_{sk}(R(m)) \).
+    \item Transmit only the computed signature, \( \sigma \), to the receiver.
+\end{enumerate}
+
+\textbf{Verification Process (by Receiver):}
+\begin{enumerate}
+    \item Apply the public-key operation to verify the signature, recovering the padded message,  \( m' \leftarrow Verify_{pk}(\sigma) \) .
+    \item Accept the signed message if and only if \( m' \) contains the correct form of redundancy, \( R(m) \) 
+    \item Recover m from m' by computing $R^{-1}$(m') 
+\end{enumerate}
+
+
+\section{RSA}
+
+
+
+
+
+
+
+
+\section{Figures, Charts and Tables}
+
+Most final reports will contain a mixture of figures and charts along with the main body of text. The figure caption should appear directly after the figure as seen in Figure~\ref{fig:logo} whereas a table caption should appear directly above the table. Figures, charts and tables should always be centered horizontally. 
+
+\begin{figure}[h]
+\centering
+\fboxsep 2mm
+\framebox{
+	\includegraphics[width=6cm]{logo} 
+}
+\caption{\label{fig:logo} Logo of RHUL.}
+\end{figure} 
+
+\section{Source Code}
+
+If you wish to print a short excerpt of your source code,  ensure that you are using a fixed-width sans-serif font such as the Courier font. By using the \verb|verbatim| environment your code will be properly indented and will appear as follows:
+
+\begin{verbatim}
+static public void main(String[] args) {
+  try  {
+    UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+  }
+  catch(Exception e) {
+    e.printStackTrace();
+  }
+  new WelcomeApp();
+} 
+\end{verbatim}
+
+\chapter{References}
+
+Use one consistent system for citing works in the body of your report. Several such systems are in common use in textbooks and in conference and journal papers. Ensure that any works you cite are listed in the references section, and vice versa. 
+
+\chapter{Project Information and Rules}
+
+The details about how your project will be assessed, as well as the rules you must follow for this final project report, are detailed in the project booklet
+.
+
+\textbf{You must read that document and strictly follow it.}
+
+
+%%%% ADD YOUR BIBLIOGRAPHY HERE
+\newpage
+
+\addcontentsline{toc}{chapter}{Bibliography}
+\printbibliography
+\label{endpage}
+\end{document}
+
+\end{article}
