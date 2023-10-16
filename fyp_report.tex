@@ -5,6 +5,8 @@
 \usepackage[utf8]{inputenc}
 \usepackage[backend=biber, style=ieee]{biblatex}
 \usepackage{amsmath}
+\usepackage{amssymb}
+
 
 \addbibresource{fyp.bib}
 \usepackage{amsthm}
@@ -204,6 +206,9 @@ A (digital) signature scheme consists of three probabilistic polynomial-time alg
 \end{enumerate}
 \end{definition}
 
+
+Observe that the Gen algorithm receives a unique input, $1^n$, with n representing the security parameter. The security parameter serves to set the "security" level of the system; with greater values indicating heightened security but increased computational demands. The security parameter also establishes the running time of Gen, and therefore the maximum size of the generated key, and thus the running times of Sign and Vrfy as well.
+
 \begin{basic}
 A \textit{digital signature signing process} consists of a generation algorithm, along with a method for formatting data into messages which can be signed.
 \end{basic}
@@ -213,7 +218,7 @@ A \textit{digital signature signing process} consists of a generation algorithm,
 A \textit{digital signature verification process} consists of a verification algorithm, along with a method for recovering data from the message.
 \end{basic}
 
-Correctness: It is required that except with negligible probability over (pk, sk) output by Gen($1^n$), it holds that $\text{Vrfy}_{pk} (m, \text{Sign}_{sk}(m)$) = 1 for every (legal) message m.
+Correctness: It is required that except with negligible probability over (pk, sk) output by Gen($1^n$), it holds that $\text{Vrfy}_{pk} (m, \text{Sign}_{sk}(m)$) = 1 for every (legal) message m. 
 
 Such a signature scheme can be utilised in the following way.
 Bob (sender) runs Gen($1^n$) in turn generating the keys (pk, sk). Bob then makes his public key (pk) available to everyone, including Alice (receiver). Just like in public-key encryption scenarios it can be assumed that any other party (including Alice) is able to obtain a legitimate copy of Bobs' public key. 
@@ -276,8 +281,13 @@ Let DS = (Gen, Sign, Vrfy) be a signature scheme, and consider the following exp
 \label{def:EF-CMA}
 
 \begin{basic}
+The \textit{security parameter "n"}. Integer incorporated into a cryptographic scheme to measure the difficulty in the computational efforts (running time in addition to success probability of adversary both of which can be observed as functions of n) required of an adversary to break the scheme.
+\end{basic}
+
+\begin{basic}
 \textit{asymptotic security}. A scheme is secure if any probabilistic polynomial-time (PPT) adversary succeeds in breaking the scheme with at most negligible probability.
 \end{basic}
+
 \begin{basic}
 A \textit{efficient adversary} is a probabilistic algorithm that runs in polynomial time with respect to a given security parameter n i.e., there exists some polynomial function p such that the running time of the adversary is bounded by p(n) when considering the security parameter n.
 \end{basic}
@@ -321,7 +331,7 @@ A signature scheme DS = (Gen, Sign, Vrfy) is Strong existentially unforgeable un
 
 
 \section{Classification of Digital Signature Schemes}
-Digital Signature schemes can be divided according to two general classes
+Digital Signature schemes can be divided according to two general classes:
 \begin{enumerate}
     \item \begin{basic} 
 \textit{Digital signature schemes with appendix}. Digital signature schemes that require the original message as input to the verification algorithm.
@@ -332,7 +342,7 @@ Digital Signature schemes can be divided according to two general classes
 
 \end{enumerate}
 
-Digital signature schemes with appendix are the most commonly used in practice. They rely on cryptographic hash functions rather than customised redundancy functions, and are less prone to existential forgery attacks
+Digital signature schemes with appendix are the most commonly used in practice. They rely on cryptographic hash functions rather than customised redundancy functions, and are less prone to existential forgery attacks.
 
 \subsection{Digital Signature Schemes with Appendix}
 \textbf{Signing Process (by Sender):}
@@ -368,17 +378,324 @@ Where the redundancy function R and its inverse $R^{-1}$ are publicly known:
 
 
 \section{RSA}
+\subsection{RSA Key Generation}
+RSA is widely used as the basis for digital signature schemes. There are various methods for generating digital signatures using RSA functions based on the RSA assumption. 
 
 
+While these methods differ in terms of operations in relation to signature and/or verification algorithms, the RSA key generation procedure is common to all RSA-based signature schemes. 
+
+Let GenModulus be a polynomial-time algorithm that, that on input $1^n$, outputs (N, p, q) where N = pq, and p and q are n-bit primes except with probability negligible in N e.g.,  generating two uniform n-bit primes,  p, q, and then multiplying them to obtain N .
 
 
+To generate an RSA key pair, Each entity B runs the following GenRSA algorithm:
 
+\begin{definition} GenRSA 
+\begin{enumerate}
+    \item Run GenModulus with $1^n$ as input ($(N, p, q) \leftarrow GenModulus(1^n)$)
+    \item Compute $\phi(N) = (p - 1)(q - 1)$
+    \item Select an arbitrary integer e, $e > 1$, such that gcd(e, $\phi(N)$) = 1 
+    \item Compute d, $1 > d < \phi(N)$, such that $ed \equiv 1 (mod \phi(N))$
+    \item return N, e, d
+\end{enumerate}
+
+B then publishes (N, e) as his public key whereas (N, d) is B's secret key.
+
+\end{definition}
+The difficulty of factoring N into its prime components p and q underpins the security of RSA. The value $\phi(N)$ represents the totient function of N, which counts the number of integers less than N that are co-prime.
+The public exponent e and the private exponent d are chosen such that they are multiplicative inverses modulo $\phi(N)$. This foundation relates e to d in a way that ensures that public key operations (sign in this instance) and private key operations (verify) are inverse operations of each other.
+
+\subsection{RSA Assumption}
+RSA's security is close tied into the hardness of factoring with the concept of the RSA problem. Notably It's widely believed that if one can solve the RSA problem efficiently, then they would also be able to factor N into its prime components. While the reverse is not true the link is strong enough - at least until the use of quantum computers becomes feasible.
+
+Given a modulus N and an integer e $>$ 2 relatively prime to $\phi(N)$ and considering the fact that exponentiation to the eth power modulo N produces a permutation, the idea behind the RSA problem follows. If you have a number y $\in \mathbb{Z}^*_{N}$ and you know that raising some other number x with the exponent e gives y (i.e., $x^e = y \bmod N$), then x is uniquely determined. This x is what is referred to as [$y^{1/e} \bmod N$]. Informally the RSA problem is to compute this value of x e.g., the eth root modulo N without knowing the factorisation of N.
+
+The RSA experiment $\textbf{RSA-inv}_{A,GenRSA}(n)$
+\begin{enumerate}
+    \item Run GenRSA with $1^n$ as input ($(N, e, d) \leftarrow GenRSA(1^n)$).
+    \item Choose a uniform y $\in \mathbb{Z}^*_{N}$.
+    \item A is given N, e, y, and outputs x $\in \mathbb{Z}^*_{N}$.
+    \item The output of the experiment is defined to be 1 if $x^e = y \bmod N$, and 0 otherwise.
+\end{enumerate}
+\begin{definition} 
+The RSA problem is hard relative to GenRSA if for all probabilistic polynomial-time algorithms A there exists a negligible function negl such that \[Pr[\textbf{RSA-inv}_{A,GenRSA}(n) = 1] \leq negl(n)\].
+\end{definition}
+The RSA assumption is that there exists a GenRSA algorithm relative to which the RSA problem is hard.
+\subsection{Textbook RSA}
+In its most basic form, RSA offers a clear blueprint for digital signatures. The loose resemblance between signatures and the RSA function hinges on their shared trait of asymmetry. While everyone should have the ability to verify a signature, only the one possessing the signing key can have the capability to create a (legitimate) signature. The RSA function mirrors this asymmetry: If N and e are made public, then anyone can exponentiate using e, but only an individual with d can exponentiate using d. RSA can thus be applied to the concept of digital signatures with utilisation of the following key principles:
+
+\begin{itemize}
+    \item The key for verification is (N, e) while the key for signing is (N, d), both of which maintain the relevant RSA correlation.
+    \item A signature for message m (where m belongs to $\mathbb{Z}_{N}$) takes the value $\sigma = m^d \bmod N$. Only an individual possessing the signing key can generate this value for a specified m. 
+    \item To verify a signature $\sigma$ on a message m, the objective is to determine whether $\sigma \equiv_{N} m^d$.
+However, we are given only N and e, not d. Given only N and e, without access to d, consider exponentiating both sides of this equation by e:
+\[\sigma^e \equiv_{N} (m^d)^e \equiv_{N} m\]
+This second equality derives from the conventional RSA attribute, allowing verification with solely the public information N and e..
+\end{itemize}
+More formally:
+\begin{definition}
+\label{def:textbook rsa}
+Let GenRSA be as in the text. Define a signature scheme as follows:
+\begin{enumerate}
+    \item Gen (key-generation algorithm): on input $1^n$ run GenRSA($1^n$) to obtain (N, e, d). The public key is $\langle N, e \rangle$ and the private key is $\langle N, d \rangle$.
+
+    \item Sign (signing algorithm): on input a private key sk = $\langle N, d \rangle$ and a message m $\in \mathbb{Z}^*_{N}$, compute the signature
+\[\sigma := [m^d \bmod N].\]
+    \item Vrfy (deterministic verification algorithm):  on input a public key pk = $\langle N, e \rangle$, a message m $\in \mathbb{Z}^*_{N}$, and a signature $\sigma \in \mathbb{Z}^*_{N}$, output 1 if and only if
+    \[m \stackrel{?}{=} [\sigma^e \bmod N].\]
+\end{enumerate}
+The “textbook RSA” signature scheme.
+\end{definition}
+The correctness can easily be verified, accordingly the verification of a (legitimate) signature never fails
+\[\sigma^e = (m^d)^e = m^{[e^{d}\mod \phi(N)]} = m^1 = m\mod N.\]
+
+Regrettably, textbook RSA signatures serve primarily as an initial insight. They lack any form of security. The main assumption some might make is that this scheme is secure simply because, for an attacker who knows only the public key, creating a valid signature seems to require solving the RSA problem. To the contrary, the solving of the RSA problem does not meaningfully relate to the computation of a signature.The RSA problem's difficulty lies in finding the eth root of a "uniform" message m i.e., computing a legitimate signature. It does not guarantee that it's hard to compute the eth root for non-uniform or specially chosen messages. Additionally, it is possible that an adversary could evade the RSA problem altogether by computing signatures on other messages that might help them deduce new valid signatures. Both observations lead to attacks on the plain RSA signature scheme. 
+
+Multiplicative Attacks for Signatures on arbitrary messages
+
+Multiplicative attacks on RSA signature schemes all exploit the Multiplicative property notably that
+\begin{equation}
+\sigma^e = (\sigma_{1} \cdot \sigma_{2})^e = (m_{1}^d \cdot m_{2}^d)^e = m_{1}^{ed} \cdot m_{2}^{ed} = m_{1} \cdot m_{2} = m \bmod N 
+\end{equation}
+Comprising the most severe form of attacks on plain RSA it is possible that an active adversary could output a forged signature on any message of its choice after first obtaining at least two signatures from the signer.
+The multiplicative property of the RSA scheme ensures that the product of two signatures corresponds to the product of their messages. Specifically, if $\sigma_{1}$ is a signature for $m_{1}$ and $\sigma_{2}$ is a signature for $m_{2}$ , then $\sigma_{1} \cdot \sigma_{2}$ is a signature for $m_{1} \cdot m_{2}$. Thus, by strategically choosing $m_{1}$ and $m_{2}$ such that their product modulo N is m, the adversary can create a forged signature for m.
+The process for doing so with respect to a public key $\langle N, e \rangle$ can demonstrated as follows:
+\begin{enumerate}
+    \item Select a message m $\in \mathbb{Z}^*_{N}$ to forge a signature on.
+    \item Select arbitrary $m_{1} \in \mathbb{Z}^*_{N}$ and arbitrarily $m_{2} \in \mathbb{Z}^*_{N}$ distinct from m such that $m = m_{1} m_{2}$ 
+    \item Obtain the legitimate signers signatures $\sigma_{1}, \sigma_{2}$ on $m_{1}$ and $m_{2}$, respectively
+    \item It follows $\sigma := [\sigma_{1} \cdot \sigma_{2}  \bmod N ]$ is a valid signature on m.
+\end{enumerate}
+
+A no-message attack.
+A second but less severe type of attack is a forgery that can be performed in a no-message setting in absence of a signer, relying solely on the public key. With respect to a public key $\langle N, e \rangle$ the attack works as follows:
+\begin{enumerate}
+    \item Select a uniform $\sigma \in \mathbb{Z}^*_{N}$
+    \item Compute message $m : = [\sigma^e \bmod N]$.
+    \item It follows that $\sigma$ is a valid signature on m and the resulting pair $(m, \sigma)$ is a forgery.
+\end{enumerate}
+The nature of the attack in itself means that plain RSA cannot meet the base notion of Security for digital signature schemes i.e., EF-CMA. Furthermore while the attack does not enable an adversary direct control over m, it can be possible to influence certain bits or characteristics of m by carefully choosing differing (uniform) values $\sigma$ over multiple iterations. With a high probability,  an m with a few bits set in some desired way can then be obtained.
+
+\section{Hashed RSA Signatures}
+In a nutshell, the fundamental flaw of textbook RSA signatures is the strong algebraic relationship between plaintexts and corresponding signatures. The hashed RSA signature scheme is designed to counteract the vulnerabilities observed in the textbook RSA signature schemes by disrupting these algebraic relationships. Respective to real world uses of digital signatures, it can also be noted that messages are bit strings of arbitrary lengths and not in the format of group elements required for plain RSA signatures.
+Both issues are typically dealt with by pre-processing or in other words applying some transformation to a message x i.e., H(x) where H is a suitable (public) hash function (with outputs interpreted as elements of $\mathbb{Z}^*_{N}$).  The appropriate private-key operation can then be applied to the resulting y $\in \mathbb{Z}^*_{N}$ to generate a signature e.g.,  $\sigma \leftarrow Sign_{sk}(y)$.
+More directly and relevant to the two attack settings discussed for textbook RSA, if the function H, is not efficiently invertible, the efficacy of both i.e., no-message attack and multiplicative attacks, is significantly limited.
+
+\begin{definition}
+\label{def:hashed rsa}
+Let GenRSA be as in the text. Formally a default hash-and-sign signature scheme can be defined:
+\begin{enumerate}
+    \item Gen (key-generation algorithm): on input $1^n$ run GenRSA($1^n$) to obtain (N, e, d). The public key is $\langle N, e \rangle$ and the private key is $\langle N, d \rangle$.
+    \begin{itemize}
+    \item As part of key generation, a function H : $\{0, 1\}^* \rightarrow \mathbb{Z}^*_{N}$ is specified.
+    \end{itemize}
+
+    \item Sign (signing algorithm): on input a private key sk = $\langle N, d \rangle$ and a message m $\in {0, 1}^*$, compute the signature
+\[\sigma := [H(m)^d \bmod N].\]
+    \item Vrfy (deterministic verification algorithm):  on input a public key pk = $\langle N, e \rangle$, a message m, and a signature $\sigma$, output 1 if and only if
+    \[\sigma^e \stackrel{?}{=} H(m) \bmod N.\]
+\end{enumerate}
+The RSA-FDH signature scheme.
+\end{definition}
+
+\section{Deterministic Hash-and-Sign Signature Schemes with Appendix}
+
+\subsection{RSASSA-PKCS1-v1.5}
+PKCS1 signature scheme is one of the earliest standardised hash-and-sign signature schemes on record. The scheme was initially disclosed in version 1.5, which is why it is typically known as PKCS1 v1.5.
+
+Messages are encoded in representative “blocks” in PKCS v1.5\#1 with the (hexadecimal) format
+\[0x00\||BT\|PS\|0x00\|D\]
+
+The leading 00 block ensures that the full message representative is less than the modulus N when interpreted as an integer. BT refers to the type of block which is 0x01 for signatures. D is the encoding of the message, the hash of the message prefixed with the hash id $ID_{H}$. PS is the “padding string”, used to ensure the length of message representative has equality with the number of bits n. PS is fixed to 0xFF . . . FF. Signature “blocks” thus have the following format
+\[0x00\|0x01\|0xFF . . . FF\|0x00\|ID_{H}\|H(m)\]
+
+
+\begin{definition}
+Let GenRSA be adapted as to not compute and subsequently return d but instead return the prime factors of N as additional arguments. Formally the RSA-PKCS1-v1.5 signature scheme can be defined:
+\begin{enumerate}
+    \item Gen ($1^n$, $\mathcal{L}$): 
+    \begin{itemize}
+    \item[] Run GenRSA($1^n$) to obtain (N, e, P, Q)
+    \item[] Choose a hash function H : $\{0, 1\}^* \rightarrow \{0, 1\}^\mathcal{L}$.
+    \item[] Look-up $\alpha$-bit $ID_{H}$ for H
+    \item[] Compute $\nu = n - \mathcal{L} - \alpha - 23$
+    \item[] Compute PAD = $0^{15} \| 1^{\nu} \| 0^8 \| ID_{H}$
+    \item[] return (pk = (N, e, PAD, H), sk = (P, Q))
+    \end{itemize}
+
+    \item Sign (sk, m):
+    \begin{itemize}
+    \item[] Compute $z \leftarrow H(m)$
+    \item[] Compute $y = PAD  \| z$
+    \item[] return $\sigma = y^{1/e} \bmod N$
+    \end{itemize}
+   
+    \item Vrfy (pk, m, $\sigma$):  
+    \begin{itemize}
+    \item[] Compute $y^{'} = \sigma^{e} \bmod N$
+    \item[] Compute $z \leftarrow H(m)$
+    \item[] If ($PAD \| z == y^{'}$) then return 1 else return 0
+    \end{itemize}
+\end{enumerate}
+RSA PKCS\#1 v1.5 Signature RSASSA-PKCS1-v1 5
+\end{definition}
+It should be noted that PAD is included in the public key for brevity differing from the original scheme where it is publicly known. Also the signing function is defined as taking the eth root instead of the dth power. This is done for reasons that will be explored later.
+
+\subsection{American National Standards Institute X9.31 rDSA Signatures}
+ANSI X9.31 is another hash-and-sign signature scheme standardised around a similar time to RSSA-PKCS. Designed for use in the banking sector, the scheme is very similar RSASSA-PKCS1-v1 5. Both variants of the signature schemes with appendix class of signatures, the two differ slightly with respect to padding and ordering of hash related data.
+
+In the ANSI X9.31 signature scheme,  just like in PKCS\#1 v1.5 messages are encoded into representative blocks. However as mentioned the (hexadecimal) format differs
+\[0x06\|PS\|D\]
+
+D again forms an encoded message but this time around, conversely the hash id $ID_{H}$ is prefixed with hash of the message.  The padding string PS is fixed to 0x6B...BA with 0xB...B forming repetitive portion of the padding. 0x6 and 0xA comprise the fixed  portion of the padding respectively indicating the start and ending of the padding. 
+Signature “blocks” thus have the following format
+\[0x06\|0xB . . . B\|0xA\|H(m)\|ID_{H}\]
+
+It should be noted that the considered changes to padding are insignificant in the context of the proofs to follow, as they are both for arbitrary padding.
+
+
+\begin{definition}
+Let GenRSA be adapted as to not compute and subsequently return d but instead return the prime factors of N as additional arguments. Formally the ANSI X9.31 signature scheme can be defined:
+\begin{enumerate}
+    \item Gen ($1^n$, $\mathcal{L}$): 
+    \begin{itemize}
+    \item[] Run GenRSA($1^n$) to obtain (N, e, P, Q)
+    \item[] Choose a hash function H : $\{0, 1\}^* \rightarrow \{0, 1\}^\mathcal{L}$.
+    \item[] Look-up $16$-bit $ID_{H}$ for H
+    \item[] Compute $\nu = \frac{(n - \mathcal{L} - 24)}{4} $
+    \item[] Compute PAD = $0110 \| (1011)^{\nu} \| 1010$
+    \item[] return (pk = (N, e, PAD, $ID_{H}$, H), sk = (P, Q))
+    \end{itemize}
+
+    \item Sign (sk, m):
+    \begin{itemize}
+    \item[] Compute $z \leftarrow H(m)$
+    \item[] Compute $y = PAD  \| z \| ID_{H}$
+    \item[] return $\sigma = y^{1/e} \bmod N$
+    \end{itemize}
+   
+    \item Vrfy (pk, m, $\sigma$):  
+    \begin{itemize}
+    \item[] Compute $y^{'} = \sigma^{e} \bmod N$
+    \item[] Compute $z \leftarrow H(m)$
+    \item[] If ($PAD \| z == y^{'}$) then return 1 else return 0
+    \end{itemize}
+\end{enumerate}
+American National Standards Institute X9.31 rDSA
+\end{definition}
+
+\section{Deterministic Hash-and-Sign Signature Schemes with Message Recovery}
+\subsection{ISO/IEC 9796-2:2010 Signature Scheme 1}
+ISO/IEC 9796-2:2010 Signature Scheme is the final standardised scheme to be considered. The scheme has widespread practical significance, primarily in the payments sector where it is used in the EMV payment system for chip and pin cards. A variant of the signature schemes with message recovery class of signatures, ISO/IEC 9796-2:2010 offers a swift departure from the more common practice approach signing with appendix. The idea is to embed either the entire or part of the message within the signature thus allowing this same original message representative (whether that be the message in entirety or part of the message) to be recovered on verification. The setting produces savings in space and/or length of the signed message but is also less efficient in terms of the computational effort required to recover message/part-message from the signature.
+
+It is important to note that the ISO/IEC 9796-2:2010 Signature Scheme 1 will only be considered in the context of its practical application to the EMV standard. Knowledge that the signatures are vulnerable to attacks which indeed the ISO/IEC 9796-2 variant of the scheme 1 meets the criteria for, is thus immaterial. In summarised terms, this is because attacks work only on message spaces that exceed the length of the messages space used by the EMV protocol.
+
+Scheme 1 from the ISO/IEC 9796-2 standard offers two modes, notably full message recovery for sufficiently shorter messages and partial message recovery for more extensive messages.
+
+Messages are encoded in representative “blocks” in ISO/IEC 9796-2 Scheme 1 with the (hexadecimal) format
+\begin{table}[h]
+    \centering
+    \begin{tabular}{|c|c|}
+    \hline
+    Full Message Recovery & $0x4A\|D\|0xBC$ \\
+    \hline
+    Partial Message Recovery & $0x6A\|D\|0xBC$ \\
+    \hline
+    \end{tabular}
+    \caption{ISO/IEC 9796-2 Message Format table}
+    \label{tab:msg_form_tab}
+\end{table}
+
+D is the encoding of the message, the hash of the message prefixed with the (padded) message portion m. The message representative begins with 0x6A or 0x4A respectively. This is then followed by a recoverable message portion padded up with zeros, if needed, which is followed by the hash of the complete message. The signatures then end with 0xBC. Signature “blocks” thus have the following format
+\begin{table}[h]
+    \centering
+    \begin{tabular}{|c|c|}
+    \hline
+    Full Message Recovery & $0x4A\|m\|H(m)\|0xBC$ \\
+    \hline
+    Partial Message Recovery & $0x6A\|m\|H(m)\|0xBC$ \\
+    \hline
+    \end{tabular}
+    \caption{ISO/IEC 9796-2 Signature block Format table}
+    \label{tab:sig_block_tab}
+\end{table}
+
+
+\begin{definition}
+Let GenRSA be adapted as to not compute and subsequently return d but instead return the prime factors of N as additional arguments. Formally the ISO/IEC 9796-2:2010 Signature Scheme 1 with partial message recovery can be defined:
+\begin{enumerate}
+    \item Gen ($1^n$, $\mathcal{L}$): 
+    \begin{itemize}
+    \item[] Run GenRSA($1^n$) to obtain (N, e, P, Q)
+    \item[] Choose a hash function H : $\{0, 1\}^* \rightarrow \{0, 1\}^\mathcal{L}$.
+    \item[] Compute $PAD_{L} = 01101010$
+    \item[] Compute $PAD_{R} = 10111100$
+    \item[] return (pk = (N, e, $PAD_{L}$, $PAD_{R}$, H), sk = (P, Q))
+    \end{itemize}
+
+    \item Sign (sk, m):
+    \begin{itemize}
+    \item[] Compute $z \leftarrow H(m)$
+    \item[] Compute $\nu = n - \mathcal{L} - 16$
+    \item[] Compute $m_{1}$ = MSBs(m, v) distinct from m such that $m = m_{1} m_{2}$ 
+    \item[] Compute $y = PAD_{L} \| m_{1} \| z \| PAD_{R}$
+    \item[] Compute $\sigma = y^{1/e} \bmod N$
+    \item[] return ($\sigma$, $m_{2}$)
+    \end{itemize}
+   
+    \item Vrfy (pk, $m_{2}$, $\sigma$):  
+    \begin{itemize}
+    \item[] Compute $y^{'} = \sigma^{e} \bmod N$ and parse $y^{'}$ as follows:
+     \[y^{'} = PAD_{L} \| m_{1} \| z \| PAD_{R}\]
+    \item[] if ($PAD_{L} == 6A_{16}$ \& $PAD_{R} == BC_{16}$) then continue else return 0
+    \item[] If ($H(m_{1} \| m_{2}) == z$) then return 1 else return 0
+    \end{itemize}
+\end{enumerate}
+ISO/IEC RSA Signature with Partial Message Recovery 9796-2 Scheme 1 (PR)
+\end{definition}
+
+\begin{definition}
+Let GenRSA be adapted as to not compute and subsequently return d but instead return the prime factors of N as additional arguments. Formally the ISO/IEC 9796-2:2010 Signature Scheme 1 with full message recovery can be defined:
+\begin{enumerate}
+    \item Gen ($1^n$, $\mathcal{L}$): 
+    \begin{itemize}
+    \item[] Run GenRSA($1^n$) to obtain (N, e, P, Q)
+    \item[] Choose a hash function H : $\{0, 1\}^* \rightarrow \{0, 1\}^\mathcal{L}$.
+    \item[] Compute $PAD_{L} = 01001010$
+    \item[] Compute $PAD_{R} = 10111100$
+    \item[] return (pk = (N, e, $PAD_{L}$, $PAD_{R}$, H), sk = (P, Q))
+    \end{itemize}
+
+    \item Sign (sk, m):
+    \begin{itemize}
+    \item[] Compute $z \leftarrow H(m)$
+    \item[] Compute $y = PAD_{L} \| m \| z \| PAD_{R}$
+    \item[] return $\sigma = y^{1/e} \bmod N$
+    \end{itemize}
+   
+    \item Vrfy (pk, $\sigma$):  
+    \begin{itemize}
+    \item[] Compute $y^{'} = \sigma^{e} \bmod N$ and parse $y^{'}$ as follows:
+    \[y^{'} = PAD_{L} \| m \| z \| PAD_{R}\]
+    \item[] if ($PAD_{L} == 4A_{16}$ \& $PAD_{R} == BC_{16}$) then continue else return 0
+    \item[] If ($H(m) == z$) then return 1 else return 0
+    \end{itemize}
+\end{enumerate}
+ISO/IEC RSA Signature with Full Message Recovery 9796-2 Scheme 1 (FR)
+\end{definition}
+\section{Motivation for Provable Security of Hash-and-Sign Signature Schemes}
+While the hash-and-sign paradigm offers promise in terms of thwarting or significantly limiting the efficacy of known attacks i.e., by enabling the admission of a function H not efficiently invertible, this is no substitution for formal proof. Particularly in reference to Multiplicative property that hash-and-sign signature schemes inherit from textbook RSA. 
+It becomes hard to imagine how $H(m_{1}) \cdot H(m_{2}) \bmod N$ could have the algebraic structure required to make it look like the hash of some other distinct message m. While at the very most a solution to this problem is not evident, this is not a proof that the attack is impossible and thereby immaterial. 
+To completely eliminate the property and have a provably secure signature scheme variants in the sense of EF-CMA (\ref{def:EF-CMA}), a Hash function H that does not admit multiplicative relations is required. That is an m distinct from $m_{1}$, $m_{2}$ where $H(m) = H(m_{1}) \cdot H(m_{2}) \bmod N$. Moreover a stronger assumption to make would be: it must be hard to find collisions in H. There is no known way to choose H so that a basic construction of RSA-FDH (sometimes called the hashed RSA signature scheme) described in \ref{def:hashed rsa} and thus the other discussed deterministic schemes comprising its descendants can be proven secure.
+
+By the approach in which thwarting of known attacks becomes the core goal, the basic RSA-FDH \ref{def:hashed rsa} scheme is perfectly acceptable. Founded in the principles of classical design, such an approach focuses on known attacks and associated features of a cryptographic primitive (in this case the hash function), and aims for suitable instantiations  e.g., the implementation of suitable hash functions. Certainly, identifying necessary features of the hash function provides insight into potential sufficient features. However, this is merely a starting point. One must remain vigilant and not fall into the trap of finding it feasible that all features could ever be identified and/or addressed. 
+The potential construction of a secure cryptographic primitive is a very difficult task and thus the phenomenon of potential unidentified features is almost inevitable bordering on assumable thus acting as an indirect but inherent compromise to the security. The only way to be sure within reason is to not rely on the obscurity of attacks since disastrous flaws can exist in a primitive due to unidentified features. In this context, the likelihood of such flaws should be minimal to none. Time and experience have repeatedly shown that such overconfidence for the reverse can be misleading.
+A more assured approach to take would be to see how the desired security of the signature scheme relates to the assumed or understood security of the underlying primitive (in this case the RSA Assumption). A crucial observation is that the focus should not be solely on identifying necessary features of cryptographic primitives like hash functions to thwart known threats. Instead, the emphasis should be on identifying adequate features that can safeguard against all potential threats, including those not yet imagined. It is under this very approach that the roles become reversed and RSA-FDH and descendants can be described as perfectly unacceptable in standard settings. This related philosophy drives the concept of provable security.
 
 
 
 \section{Figures, Charts and Tables}
 
-Most final reports will contain a mixture of figures and charts along with the main body of text. The figure caption should appear directly after the figure as seen in Figure~\ref{fig:logo} whereas a table caption should appear directly above the table. Figures, charts and tables should always be centered horizontally. 
+Most final reports will contain a mixture of figures and charts along with the main body of text. The figure caption should appear directly after the figure as seen in Figure~\ref{fig:logo} whereas a table caption should appear directly above the table. Figures, charts and tables should always be centred horizontally. 
 
 \begin{figure}[h]
 \centering
