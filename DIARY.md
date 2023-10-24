@@ -22,10 +22,12 @@ Met with my supervisor for initial meeting. Discussed potential extensions to th
 
 This week, I refined and expanded the Risks and mitigation section, established a risk quantification table, and deepened my understanding of digital signature schemes. The literature review for the interim report was integrated, and significant progress was made in drafting the cryptographic foundation of the report. By the weekend, focus was channeled into classifying digital signature schemes and laying out a clear structure for detailed exploration of specific signature schemes in upcoming sessions. Next I will begin writing the introductory section on digital signatures for my report.
 
-Diary Entry - Week of 9th October - 15th October 2023
+## Diary Entry - Week of 9th October - 15th October 2023
 
 I Started the week with supervisor meeting, confirming my focus on the POC PKCS Signature for term 1 and was given advise to potentially using the top 1000 English words for the signature program when I sought guidance on the type of data I could provide to be signed. I delved into textbook RSA, highlighting its vulnerabilities. By Friday, I had expanded on RSA's role in digital signatures, introducing potential attacks and Hashed RSA signatures. The weekend saw me laying the foundation for all three schemes considered in the project by formally defining them. I then began to explore the motivation of provably secure signature schemes
 
-
+ 
+## Diary Entry - Week of 16th October - 22nd October 2023
+I started the week attempting to try and understanding trapdoor permutations, especially how they tie into RSA. Following this I began work on enumerating the requirements for the proof of concept program. By the end Friday, I had detailed the user stories and actors for the program with a corresponding a UML use case diagram. During the weekend I first focussed on expanding the motivation for provable security section with subsections on real world implications and limitations. I finished of the week on Sunday by trimming down the report to make it more concise.
 
 
