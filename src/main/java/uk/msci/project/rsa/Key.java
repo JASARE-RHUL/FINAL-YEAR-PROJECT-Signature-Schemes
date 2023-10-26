@@ -1,6 +1,8 @@
 package uk.msci.project.rsa;
 
 
+import java.io.File;
+import java.io.IOException;
 import java.math.BigInteger;
 
 /**
@@ -12,21 +14,19 @@ import java.math.BigInteger;
  */
 public abstract class Key {
 
+
+  /**
+   * Component part of the key comprising the modulus
+   */
+  protected BigInteger modulus;
+
   /**
    * Component part of the key comprising the exponent
    */
   protected BigInteger exponent;
 
-  /**
-   * Constructs key using a comma-delimited string representation of the key containing the modulus
-   * followed by the exponent. This constructor initialises the key's value and parses the modulus
-   * and exponent.
-   *
-   * @param key The string representation of the key.
-   */
-  public Key(BigInteger key) {
-    this.exponent = key;
-  }
+
+
   /**
    * Gets the exponent of this key.
    *
@@ -35,4 +35,14 @@ public abstract class Key {
   public BigInteger getExponent() {
     return this.exponent;
   }
+
+  /**
+   * Gets the modulus of this key.
+   *
+   * @return The modulus of this key.
+   */
+  public BigInteger getModulus() {
+    return this.modulus;
+  }
 }
+

@@ -27,14 +27,30 @@ public class KeyGenerationTest {
     // and a method (getter) that returns the value of the field
   void testGetExponent() {
     BigInteger expectedExponent = new BigInteger("98765432109876543210");
-    Key publicKey = new PublicKey(new BigInteger("98765432109876543210"));
+    Key publicKey = new PublicKey(new BigInteger("776545678988777"),
+        new BigInteger("98765432109876543210"));
 
-    // Act
     BigInteger actualExponent = publicKey.getExponent();
 
     // Assert
     assertEquals(expectedExponent, actualExponent,
         "The getExponent method should return the correct exponent value");
+  }
+
+  @Test
+    // Test 3
+    // Create a field representing the modulus of the key
+    // and a method (getter) that returns the value of the field
+  void testGetModulus() {
+    BigInteger expectedN = new BigInteger("43456564545554");
+    Key publicKey = new PublicKey(new BigInteger("43456564545554"),
+        new BigInteger("43456564545554"));
+
+    BigInteger actualN = publicKey.getModulus();
+
+    // Assert
+    assertEquals(expectedN, actualN,
+        "The getModulus method should return the correctmModulus value");
   }
 
 
