@@ -1,5 +1,7 @@
 package uk.msci.project.rsa;
 
+import static java.math.BigInteger.ONE;
+
 import java.math.BigInteger;
 import java.security.SecureRandom;
 
@@ -27,7 +29,7 @@ public class GenRSA {
   private int certainty = 75;
 
   /**
-   * Constructs a {@code KeyGenerator2} object with a specified key size.
+   * Constructs a GenRSA object with a specified key size.
    *
    * @param size The desired bit length of the RSA keys.
    * @throws IllegalArgumentException if the specified key size is invalid.
@@ -57,6 +59,19 @@ public class GenRSA {
     }
     return new BigInteger[]{p, q};
   }
+
+  /**
+   * Computes the Euler's totient function of {@code p} and {@code q}.
+   *
+   * @param p The first prime factor of the modulus N.
+   * @param q The second prime factor of modulus N.
+   * @return The result of Euler's totient function.
+   */
+  public BigInteger computePhi(BigInteger p, BigInteger q) {
+    return p.subtract(ONE).multiply(q.subtract(ONE));
+  }
+
+
 
   /**
    * Returns the size of the key to be generated.

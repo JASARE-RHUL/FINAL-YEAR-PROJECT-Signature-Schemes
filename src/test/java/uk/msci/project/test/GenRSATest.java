@@ -67,6 +67,7 @@ public class GenRSATest {
     assertEquals(4096, genRSA4.getKeySize(),
         "The getKeySize method should return the correct key size");
   }
+
   @Test
     // Test 5
     // Create a method,generatePrimeComponents that generates two probable primes
@@ -77,6 +78,23 @@ public class GenRSATest {
     assertEquals(75, genRSA.getCertainty());
     assertTrue(primeComponents[0].isProbablePrime(genRSA.getCertainty()));
     assertTrue(primeComponents[1].isProbablePrime(genRSA.getCertainty()));
+  }
+
+  @Test
+    // Test 6
+    // Create a method,computePhi intended to compute the
+    // Computes the Euler's totient function of the Modulus N
+  void testComputePhi() {
+    GenRSA genRSA = new GenRSA(1024);
+    BigInteger[] primeComponents = genRSA.generatePrimeComponents();
+    BigInteger p = primeComponents[0];
+    BigInteger q = primeComponents[1];
+    BigInteger expectedPhi = (p.subtract(BigInteger.ONE)).multiply(q.subtract(BigInteger.ONE));
+    // Act
+    BigInteger actualPhi = genRSA.computePhi(p, q);
+    // Assert
+    assertEquals(expectedPhi, actualPhi,
+        "The computePhi method should return the correct Euler's totient function result");
   }
 
 
