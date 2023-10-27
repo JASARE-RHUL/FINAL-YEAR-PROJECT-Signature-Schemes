@@ -97,5 +97,22 @@ public class GenRSATest {
         "The computePhi method should return the correct Euler's totient function result");
   }
 
+  @Test
+    // Test 7
+    // Create a method, computeE intended to compute the
+    // public exponent {@code e} for public key component in the RSA Key pair
+    // Tests that e and euler's totient are co prime
+  void testComputeE() {
+    GenRSA genRSA = new GenRSA(1024);
+    BigInteger[] primeComponents = genRSA.generatePrimeComponents();
+    BigInteger p = primeComponents[0];
+    BigInteger q = primeComponents[1];
+    BigInteger phi = genRSA.computePhi(p, q);
+    BigInteger e = genRSA.computeE(phi);
+    assertEquals(BigInteger.ONE, e.gcd(phi), "The public exponent 'e' "
+        + "and 'phi' should be coprime");
+
+  }
+
 
 }

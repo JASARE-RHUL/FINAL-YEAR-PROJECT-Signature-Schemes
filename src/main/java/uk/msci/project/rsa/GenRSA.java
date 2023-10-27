@@ -71,7 +71,19 @@ public class GenRSA {
     return p.subtract(ONE).multiply(q.subtract(ONE));
   }
 
-
+  /**
+   * Computes the public exponent {@code e} for public key component in the RSA Key pair.
+   *
+   * @param phi The result of Euler's totient function.
+   * @return The public exponent {@code e}.
+   */
+  public BigInteger computeE(BigInteger phi) {
+    BigInteger e = new BigInteger(phi.bitLength(), new SecureRandom());
+    while (e.compareTo(ONE) <= 0 || !phi.gcd(e).equals(ONE) || e.compareTo(phi) >= 0) {
+      e = new BigInteger(phi.bitLength(), new SecureRandom());
+    }
+    return e;
+  }
 
   /**
    * Returns the size of the key to be generated.
