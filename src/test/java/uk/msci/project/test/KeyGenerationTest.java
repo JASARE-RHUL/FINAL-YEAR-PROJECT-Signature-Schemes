@@ -125,6 +125,15 @@ public class KeyGenerationTest {
 
   }
 
+  @Test
+  // Test 6
+  // Test that the key cannot be constructed with an incorrectly formatted String representation
+  public void testKeyWithStringInvalidFormat() {
+    String input = "123456789;987654321";
+    assertThrows(IllegalArgumentException.class, () -> new PublicKey(input),
+        "Should throw an exception when the wrong delimiter e.g., not a comma is used");
+  }
+
 
 }
 

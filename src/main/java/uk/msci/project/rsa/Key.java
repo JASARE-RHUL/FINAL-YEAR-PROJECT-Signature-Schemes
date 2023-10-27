@@ -4,6 +4,7 @@ package uk.msci.project.rsa;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
+import java.util.regex.Pattern;
 
 /**
  * This abstract class provides a foundational representation of an RSA key, encapsulating common
@@ -38,8 +39,6 @@ public abstract class Key {
    * @param key The string representation of the key.
    */
   public Key(String key) {
-    String[] keyArray = key.split(",");
-    this.keyValue = key;
     parseKeyValue(key);
   }
 
@@ -69,6 +68,10 @@ public abstract class Key {
    * @param keyValue The string representation of the key.
    */
   protected void parseKeyValue(String keyValue) {
+    if (!keyValue.contains(",")) {
+      throw new IllegalArgumentException("Key value must contain a comma as the delimiter");
+    }
+    this.keyValue = keyValue;
     String[] keyArray = keyValue.split(",");
 
     this.modulus = new BigInteger(keyArray[0]);
