@@ -14,6 +14,8 @@ import java.lang.reflect.Modifier;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.util.EmptyStackException;
+import java.util.Stack;
+import org.junit.jupiter.api.BeforeEach;
 import uk.msci.project.rsa.Key2;
 import uk.msci.project.rsa.PublicKey;
 import org.junit.jupiter.api.Assertions;
@@ -57,6 +59,14 @@ public class KeyGenerationTest {
     } else {
       System.out.println("No files found in the specified directory");
     }
+  }
+
+  @BeforeEach
+  // Before each test is run, clear any created key files.
+  public void setup() {
+    String fileNamePrefix = "publicKey";
+    String fileExtension = "rsa";
+    deleteFilesWithSuffix(fileNamePrefix, fileExtension);
   }
 
   // Test 1
@@ -184,7 +194,7 @@ public class KeyGenerationTest {
     String input = "123456789,";
     assertThrows(IllegalArgumentException.class, () -> new PublicKey(input),
         "Should throw an exception for missing values");
-    assertThrows(NullPointerException.class, () -> new PublicKey(null),
+    assertThrows(NullPointerException.class, () -> new PublicKey((String) null),
         "Should throw an exception for null input");
 
     String nonNumber = "notANumber,987654321";
@@ -263,18 +273,31 @@ public class KeyGenerationTest {
     // Test 10
     // Enable the exportToFile method to handle a file with same name already existing
   void testKeyFileExists() throws IOException {
-    String input = "0987654345,23456789";
+    String input = "778987654345,23456789";
     Key publicKey = new PublicKey(input);
 
-    String fileNamePrefix = "publicKey";
-    String fileExtension = "rsa";
-    deleteFilesWithSuffix(fileNamePrefix, fileExtension);
     publicKey.exportToFile("publicKey.rsa");
     publicKey.exportToFile("publicKey.rsa");
     File file_1 = new File(System.getProperty("user.dir"), "publicKey.rsa");
     File file_2 = new File(System.getProperty("user.dir"), "publicKey_1.rsa");
     assertTrue(file_1.exists());
     assertTrue(file_2.exists());
+
+  }
+
+  @Test
+    // Test 11
+    // Create a constructor that enables a key to be parsed from an imported file
+  void testImportKey() throws IOException {
+    String input = "5644783998877,4567845443";
+    Key publicKey = new PublicKey(input);
+    publicKey.exportToFile("publicKey.rsa");
+    File keyFile = new File(System.getProperty("user.dir"), "publicKey.rsa");
+    Key publicKey_2 = new PublicKey(keyFile);
+    assertEquals(publicKey_2.getKeyValue(), input);
+
+
+
 
   }
 

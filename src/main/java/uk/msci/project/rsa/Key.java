@@ -1,10 +1,13 @@
 package uk.msci.project.rsa;
 
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
@@ -44,6 +47,35 @@ public abstract class Key {
    */
   public Key(String key) {
     parseKeyValue(key);
+  }
+
+  /**
+   * Constructs key by reading string representation from a file before initialising the key's value
+   * and parsing the modulus and exponent.
+   *
+   * @param keyFile The file from which to read the key.
+   * @throws IOException If an I/O error occurs while reading the key file.
+   */
+  public Key(File keyFile) throws IOException {
+    if (!keyFile.exists()) {
+      throw new IOException("Key file does not exist: " + keyFile);
+    }
+
+    if (!keyFile.isFile()) {
+      throw new IllegalArgumentException("Key file should not be a directory: " + keyFile);
+    }
+
+    StringBuilder content = new StringBuilder();
+    try (FileInputStream fis = new FileInputStream(keyFile);
+        InputStreamReader isr = new InputStreamReader(fis, StandardCharsets.UTF_8);
+        BufferedReader br = new BufferedReader(isr)) {
+
+      String line;
+      while ((line = br.readLine()) != null) {
+        content.append(line);
+      }
+    }
+    parseKeyValue(content.toString());
   }
 
 
@@ -91,7 +123,7 @@ public abstract class Key {
   protected void parseKeyValue(String keyValue) {
     Pattern pattern = Pattern.compile("^\\d+,\\d+$");
     if (!pattern.matcher(keyValue).matches()) {
-      throw new IllegalArgumentException("Invalid Key format");
+      throw new IllegalArgumentException("Invalid Key format"+ keyValue);
     }
     this.keyValue = keyValue;
     String[] keyArray = keyValue.split(",");
