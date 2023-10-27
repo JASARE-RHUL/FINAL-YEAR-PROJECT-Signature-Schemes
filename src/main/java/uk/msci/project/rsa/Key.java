@@ -57,6 +57,17 @@ public abstract class Key {
    * @throws IOException If an I/O error occurs while reading the key file.
    */
   public Key(File keyFile) throws IOException {
+    this(importFromFile(keyFile));
+  }
+
+  /**
+   * Imports the key from a file.
+   *
+   * @param keyFile The file from which to import the key.
+   * @return The string representation of the key.
+   * @throws IOException If an I/O error occurs while reading the key file.
+   */
+  protected static String importFromFile(File keyFile) throws IOException {
     if (!keyFile.exists()) {
       throw new IOException("Key file does not exist: " + keyFile);
     }
@@ -75,7 +86,7 @@ public abstract class Key {
         content.append(line);
       }
     }
-    parseKeyValue(content.toString());
+    return content.toString();
   }
 
 
@@ -123,7 +134,7 @@ public abstract class Key {
   protected void parseKeyValue(String keyValue) {
     Pattern pattern = Pattern.compile("^\\d+,\\d+$");
     if (!pattern.matcher(keyValue).matches()) {
-      throw new IllegalArgumentException("Invalid Key format"+ keyValue);
+      throw new IllegalArgumentException("Invalid Key format" + keyValue);
     }
     this.keyValue = keyValue;
     String[] keyArray = keyValue.split(",");
