@@ -16,6 +16,11 @@ public abstract class Key {
 
 
   /**
+   * The string representation of the key
+   */
+  protected String keyValue;
+
+  /**
    * Component part of the key comprising the modulus
    */
   protected BigInteger modulus;
@@ -34,14 +39,14 @@ public abstract class Key {
    */
   public Key(String key) {
     String[] keyArray = key.split(",");
-    this.modulus = new BigInteger(keyArray[0]);
-    this.exponent = new BigInteger(keyArray[1]);
+    this.keyValue = key;
+    parseKeyValue(key);
   }
 
   /**
    * Constructs an RSA key with the given modulus and exponent.
    *
-   * @param modulus The modulus part of the key.
+   * @param modulus  The modulus part of the key.
    * @param exponent The exponent part of the key.
    */
   public Key(BigInteger modulus, BigInteger exponent) {
@@ -56,6 +61,18 @@ public abstract class Key {
     }
     this.modulus = modulus;
     this.exponent = exponent;
+  }
+
+  /**
+   * Parses the string representation of the key to extract the modulus and exponent.
+   *
+   * @param keyValue The string representation of the key.
+   */
+  protected void parseKeyValue(String keyValue) {
+    String[] keyArray = keyValue.split(",");
+
+    this.modulus = new BigInteger(keyArray[0]);
+    this.exponent = new BigInteger(keyArray[1]);
   }
 
 
