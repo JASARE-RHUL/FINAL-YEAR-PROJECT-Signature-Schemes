@@ -1,6 +1,7 @@
 package uk.msci.project.test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -140,6 +141,34 @@ public class GenRSATest {
 
     assertTrue(e.compareTo(phi) < 0, "The public exponent 'e' "
         + "should be less than 'phi'");
+  }
+
+  @Test
+    // Test 10
+    // Create a method, generateKeyPair that fulfils the generation of an RSA Key pair
+  void testGenerateKeyPair() {
+    GenRSA genRSA = new GenRSA(1024);
+    BigInteger[] keyPair = genRSA.generateKeyPair();
+    BigInteger N = keyPair[0];
+    BigInteger p = keyPair[1];
+    BigInteger q = keyPair[2];
+
+
+    assertNotNull(keyPair, "The generateKeyPair method should not return null");
+    assertEquals(5, keyPair.length,
+        "The generateKeyPair method should return an array of 5 BigInteger components");
+
+    assertEquals(p.multiply(q), N,
+        "The modulus N should be the product of two prime numbers p and q");
+
+    BigInteger phi = genRSA.computePhi(p, q);
+    BigInteger e = keyPair[3];
+    BigInteger d = keyPair[4];
+    assertTrue(e.compareTo(BigInteger.ONE) > 0 && e.compareTo(phi) < 0, "1 < e < phi(N) should be true");
+    assertEquals(BigInteger.ONE, e.gcd(phi), "gcd(e, phi(N)) should be 1");
+    assertEquals(e.modInverse(phi), d, "d should be the modular multiplicative inverse of e modulo phi(N)");
+
+
   }
 
 
