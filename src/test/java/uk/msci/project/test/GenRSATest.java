@@ -61,7 +61,7 @@ public class GenRSATest {
     assertEquals(2048, genRSA2.getKeySize(),
         "The getKeySize method should return the correct key size");
     GenRSA genRSA3 = new GenRSA(3072);
-    assertEquals(4096, genRSA3.getKeySize(),
+    assertEquals(3072, genRSA3.getKeySize(),
         "The getKeySize method should return the correct key size");
     GenRSA genRSA4 = new GenRSA(4096);
     assertEquals(4096, genRSA4.getKeySize(),
