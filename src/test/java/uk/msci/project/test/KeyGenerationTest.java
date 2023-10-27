@@ -128,10 +128,26 @@ public class KeyGenerationTest {
   @Test
   // Test 6
   // Test that the key cannot be constructed with an incorrectly formatted String representation
-  public void testKeyWithStringInvalidFormat() {
+  public void testKeyWithStringInvalidDelimiter() {
     String input = "123456789;987654321";
     assertThrows(IllegalArgumentException.class, () -> new PublicKey(input),
         "Should throw an exception when the wrong delimiter e.g., not a comma is used");
+  }
+
+  @Test
+  // Test 7
+  // Test that the key cannot be constructed with an incorrectly formatted String
+  // representation in the general case ,rather than on an ad hoc basis as in test 6
+  public void testKeyWithStringFormat() {
+    String input = "123456789,";
+    assertThrows(IllegalArgumentException.class, () -> new PublicKey(input),
+        "Should throw an exception for missing values");
+    assertThrows(NullPointerException.class, () -> new PublicKey(null),
+        "Should throw an exception for null input");
+
+    String nonNumber = "notANumber,987654321";
+    assertThrows(IllegalArgumentException.class, () -> new PublicKey(nonNumber),
+        "Should throw an exception for non-numeric input");
   }
 
 

@@ -86,12 +86,13 @@ public abstract class Key {
    * @param keyValue The string representation of the key.
    */
   protected void parseKeyValue(String keyValue) {
-    if (!keyValue.contains(",")) {
-      throw new IllegalArgumentException("Key value must contain a comma as the delimiter");
+
+    Pattern pattern = Pattern.compile("^\\d+,\\d+$");
+    if (!pattern.matcher(keyValue).matches()) {
+      throw new IllegalArgumentException("Invalid Key format");
     }
     this.keyValue = keyValue;
     String[] keyArray = keyValue.split(",");
-
     checkValidKeyComponents(modulus, exponent);
     this.modulus = new BigInteger(keyArray[0]);
     this.exponent = new BigInteger(keyArray[1]);
