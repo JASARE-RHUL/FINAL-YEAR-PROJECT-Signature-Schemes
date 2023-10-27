@@ -114,5 +114,33 @@ public class GenRSATest {
 
   }
 
+  @Test
+    // Test 8
+  void testComputeEIsGreaterThanOne() {
+    GenRSA genRSA = new GenRSA(1024);
+    BigInteger[] primeComponents = genRSA.generatePrimeComponents();
+    BigInteger p = primeComponents[0];
+    BigInteger q = primeComponents[1];
+    BigInteger phi = genRSA.computePhi(p, q);
+    BigInteger e = genRSA.computeE(phi);
+
+    assertTrue(e.compareTo(BigInteger.ONE) > 0,
+        "The public exponent 'e' should be greater than one");
+  }
+
+  @Test
+    // Test 9
+  void testComputeEIsLessThanPhi() {
+    GenRSA genRSA = new GenRSA(1024);
+    BigInteger[] primeComponents = genRSA.generatePrimeComponents();
+    BigInteger p = primeComponents[0];
+    BigInteger q = primeComponents[1];
+    BigInteger phi = genRSA.computePhi(p, q);
+    BigInteger e = genRSA.computeE(phi);
+
+    assertTrue(e.compareTo(phi) < 0, "The public exponent 'e' "
+        + "should be less than 'phi'");
+  }
+
 
 }
