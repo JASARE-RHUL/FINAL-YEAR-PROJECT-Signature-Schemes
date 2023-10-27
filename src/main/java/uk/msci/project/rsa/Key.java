@@ -25,6 +25,38 @@ public abstract class Key {
    */
   protected BigInteger exponent;
 
+  /**
+   * Constructs key using a comma-delimited string representation of the key containing the modulus
+   * followed by the exponent. This constructor initialises the key's value and parses the modulus
+   * and exponent.
+   *
+   * @param key The string representation of the key.
+   */
+  public Key(String key) {
+    String[] keyArray = key.split(",");
+    this.modulus = new BigInteger(keyArray[0]);
+    this.exponent = new BigInteger(keyArray[1]);
+  }
+
+  /**
+   * Constructs an RSA key with the given modulus and exponent.
+   *
+   * @param modulus The modulus part of the key.
+   * @param exponent The exponent part of the key.
+   */
+  public Key(BigInteger modulus, BigInteger exponent) {
+    if (modulus == null || exponent == null) {
+      throw new NullPointerException(
+          "Public Key cannot be constructed with a null component");
+    }
+
+    if (modulus.compareTo(BigInteger.ZERO) <= 0 || exponent.compareTo(BigInteger.ZERO) <= 0) {
+      throw new IllegalArgumentException(
+          "Public Key cannot be constructed with a non positive modulus or exponent");
+    }
+    this.modulus = modulus;
+    this.exponent = exponent;
+  }
 
 
   /**

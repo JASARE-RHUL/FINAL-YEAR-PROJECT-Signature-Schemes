@@ -9,24 +9,23 @@ import java.math.BigInteger;
 public class PublicKey extends Key {
 
   /**
+   * Constructs public key by parsing a string representation (comma delimited modulus and exponent)
+   * of the key. This constructor delegates the parsing to the superclass constructor.
+   *
+   * @param key The string representation of the public key.
+   */
+  public PublicKey(String key) {
+    super(key);
+  }
+
+  /**
    * Constructs a public key with the given modulus and exponent.
    *
    * @param N The modulus part of the public key.
    * @param e The exponent part of the public key.
    */
   public PublicKey(BigInteger N, BigInteger e) {
-
-    if (N == null || e == null) {
-      throw new NullPointerException(
-          "Public Key cannot be constructed with a null component");
-    }
-
-    if (N.compareTo(BigInteger.ZERO) <= 0 || e.compareTo(BigInteger.ZERO) <= 0) {
-      throw new IllegalArgumentException(
-          "Public Key cannot be constructed with a non positive modulus or exponent");
-    }
-    this.modulus = N;
-    this.exponent = e;
+    super(N, e);
   }
 }
 

@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import java.lang.reflect.Modifier;
 import java.math.BigInteger;
 import java.util.EmptyStackException;
+import uk.msci.project.rsa.Key2;
 import uk.msci.project.rsa.PublicKey;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -105,6 +106,22 @@ public class KeyGenerationTest {
 
     assertThrows(NullPointerException.class, () -> new PublicKey(modulusTestCases[0], null),
         "PublicKey should not accept null exponent");
+
+  }
+
+  @Test
+  // Test 5
+  // Create a constructor that enables a key to be parsed from a string input
+  // Test that the key can be constructed with a valid key input of a comma
+  // seperated modulus and exponent
+  public void testKeyWithStringValidInput() {
+    String input = "23456788,897654";
+    Key key = new PublicKey(input);
+
+    assertEquals(new BigInteger("23456788"), key.getModulus(),
+        "Modulus should be correctly parsed and set");
+    assertEquals(new BigInteger("897654"), key.getExponent(),
+        "Exponent should be correctly parsed and set");
 
   }
 
