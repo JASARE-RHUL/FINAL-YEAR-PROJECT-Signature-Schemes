@@ -150,6 +150,19 @@ public class KeyGenerationTest {
         "Should throw an exception for non-numeric input");
   }
 
+  @Test
+    // Test 8
+    // Create a getter for when the field corresponding to a full key representation is initialised
+    // Test that the getter for key value correctly returns the initialised key value
+  void testGetKeyValue() {
+    String input = "76545679087,56834434789";
+    Key publicKey = new PublicKey(input);
+    String actualValue = publicKey.getKeyValue();
+    // Assert
+    assertEquals(input, actualValue,
+        "The getKeyValue method should return the correct key value");
+  }
+
 
 }
 

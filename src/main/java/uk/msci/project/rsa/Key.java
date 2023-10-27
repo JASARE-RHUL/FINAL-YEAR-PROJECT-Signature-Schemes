@@ -58,7 +58,7 @@ public abstract class Key {
   protected void checkValidKeyComponents(BigInteger modulus, BigInteger exponent) {
     if (modulus == null || exponent == null) {
       throw new NullPointerException(
-          "Public Key cannot be constructed with a null component");
+          "Public Key cannot be constructed with a null component"+ exponent);
     }
 
     if (modulus.compareTo(BigInteger.ZERO) <= 0 || exponent.compareTo(BigInteger.ZERO) <= 0) {
@@ -86,16 +86,18 @@ public abstract class Key {
    * @param keyValue The string representation of the key.
    */
   protected void parseKeyValue(String keyValue) {
-
     Pattern pattern = Pattern.compile("^\\d+,\\d+$");
     if (!pattern.matcher(keyValue).matches()) {
       throw new IllegalArgumentException("Invalid Key format");
     }
     this.keyValue = keyValue;
     String[] keyArray = keyValue.split(",");
-    checkValidKeyComponents(modulus, exponent);
-    this.modulus = new BigInteger(keyArray[0]);
-    this.exponent = new BigInteger(keyArray[1]);
+
+    BigInteger N = new BigInteger(keyArray[0]);
+    BigInteger exp = new BigInteger(keyArray[1]);
+    checkValidKeyComponents(N, exp);
+    this.modulus = N;
+    this.exponent = exp;
   }
 
 
@@ -115,6 +117,15 @@ public abstract class Key {
    */
   public BigInteger getModulus() {
     return this.modulus;
+  }
+
+  /**
+   * Gets the string representation of this key.
+   *
+   * @return The string representation of this key.
+   */
+  public String getKeyValue() {
+    return this.keyValue;
   }
 }
 
