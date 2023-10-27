@@ -1,5 +1,8 @@
 package uk.msci.project.rsa;
 
+import java.math.BigInteger;
+import java.security.SecureRandom;
+
 public class GenRSA {
 
   /**
@@ -31,6 +34,20 @@ public class GenRSA {
           "Key size cannot be smaller than " + MINKEYSIZE + "bits or larger than" + MAXKEYSIZE
               + "bits");
     }
+  }
+
+  /**
+   * Generates two probable prime numbers of bit length roughly equal to half of the specified key
+   * size.
+   *
+   * @return An array of two {@code BigInteger} instances representing the prime numbers.
+   */
+  public BigInteger[] generatePrimeComponents() {
+    int adjustedBitLength = (int) Math.ceil(((double) keySize) / 2);
+    BigInteger p = new BigInteger(adjustedBitLength, 75, new SecureRandom());
+    BigInteger q = new BigInteger(adjustedBitLength, 75, new SecureRandom());
+
+    return new BigInteger[]{p, q};
   }
 
   /**
