@@ -51,7 +51,6 @@ public abstract class Key {
    * Validates the modulus and exponent components of the public key to ensure they are not null and
    * are positive integers.
    *
-   *
    * @param modulus  the modulus component of the public key.
    * @param exponent the exponent component of the public key.
    * @return {@code true} if both the modulus and exponent are valid.
@@ -62,7 +61,7 @@ public abstract class Key {
   protected void checkValidKeyComponents(BigInteger modulus, BigInteger exponent) {
     if (modulus == null || exponent == null) {
       throw new NullPointerException(
-          "Public Key cannot be constructed with a null component"+ exponent);
+          "Public Key cannot be constructed with a null component" + exponent);
     }
 
     if (modulus.compareTo(BigInteger.ZERO) <= 0 || exponent.compareTo(BigInteger.ZERO) <= 0) {
@@ -133,7 +132,8 @@ public abstract class Key {
   }
 
   /**
-   * Exports the key to a file with a specified file name.
+   * Exports the key to a file with a specified file name. If a file with the same name already *
+   * exists, a number suffix will be added to the file name to avoid overwriting the existing file.
    *
    * @param fileName The name of the file to which the key should be exported.
    * @throws IOException If an I/O error occurs while writing the key to the file.
@@ -141,6 +141,14 @@ public abstract class Key {
 
   public void exportToFile(String fileName) throws IOException {
     File keyFile = new File(System.getProperty("user.dir"), fileName);
+
+    int count = 0;
+    while (keyFile.exists()) {
+      count++;
+      // Construct a new file name with a number suffix
+      String newFileName = fileName.replaceFirst("^(.*?)(\\.[^.]*)?$", "$1_" + count + "$2");
+      keyFile = new File(System.getProperty("user.dir"), newFileName);
+    }
 
     try (FileOutputStream fos = new FileOutputStream(keyFile);
         OutputStreamWriter osw = new OutputStreamWriter(fos, StandardCharsets.UTF_8);

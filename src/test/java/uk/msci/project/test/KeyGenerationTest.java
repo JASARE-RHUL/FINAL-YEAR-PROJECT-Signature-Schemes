@@ -23,10 +23,45 @@ import uk.msci.project.rsa.Key;
 
 public class KeyGenerationTest {
 
-  @Test
-    // Test 1
-    // Create abstract class that provides a foundational representation of an RSA key
-    // Test key class to check if it is abstract
+
+  static void deleteFilesWithSuffix(String fileNamePrefix, String fileExtension) {
+    // Use the current working directory as the default directory path
+    String directoryPath = ".";
+    File directory = new File(directoryPath);
+
+    // Check if the directory exists and is actually a directory
+    if (!directory.exists() || !directory.isDirectory()) {
+      System.out.println("Provided path is not a valid directory");
+      return;
+    }
+    File keyFile = new File(System.getProperty("user.dir"), "publicKey.rsa");
+    keyFile.delete();
+    // List all files in the directory
+    File[] files = directory.listFiles();
+
+    if (files != null && files.length > 0) {
+      for (File file : files) {
+        String fileName = file.getName();
+
+        // Check if the file name matches the specified pattern
+        if (fileName.matches(fileNamePrefix + "_\\d+\\." + fileExtension) || fileName.
+        matches(fileNamePrefix + fileExtension)) {
+          // Attempt to delete the file and print the result
+          if (file.delete()) {
+            System.out.println("Deleted: " + fileName);
+          } else {
+            System.out.println("Failed to delete: " + fileName);
+          }
+        }
+      }
+    } else {
+      System.out.println("No files found in the specified directory");
+    }
+  }
+
+  // Test 1
+  // Create abstract class that provides a foundational representation of an RSA key
+  // Test key class to check if it is abstract
   void testAbstractKey() {
     Class<Key> key = Key.class;
     Assertions.assertTrue(Modifier.isAbstract(key.getModifiers()));
@@ -194,6 +229,52 @@ public class KeyGenerationTest {
       }
     }
     assertEquals(input, content.toString());
+
+  }
+
+  @Test
+    // Test 9
+    // Create a method exportToFile, that enables key value to be saved to a users file system.
+    // Test that the key value is successfully saved by check for existence of file and
+    // checking equality between the input string and string read in from file
+  void testKeyImport() throws IOException {
+    String input = "4567890876465,234567890786";
+    Key publicKey = new PublicKey(input);
+
+    publicKey.exportToFile("publicKey.rsa");
+
+    File file = new File("publicKey.rsa");
+    assertTrue(file.exists());
+    StringBuilder content = new StringBuilder();
+
+    try (FileInputStream fis = new FileInputStream(file);
+        InputStreamReader isr = new InputStreamReader(fis, StandardCharsets.UTF_8);
+        BufferedReader br = new BufferedReader(isr)) {
+      String line;
+      while ((line = br.readLine()) != null) {
+        content.append(line);
+      }
+    }
+    assertEquals(input, content.toString());
+
+  }
+
+  @Test
+    // Test 10
+    // Enable the exportToFile method to handle a file with same name already existing
+  void testKeyFileExists() throws IOException {
+    String input = "0987654345,23456789";
+    Key publicKey = new PublicKey(input);
+
+    String fileNamePrefix = "publicKey";
+    String fileExtension = "rsa";
+    deleteFilesWithSuffix(fileNamePrefix, fileExtension);
+    publicKey.exportToFile("publicKey.rsa");
+    publicKey.exportToFile("publicKey.rsa");
+    File file_1 = new File(System.getProperty("user.dir"), "publicKey.rsa");
+    File file_2 = new File(System.getProperty("user.dir"), "publicKey_1.rsa");
+    assertTrue(file_1.exists());
+    assertTrue(file_2.exists());
 
   }
 
