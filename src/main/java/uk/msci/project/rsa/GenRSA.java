@@ -3,6 +3,16 @@ package uk.msci.project.rsa;
 public class GenRSA {
 
   /**
+   * The maximum allowed key size in bits.
+   */
+  private static final int MAXKEYSIZE = 7680;
+
+  /**
+   * The minimum allowed key size in bits.
+   */
+  private static final int MINKEYSIZE = 1024;
+
+  /**
    * The size of the key to be generated.
    */
   private int keySize;
@@ -14,11 +24,11 @@ public class GenRSA {
    * @throws IllegalArgumentException if the specified key size is invalid.
    */
   public GenRSA(int size) throws IllegalArgumentException {
-    if (size >= 1024 && size <= 7680) {
+    if (size >= MINKEYSIZE && size <= MAXKEYSIZE) {
       this.keySize = size;
     } else {
       throw new IllegalArgumentException(
-          "Key size cannot be smaller than " + 1024 + "bits or larger than" + 7680
+          "Key size cannot be smaller than " + MINKEYSIZE + "bits or larger than" + MAXKEYSIZE
               + "bits");
     }
   }
