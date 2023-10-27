@@ -15,6 +15,16 @@ public class PublicKey extends Key {
    * @param e The exponent part of the public key.
    */
   public PublicKey(BigInteger N, BigInteger e) {
+
+    if (N == null || e == null) {
+      throw new NullPointerException(
+          "Public Key cannot be constructed with a null component");
+    }
+
+    if (N.compareTo(BigInteger.ZERO) <= 0 || e.compareTo(BigInteger.ZERO) <= 0) {
+      throw new IllegalArgumentException(
+          "Public Key cannot be constructed with a non positive modulus or exponent");
+    }
     this.modulus = N;
     this.exponent = e;
   }
