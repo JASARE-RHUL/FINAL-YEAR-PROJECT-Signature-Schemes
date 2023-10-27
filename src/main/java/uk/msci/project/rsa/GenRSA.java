@@ -46,7 +46,9 @@ public class GenRSA {
     int adjustedBitLength = (int) Math.ceil(((double) keySize) / 2);
     BigInteger p = new BigInteger(adjustedBitLength, 75, new SecureRandom());
     BigInteger q = new BigInteger(adjustedBitLength, 75, new SecureRandom());
-
+    if (p.equals(q)) {
+      return this.generatePrimeComponents();
+    }
     return new BigInteger[]{p, q};
   }
 
