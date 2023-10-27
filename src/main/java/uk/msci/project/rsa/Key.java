@@ -42,13 +42,20 @@ public abstract class Key {
     parseKeyValue(key);
   }
 
+
   /**
-   * Constructs an RSA key with the given modulus and exponent.
+   * Validates the modulus and exponent components of the public key to ensure they are not null and
+   * are positive integers.
    *
-   * @param modulus  The modulus part of the key.
-   * @param exponent The exponent part of the key.
+   *
+   * @param modulus  the modulus component of the public key.
+   * @param exponent the exponent component of the public key.
+   * @return {@code true} if both the modulus and exponent are valid.
+   * @throws NullPointerException     if either the modulus or the exponent is {@code null}.
+   * @throws IllegalArgumentException if either the modulus or the exponent is less than or equal to
+   *                                  0.
    */
-  public Key(BigInteger modulus, BigInteger exponent) {
+  protected void checkValidKeyComponents(BigInteger modulus, BigInteger exponent) {
     if (modulus == null || exponent == null) {
       throw new NullPointerException(
           "Public Key cannot be constructed with a null component");
@@ -58,6 +65,17 @@ public abstract class Key {
       throw new IllegalArgumentException(
           "Public Key cannot be constructed with a non positive modulus or exponent");
     }
+
+  }
+
+  /**
+   * Constructs an RSA key with the given modulus and exponent.
+   *
+   * @param modulus  The modulus part of the key.
+   * @param exponent The exponent part of the key.
+   */
+  public Key(BigInteger modulus, BigInteger exponent) {
+    checkValidKeyComponents(modulus, exponent);
     this.modulus = modulus;
     this.exponent = exponent;
   }
@@ -74,6 +92,7 @@ public abstract class Key {
     this.keyValue = keyValue;
     String[] keyArray = keyValue.split(",");
 
+    checkValidKeyComponents(modulus, exponent);
     this.modulus = new BigInteger(keyArray[0]);
     this.exponent = new BigInteger(keyArray[1]);
   }
