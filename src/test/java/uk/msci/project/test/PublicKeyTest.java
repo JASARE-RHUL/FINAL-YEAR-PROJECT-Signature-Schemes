@@ -13,17 +13,14 @@ import java.io.InputStreamReader;
 import java.lang.reflect.Modifier;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
-import java.util.EmptyStackException;
-import java.util.Stack;
 import org.junit.jupiter.api.BeforeEach;
-import uk.msci.project.rsa.Key2;
 import uk.msci.project.rsa.PublicKey;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import uk.msci.project.rsa.Key;
 
 
-public class KeyGenerationTest {
+public class PublicKeyTest {
 
 
   static void deleteFilesWithSuffix(String fileNamePrefix, String fileExtension) {
