@@ -74,8 +74,9 @@ public class GenRSATest {
   void testGeneratePrimeComponents() {
     GenRSA genRSA = new GenRSA(1024);
     BigInteger[] primeComponents = genRSA.generatePrimeComponents();
-    assertTrue(primeComponents[0].isProbablePrime(75));
-    assertTrue(primeComponents[1].isProbablePrime(75));
+    assertEquals(75, genRSA.getCertainty());
+    assertTrue(primeComponents[0].isProbablePrime(genRSA.getCertainty()));
+    assertTrue(primeComponents[1].isProbablePrime(genRSA.getCertainty()));
   }
 
 
