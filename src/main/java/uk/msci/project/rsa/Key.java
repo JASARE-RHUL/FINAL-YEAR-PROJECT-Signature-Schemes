@@ -1,9 +1,13 @@
 package uk.msci.project.rsa;
 
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.util.regex.Pattern;
 
 /**
@@ -126,6 +130,23 @@ public abstract class Key {
    */
   public String getKeyValue() {
     return this.keyValue;
+  }
+
+  /**
+   * Exports the key to a file with a specified file name.
+   *
+   * @param fileName The name of the file to which the key should be exported.
+   * @throws IOException If an I/O error occurs while writing the key to the file.
+   */
+
+  public void exportToFile(String fileName) throws IOException {
+    File keyFile = new File(System.getProperty("user.dir"), fileName);
+
+    try (FileOutputStream fos = new FileOutputStream(keyFile);
+        OutputStreamWriter osw = new OutputStreamWriter(fos, StandardCharsets.UTF_8);
+        BufferedWriter bw = new BufferedWriter(osw)) {
+      bw.write(this.keyValue);
+    }
   }
 }
 

@@ -3,9 +3,16 @@ package uk.msci.project.test;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.lang.reflect.Modifier;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.util.EmptyStackException;
 import uk.msci.project.rsa.Key2;
 import uk.msci.project.rsa.PublicKey;
@@ -163,6 +170,32 @@ public class KeyGenerationTest {
         "The getKeyValue method should return the correct key value");
   }
 
+  @Test
+    // Test 9
+    // Create a method exportToFile, that enables key value to be saved to a users file system.
+    // Test that the key value is successfully saved by check for existence of file and
+    // checking equality between the input string and string read in from file
+  void testKeyExport() throws IOException {
+    String input = "4567890876465,234567890786";
+    Key publicKey = new PublicKey(input);
+    String actualValue = publicKey.getKeyValue();
+    publicKey.exportToFile("publicKey.rsa");
+
+    File file = new File("publicKey.rsa");
+    assertTrue(file.exists());
+    StringBuilder content = new StringBuilder();
+
+    try (FileInputStream fis = new FileInputStream(file);
+        InputStreamReader isr = new InputStreamReader(fis, StandardCharsets.UTF_8);
+        BufferedReader br = new BufferedReader(isr)) {
+      String line;
+      while ((line = br.readLine()) != null) {
+        content.append(line);
+      }
+    }
+    assertEquals(input, content.toString());
+
+  }
 
 }
 
