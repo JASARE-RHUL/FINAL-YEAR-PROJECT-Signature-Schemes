@@ -88,9 +88,9 @@ public class GenRSA {
   /**
    * Generates the RSA key pair.
    *
-   * @return A list containing the components required to create both the public and private key.
+   * @return A {@code KeyPair} object containing the generated RSA public and private keys.
    */
-  public BigInteger[] generateKeyPair() {
+  public KeyPair generateKeyPair() {
     BigInteger[] pq = this.generatePrimeComponents();
     BigInteger p = pq[0];
     BigInteger q = pq[1];
@@ -101,7 +101,10 @@ public class GenRSA {
      * Computes the private exponent d for private key component in the RSA Key pair.
      */
     BigInteger d = e.modInverse(phi);
-    return new BigInteger[]{N, p, q, e, d};
+    PublicKey publicKey = new PublicKey(N, e);
+    PrivateKey privateKey = new PrivateKey(N, d);
+
+    return new KeyPair(publicKey, privateKey);
   }
 
   /**
