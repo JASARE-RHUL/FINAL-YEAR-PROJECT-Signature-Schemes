@@ -2,6 +2,7 @@ package uk.msci.project.test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.math.BigInteger;
 import org.junit.jupiter.api.Test;
@@ -47,5 +48,25 @@ public class GenRSATest {
     assertThrows(IllegalArgumentException.class, () -> new GenRSA(99999999),
         "Should throw an exception when key size is not in the positive integer Interval [1024, 7680]");
   }
+
+  @Test
+    // Test 4
+  void testValidKeySize() {
+
+    // boundary case
+    GenRSA genRSA = new GenRSA(7680);
+    assertEquals(7680, genRSA.getKeySize(),
+        "The getKeySize method should return the correct key size");
+    GenRSA genRSA2 = new GenRSA(2048);
+    assertEquals(2048, genRSA2.getKeySize(),
+        "The getKeySize method should return the correct key size");
+    GenRSA genRSA3 = new GenRSA(3072);
+    assertEquals(4096, genRSA3.getKeySize(),
+        "The getKeySize method should return the correct key size");
+    GenRSA genRSA4 = new GenRSA(4096);
+    assertEquals(4096, genRSA4.getKeySize(),
+        "The getKeySize method should return the correct key size");
+  }
+
 
 }
