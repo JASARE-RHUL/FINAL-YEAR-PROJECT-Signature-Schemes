@@ -171,13 +171,32 @@ public class GenRSATest {
 //  }
 
   @Test
-    // Test 12
+    // Test 11
     // Create a method, generateKeyPair that fulfils the generation of an RSA Key pair
-    // Refactor the return of key components
+    // Refactor the return of key components into dedicated key classes,
+    // Private and Public key comprising a Key Pair
+    //Tests that the modulus does not differ between the public and private key
   void testGenerateKeyPair2() {
     GenRSA genRSA = new GenRSA(1024);
     KeyPair keyPair = genRSA.generateKeyPair();
+    BigInteger N = keyPair.getPublicKey().getModulus();
+    BigInteger p = keyPair.getPrivateKey().getP();
+    BigInteger q = keyPair.getPrivateKey().getQ();
 
+    assertNotNull(keyPair, "The generateKeyPair method should not return null");
+
+
+    assertEquals(p.multiply(q), N,
+        "The modulus N should be the product of two prime numbers p and q");
+
+    BigInteger phi = keyPair.getPrivateKey().getPhi();
+    BigInteger e = keyPair.getPrivateKey().getE();
+    BigInteger d = keyPair.getPrivateKey().getExponent();
+    assertTrue(e.compareTo(BigInteger.ONE) > 0 && e.compareTo(phi) < 0,
+        "1 < e < phi(N) should be true");
+    assertEquals(BigInteger.ONE, e.gcd(phi), "gcd(e, phi(N)) should be 1");
+    assertEquals(e.modInverse(phi), d,
+        "d should be the modular multiplicative inverse of e modulo phi(N)");
   }
 
 

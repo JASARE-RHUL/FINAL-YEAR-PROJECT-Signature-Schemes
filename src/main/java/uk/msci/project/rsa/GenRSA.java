@@ -102,7 +102,7 @@ public class GenRSA {
      */
     BigInteger d = e.modInverse(phi);
     PublicKey publicKey = new PublicKey(N, e);
-    PrivateKey privateKey = new PrivateKey(N, d);
+    PrivateKey privateKey = new PrivateKey(N, p, q, phi, e, d);
 
     return new KeyPair(publicKey, privateKey);
   }
