@@ -1,0 +1,196 @@
+\documentclass[]{final_report}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{titlesec}
+\usepackage[utf8]{inputenc}
+\usepackage[backend=biber, style=ieee]{biblatex}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{float}
+\usepackage{tabularx} % Needed for the X column type
+\usepackage{booktabs} % For prettier tables
+\usepackage{lipsum}   % For dummy text
+
+
+\addbibresource{fyp.bib}
+\usepackage{amsthm}
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}[chapter]
+\newtheorem{basic}{Basic Definition}
+
+%%%%%%%%%%%%%%%%%%%%%%
+%%% Input project details
+\def\studentname{Jude Asare}
+\def\reportyear{2023/2024}
+\def\projecttitle{Implementing the PKCS\#1 v1.5 Signature Scheme with provably secure parameters}
+\def\supervisorname{Saqib Kakvi}
+\def\degree{MSci (Hons) in Computer Science (Information Security)}
+\def\fullOrHalfUnit{Appendix A} 
+\begin{document}
+
+
+%%%%%%%%%%%%%%%%%%%%%%
+%%% Table of Contents
+\tableofcontents\pdfbookmark[0]{Table of Contents}{toc}\newpage
+
+
+
+
+
+\chapter{Appendix A Software Development of Proof of Concept program}
+
+\section{Appendix A.1 Requirements of Analysis}
+
+
+
+\subsection{User Stories}
+\textbf{Essential Requirements}
+\begin{enumerate}
+\item Potential signer should be able to generate and retrieve a public-private key pair having provided a key size.
+\begin{itemize}
+\item User should be presented with a text box to input the key size.
+\item The system should handle any exceptions or errors during key generation, displaying to the user of any issues.
+\item The system should notify the signer once the key generation process is successful.
+\item Once the key is generated the user should have the option to save it to a file.
+\end{itemize}
+\item Having provided a message and private key, the signer should be able to retrieve the resulting computed digital signature.
+\begin{itemize}
+\item The signer should be presented with a text box to input the message intended for signing.
+\item The signer should be able to specify and input the private key using file selection via a browse option.
+\item The system should handle any exceptions or errors during signature generation, displaying to the signer of any issues.
+\item The system should notify the signer once the signing process is successful.
+\item Once the signature is generated the signer should have the option to copy the signature to the clipboard or save it to a file.
+\end{itemize}
+\item Having provided a message, its corresponding digital signature, and a public key, the verifier should be able to verify the authenticity of the signature.
+\begin{itemize}
+\item The verifier should be presented with a text box or file browse option to input the message corresponding to the signature intended for verifying.
+\item The verifier should be presented with a file browse option to input the signature intended for verifying.
+\item The system should handle any exceptions or errors during verification process, displaying to the verifier of any issues.
+\item The system should notify the verifier once the verification process is successful.
+\end{itemize}
+\item The signer should be able to sign messages using the PKCS\#1 v1.5 Signature Scheme.
+\item The verifier should be able to verify messages using the PKCS\#1 v1.5 Signature Scheme.
+\item The signer should be able to sign messages using the ANSI X9.31 rDSA Signature Scheme.
+\item The verifier should be able to verify messages using the ANSI X9.31 rDSA Signature Scheme.
+\item The signer should be able to sign messages with partial or full recovery using the ISO/IEC 9796-2:2010 Signature Scheme 1.
+\item The verifier should be able to verify messages with partial or full recovery using the ISO/IEC 9796-2:2010 Signature Scheme 1.
+\end{enumerate}
+
+\textbf{Non Essential Requirements}
+\begin{enumerate}
+\item User should have the option to view a history or log of past signed or verified messages.
+\begin{itemize}
+\item User should be able to clear this history if desired.
+\end{itemize}
+\item Non functional: User should be presented with a user-friendly interface for key generation, signature creation, and verification.
+\item Non functional: In case of failure, low level feedback regarding the cause of failure should be presented to the user.
+
+\item[] Performance
+\begin{enumerate}
+\item[7.] User shoulder be able view a measurement of time taken for each of the signature related operations i.e., Key generation, Signature creation and verification.
+\item[] Non Functional
+\begin{itemize}
+\item[8.] The program should generate keys within a reasonable timeframe.
+\item[9.] The program should create signatures within a reasonable timeframe.
+\item[10.] The program should verify signatures within a reasonable timeframe.
+\end{itemize}
+\end{enumerate}
+\end{enumerate}
+
+\subsection{UML Use Case}
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.48]{POC_USE-CASE.png}
+    \caption{UML Use Case Diagram}
+    \label{fig:uc}
+\end{figure}
+
+
+
+\textbf{Generate Keys Use Case}
+
+\noindent\textbf{Flow of Events:}
+\begin{enumerate}
+    \item User selects "Generate Key" from the main menu options panel.
+    \item User is presented with an input box labeled "Input Key Size".
+    \item User inputs desired key size into the box.
+    \item System processes the request and generates the public-private key pair.
+    \item System displays a notification informing the user that the key generation process was successful.
+    \item User is presented with options "Export to file" and "Copy to clipboard".
+    \item User selects desired option to either save the keys to a file or copy them to clipboard.
+\end{enumerate}
+
+\noindent\textbf{Alternative flows:}
+\begin{enumerate}
+    \item[3a.] User inputs an invalid key size.
+    \begin{enumerate}
+        \item[3a1.] System warns user about the invalid input and prompts them to enter a valid key size again.
+    \end{enumerate}
+    \item[5a.] System encounters an error during key generation.
+    \begin{enumerate}
+        \item[5a1.] System displays an error message and prompts the user to try again.
+    \end{enumerate}
+\end{enumerate}
+
+
+
+\textbf{Create Signature Use Case}
+
+\noindent\textbf{Flow of Events:}
+\begin{enumerate}
+    \item User selects "Sign message" from the main menu options panel.
+    \item User is presented with text boxes labeled "Input Private Key" and "Input Message".
+    \item User inputs their private key and the message they wish to sign.
+    \item User selects the desired signature scheme from options like "PKCS\#1 v1.5 Signature", "ANSI X9.31 rDSA", etc.
+    \item System processes the input and computes the digital signature.
+    \item System displays a notification informing the signer that the signing process was successful.
+    \item User is presented with options "Export to file" and "Copy to clipboard".
+    \item User selects desired option to either save the keys to a file or copy them to clipboard.
+\end{enumerate}
+
+\noindent\textbf{Alternative flows:}
+\begin{enumerate}
+    \item[3a.] User inputs an invalid or mismatched private key.
+    \begin{enumerate}
+        \item[3a1.] System warns user about the invalid input and prompts them to enter a valid key.
+    \end{enumerate}
+    \item[5a.] System encounters an error during signature creation.
+    \begin{enumerate}
+        \item[5a1.] System displays an error message and prompts the user to try again.
+    \end{enumerate}
+\end{enumerate}
+
+\textbf{Verify Signature Use Case}
+
+\noindent\textbf{Flow of Events:}
+\begin{enumerate}
+    \item User selects "Verify Signature" from the main menu options panel.
+    \item User is presented with options to input the message, its corresponding signature, and the public key.
+    \item User provides all required inputs.
+    \item System processes the information and verifies the authenticity of the signature.
+    \item System displays a notification with the result, either confirming the authenticity or notifying of a mismatch.
+\end{enumerate}
+
+\noindent\textbf{Alternative flows:}
+\begin{enumerate}
+    \item[3a.] User inputs mismatched or incorrect information.
+    \begin{enumerate}
+        \item[3a1.] System warns user about the incorrect input and suggests rechecking the inputs.
+    \end{enumerate}
+    \item[4a.] System encounters an error during verification.
+    \begin{enumerate}
+        \item[4a1.] System displays an error message and prompts the user to try again.
+    \end{enumerate}
+\end{enumerate}
+
+
+
+%%%% ADD YOUR BIBLIOGRAPHY HERE
+\newpage
+
+\addcontentsline{toc}{chapter}{Bibliography}
+\printbibliography
+\label{endpage}
+\end{document}
+
+\end{article}
