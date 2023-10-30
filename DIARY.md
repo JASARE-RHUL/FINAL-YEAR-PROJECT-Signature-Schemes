@@ -30,7 +30,7 @@ I Started the week with supervisor meeting, confirming my focus on the POC PKCS 
 ## Diary Entry - Week of 16th October - 22nd October 2023
 I started the week attempting to try and understanding trapdoor permutations, especially how they tie into RSA. Following this I began work on enumerating the requirements for the proof of concept program. By the end Friday, I had detailed the user stories and actors for the program with a corresponding a UML use case diagram. During the weekend I first focussed on expanding the motivation for provable security section with subsections on real world implications and limitations. I finished off the week on Sunday by trimming down the report to make it more concise.
 
-##Diary Entry - Week of 23rd October - 29th October 2023
+## Diary Entry - Week of 23rd October - 29th October 2023
 
 The week started with a meeting where I received constructive feedback on my project plan, specifically that I had spent too much time on PKCS#1 v1.5 encryption scheme and Bleichenbacher attacks, which were deemed beyond the project’s scope. We clarified the implications of the interim report's word limit, and I was reassured that my report’s structure was on the right track, though I was advised against including full software design documents.
 
