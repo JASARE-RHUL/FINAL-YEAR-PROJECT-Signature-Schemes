@@ -39,7 +39,31 @@
 
 \chapter{Appendix A Software Development of Proof of Concept program}
 
-\section{Appendix A.1 Requirements of Analysis}
+\section{Appendix A.1 Software Engineering Methodology}
+
+\subsection{Agile Development}
+For the development of software related artefacts related to this project I utilised the Agile methodology. I chose agile because I wanted the process to be flexible and its iterative approach and ability to adapt to changes provides the capabilities for this.
+\begin{itemize}
+    \item Adherence to the full 5-stage software development life cycle with direct mappings to relevant sections in the report and/or appendix. Each stage was encapsulated as objective in project timeline
+    \item \textbf{Implementation}: Flexible development divided by features derived from requirements. These were encapsulated into the implementation phase from project timeline although through viewing of my gitlab repository specific features can be seen.
+\item \textbf{Sprint}: Time-boxed periods,  each ending with a deliverable, either in the form of a new feature or an enhancement to an existing one. As a more general case I also used tasks (evident in project timeline) with the aim being to constrain them sufficiently to specific deliverables all forming subtasks that contribute to a higher-level task. Additionally, this informed my thinking for the categorisation of the weekly deliverables into distinct categories of either theory or software engineering.
+ \item \textbf{Supervisor meetings}: Bi-weekly meetings were held with supervisor to discuss progress, address concerns, and set short-term goals. Additionally I set review reflection points to regularly review progress facilitate continuous adaption.
+\end{itemize}
+
+\subsection{Test-Driven Development (TDD)}
+Given the critical nature of cryptographic operations and the necessity for them to be error-free, I adopted the TDD approach (Red-Green-Refactor Cycle). This ensured that every function or method had corresponding tests that were written during the implementation as a side effect. I also made an efforts to ensure high test coverage, striving for more than 90\% to ensure most edge cases were handled.
+
+\subsection{Documentation and Training}
+Recognising the importance of clear documentation in software, especially one centred on security, I produced documentation.
+
+\begin{itemize}
+    \item \textbf{Code Documentation}: Clear comments and docstrings in the form of JavaDoc on all code segments.
+    \item \textbf{User Manuals}: I created detailed user manuals as means of providing guidance on how to use the software effectively.
+\end{itemize}
+
+Overall the aim was to ensure a robust, secure, and user-friendly software for the practical part of my project.
+
+\section{Appendix A.2 Requirements of Analysis}
 
 
 
@@ -183,6 +207,57 @@
     \end{enumerate}
 \end{enumerate}
 
+Acceptance Tests
+
+\textbf{1. Key Pair Generation:}
+\begin{enumerate}
+\item Open the application and locate the key generation section.
+\item Input a valid key size into the provided text box and submit.
+\item If key size is invalid no key is issued and the user is informed to try again. 
+\item Observe that no exceptions or errors are displayed during the key generation process.
+\item If there are errors during key generation the user is informed to try again.
+\item Confirm that a notification is presented to the user upon successful key generation.
+\item Check if there is an option to save the generated key pair to a file and perform a successful save.
+\end{enumerate}
+
+\textbf{2. Digital Signature Generation:}
+\begin{enumerate}
+\item Locate the signature generation section in the application.
+\item Input a test message into the provided text box.
+\item Use the browse option to provide a valid private key file.
+\item If empty message or invalid file is provided, the user is informed to try again. 
+\item Ensure no errors or exceptions are displayed during the signing process.
+\item Confirm that a notification is presented to the signer upon successful signature generation.
+\item Check for options to either copy the signature to clipboard or save it to a file and verify both functionalities.
+\end{enumerate}
+
+\textbf{3. Digital Signature Verification:}
+\begin{enumerate}
+\item Locate the signature verification section in the application.
+\item Use the text box or file browse option to input the original test message.
+\item Use the browse option to provide the generated signature file.
+\item If empty message or invalid file is provided, the user is informed to try again. 
+\item Ensure no errors or exceptions are displayed during the verification process.
+\item Confirm that a notification is presented to the verifier upon successful verification.
+\end{enumerate}
+
+\textbf{4. Signature and Verification with PKCS\#1 v1.5:}
+\begin{enumerate}
+\item Set the application to use the PKCS\#1 v1.5 Signature Scheme.
+\item Sign a test message and verify its signature using the previous steps. Ensure both processes succeed.
+\end{enumerate}
+
+\textbf{5. Signature and Verification with ANSI X9.31 rDSA:}
+\begin{enumerate}
+\item Set the application to use the ANSI X9.31 rDSA Signature Scheme.
+\item Sign a test message and verify its signature using the previous steps. Ensure both processes succeed.
+\end{enumerate}
+
+\textbf{6. Signature and Verification with ISO/IEC 9796-2:2010 Scheme 1:}
+\begin{enumerate}
+\item Set the application to use the ISO/IEC 9796-2:2010 Signature Scheme 1.
+\item Sign a test message (both with partial and full recovery) and verify its signature using the previous steps. Ensure both processes succeed.
+\end{enumerate}
 
 
 %%%% ADD YOUR BIBLIOGRAPHY HERE
