@@ -63,8 +63,22 @@ Recognising the importance of clear documentation in software, especially one ce
 
 Overall the aim was to ensure a robust, secure, and user-friendly software for the practical part of my project.
 
-\section{Appendix A.2 Requirements of Analysis}
-
+\section{Appendix A.2 Requirements and Analysis}
+\subsection{Description of Actors}
+\begin{table}[H]
+    \centering
+    \caption{Description of Actors for the POC Digital Signature Program}
+    \label{tab:actors_description}
+    \begin{tabular}{|l|p{10cm}|}
+    \hline
+    \textbf{Actor / Role Name} & \textbf{Role Description and Objective} \\
+    \hline
+    User/Signer & Individual who wishes to digitally sign a piece of content. The signer generates key pairs, can input content, and create a digital signature using their private key. Their main goal is to ensure that the content they're signing is authenticated and its integrity is maintained, proving that it hasn't been tampered with. \\
+    \hline
+    Verifier & Entity that needs to validate the authenticity and integrity of a digitally signed piece of content. The verifier inputs signed content, a corresponding public key, and attempts to verify a specified digital signature. Their primary objective is to ascertain that the content hasn't been altered post-signing and to confirm the identity of the signer. \\
+    \hline
+    \end{tabular}
+\end{table}
 
 
 \subsection{User Stories}
@@ -258,14 +272,18 @@ Acceptance Tests
 \item Set the application to use the ISO/IEC 9796-2:2010 Signature Scheme 1.
 \item Sign a test message (both with partial and full recovery) and verify its signature using the previous steps. Ensure both processes succeed.
 \end{enumerate}
-
-\subsection{Design}
+\section{Appendix A.3 Design}
 \begin{figure}[H]
     \centering
     \includegraphics[scale=0.48]{sequence.png}
     \caption{UML Sequence Diagram}
     \label{fig:uc}
 \end{figure}
+Initially, the user is prompted to generate cryptographic keys, providing a key size that, if valid, leads to the creation of a private and public key pair. The user can then opt to save these keys onto their file system.
+
+Once keys are in place, the user can sign a message. They input the message into the system and load their private key. If the inputs are correct, the system employs a chosen signature algorithm to create a digital signature, which the user can save or copy to their clipboard. In case of invalid input or an error during signature creation, the user is informed with an error message.
+
+For verification, the user inputs a message, loads the digital signature and the corresponding public key. The system checks the signature against the message using the public key. If the signature is valid, a success notification is displayed; otherwise, the user is alerted to a verification error. Throughout this process, the system guides the user with notifications or error messages based on the success or failure of the operations performed.
 
 
 %%%% ADD YOUR BIBLIOGRAPHY HERE
