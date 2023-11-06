@@ -10,10 +10,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.lang.reflect.Modifier;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.msci.project.rsa.Key;
@@ -209,13 +207,12 @@ public class PrivateKeyTest {
   @Test
     // Test 8
     // Create a method exportToFile, that enables key value to be saved to a users file system.
-    // Test that the key value is successfully saved by check for existence of file and
+    // Test that the key value is successfully saved by checking for existence of file and
     // checking equality between the input string and string read in from file
   void testKeyExport() throws IOException {
     String input = "4567890876465,234567890786";
     Key privateKey = new PrivateKey(input);
-    String actualValue = privateKey.getKeyValue();
-    privateKey.exportToFile("key.rsa");
+    privateKey.exportKey("key.rsa");
 
     File file = new File("key.rsa");
     assertTrue(file.exists());
@@ -232,43 +229,18 @@ public class PrivateKeyTest {
     assertEquals(input, content.toString());
 
   }
+
+
 
   @Test
     // Test 9
-    // Create a method exportToFile, that enables key value to be saved to a users file system.
-    // Test that the key value is successfully saved by check for existence of file and
-    // checking equality between the input string and string read in from file
-  void testKeyImport() throws IOException {
-    String input = "4567890876465,234567890786";
-    Key privateKey = new PrivateKey(input);
-
-    privateKey.exportToFile("key.rsa");
-
-    File file = new File("key.rsa");
-    assertTrue(file.exists());
-    StringBuilder content = new StringBuilder();
-
-    try (FileInputStream fis = new FileInputStream(file);
-        InputStreamReader isr = new InputStreamReader(fis, StandardCharsets.UTF_8);
-        BufferedReader br = new BufferedReader(isr)) {
-      String line;
-      while ((line = br.readLine()) != null) {
-        content.append(line);
-      }
-    }
-    assertEquals(input, content.toString());
-
-  }
-
-  @Test
-    // Test 10
     // Enable the exportToFile method to handle a file with same name already existing
   void testKeyFileExists() throws IOException {
     String input = "778987654345,23456789";
     Key privateKey = new PrivateKey(input);
 
-    privateKey.exportToFile("key.rsa");
-    privateKey.exportToFile("key.rsa");
+    privateKey.exportKey("key.rsa");
+    privateKey.exportKey("key.rsa");
     File file_1 = new File(System.getProperty("user.dir"), "key.rsa");
     File file_2 = new File(System.getProperty("user.dir"), "Key_1.rsa");
     assertTrue(file_1.exists());
@@ -277,12 +249,12 @@ public class PrivateKeyTest {
   }
 
   @Test
-    // Test 11
+    // Test 10
     // "Create a constructor that enables a key to be parsed from an imported file"
   void testImportKey() throws IOException {
     String input = "5644783998877,4567845443";
     Key privateKey = new PrivateKey(input);
-    privateKey.exportToFile("key.rsa");
+    privateKey.exportKey("key.rsa");
     File keyFile = new File(System.getProperty("user.dir"), "key.rsa");
     Key privateKey_2 = new PrivateKey(keyFile);
     assertEquals(privateKey_2.getKeyValue(), input);

@@ -220,8 +220,7 @@ public class PublicKeyTest {
   void testKeyExport() throws IOException {
     String input = "4567890876465,234567890786";
     Key publicKey = new PublicKey(input);
-    String actualValue = publicKey.getKeyValue();
-    publicKey.exportToFile("publicKey.rsa");
+    publicKey.exportKey("publicKey.rsa");
 
     File file = new File("publicKey.rsa");
     assertTrue(file.exists());
@@ -248,7 +247,7 @@ public class PublicKeyTest {
     String input = "4567890876465,234567890786";
     Key publicKey = new PublicKey(input);
 
-    publicKey.exportToFile("publicKey.rsa");
+    publicKey.exportKey("publicKey.rsa");
 
     File file = new File("publicKey.rsa");
     assertTrue(file.exists());
@@ -273,8 +272,8 @@ public class PublicKeyTest {
     String input = "778987654345,23456789";
     Key publicKey = new PublicKey(input);
 
-    publicKey.exportToFile("publicKey.rsa");
-    publicKey.exportToFile("publicKey.rsa");
+    publicKey.exportKey("publicKey.rsa");
+    publicKey.exportKey("publicKey.rsa");
     File file_1 = new File(System.getProperty("user.dir"), "publicKey.rsa");
     File file_2 = new File(System.getProperty("user.dir"), "publicKey_1.rsa");
     assertTrue(file_1.exists());
@@ -288,7 +287,7 @@ public class PublicKeyTest {
   void testImportKey() throws IOException {
     String input = "5644783998877,4567845443";
     Key publicKey = new PublicKey(input);
-    publicKey.exportToFile("publicKey.rsa");
+    publicKey.exportKey("publicKey.rsa");
     File keyFile = new File(System.getProperty("user.dir"), "publicKey.rsa");
     Key publicKey_2 = new PublicKey(keyFile);
     assertEquals(publicKey_2.getKeyValue(), input);

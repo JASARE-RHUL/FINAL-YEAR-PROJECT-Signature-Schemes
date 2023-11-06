@@ -57,36 +57,7 @@ public abstract class Key {
    * @throws IOException If an I/O error occurs while reading the key file.
    */
   public Key(File keyFile) throws IOException {
-    this(importFromFile(keyFile));
-  }
-
-  /**
-   * Imports the key from a file.
-   *
-   * @param keyFile The file from which to import the key.
-   * @return The string representation of the key.
-   * @throws IOException If an I/O error occurs while reading the key file.
-   */
-  protected static String importFromFile(File keyFile) throws IOException {
-    if (!keyFile.exists()) {
-      throw new IOException("Key file does not exist: " + keyFile);
-    }
-
-    if (!keyFile.isFile()) {
-      throw new IllegalArgumentException("Key file should not be a directory: " + keyFile);
-    }
-
-    StringBuilder content = new StringBuilder();
-    try (FileInputStream fis = new FileInputStream(keyFile);
-        InputStreamReader isr = new InputStreamReader(fis, StandardCharsets.UTF_8);
-        BufferedReader br = new BufferedReader(isr)) {
-
-      String line;
-      while ((line = br.readLine()) != null) {
-        content.append(line);
-      }
-    }
-    return content.toString();
+    this(FileHandle.importFromFile(keyFile));
   }
 
 
@@ -182,22 +153,9 @@ public abstract class Key {
    * @throws IOException If an I/O error occurs while writing the key to the file.
    */
 
-  public void exportToFile(String fileName) throws IOException {
-    File keyFile = new File(System.getProperty("user.dir"), fileName);
-
-    int count = 0;
-    while (keyFile.exists()) {
-      count++;
-      // Construct a new file name with a number suffix
-      String newFileName = fileName.replaceFirst("^(.*?)(\\.[^.]*)?$", "$1_" + count + "$2");
-      keyFile = new File(System.getProperty("user.dir"), newFileName);
-    }
-
-    try (FileOutputStream fos = new FileOutputStream(keyFile);
-        OutputStreamWriter osw = new OutputStreamWriter(fos, StandardCharsets.UTF_8);
-        BufferedWriter bw = new BufferedWriter(osw)) {
-      bw.write(this.keyValue);
-    }
+  public void exportKey(String fileName) throws IOException {
+    FileHandle.exportToFile(fileName, this.keyValue);
   }
+
 }
 
