@@ -212,6 +212,17 @@ public class RSASSA_PKCS1_v1_5 {
     return s;
   }
 
+  /**
+   * A custom implementation of the RSA verification primitive. Facilitates the verification of RSA
+   * signature by enabling the computation of its eth power of a provided signature representative
+   *
+   * @param s The signature representative, an integer representation of the signature.
+   * @return The message representative, an integer representation of the message.
+   */
+  private BigInteger RSAVP1(BigInteger s) {
+    return this.RSASP1(s);
+  }
+
 }
 
 
