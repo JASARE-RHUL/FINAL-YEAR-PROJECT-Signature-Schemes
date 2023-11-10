@@ -81,6 +81,24 @@ public class RSASSA_PKCS1_v1_5 {
   }
 
 
+
+  /**
+   * Converts an octet string (byte array) to a non-negative integer. This method follows the OS2IP
+   * (Octet String to Integer Primitive) conversion as specified in cryptographic standards like
+   * PKCS#1. 1. EMSA_PKCS1_v1_5 encoding: Apply the EMSA-PKCS1-v1_5 encoding operation to the
+   * message M to produce an encoded message EM of length k octets where k is the length in bits of
+   * the RSA modulus n:
+   *
+   * EM = EMSA_PKCS1_v1_ENCODE (M, k)..
+   *
+   * @param EM The encoded message as a byte array.
+   * @return A BigInteger representing the non-negative integer obtained from the byte array.
+   */
+  public BigInteger OS2IP(byte[] EM) {
+    return new BigInteger(1, EM);
+  }
+
+
   /**
    * Encodes a message using a custom implementation of the EMSA-PKCS1-v1_5 encoding method.
    * Includes hashing the message and preparing the encoded message with padding.
@@ -105,10 +123,6 @@ public class RSASSA_PKCS1_v1_5 {
         emLen - tLen - 3; // Subtracting the prefix (0x00 || 0x01) and postfix (0x00) lengths
     byte[] PS = new byte[psLength];
     Arrays.fill(PS, (byte) 0xFF);
-
-    if (emLen < tLen + 11) { // 11 is the minimum padding length for PKCS#1 v1.5
-      throw new DataFormatException("Intended encoded message length too short");
-    }
 
     // Concatenate PS, the DigestInfo, and other padding to form the encoded message EM.
     byte[] EM = new byte[emLen];

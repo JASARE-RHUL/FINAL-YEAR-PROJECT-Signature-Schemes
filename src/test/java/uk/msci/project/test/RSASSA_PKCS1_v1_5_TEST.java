@@ -169,6 +169,44 @@ public class RSASSA_PKCS1_v1_5_TEST {
     assertArrayEquals(digestInfo, hashFromEncodedMessage,
         "The hash in the encoded message should match the actual message hash");
   }
+
+  @Test
+  public void testOS2IPWithEmptyArray() {
+    byte[] emptyArray = new byte[0];
+    BigInteger result = scheme.OS2IP(emptyArray);
+    assertEquals(BigInteger.ZERO, result, "An empty byte array should convert to zero");
+  }
+
+  @Test
+  public void testOS2IPWithNonEmptyArray() {
+    byte[] byteArray = {0x01, 0x02, 0x03, 0x04}; // Example byte array
+    BigInteger expectedResult = new BigInteger(1, byteArray);
+    BigInteger result = scheme.OS2IP(byteArray);
+
+    assertEquals(expectedResult, result, "Byte array should correctly convert to BigInteger");
+  }
+
+  @Test
+  public void testOS2IPWithLargeNumber() {
+    byte[] largeNumberArray = new byte[]{(byte) 0x8f, (byte) 0xad, (byte) 0xb8, (byte) 0xe0};
+    BigInteger expectedResult = new BigInteger(1, largeNumberArray);
+    BigInteger result = scheme.OS2IP(largeNumberArray);
+
+    assertEquals(expectedResult, result, "Large number byte array should correctly convert to BigInteger");
+  }
+
+  @Test
+  public void testOS2IPWithLeadingZeros() {
+    byte[] byteArrayWithZeros = {0x00, 0x00, 0x01, 0x02};
+    BigInteger expectedResult = new BigInteger(1, byteArrayWithZeros);
+    BigInteger result = scheme.OS2IP(byteArrayWithZeros);
+
+    assertEquals(expectedResult, result, "Byte array with leading zeros should correctly convert to BigInteger");
+  }
+
+
+
+
 }
 
 
