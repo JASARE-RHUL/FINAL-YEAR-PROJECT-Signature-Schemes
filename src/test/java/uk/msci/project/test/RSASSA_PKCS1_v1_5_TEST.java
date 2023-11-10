@@ -17,6 +17,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.msci.project.rsa.ByteArrayConverter;
 import uk.msci.project.rsa.GenRSA;
+import uk.msci.project.rsa.KeyPair;
 import uk.msci.project.rsa.PublicKey;
 import uk.msci.project.rsa.RSASSA_PKCS1_v1_5;
 
@@ -307,6 +308,34 @@ public class RSASSA_PKCS1_v1_5_TEST {
         () -> ByteArrayConverter.toFixedLengthByteArray(number, emLen),
         "Should throw byte array representation is longer than emLen ");
   }
+
+  @Test
+  void testSignAndVerifyRoundTrip() throws Exception {
+    KeyPair keyPair = new GenRSA(1024).generateKeyPair();
+
+    RSASSA_PKCS1_v1_5 schemeForSigning = new RSASSA_PKCS1_v1_5 (keyPair.getPrivateKey());
+    RSASSA_PKCS1_v1_5 schemeForVerifying = new RSASSA_PKCS1_v1_5 (keyPair.getPublicKey());
+    // Prepare a message
+    byte[] message = "test message".getBytes();
+
+    // Use reflection to invoke the private 'sign' method
+    Method signMethod = RSASSA_PKCS1_v1_5.class.getDeclaredMethod("sign", byte[].class);
+    signMethod.setAccessible(true);
+
+    // Invoke the 'sign' method and get the signature
+    byte[] signature = (byte[]) signMethod.invoke(schemeForSigning, (Object) message);
+
+    // Use reflection to invoke the private 'verify' method
+    Method verifyMethod = RSASSA_PKCS1_v1_5.class.getDeclaredMethod("RSASSA_PKCS1_V1_5_VERIFY", byte[].class, byte[].class);
+    verifyMethod.setAccessible(true);
+
+    // Invoke the 'verify' method and check if the signature is valid
+    boolean isSignatureValid = (boolean) verifyMethod.invoke(schemeForVerifying, message, signature);
+
+    // Assert that the signature is valid
+    assertTrue(isSignatureValid, "The signature should be verified successfully.");
+  }
+
 
 }
 
