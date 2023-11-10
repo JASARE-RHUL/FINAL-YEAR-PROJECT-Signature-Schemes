@@ -88,7 +88,7 @@ public class RSASSA_PKCS1_v1_5 {
    * @param M The message to be encoded.
    * @return The encoded message as a byte array.
    */
-  public byte[] EMSA_PKCS1_v1_5_ENCODE(byte[] M) {
+  public byte[] EMSA_PKCS1_v1_5_ENCODE(byte[] M) throws DataFormatException {
 
     this.md.update(M);
     byte[] mHash = this.md.digest();
@@ -96,11 +96,19 @@ public class RSASSA_PKCS1_v1_5 {
     byte[] digestInfo = createDigestInfo(mHash);
     int tLen = digestInfo.length;
 
+    if (emLen < tLen + 11) { // 11 is the minimum padding length for PKCS#1 v1.5
+      throw new DataFormatException("Intended encoded message length too short");
+    }
+
     //Prepare padding string PS consisting of padding bytes (0xFF).
     int psLength =
         emLen - tLen - 3; // Subtracting the prefix (0x00 || 0x01) and postfix (0x00) lengths
     byte[] PS = new byte[psLength];
     Arrays.fill(PS, (byte) 0xFF);
+
+    if (emLen < tLen + 11) { // 11 is the minimum padding length for PKCS#1 v1.5
+      throw new DataFormatException("Intended encoded message length too short");
+    }
 
     // Concatenate PS, the DigestInfo, and other padding to form the encoded message EM.
     byte[] EM = new byte[emLen];
