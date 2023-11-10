@@ -3,6 +3,7 @@ package uk.msci.project.rsa;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.SignatureException;
 import java.util.Arrays;
 import java.util.zip.DataFormatException;
 
@@ -43,6 +44,11 @@ public class RSASSA_PKCS1_v1_5 {
    */
   private MessageDigest md;
 
+  /**
+   * The identifier of the hash algorithm used.
+   */
+  private byte[] hashID;
+
 
   /**
    * Constructs an RSASSA_PKCS1_v1_5 instance with the specified RSA key. Initialises the modulus
@@ -62,6 +68,10 @@ public class RSASSA_PKCS1_v1_5 {
     // Initialize the MessageDigest with the hash function you plan to use.
     try {
       this.md = MessageDigest.getInstance("SHA-256");
+      this.hashID = new byte[]{(byte) 0x30, (byte) 0x31, (byte) 0x30, (byte) 0x0d, (byte) 0x06,
+          (byte) 0x09, (byte) 0x60, (byte) 0x86, (byte) 0x48, (byte) 0x01,
+          (byte) 0x65, (byte) 0x03, (byte) 0x04, (byte) 0x02, (byte) 0x01,
+          (byte) 0x05, (byte) 0x00, (byte) 0x04, (byte) 0x20};
     } catch (NoSuchAlgorithmException e) {
       // NoSuchAlgorithmException is a checked exception, RuntimeException allows an exception to
       // be thrown if the algorithm isn't available.
@@ -71,30 +81,52 @@ public class RSASSA_PKCS1_v1_5 {
   }
 
 
-  public byte[] EMSA_PKCS1_v1_5_ENCODE(byte[] M) throws DataFormatException {
+  /**
+   * Encodes a message using a custom implementation of the EMSA-PKCS1-v1_5 encoding method.
+   * Includes hashing the message and preparing the encoded message with padding.
+   *
+   * @param M The message to be encoded.
+   * @return The encoded message as a byte array.
+   */
+  public byte[] EMSA_PKCS1_v1_5_ENCODE(byte[] M) {
 
     this.md.update(M);
     byte[] mHash = this.md.digest();
-    // Calculate tLen, which is the length of the DigestInfo
-    int tLen = mHash.length;
 
-    // Prepare padding string PS consisting of padding bytes (0xFF).
+    byte[] digestInfo = createDigestInfo(mHash);
+    int tLen = digestInfo.length;
+
+    //Prepare padding string PS consisting of padding bytes (0xFF).
     int psLength =
-        this.emLen - tLen - 3; // Subtracting the prefix (0x00 || 0x01) and postfix (0x00) lengths
+        emLen - tLen - 3; // Subtracting the prefix (0x00 || 0x01) and postfix (0x00) lengths
     byte[] PS = new byte[psLength];
     Arrays.fill(PS, (byte) 0xFF);
 
     // Concatenate PS, the DigestInfo, and other padding to form the encoded message EM.
-    byte[] EM = new byte[this.emLen];
+    byte[] EM = new byte[emLen];
     int offset = 0;
     EM[offset++] = 0x00; // Initial 0x00
     EM[offset++] = 0x01; // Block type 0x01 for PKCS signatures
     System.arraycopy(PS, 0, EM, offset, psLength); // Padding
     offset += psLength;
     EM[offset++] = 0x00; // Separator
-    System.arraycopy(mHash, 0, EM, offset, tLen);
+    System.arraycopy(digestInfo, 0, EM, offset, tLen); // DigestInfo
 
     return EM;
+  }
+
+  /**
+   * Creates a DigestInfo structure manually as per the PKCS#1 standard by pre-pending the hash
+   * algorithm ID to a corresponding generated hash
+   *
+   * @param hash The hash of the message to be included in the DigestInfo.
+   * @return A byte array representing the DigestInfo structure.
+   */
+  public byte[] createDigestInfo(byte[] hash) {
+    byte[] digestInfo = new byte[this.hashID.length + hash.length];
+    System.arraycopy(this.hashID, 0, digestInfo, 0, this.hashID.length);
+    System.arraycopy(hash, 0, digestInfo, this.hashID.length, hash.length);
+    return digestInfo;
   }
 
 }
