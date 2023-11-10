@@ -2,6 +2,7 @@ package uk.msci.project.test;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -11,12 +12,14 @@ import java.lang.reflect.Method;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.zip.DataFormatException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.msci.project.rsa.ByteArrayConverter;
 import uk.msci.project.rsa.GenRSA;
+import uk.msci.project.rsa.Key;
 import uk.msci.project.rsa.KeyPair;
 import uk.msci.project.rsa.PublicKey;
 import uk.msci.project.rsa.RSASSA_PKCS1_v1_5;
@@ -36,7 +39,8 @@ public class RSASSA_PKCS1_v1_5_TEST {
   void testEMSA_PKCS1_v1_5_ENCODE_InitialZero()
       throws DataFormatException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
     byte[] message = "test message 1".getBytes();
-    Method encodeMethod = RSASSA_PKCS1_v1_5.class.getDeclaredMethod("EMSA_PKCS1_v1_5_ENCODE", byte[].class);
+    Method encodeMethod = RSASSA_PKCS1_v1_5.class.getDeclaredMethod("EMSA_PKCS1_v1_5_ENCODE",
+        byte[].class);
     encodeMethod.setAccessible(true);
     byte[] encodedMessage = (byte[]) encodeMethod.invoke(scheme, (Object) message);
 
@@ -48,7 +52,8 @@ public class RSASSA_PKCS1_v1_5_TEST {
   void testEMSA_PKCS1_v1_5_ENCODE_BlockType()
       throws DataFormatException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
     byte[] message = "test message 2".getBytes();
-    Method encodeMethod = RSASSA_PKCS1_v1_5.class.getDeclaredMethod("EMSA_PKCS1_v1_5_ENCODE", byte[].class);
+    Method encodeMethod = RSASSA_PKCS1_v1_5.class.getDeclaredMethod("EMSA_PKCS1_v1_5_ENCODE",
+        byte[].class);
     encodeMethod.setAccessible(true);
     byte[] encodedMessage = (byte[]) encodeMethod.invoke(scheme, (Object) message);
 
@@ -117,7 +122,8 @@ public class RSASSA_PKCS1_v1_5_TEST {
   public void testEMSA_PKCS1_v1_5_ENCODE_PaddingString()
       throws DataFormatException, NoSuchAlgorithmException, InvocationTargetException, IllegalAccessException, NoSuchMethodException {
     byte[] message = "test message 7".getBytes();
-    Method encodeMethod = RSASSA_PKCS1_v1_5.class.getDeclaredMethod("EMSA_PKCS1_v1_5_ENCODE", byte[].class);
+    Method encodeMethod = RSASSA_PKCS1_v1_5.class.getDeclaredMethod("EMSA_PKCS1_v1_5_ENCODE",
+        byte[].class);
     encodeMethod.setAccessible(true);
     byte[] encodedMessage = (byte[]) encodeMethod.invoke(scheme, (Object) message);
     MessageDigest md = MessageDigest.getInstance("SHA-256");
@@ -135,7 +141,8 @@ public class RSASSA_PKCS1_v1_5_TEST {
   public void testEMSA_PKCS1_v1_5_ENCODE_Separator()
       throws DataFormatException, NoSuchAlgorithmException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
     byte[] message = "test message 8".getBytes();
-    Method encodeMethod = RSASSA_PKCS1_v1_5.class.getDeclaredMethod("EMSA_PKCS1_v1_5_ENCODE", byte[].class);
+    Method encodeMethod = RSASSA_PKCS1_v1_5.class.getDeclaredMethod("EMSA_PKCS1_v1_5_ENCODE",
+        byte[].class);
     encodeMethod.setAccessible(true);
     byte[] encodedMessage = (byte[]) encodeMethod.invoke(scheme, (Object) message);
     MessageDigest md = MessageDigest.getInstance("SHA-256");
@@ -152,7 +159,8 @@ public class RSASSA_PKCS1_v1_5_TEST {
   public void testEMSA_PKCS1_v1_5_ENCODE_MessagePlacement()
       throws DataFormatException, NoSuchAlgorithmException, InvocationTargetException, IllegalAccessException, NoSuchMethodException {
     byte[] message = "test message 9".getBytes();
-    Method encodeMethod = RSASSA_PKCS1_v1_5.class.getDeclaredMethod("EMSA_PKCS1_v1_5_ENCODE", byte[].class);
+    Method encodeMethod = RSASSA_PKCS1_v1_5.class.getDeclaredMethod("EMSA_PKCS1_v1_5_ENCODE",
+        byte[].class);
     encodeMethod.setAccessible(true);
     byte[] encodedMessage = (byte[]) encodeMethod.invoke(scheme, (Object) message);
     MessageDigest md = MessageDigest.getInstance("SHA-256");
@@ -172,7 +180,8 @@ public class RSASSA_PKCS1_v1_5_TEST {
     byte[] message = "Test message 10".getBytes();
     MessageDigest md = MessageDigest.getInstance("SHA-256");
 
-    Method encodeMethod = RSASSA_PKCS1_v1_5.class.getDeclaredMethod("EMSA_PKCS1_v1_5_ENCODE", byte[].class);
+    Method encodeMethod = RSASSA_PKCS1_v1_5.class.getDeclaredMethod("EMSA_PKCS1_v1_5_ENCODE",
+        byte[].class);
     encodeMethod.setAccessible(true);
     byte[] encodedMessage = (byte[]) encodeMethod.invoke(scheme, (Object) message);
     byte[] mHash = md.digest(message);
@@ -244,8 +253,10 @@ public class RSASSA_PKCS1_v1_5_TEST {
 
     Method RSASP1method = RSASSA_PKCS1_v1_5.class.getDeclaredMethod("RSASP1", BigInteger.class);
     RSASP1method.setAccessible(true);
-    BigInteger firstSignature = (BigInteger) RSASP1method.invoke(scheme, (Object) messageRepresentative);
-    BigInteger secondSignature = (BigInteger) RSASP1method.invoke(scheme, (Object) messageRepresentative);
+    BigInteger firstSignature = (BigInteger) RSASP1method.invoke(scheme,
+        (Object) messageRepresentative);
+    BigInteger secondSignature = (BigInteger) RSASP1method.invoke(scheme,
+        (Object) messageRepresentative);
 
     assertEquals(firstSignature, secondSignature,
         "Repeated executions should produce the same signature for fixed input");
@@ -312,9 +323,8 @@ public class RSASSA_PKCS1_v1_5_TEST {
   @Test
   void testSignAndVerifyRoundTrip() throws Exception {
     KeyPair keyPair = new GenRSA(1024).generateKeyPair();
-
-    RSASSA_PKCS1_v1_5 schemeForSigning = new RSASSA_PKCS1_v1_5 (keyPair.getPrivateKey());
-    RSASSA_PKCS1_v1_5 schemeForVerifying = new RSASSA_PKCS1_v1_5 (keyPair.getPublicKey());
+    RSASSA_PKCS1_v1_5 schemeForSigning = new RSASSA_PKCS1_v1_5(keyPair.getPrivateKey());
+    RSASSA_PKCS1_v1_5 schemeForVerifying = new RSASSA_PKCS1_v1_5(keyPair.getPublicKey());
     // Prepare a message
     byte[] message = "test message".getBytes();
 
@@ -326,14 +336,121 @@ public class RSASSA_PKCS1_v1_5_TEST {
     byte[] signature = (byte[]) signMethod.invoke(schemeForSigning, (Object) message);
 
     // Use reflection to invoke the private 'verify' method
-    Method verifyMethod = RSASSA_PKCS1_v1_5.class.getDeclaredMethod("RSASSA_PKCS1_V1_5_VERIFY", byte[].class, byte[].class);
+    Method verifyMethod = RSASSA_PKCS1_v1_5.class.getDeclaredMethod("RSASSA_PKCS1_V1_5_VERIFY",
+        byte[].class, byte[].class);
     verifyMethod.setAccessible(true);
 
     // Invoke the 'verify' method and check if the signature is valid
-    boolean isSignatureValid = (boolean) verifyMethod.invoke(schemeForVerifying, message, signature);
+    boolean isSignatureValid = (boolean) verifyMethod.invoke(schemeForVerifying, message,
+        signature);
 
     // Assert that the signature is valid
     assertTrue(isSignatureValid, "The signature should be verified successfully.");
+  }
+
+  @Test
+    // Test that verify correctly identifies an invalid signature.
+  void testVerificationFailsForInvalidSignature() throws Exception {
+    KeyPair keyPair = new GenRSA(1024).generateKeyPair();
+    RSASSA_PKCS1_v1_5 schemeForVerifying = new RSASSA_PKCS1_v1_5(keyPair.getPublicKey());
+    // Prepare a message and a random invalid signature
+    byte[] message = "test message".getBytes();
+    byte[] invalidSignature = new byte[128]; // Assuming RSA 1024-bit key
+    new SecureRandom().nextBytes(invalidSignature); // Fill with random data
+
+    // Use reflection to invoke the private 'verify' method
+    Method verifyMethod = RSASSA_PKCS1_v1_5.class.getDeclaredMethod("RSASSA_PKCS1_V1_5_VERIFY",
+        byte[].class, byte[].class);
+    verifyMethod.setAccessible(true);
+
+    boolean isSignatureValid = (boolean) verifyMethod.invoke(schemeForVerifying, message,
+        invalidSignature);
+    assertFalse(isSignatureValid, "The invalid signature should not be verified.");
+  }
+
+  @Test
+    // Test that altering a message after it's been signed results in a verification failure.
+  void testVerificationFailsForAlteredMessage() throws Exception {
+    KeyPair keyPair = new GenRSA(1024).generateKeyPair();
+    RSASSA_PKCS1_v1_5 schemeForSigning = new RSASSA_PKCS1_v1_5(keyPair.getPrivateKey());
+    RSASSA_PKCS1_v1_5 schemeForVerifying = new RSASSA_PKCS1_v1_5(keyPair.getPublicKey());
+    // Sign a message
+    byte[] originalMessage = "test message".getBytes();
+    Method signMethod = RSASSA_PKCS1_v1_5.class.getDeclaredMethod("sign", byte[].class);
+    signMethod.setAccessible(true);
+    byte[] signature = (byte[]) signMethod.invoke(schemeForSigning, (Object) originalMessage);
+
+    // Alter the message
+    byte[] alteredMessage = "test message altered".getBytes();
+
+    // Use reflection to invoke the private 'verify' method
+    Method verifyMethod = RSASSA_PKCS1_v1_5.class.getDeclaredMethod("RSASSA_PKCS1_V1_5_VERIFY",
+        byte[].class, byte[].class);
+    verifyMethod.setAccessible(true);
+
+    // Assert that the signature verification fails for the altered message
+    boolean isSignatureValid = (boolean) verifyMethod.invoke(schemeForVerifying, alteredMessage,
+        signature);
+    assertFalse(isSignatureValid, "The signature should not be valid for an altered message.");
+  }
+
+  @Test
+    // Test that altering a signature after it's been generated results in a verification failure.
+  void testVerificationFailsForAlteredSignature() throws Exception {
+    KeyPair keyPair = new GenRSA(1024).generateKeyPair();
+    RSASSA_PKCS1_v1_5 schemeForSigning = new RSASSA_PKCS1_v1_5(keyPair.getPrivateKey());
+    RSASSA_PKCS1_v1_5 schemeForVerifying = new RSASSA_PKCS1_v1_5(keyPair.getPublicKey());
+    byte[] message = "test message".getBytes();
+    Method signMethod = RSASSA_PKCS1_v1_5.class.getDeclaredMethod("sign", byte[].class);
+    signMethod.setAccessible(true);
+    byte[] signature = (byte[]) signMethod.invoke(schemeForSigning, (Object) message);
+
+    // Alter the signature (flip the last bit)
+    signature[signature.length - 1] ^= 1;
+
+    // Use reflection to invoke the private 'verify' method
+    Method verifyMethod = RSASSA_PKCS1_v1_5.class.getDeclaredMethod("RSASSA_PKCS1_V1_5_VERIFY",
+        byte[].class, byte[].class);
+    verifyMethod.setAccessible(true);
+
+    // Assert that the signature verification fails for the altered signature
+    boolean isSignatureValid = (boolean) verifyMethod.invoke(schemeForVerifying, message,
+        signature);
+    assertFalse(isSignatureValid, "The signature should not be valid for an altered signature.");
+  }
+
+  @Test
+    // Test that signatures are only verified correctly with the matching public key, not with a different public key
+  void testVerificationWithCorrectAndIncorrectKeys() throws Exception {
+    KeyPair keyPair = new GenRSA(1024).generateKeyPair();
+    RSASSA_PKCS1_v1_5 schemeForSigning1 = new RSASSA_PKCS1_v1_5(keyPair.getPrivateKey());
+    RSASSA_PKCS1_v1_5 schemeForVerifying1 = new RSASSA_PKCS1_v1_5(keyPair.getPublicKey());
+    // Sign a message
+    byte[] message = "test message".getBytes();
+    Method signMethod = RSASSA_PKCS1_v1_5.class.getDeclaredMethod("sign", byte[].class);
+    signMethod.setAccessible(true);
+    byte[] signature = (byte[]) signMethod.invoke(schemeForSigning1, (Object) message);
+
+    Method verifyMethod = RSASSA_PKCS1_v1_5.class.getDeclaredMethod("RSASSA_PKCS1_V1_5_VERIFY",
+        byte[].class, byte[].class);
+    verifyMethod.setAccessible(true);
+    // Use the correct public key for verification
+    boolean isSignatureValidWithCorrectKey = (boolean) verifyMethod.invoke(schemeForVerifying1,
+        message,
+        signature);
+    assertTrue(isSignatureValidWithCorrectKey,
+        "The signature should be valid with the correct public key.");
+
+    // Generate a new key pair, which will have a different public key
+    Key incorrectPublicKey = new GenRSA(1024).generateKeyPair().getPublicKey();
+    KeyPair keyPair2 = new GenRSA(1024).generateKeyPair();
+
+    // Try to verify the signature with the incorrect public key
+    RSASSA_PKCS1_v1_5 schemeWithIncorrectKey = new RSASSA_PKCS1_v1_5(keyPair2.getPublicKey());
+    boolean isSignatureValidWithIncorrectKey = (boolean) verifyMethod.invoke(schemeWithIncorrectKey,
+        message, signature);
+    assertFalse(isSignatureValidWithIncorrectKey,
+        "The signature should not be valid with an incorrect public key.");
   }
 
 
