@@ -3,6 +3,7 @@ package uk.msci.project.test;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.math.BigInteger;
@@ -12,7 +13,9 @@ import java.util.Arrays;
 import java.util.zip.DataFormatException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import uk.msci.project.rsa.ByteArrayConverter;
 import uk.msci.project.rsa.GenRSA;
+import uk.msci.project.rsa.PublicKey;
 import uk.msci.project.rsa.RSASSA_PKCS1_v1_5;
 
 public class RSASSA_PKCS1_v1_5_TEST {
@@ -213,8 +216,68 @@ public class RSASSA_PKCS1_v1_5_TEST {
         "Repeated executions should produce the same signature for fixed input");
   }
 
+  @Test
+  public void testI2OSPCorrectLength() {
+    int emLen = 128; // Example length
+    BigInteger number = new BigInteger("12345678901234567890");
+
+    byte[] result = ByteArrayConverter.toFixedLengthByteArray(number, emLen);
+
+    assertEquals(emLen, result.length, "The length of the resulting byte array should be " + emLen);
+  }
+
+  @Test
+  public void testI2OSPLeadingZeroByteRemoval() {
+    int emLen = 128; // Example length in bytes
+    // Create a BigInteger with a known binary representation that includes a leading zero byte
+    byte[] knownByteArray = new byte[emLen + 1];
+    Arrays.fill(knownByteArray, (byte) 0);
+    knownByteArray[1] = (byte) 0x01; // Set the second byte to 0x01 to simulate a leading zero in the BigInteger representation
+    BigInteger number = new BigInteger(knownByteArray);
+
+    byte[] result = ByteArrayConverter.toFixedLengthByteArray(number, emLen);
+
+    assertEquals(emLen, result.length, "The length of the resulting byte array should be " + emLen);
+    assertEquals((byte) 0x01, result[0],
+        "The first byte should be 0x01, with leading zero byte removed");
+    for (int i = 1; i < emLen; i++) {
+      assertEquals((byte) 0x00, result[i], "The remaining bytes should be 0x00");
+    }
+  }
+
+  @Test
+  public void testI2OSPPaddingWithZeros() {
+    int emLen = 128;
+    BigInteger number = new BigInteger("1234567890");
+
+    byte[] result = ByteArrayConverter.toFixedLengthByteArray(number, emLen);
+
+    assertEquals(emLen, result.length, "The length of the resulting byte array should be " + emLen);
+    // Verify that the padding (leading zeros) is present.
+    for (int i = 0; i < emLen - result.length; i++) {
+      assertEquals(0, result[i], "Byte at index " + i + " should be 0 due to padding");
+    }
+    // Verify the content of the BigInteger is at the end of the byte array.
+    byte[] numberBytes = number.toByteArray();
+    for (int i = 0; i < numberBytes.length; i++) {
+      assertEquals(numberBytes[i], result[emLen - numberBytes.length + i],
+          "Byte at index " + i + " should match the BigInteger byte value");
+    }
+  }
+
+  @Test
+  public void testI2OSPThrowsForIncorrectLength() {
+    int emLen = 10; // Deliberately small length
+    BigInteger number = new BigInteger("123456789012345678901234567890");
+    assertThrows(IllegalArgumentException.class,
+        () -> ByteArrayConverter.toFixedLengthByteArray(number, emLen),
+        "Should throw byte array representation is longer than emLen ");
+  }
 
 }
+
+
+
 
 
 
