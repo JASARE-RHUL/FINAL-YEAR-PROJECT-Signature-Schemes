@@ -36,10 +36,10 @@ public class RSASSA_PKCS1_v1_5_TEST {
   }
 
   @Test
-  void testEMSA_PKCS1_v1_5_ENCODE_InitialZero()
+  void testencode_InitialZero()
       throws DataFormatException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
     byte[] message = "test message 1".getBytes();
-    Method encodeMethod = RSASSA_PKCS1_v1_5.class.getDeclaredMethod("EMSA_PKCS1_v1_5_ENCODE",
+    Method encodeMethod = RSASSA_PKCS1_v1_5.class.getDeclaredMethod("encode",
         byte[].class);
     encodeMethod.setAccessible(true);
     byte[] encodedMessage = (byte[]) encodeMethod.invoke(scheme, (Object) message);
@@ -49,10 +49,10 @@ public class RSASSA_PKCS1_v1_5_TEST {
   }
 
   @Test
-  void testEMSA_PKCS1_v1_5_ENCODE_BlockType()
+  void testEncode_BlockType()
       throws DataFormatException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
     byte[] message = "test message 2".getBytes();
-    Method encodeMethod = RSASSA_PKCS1_v1_5.class.getDeclaredMethod("EMSA_PKCS1_v1_5_ENCODE",
+    Method encodeMethod = RSASSA_PKCS1_v1_5.class.getDeclaredMethod("encode",
         byte[].class);
     encodeMethod.setAccessible(true);
     byte[] encodedMessage = (byte[]) encodeMethod.invoke(scheme, (Object) message);
@@ -61,10 +61,10 @@ public class RSASSA_PKCS1_v1_5_TEST {
   }
 
 //  @Test
-//  public void testEMSA_PKCS1_v1_5_ENCODE_PaddingString()
+//  public void testEncode_PaddingString()
 //      throws DataFormatException, NoSuchAlgorithmException {
 //    byte[] message = "test message 3".getBytes();
-//    byte[] encodedMessage = scheme.EMSA_PKCS1_v1_5_ENCODE(message);
+//    byte[] encodedMessage = scheme.encode(message);
 //    MessageDigest md = MessageDigest.getInstance("SHA-256");
 //    byte[] mHash = md.digest(message);
 //
@@ -75,10 +75,10 @@ public class RSASSA_PKCS1_v1_5_TEST {
 //  }
 //
 //  @Test
-//  public void testEMSA_PKCS1_v1_5_ENCODE_Separator()
+//  public void testEncode_Separator()
 //      throws DataFormatException, NoSuchAlgorithmException {
 //    byte[] message = "test message 4".getBytes();
-//    byte[] encodedMessage = scheme.EMSA_PKCS1_v1_5_ENCODE(message);
+//    byte[] encodedMessage = scheme.encode(message);
 //    MessageDigest md = MessageDigest.getInstance("SHA-256");
 //    byte[] mHash = md.digest(message);
 //    int separatorIndex = encodedMessage.length - mHash.length - 1;
@@ -88,10 +88,10 @@ public class RSASSA_PKCS1_v1_5_TEST {
 //}
 //
 //  @Test
-//  public void testEMSA_PKCS1_v1_5_ENCODE_MessagePlacement()
+//  public void testEncode_MessagePlacement()
 //      throws DataFormatException, NoSuchAlgorithmException {
 //    byte[] message = "test message 4".getBytes();
-//    byte[] encodedMessage = scheme.EMSA_PKCS1_v1_5_ENCODE(message);
+//    byte[] encodedMessage = scheme.encode(message);
 //    MessageDigest md = MessageDigest.getInstance("SHA-256");
 //    byte[] mHash = md.digest(message);
 //    byte[] messageInEM = Arrays.copyOfRange(encodedMessage, encodedMessage.length - mHash.length,
@@ -102,12 +102,12 @@ public class RSASSA_PKCS1_v1_5_TEST {
 //  }
 //
 //  @Test
-//  public void testEMSA_PKCS1_v1_5_ENCODE_HashIncorporation()
+//  public void testEncode_HashIncorporation()
 //      throws DataFormatException, NoSuchAlgorithmException {
 //    byte[] message = "Test message 5".getBytes();
 //    MessageDigest md = MessageDigest.getInstance("SHA-256");
 //
-//    byte[] encodedMessage = scheme.EMSA_PKCS1_v1_5_ENCODE(message);
+//    byte[] encodedMessage = scheme.encode(message);
 //    byte[] mHash = md.digest(message);
 //
 //    // Extract the hash part from the encoded message
@@ -119,10 +119,10 @@ public class RSASSA_PKCS1_v1_5_TEST {
 //  }
 
   @Test
-  public void testEMSA_PKCS1_v1_5_ENCODE_PaddingString()
+  public void testEncode_PaddingString()
       throws DataFormatException, NoSuchAlgorithmException, InvocationTargetException, IllegalAccessException, NoSuchMethodException {
     byte[] message = "test message 7".getBytes();
-    Method encodeMethod = RSASSA_PKCS1_v1_5.class.getDeclaredMethod("EMSA_PKCS1_v1_5_ENCODE",
+    Method encodeMethod = RSASSA_PKCS1_v1_5.class.getDeclaredMethod("encode",
         byte[].class);
     encodeMethod.setAccessible(true);
     byte[] encodedMessage = (byte[]) encodeMethod.invoke(scheme, (Object) message);
@@ -138,10 +138,10 @@ public class RSASSA_PKCS1_v1_5_TEST {
   }
 
   @Test
-  public void testEMSA_PKCS1_v1_5_ENCODE_Separator()
+  public void testEncode_Separator()
       throws DataFormatException, NoSuchAlgorithmException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
     byte[] message = "test message 8".getBytes();
-    Method encodeMethod = RSASSA_PKCS1_v1_5.class.getDeclaredMethod("EMSA_PKCS1_v1_5_ENCODE",
+    Method encodeMethod = RSASSA_PKCS1_v1_5.class.getDeclaredMethod("encode",
         byte[].class);
     encodeMethod.setAccessible(true);
     byte[] encodedMessage = (byte[]) encodeMethod.invoke(scheme, (Object) message);
@@ -156,10 +156,10 @@ public class RSASSA_PKCS1_v1_5_TEST {
   }
 
   @Test
-  public void testEMSA_PKCS1_v1_5_ENCODE_MessagePlacement()
+  public void testEncode_MessagePlacement()
       throws DataFormatException, NoSuchAlgorithmException, InvocationTargetException, IllegalAccessException, NoSuchMethodException {
     byte[] message = "test message 9".getBytes();
-    Method encodeMethod = RSASSA_PKCS1_v1_5.class.getDeclaredMethod("EMSA_PKCS1_v1_5_ENCODE",
+    Method encodeMethod = RSASSA_PKCS1_v1_5.class.getDeclaredMethod("encode",
         byte[].class);
     encodeMethod.setAccessible(true);
     byte[] encodedMessage = (byte[]) encodeMethod.invoke(scheme, (Object) message);
@@ -175,12 +175,12 @@ public class RSASSA_PKCS1_v1_5_TEST {
   }
 
   @Test
-  public void testEMSA_PKCS1_v1_5_ENCODE_HashIncorporation()
+  public void testEncode_HashIncorporation()
       throws DataFormatException, NoSuchAlgorithmException, InvocationTargetException, IllegalAccessException, NoSuchMethodException {
     byte[] message = "Test message 10".getBytes();
     MessageDigest md = MessageDigest.getInstance("SHA-256");
 
-    Method encodeMethod = RSASSA_PKCS1_v1_5.class.getDeclaredMethod("EMSA_PKCS1_v1_5_ENCODE",
+    Method encodeMethod = RSASSA_PKCS1_v1_5.class.getDeclaredMethod("encode",
         byte[].class);
     encodeMethod.setAccessible(true);
     byte[] encodedMessage = (byte[]) encodeMethod.invoke(scheme, (Object) message);

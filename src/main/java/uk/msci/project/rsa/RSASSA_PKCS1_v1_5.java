@@ -1,9 +1,6 @@
 package uk.msci.project.rsa;
 
 import java.math.BigInteger;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.security.SignatureException;
 import java.util.Arrays;
 import java.util.zip.DataFormatException;
 
@@ -12,42 +9,7 @@ import java.util.zip.DataFormatException;
  * functionalities to sign and verify messages with RSA digital signatures, conforming to the PKCS#1
  * v1.5 specification.
  */
-public class RSASSA_PKCS1_v1_5 {
-
-  /**
-   * The exponent part of the RSA key.
-   */
-  private BigInteger exponent;
-
-  /**
-   * The modulus part of the RSA key.
-   */
-  private BigInteger modulus;
-
-  /**
-   * The bit length of the modulus minus one.
-   */
-  private int emBits;
-
-  /**
-   * The maximum message length in bytes.
-   */
-  private int emLen;
-
-  /**
-   * The RSA key containing the exponent and modulus.
-   */
-  private final Key key;
-
-  /**
-   * The MessageDigest instance used for hashing.
-   */
-  private MessageDigest md;
-
-  /**
-   * The identifier of the hash algorithm used.
-   */
-  private byte[] hashID;
+public class RSASSA_PKCS1_v1_5 extends SigScheme {
 
   /**
    * Constructs an RSASSA_PKCS1_v1_5 instance with the specified RSA key. Initialises the modulus
@@ -57,25 +19,7 @@ public class RSASSA_PKCS1_v1_5 {
    * @param key The RSA key containing the exponent and modulus.
    */
   public RSASSA_PKCS1_v1_5(Key key) {
-    this.key = key;
-    this.exponent = this.key.getExponent();
-    this.modulus = this.key.getModulus();
-    // emBits is the bit length of the modulus n, minus one.
-    this.emBits = modulus.bitLength() - 1;
-    // emLen is the maximum message length in bytes.
-    this.emLen = (this.emBits + 7) / 8; // Convert bits to bytes and round up if necessary..
-    try {
-      this.md = MessageDigest.getInstance("SHA-256");
-      this.hashID = new byte[]{(byte) 0x30, (byte) 0x31, (byte) 0x30, (byte) 0x0d, (byte) 0x06,
-          (byte) 0x09, (byte) 0x60, (byte) 0x86, (byte) 0x48, (byte) 0x01,
-          (byte) 0x65, (byte) 0x03, (byte) 0x04, (byte) 0x02, (byte) 0x01,
-          (byte) 0x05, (byte) 0x00, (byte) 0x04, (byte) 0x20};
-    } catch (NoSuchAlgorithmException e) {
-      // NoSuchAlgorithmException is a checked exception, RuntimeException allows an exception to
-      // be thrown if the algorithm isn't available.
-      throw new RuntimeException("SHA-256 algorithm not available", e);
-    }
-
+    super(key);
   }
 
   /**
@@ -86,7 +30,7 @@ public class RSASSA_PKCS1_v1_5 {
    * @return The RSA signature of the message.
    * @throws DataFormatException If the message encoding fails.
    */
-  private byte[] sign(byte[] M) throws DataFormatException {
+  public byte[] sign(byte[] M) throws DataFormatException {
     byte[] EM = EMSA_PKCS1_v1_5_ENCODE(M);
 
     BigInteger m = OS2IP(EM);
@@ -121,7 +65,7 @@ public class RSASSA_PKCS1_v1_5 {
 
     //Prepare padding string PS consisting of padding bytes (0xFF).
     int psLength =
-        emLen - tLen - 3; // Subtracting the prefix (0x00 || 0x01) and postfix (0x00) lengths
+        this.emLen - tLen - 3; // Subtracting the prefix (0x00 || 0x01) and postfix (0x00) lengths
     byte[] PS = new byte[psLength];
     Arrays.fill(PS, (byte) 0xFF);
 
@@ -201,7 +145,7 @@ public class RSASSA_PKCS1_v1_5 {
    * @param EM The encoded message as a byte array.
    * @return A BigInteger representing the non-negative integer obtained from the byte array.
    */
-  private BigInteger OS2IP(byte[] EM) {
+  public BigInteger OS2IP(byte[] EM) {
     return new BigInteger(1, EM);
   }
 
@@ -219,7 +163,7 @@ public class RSASSA_PKCS1_v1_5 {
    * @throws IllegalArgumentException If the BigInteger's byte array representation is not of the
    *                                  expected length or has an unexpected leading byte.
    */
-  private byte[] I2OSP(BigInteger m) throws IllegalArgumentException {
+  public byte[] I2OSP(BigInteger m) throws IllegalArgumentException {
     return ByteArrayConverter.toFixedLengthByteArray(m, this.emLen);
   }
 
@@ -235,7 +179,7 @@ public class RSASSA_PKCS1_v1_5 {
    * @param m The message representative, an integer representation of the message.
    * @return The signature representative, an integer representation of the signature.
    */
-  private BigInteger RSASP1(BigInteger m) {
+  public BigInteger RSASP1(BigInteger m) {
     BigInteger s = m.modPow(this.exponent, this.modulus);
     return s;
   }
@@ -247,7 +191,7 @@ public class RSASSA_PKCS1_v1_5 {
    * @param s The signature representative, an integer representation of the signature.
    * @return The message representative, an integer representation of the message.
    */
-  private BigInteger RSAVP1(BigInteger s) {
+  public BigInteger RSAVP1(BigInteger s) {
     return this.RSASP1(s);
   }
 
