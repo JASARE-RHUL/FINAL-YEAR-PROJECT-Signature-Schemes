@@ -80,6 +80,27 @@ public class RSASSA_PKCS1_v1_5 {
 
   }
 
+  /**
+   * Signs the provided message using RSA private key operations. The method encodes the message,
+   * generates a signature, and returns it as a byte array.
+   *
+   * @param M The message to be signed.
+   * @return The RSA signature of the message.
+   * @throws DataFormatException If the message encoding fails.
+   */
+  public byte[] sign(byte[] M) throws DataFormatException {
+    byte[] EM = EMSA_PKCS1_v1_5_ENCODE(M);
+
+    BigInteger m = OS2IP(EM);
+
+    BigInteger s = RSASP1(m);
+
+    byte[] S = I2OSP(s);
+
+    // Output the signature S.
+    return S;
+  }
+
 
   /**
    * Encodes a message using a custom implementation of the EMSA-PKCS1-v1_5 encoding method.
@@ -158,13 +179,12 @@ public class RSASSA_PKCS1_v1_5 {
    */
 
   /**
-   * Converts a BigInteger to an octet string of a specified fixed length. This method implements
-   * the I2OSP (Integer-to-Octet-String Primitive) as specified in PKCS#1. It ensures that the
-   * resulting byte array has a length of emLen bytes, where emLen is the ceiling of ((modBits -
-   * 1)/8) and modBits is the bit length of the RSA modulus.
+   * Converts a BigInteger to an octet string of length emLen. This method implements the I2OSP
+   * (Integer-to-Octet-String Primitive) as specified in PKCS#1. It ensures that the resulting byte
+   * array has a length of emLen bytes, where emLen is the ceiling of ((modBits - 1)/8) and modBits
+   * is the bit length of the RSA modulus.
    * <p>
-   * Convert the message representative m to an encoded message
-   *  EM = I2OSP (m, emLen).
+   * Convert the message representative m to an encoded message EM = I2OSP (m, emLen).
    *
    * @param m The BigInteger to be converted into an octet string.
    * @return A byte array representing the BigInteger in its octet string form, of length emLen.
