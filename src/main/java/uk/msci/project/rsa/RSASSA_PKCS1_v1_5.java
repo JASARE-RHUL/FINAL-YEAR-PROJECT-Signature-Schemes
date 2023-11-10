@@ -205,13 +205,6 @@ public class RSASSA_PKCS1_v1_5 {
     return new BigInteger(1, EM);
   }
 
-  /*
-   * c. Convert the message representative m to an encoded message EM
-   *    of length emLen = \ceil ((modBits - 1)/8) octets, where modBits
-   *    is the length in bits of the RSA modulus n (see Section 4.1):
-   *
-   *        EM = I2OSP (m, emLen).
-   */
 
   /**
    * Converts a BigInteger to an octet string of length emLen. This method implements the I2OSP
