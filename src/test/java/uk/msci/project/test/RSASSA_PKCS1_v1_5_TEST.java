@@ -5,6 +5,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.math.BigInteger;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.zip.DataFormatException;
 import org.junit.jupiter.api.BeforeEach;
@@ -43,36 +46,64 @@ public class RSASSA_PKCS1_v1_5_TEST {
   }
 
   @Test
-  public void testEMSA_PKCS1_v1_5_ENCODE_PaddingString() throws DataFormatException {
+  public void testEMSA_PKCS1_v1_5_ENCODE_PaddingString()
+      throws DataFormatException, NoSuchAlgorithmException {
     byte[] message = "test message 3".getBytes();
     byte[] encodedMessage = scheme.EMSA_PKCS1_v1_5_ENCODE(message);
+    MessageDigest md = MessageDigest.getInstance("SHA-256");
+    byte[] mHash = md.digest(message);
 
-    for (int i = 2; i < encodedMessage.length - message.length - 1; i++) {
+    for (int i = 2; i < encodedMessage.length - mHash.length - 1; i++) {
       assertEquals((byte) 0xFF, encodedMessage[i],
           "Padding byte at index " + i + " should be 0xFF");
     }
   }
 
   @Test
-  public void testEMSA_PKCS1_v1_5_ENCODE_Separator() throws DataFormatException {
+  public void testEMSA_PKCS1_v1_5_ENCODE_Separator()
+      throws DataFormatException, NoSuchAlgorithmException {
     byte[] message = "test message 4".getBytes();
     byte[] encodedMessage = scheme.EMSA_PKCS1_v1_5_ENCODE(message);
-    int separatorIndex = encodedMessage.length - message.length - 1;
+    MessageDigest md = MessageDigest.getInstance("SHA-256");
+    byte[] mHash = md.digest(message);
+    int separatorIndex = encodedMessage.length - mHash.length - 1;
 
     assertEquals(0x00, encodedMessage[separatorIndex],
         "The byte preceding the message should be 0x00");
-  }
+}
 
   @Test
-  public void testEMSA_PKCS1_v1_5_ENCODE_MessagePlacement() throws DataFormatException {
+  public void testEMSA_PKCS1_v1_5_ENCODE_MessagePlacement()
+      throws DataFormatException, NoSuchAlgorithmException {
     byte[] message = "test message 4".getBytes();
     byte[] encodedMessage = scheme.EMSA_PKCS1_v1_5_ENCODE(message);
-    byte[] messageInEM = Arrays.copyOfRange(encodedMessage, encodedMessage.length - message.length,
+    MessageDigest md = MessageDigest.getInstance("SHA-256");
+    byte[] mHash = md.digest(message);
+    byte[] messageInEM = Arrays.copyOfRange(encodedMessage, encodedMessage.length - mHash.length,
         encodedMessage.length);
 
-    assertArrayEquals(message, messageInEM,
+    assertArrayEquals(mHash, messageInEM,
         "The message should be correctly placed at the end of the encoded message");
   }
 
+  @Test
+  public void testEMSA_PKCS1_v1_5_ENCODE_HashIncorporation()
+      throws DataFormatException, NoSuchAlgorithmException {
+    byte[] message = "Test message 5".getBytes();
+    MessageDigest md = MessageDigest.getInstance("SHA-256");
 
+    byte[] encodedMessage = scheme.EMSA_PKCS1_v1_5_ENCODE(message);
+    byte[] mHash = md.digest(message);
+
+    // Extract the hash part from the encoded message
+    byte[] hashFromEncodedMessage = Arrays.copyOfRange(encodedMessage,
+        encodedMessage.length - mHash.length, encodedMessage.length);
+
+    assertArrayEquals(mHash, hashFromEncodedMessage,
+        "The hash in the encoded message should match the actual message hash");
+  }
 }
+
+
+
+
