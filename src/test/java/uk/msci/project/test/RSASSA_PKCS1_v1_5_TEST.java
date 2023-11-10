@@ -6,6 +6,8 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -30,18 +32,24 @@ public class RSASSA_PKCS1_v1_5_TEST {
   }
 
   @Test
-  void testEMSA_PKCS1_v1_5_ENCODE_InitialZero() throws DataFormatException {
+  void testEMSA_PKCS1_v1_5_ENCODE_InitialZero()
+      throws DataFormatException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
     byte[] message = "test message 1".getBytes();
-    byte[] encodedMessage = scheme.EMSA_PKCS1_v1_5_ENCODE(message);
+    Method encodeMethod = RSASSA_PKCS1_v1_5.class.getDeclaredMethod("EMSA_PKCS1_v1_5_ENCODE", byte[].class);
+    encodeMethod.setAccessible(true);
+    byte[] encodedMessage = (byte[]) encodeMethod.invoke(scheme, (Object) message);
 
     assertEquals(0x00, encodedMessage[0], "The first byte of the encoded message should be 0x00");
 
   }
 
   @Test
-  void testEMSA_PKCS1_v1_5_ENCODE_BlockType() throws DataFormatException {
+  void testEMSA_PKCS1_v1_5_ENCODE_BlockType()
+      throws DataFormatException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
     byte[] message = "test message 2".getBytes();
-    byte[] encodedMessage = scheme.EMSA_PKCS1_v1_5_ENCODE(message);
+    Method encodeMethod = RSASSA_PKCS1_v1_5.class.getDeclaredMethod("EMSA_PKCS1_v1_5_ENCODE", byte[].class);
+    encodeMethod.setAccessible(true);
+    byte[] encodedMessage = (byte[]) encodeMethod.invoke(scheme, (Object) message);
 
     assertEquals(0x01, encodedMessage[1], "The block type byte should be 0x01");
   }
@@ -106,9 +114,11 @@ public class RSASSA_PKCS1_v1_5_TEST {
 
   @Test
   public void testEMSA_PKCS1_v1_5_ENCODE_PaddingString()
-      throws DataFormatException, NoSuchAlgorithmException {
+      throws DataFormatException, NoSuchAlgorithmException, InvocationTargetException, IllegalAccessException, NoSuchMethodException {
     byte[] message = "test message 7".getBytes();
-    byte[] encodedMessage = scheme.EMSA_PKCS1_v1_5_ENCODE(message);
+    Method encodeMethod = RSASSA_PKCS1_v1_5.class.getDeclaredMethod("EMSA_PKCS1_v1_5_ENCODE", byte[].class);
+    encodeMethod.setAccessible(true);
+    byte[] encodedMessage = (byte[]) encodeMethod.invoke(scheme, (Object) message);
     MessageDigest md = MessageDigest.getInstance("SHA-256");
     byte[] mHash = md.digest(message);
     byte[] digestInfo = scheme.createDigestInfo(mHash);
@@ -122,9 +132,11 @@ public class RSASSA_PKCS1_v1_5_TEST {
 
   @Test
   public void testEMSA_PKCS1_v1_5_ENCODE_Separator()
-      throws DataFormatException, NoSuchAlgorithmException {
+      throws DataFormatException, NoSuchAlgorithmException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
     byte[] message = "test message 8".getBytes();
-    byte[] encodedMessage = scheme.EMSA_PKCS1_v1_5_ENCODE(message);
+    Method encodeMethod = RSASSA_PKCS1_v1_5.class.getDeclaredMethod("EMSA_PKCS1_v1_5_ENCODE", byte[].class);
+    encodeMethod.setAccessible(true);
+    byte[] encodedMessage = (byte[]) encodeMethod.invoke(scheme, (Object) message);
     MessageDigest md = MessageDigest.getInstance("SHA-256");
     byte[] mHash = md.digest(message);
     byte[] digestInfo = scheme.createDigestInfo(mHash);
@@ -137,9 +149,11 @@ public class RSASSA_PKCS1_v1_5_TEST {
 
   @Test
   public void testEMSA_PKCS1_v1_5_ENCODE_MessagePlacement()
-      throws DataFormatException, NoSuchAlgorithmException {
+      throws DataFormatException, NoSuchAlgorithmException, InvocationTargetException, IllegalAccessException, NoSuchMethodException {
     byte[] message = "test message 9".getBytes();
-    byte[] encodedMessage = scheme.EMSA_PKCS1_v1_5_ENCODE(message);
+    Method encodeMethod = RSASSA_PKCS1_v1_5.class.getDeclaredMethod("EMSA_PKCS1_v1_5_ENCODE", byte[].class);
+    encodeMethod.setAccessible(true);
+    byte[] encodedMessage = (byte[]) encodeMethod.invoke(scheme, (Object) message);
     MessageDigest md = MessageDigest.getInstance("SHA-256");
     byte[] mHash = md.digest(message);
     byte[] digestInfo = scheme.createDigestInfo(mHash);
@@ -153,11 +167,13 @@ public class RSASSA_PKCS1_v1_5_TEST {
 
   @Test
   public void testEMSA_PKCS1_v1_5_ENCODE_HashIncorporation()
-      throws DataFormatException, NoSuchAlgorithmException {
+      throws DataFormatException, NoSuchAlgorithmException, InvocationTargetException, IllegalAccessException, NoSuchMethodException {
     byte[] message = "Test message 10".getBytes();
     MessageDigest md = MessageDigest.getInstance("SHA-256");
 
-    byte[] encodedMessage = scheme.EMSA_PKCS1_v1_5_ENCODE(message);
+    Method encodeMethod = RSASSA_PKCS1_v1_5.class.getDeclaredMethod("EMSA_PKCS1_v1_5_ENCODE", byte[].class);
+    encodeMethod.setAccessible(true);
+    byte[] encodedMessage = (byte[]) encodeMethod.invoke(scheme, (Object) message);
     byte[] mHash = md.digest(message);
     byte[] digestInfo = scheme.createDigestInfo(mHash);
     int tLen = digestInfo.length;
@@ -171,47 +187,65 @@ public class RSASSA_PKCS1_v1_5_TEST {
   }
 
   @Test
-  public void testOS2IPWithEmptyArray() {
+  public void testOS2IPWithEmptyArray()
+      throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
     byte[] emptyArray = new byte[0];
-    BigInteger result = scheme.OS2IP(emptyArray);
+
+    Method OS2IPmethod = RSASSA_PKCS1_v1_5.class.getDeclaredMethod("OS2IP", byte[].class);
+    OS2IPmethod.setAccessible(true);
+    BigInteger result = (BigInteger) OS2IPmethod.invoke(scheme, (Object) emptyArray);
     assertEquals(BigInteger.ZERO, result, "An empty byte array should convert to zero");
   }
 
   @Test
-  public void testOS2IPWithNonEmptyArray() {
+  public void testOS2IPWithNonEmptyArray()
+      throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
     byte[] byteArray = {0x01, 0x02, 0x03, 0x04}; // Example byte array
     BigInteger expectedResult = new BigInteger(1, byteArray);
-    BigInteger result = scheme.OS2IP(byteArray);
+    Method OS2IPmethod = RSASSA_PKCS1_v1_5.class.getDeclaredMethod("OS2IP", byte[].class);
+    OS2IPmethod.setAccessible(true);
+    BigInteger result = (BigInteger) OS2IPmethod.invoke(scheme, (Object) byteArray);
 
     assertEquals(expectedResult, result, "Byte array should correctly convert to BigInteger");
   }
 
   @Test
-  public void testOS2IPWithLargeNumber() {
+  public void testOS2IPWithLargeNumber()
+      throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
     byte[] largeNumberArray = new byte[]{(byte) 0x8f, (byte) 0xad, (byte) 0xb8, (byte) 0xe0};
     BigInteger expectedResult = new BigInteger(1, largeNumberArray);
-    BigInteger result = scheme.OS2IP(largeNumberArray);
+    Method OS2IPmethod = RSASSA_PKCS1_v1_5.class.getDeclaredMethod("OS2IP", byte[].class);
+    OS2IPmethod.setAccessible(true);
+    BigInteger result = (BigInteger) OS2IPmethod.invoke(scheme, (Object) largeNumberArray);
 
     assertEquals(expectedResult, result,
         "Large number byte array should correctly convert to BigInteger");
   }
 
   @Test
-  public void testOS2IPWithLeadingZeros() {
+  public void testOS2IPWithLeadingZeros()
+      throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
     byte[] byteArrayWithZeros = {0x00, 0x00, 0x01, 0x02};
     BigInteger expectedResult = new BigInteger(1, byteArrayWithZeros);
-    BigInteger result = scheme.OS2IP(byteArrayWithZeros);
+    Method OS2IPmethod = RSASSA_PKCS1_v1_5.class.getDeclaredMethod("OS2IP", byte[].class);
+    OS2IPmethod.setAccessible(true);
+    BigInteger result = (BigInteger) OS2IPmethod.invoke(scheme, (Object) byteArrayWithZeros);
 
     assertEquals(expectedResult, result,
         "Byte array with leading zeros should correctly convert to BigInteger");
   }
 
   @Test
-  public void testRSASP1Consistency() {
+  public void testRSASP1Consistency()
+      throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
     BigInteger messageRepresentative = new BigInteger(
         "67543678998786"); // A fixed value for testing
-    BigInteger firstSignature = scheme.RSASP1(messageRepresentative);
-    BigInteger secondSignature = scheme.RSASP1(messageRepresentative);
+
+    Method RSASP1method = RSASSA_PKCS1_v1_5.class.getDeclaredMethod("RSASP1", BigInteger.class);
+    RSASP1method.setAccessible(true);
+    BigInteger firstSignature = (BigInteger) RSASP1method.invoke(scheme, (Object) messageRepresentative);
+    BigInteger secondSignature = (BigInteger) RSASP1method.invoke(scheme, (Object) messageRepresentative);
+
     assertEquals(firstSignature, secondSignature,
         "Repeated executions should produce the same signature for fixed input");
   }

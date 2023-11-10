@@ -49,7 +49,6 @@ public class RSASSA_PKCS1_v1_5 {
    */
   private byte[] hashID;
 
-
   /**
    * Constructs an RSASSA_PKCS1_v1_5 instance with the specified RSA key. Initialises the modulus
    * and exponent from the key, calculates the encoded message length, and sets up the SHA-256
@@ -64,8 +63,7 @@ public class RSASSA_PKCS1_v1_5 {
     // emBits is the bit length of the modulus n, minus one.
     this.emBits = modulus.bitLength() - 1;
     // emLen is the maximum message length in bytes.
-    this.emLen = (this.emBits + 7) / 8; // Convert bits to bytes and round up if necessary.
-    // Initialize the MessageDigest with the hash function you plan to use.
+    this.emLen = (this.emBits + 7) / 8; // Convert bits to bytes and round up if necessary..
     try {
       this.md = MessageDigest.getInstance("SHA-256");
       this.hashID = new byte[]{(byte) 0x30, (byte) 0x31, (byte) 0x30, (byte) 0x0d, (byte) 0x06,
@@ -109,7 +107,7 @@ public class RSASSA_PKCS1_v1_5 {
    * @param M The message to be encoded.
    * @return The encoded message as a byte array.
    */
-  public byte[] EMSA_PKCS1_v1_5_ENCODE(byte[] M) throws DataFormatException {
+  private byte[] EMSA_PKCS1_v1_5_ENCODE(byte[] M) throws DataFormatException {
 
     this.md.update(M);
     byte[] mHash = this.md.digest();
@@ -155,6 +153,43 @@ public class RSASSA_PKCS1_v1_5 {
   }
 
   /**
+   * Verifies an RSA signature against a given message. Returns true if the signature is valid.
+   *
+   * @param M The original message.
+   * @param S The RSA signature to be verified.
+   * @return true if the signature is valid, false otherwise.
+   * @throws DataFormatException If verification fails due to incorrect format.
+   */
+  public boolean verify(byte[] M, byte[] S) throws DataFormatException {
+    return RSASSA_PKCS1_V1_5_VERIFY(M, S);
+  }
+
+  /**
+   * A custom implementation of the RSASSA-PKCS1-v1_5 signature verification. Compares the encoded
+   * message with the signature to determine if the signature is valid.
+   *
+   * @param M The original message that was signed.
+   * @param S The signature to be verified.
+   * @return true if the signature is valid; false otherwise.
+   * @throws DataFormatException If verification fails due to formatting issues.
+   */
+  private boolean RSASSA_PKCS1_V1_5_VERIFY(byte[] M, byte[] S)
+      throws DataFormatException {
+
+    BigInteger s = OS2IP(S);
+
+    BigInteger m = RSAVP1(s);
+
+    byte[] EM = I2OSP(m);
+
+    byte[] EMprime = EMSA_PKCS1_v1_5_ENCODE(M);
+
+    return Arrays.equals(EM, EMprime);
+
+  }
+
+
+  /**
    * Converts an octet string (byte array) to a non-negative integer. This method follows the OS2IP
    * (Octet String to Integer Primitive) conversion as specified in cryptographic standards like
    * PKCS#1. 1. EMSA_PKCS1_v1_5 encoding: Apply the EMSA-PKCS1-v1_5 encoding operation to the
@@ -166,7 +201,7 @@ public class RSASSA_PKCS1_v1_5 {
    * @param EM The encoded message as a byte array.
    * @return A BigInteger representing the non-negative integer obtained from the byte array.
    */
-  public BigInteger OS2IP(byte[] EM) {
+  private BigInteger OS2IP(byte[] EM) {
     return new BigInteger(1, EM);
   }
 
@@ -191,7 +226,7 @@ public class RSASSA_PKCS1_v1_5 {
    * @throws IllegalArgumentException If the BigInteger's byte array representation is not of the
    *                                  expected length or has an unexpected leading byte.
    */
-  public byte[] I2OSP(BigInteger m) throws IllegalArgumentException {
+  private byte[] I2OSP(BigInteger m) throws IllegalArgumentException {
     return ByteArrayConverter.toFixedLengthByteArray(m, this.emLen);
   }
 
@@ -207,7 +242,7 @@ public class RSASSA_PKCS1_v1_5 {
    * @param m The message representative, an integer representation of the message.
    * @return The signature representative, an integer representation of the signature.
    */
-  public BigInteger RSASP1(BigInteger m) {
+  private BigInteger RSASP1(BigInteger m) {
     BigInteger s = m.modPow(this.exponent, this.modulus);
     return s;
   }
