@@ -81,24 +81,6 @@ public class RSASSA_PKCS1_v1_5 {
   }
 
 
-
-  /**
-   * Converts an octet string (byte array) to a non-negative integer. This method follows the OS2IP
-   * (Octet String to Integer Primitive) conversion as specified in cryptographic standards like
-   * PKCS#1. 1. EMSA_PKCS1_v1_5 encoding: Apply the EMSA-PKCS1-v1_5 encoding operation to the
-   * message M to produce an encoded message EM of length k octets where k is the length in bits of
-   * the RSA modulus n:
-   *
-   * EM = EMSA_PKCS1_v1_ENCODE (M, k)..
-   *
-   * @param EM The encoded message as a byte array.
-   * @return A BigInteger representing the non-negative integer obtained from the byte array.
-   */
-  public BigInteger OS2IP(byte[] EM) {
-    return new BigInteger(1, EM);
-  }
-
-
   /**
    * Encodes a message using a custom implementation of the EMSA-PKCS1-v1_5 encoding method.
    * Includes hashing the message and preparing the encoded message with padding.
@@ -149,6 +131,39 @@ public class RSASSA_PKCS1_v1_5 {
     System.arraycopy(this.hashID, 0, digestInfo, 0, this.hashID.length);
     System.arraycopy(hash, 0, digestInfo, this.hashID.length, hash.length);
     return digestInfo;
+  }
+
+  /**
+   * Converts an octet string (byte array) to a non-negative integer. This method follows the OS2IP
+   * (Octet String to Integer Primitive) conversion as specified in cryptographic standards like
+   * PKCS#1. 1. EMSA_PKCS1_v1_5 encoding: Apply the EMSA-PKCS1-v1_5 encoding operation to the
+   * message M to produce an encoded message EM of length k octets where k is the length in bits of
+   * the RSA modulus n:
+   * <p>
+   * EM = EMSA_PKCS1_v1_ENCODE (M, k).
+   *
+   * @param EM The encoded message as a byte array.
+   * @return A BigInteger representing the non-negative integer obtained from the byte array.
+   */
+  public BigInteger OS2IP(byte[] EM) {
+    return new BigInteger(1, EM);
+  }
+
+  /**
+   * A custom implementation of the RSA signature primitive. Calculates the RSA signature of a given
+   * message representative by computing the eth root/ dth power.
+   * <p>
+   * b. Apply the RSASP1 signature primitive to the RSA private key K and the
+   * message representative m to produce an integer signature representative s:
+   * <p>
+   * s = RSASP1 (K, m).
+   *
+   * @param m The message representative, an integer representation of the message.
+   * @return The signature representative, an integer representation of the signature.
+   */
+  public BigInteger RSASP1(BigInteger m) {
+    BigInteger s = m.modPow(this.exponent, this.modulus);
+    return s;
   }
 
 }

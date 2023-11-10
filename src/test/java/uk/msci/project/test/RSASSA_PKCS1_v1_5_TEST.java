@@ -2,20 +2,17 @@ package uk.msci.project.test;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.math.BigInteger;
-
-import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.security.SignatureException;
 import java.util.Arrays;
 import java.util.zip.DataFormatException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.msci.project.rsa.GenRSA;
-import uk.msci.project.rsa.Key;
-import uk.msci.project.rsa.PrivateKey;
 import uk.msci.project.rsa.RSASSA_PKCS1_v1_5;
 
 public class RSASSA_PKCS1_v1_5_TEST {
@@ -192,7 +189,8 @@ public class RSASSA_PKCS1_v1_5_TEST {
     BigInteger expectedResult = new BigInteger(1, largeNumberArray);
     BigInteger result = scheme.OS2IP(largeNumberArray);
 
-    assertEquals(expectedResult, result, "Large number byte array should correctly convert to BigInteger");
+    assertEquals(expectedResult, result,
+        "Large number byte array should correctly convert to BigInteger");
   }
 
   @Test
@@ -201,10 +199,19 @@ public class RSASSA_PKCS1_v1_5_TEST {
     BigInteger expectedResult = new BigInteger(1, byteArrayWithZeros);
     BigInteger result = scheme.OS2IP(byteArrayWithZeros);
 
-    assertEquals(expectedResult, result, "Byte array with leading zeros should correctly convert to BigInteger");
+    assertEquals(expectedResult, result,
+        "Byte array with leading zeros should correctly convert to BigInteger");
   }
 
-
+  @Test
+  public void testRSASP1Consistency() {
+    BigInteger messageRepresentative = new BigInteger(
+        "67543678998786"); // A fixed value for testing
+    BigInteger firstSignature = scheme.RSASP1(messageRepresentative);
+    BigInteger secondSignature = scheme.RSASP1(messageRepresentative);
+    assertEquals(firstSignature, secondSignature,
+        "Repeated executions should produce the same signature for fixed input");
+  }
 
 
 }
