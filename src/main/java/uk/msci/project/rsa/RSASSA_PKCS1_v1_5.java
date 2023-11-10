@@ -86,7 +86,7 @@ public class RSASSA_PKCS1_v1_5 {
    * @return The RSA signature of the message.
    * @throws DataFormatException If the message encoding fails.
    */
-  public byte[] sign(byte[] M) throws DataFormatException {
+  private byte[] sign(byte[] M) throws DataFormatException {
     byte[] EM = EMSA_PKCS1_v1_5_ENCODE(M);
 
     BigInteger m = OS2IP(EM);
