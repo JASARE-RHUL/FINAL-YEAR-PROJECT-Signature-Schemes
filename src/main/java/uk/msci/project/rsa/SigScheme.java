@@ -43,9 +43,9 @@ public abstract class SigScheme implements SigSchemeInterface {
   byte[] hashID;
 
   /**
-   * Constructs a Signature scheme instance with the specified RSA key. Initialises the modulus
-   * and exponent from the key, calculates the encoded message length, and sets up the SHA-256
-   * message digest along with a predefined hash ID.
+   * Constructs a Signature scheme instance with the specified RSA key. Initialises the modulus and
+   * exponent from the key, calculates the encoded message length, and sets up the SHA-256 message
+   * digest along with a predefined hash ID.
    *
    * @param key The RSA key containing the exponent and modulus.
    */
@@ -69,6 +69,30 @@ public abstract class SigScheme implements SigSchemeInterface {
       throw new RuntimeException("SHA-256 algorithm not available", e);
     }
 
+  }
+
+  /**
+   * Converts an octet string (byte array) to a non-negative integer.
+   *
+   * @param EM The encoded message as a byte array.
+   * @return A BigInteger representing the non-negative integer obtained from the byte array.
+   */
+  public BigInteger OS2IP(byte[] EM) {
+    return new BigInteger(1, EM);
+  }
+
+
+  /**
+   * Converts a BigInteger to an octet string of length emLen where emLen is the ceiling of
+   * ((modBits - 1)/8) and modBits is the bit length of the RSA modulus.
+   *
+   * @param m The BigInteger to be converted into an octet string.
+   * @return A byte array representing the BigInteger in its octet string form, of length emLen.
+   * @throws IllegalArgumentException If the BigInteger's byte array representation is not of the
+   *                                  expected length or has an unexpected leading byte.
+   */
+  public byte[] I2OSP(BigInteger m) throws IllegalArgumentException {
+    return ByteArrayConverter.toFixedLengthByteArray(m, this.emLen);
   }
 
   /**
