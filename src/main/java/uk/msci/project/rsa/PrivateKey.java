@@ -9,8 +9,7 @@ import java.math.BigInteger;
  */
 public class PrivateKey extends Key {
 
-  private BigInteger p;
-  private BigInteger q;
+  private BigInteger[] primes;
   private BigInteger phi;
   private BigInteger e;
 
@@ -40,18 +39,16 @@ public class PrivateKey extends Key {
    * Constructs a public key with the given modulus and exponent whilst also encapsulating the
    * auxiliary components used in the computation of the private exponent, d.
    *
-   * @param N   The modulus part of the private key.
-   * @param p   The first prime factor of the modulus.
-   * @param q   The second prime factor of the modulus.
-   * @param phi The result of Euler's totient function.
-   * @param e   The public exponent.
-   * @param d   The private exponent.
+   * @param N      The modulus part of the private key.
+   * @param primes The prime factors of the modulus.
+   * @param phi    The result of Euler's totient function.
+   * @param e      The public exponent.
+   * @param d      The private exponent.
    */
-  public PrivateKey(BigInteger N, BigInteger p, BigInteger q, BigInteger phi, BigInteger e,
+  public PrivateKey(BigInteger N, BigInteger[] primes, BigInteger phi, BigInteger e,
       BigInteger d) {
     super(N, d);
-    this.p = p;
-    this.q = q;
+    this.primes = primes;
     this.phi = phi;
     this.e = e;
   }
@@ -68,21 +65,12 @@ public class PrivateKey extends Key {
   }
 
   /**
-   * Retrieves the first prime factor of the modulus.
+   * Retrieves the prime factors of the modulus.
    *
-   * @return The first prime factor of the modulus.
+   * @return all prime factors of the modulus contained in a list.
    */
-  public BigInteger getP() {
-    return this.p;
-  }
-
-  /**
-   * Retrieves the second prime factor of the modulus.
-   *
-   * @return The second prime factor of the modulus.
-   */
-  public BigInteger getQ() {
-    return this.q;
+  public BigInteger[] getPrimes() {
+    return this.primes;
   }
 
   /**

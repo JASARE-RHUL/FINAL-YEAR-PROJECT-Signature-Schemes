@@ -32,7 +32,7 @@ public class RSASSA_PKCS1_v1_5_TEST {
   // Before each test is run, clear any created key files.
   public void setup() {
     scheme = new RSASSA_PKCS1_v1_5(
-        new GenRSA(1024).generateKeyPair().getPrivateKey());
+        new GenRSA(2, new int[]{512, 512}).generateKeyPair().getPrivateKey());
   }
 
   @Test
@@ -322,7 +322,7 @@ public class RSASSA_PKCS1_v1_5_TEST {
 
   @Test
   void testSignAndVerifyRoundTrip() throws Exception {
-    KeyPair keyPair = new GenRSA(1024).generateKeyPair();
+    KeyPair keyPair = new GenRSA(2, new int[]{512, 512}).generateKeyPair();
     RSASSA_PKCS1_v1_5 schemeForSigning = new RSASSA_PKCS1_v1_5(keyPair.getPrivateKey());
     RSASSA_PKCS1_v1_5 schemeForVerifying = new RSASSA_PKCS1_v1_5(keyPair.getPublicKey());
     // Prepare a message
@@ -351,7 +351,7 @@ public class RSASSA_PKCS1_v1_5_TEST {
   @Test
     // Test that verify correctly identifies an invalid signature.
   void testVerificationFailsForInvalidSignature() throws Exception {
-    KeyPair keyPair = new GenRSA(1024).generateKeyPair();
+    KeyPair keyPair = new GenRSA(2, new int[]{512, 512}).generateKeyPair();
     RSASSA_PKCS1_v1_5 schemeForVerifying = new RSASSA_PKCS1_v1_5(keyPair.getPublicKey());
     // Prepare a message and a random invalid signature
     byte[] message = "test message".getBytes();
@@ -371,7 +371,7 @@ public class RSASSA_PKCS1_v1_5_TEST {
   @Test
     // Test that altering a message after it's been signed results in a verification failure.
   void testVerificationFailsForAlteredMessage() throws Exception {
-    KeyPair keyPair = new GenRSA(1024).generateKeyPair();
+    KeyPair keyPair = new GenRSA(2, new int[]{512, 512}).generateKeyPair();
     RSASSA_PKCS1_v1_5 schemeForSigning = new RSASSA_PKCS1_v1_5(keyPair.getPrivateKey());
     RSASSA_PKCS1_v1_5 schemeForVerifying = new RSASSA_PKCS1_v1_5(keyPair.getPublicKey());
     // Sign a message
@@ -397,7 +397,7 @@ public class RSASSA_PKCS1_v1_5_TEST {
   @Test
     // Test that altering a signature after it's been generated results in a verification failure.
   void testVerificationFailsForAlteredSignature() throws Exception {
-    KeyPair keyPair = new GenRSA(1024).generateKeyPair();
+    KeyPair keyPair = new GenRSA(2, new int[]{512, 512}).generateKeyPair();
     RSASSA_PKCS1_v1_5 schemeForSigning = new RSASSA_PKCS1_v1_5(keyPair.getPrivateKey());
     RSASSA_PKCS1_v1_5 schemeForVerifying = new RSASSA_PKCS1_v1_5(keyPair.getPublicKey());
     byte[] message = "test message".getBytes();
@@ -422,7 +422,7 @@ public class RSASSA_PKCS1_v1_5_TEST {
   @Test
     // Test that signatures are only verified correctly with the matching public key, not with a different public key
   void testVerificationWithCorrectAndIncorrectKeys() throws Exception {
-    KeyPair keyPair = new GenRSA(1024).generateKeyPair();
+    KeyPair keyPair = new GenRSA(2, new int[]{512, 512}).generateKeyPair();
     RSASSA_PKCS1_v1_5 schemeForSigning1 = new RSASSA_PKCS1_v1_5(keyPair.getPrivateKey());
     RSASSA_PKCS1_v1_5 schemeForVerifying1 = new RSASSA_PKCS1_v1_5(keyPair.getPublicKey());
     // Sign a message
@@ -442,8 +442,8 @@ public class RSASSA_PKCS1_v1_5_TEST {
         "The signature should be valid with the correct public key.");
 
     // Generate a new key pair, which will have a different public key
-    Key incorrectPublicKey = new GenRSA(1024).generateKeyPair().getPublicKey();
-    KeyPair keyPair2 = new GenRSA(1024).generateKeyPair();
+    Key incorrectPublicKey = new GenRSA(2, new int[]{512, 512}).generateKeyPair().getPublicKey();
+    KeyPair keyPair2 = new GenRSA(2, new int[]{512, 512}).generateKeyPair();
 
     // Try to verify the signature with the incorrect public key
     RSASSA_PKCS1_v1_5 schemeWithIncorrectKey = new RSASSA_PKCS1_v1_5(keyPair2.getPublicKey());

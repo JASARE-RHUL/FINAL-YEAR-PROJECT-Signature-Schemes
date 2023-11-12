@@ -29,46 +29,68 @@ public class GenRSA {
   private int certainty = 75;
 
   /**
-   * Constructs a GenRSA object with a specified key size.
-   *
-   * @param size The desired bit length of the RSA keys.
-   * @throws IllegalArgumentException if the specified key size is invalid.
+   * The number of distinct prime numbers used to generate the RSA modulus.
    */
-  public GenRSA(int size) throws IllegalArgumentException {
-    if (size >= MINKEYSIZE && size <= MAXKEYSIZE) {
-      this.keySize = size;
-    } else {
+  private int k;
+
+  /**
+   * An array holding the bit lengths for each of the distinct prime numbers.
+   */
+  private int[] lambda;
+
+  /**
+   * Constructs a GenRSA object that can generate RSA keys with a modulus derived from k distinct
+   * primes with specified bit lengths.
+   *
+   * @param k      The number of distinct primes to be generated.
+   * @param lambda An array of integers representing the bit lengths of each prime number.
+   * @throws IllegalArgumentException If the lambda array does not have k elements or if the sum of
+   *                                  bit lengths does not meet the key size requirements.
+   */
+  public GenRSA(int k, int[] lambda) throws IllegalArgumentException {
+    if (lambda.length != k) {
+      throw new IllegalArgumentException("Lambda array must have k elements.");
+    }
+
+    for (int bitLength : lambda) {
+      keySize += bitLength;
+    }
+    if (!(keySize >= MINKEYSIZE && keySize <= MAXKEYSIZE)) {
       throw new IllegalArgumentException(
           "Key size cannot be smaller than " + MINKEYSIZE + "bits or larger than" + MAXKEYSIZE
               + "bits");
     }
+
+    this.k = k;
+    this.lambda = lambda;
   }
 
   /**
-   * Generates two probable prime numbers of bit length roughly equal to half of the specified key
-   * size.
+   * Generates an array of k distinct prime numbers based on the provided bit lengths.
    *
-   * @return An array of two {@code BigInteger} instances representing the prime numbers.
+   * @return An array of BigInteger representing the distinct prime numbers.
    */
   public BigInteger[] generatePrimeComponents() {
-    int adjustedBitLength = (int) Math.ceil(((double) keySize) / 2);
-    BigInteger p = new BigInteger(adjustedBitLength, this.certainty, new SecureRandom());
-    BigInteger q = new BigInteger(adjustedBitLength, this.certainty, new SecureRandom());
-    if (p.equals(q)) {
-      return this.generatePrimeComponents();
+    BigInteger[] components = new BigInteger[k];
+    for (int i = 0; i < k; i++) {
+      components[i] = new BigInteger(lambda[i], this.certainty, new SecureRandom());
     }
-    return new BigInteger[]{p, q};
+    return components;
   }
 
   /**
-   * Computes the Euler's totient function of {@code p} and {@code q}.
+   * Computes the Euler's totient function (φ) for an RSA modulus that is the product of k distinct
+   * prime numbers.
    *
-   * @param p The first prime factor of the modulus N.
-   * @param q The second prime factor of modulus N.
-   * @return The result of Euler's totient function.
+   * @param components An array of BigInteger representing the distinct prime numbers.
+   * @return The result of the Euler's totient function.
    */
-  public BigInteger computePhi(BigInteger p, BigInteger q) {
-    return p.subtract(ONE).multiply(q.subtract(ONE));
+  public BigInteger computePhi(BigInteger[] components) {
+    BigInteger phi = BigInteger.ONE;
+    for (BigInteger prime : components) {
+      phi = phi.multiply(prime.subtract(ONE));
+    }
+    return phi;
   }
 
   /**
@@ -85,24 +107,30 @@ public class GenRSA {
     return e;
   }
 
+  public BigInteger genModulus(BigInteger[] primes) {
+    BigInteger modulus = BigInteger.ONE;
+    for (BigInteger prime : primes) {
+      modulus = modulus.multiply(prime);
+    }
+    return modulus;
+  }
+
   /**
    * Generates the RSA key pair.
    *
    * @return A {@code KeyPair} object containing the generated RSA public and private keys.
    */
   public KeyPair generateKeyPair() {
-    BigInteger[] pq = this.generatePrimeComponents();
-    BigInteger p = pq[0];
-    BigInteger q = pq[1];
-    BigInteger N = p.multiply(q);
-    BigInteger phi = computePhi(p, q);
+    BigInteger[] primes = this.generatePrimeComponents();
+    BigInteger N = genModulus(primes);
+    BigInteger phi = computePhi(primes);
     BigInteger e = computeE(phi);
     /*
      * Computes the private exponent d for private key component in the RSA Key pair.
      */
     BigInteger d = e.modInverse(phi);
     PublicKey publicKey = new PublicKey(N, e);
-    PrivateKey privateKey = new PrivateKey(N, p, q, phi, e, d);
+    PrivateKey privateKey = new PrivateKey(N, primes, phi, e, d);
 
     return new KeyPair(publicKey, privateKey);
   }
