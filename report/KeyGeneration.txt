@@ -1,0 +1,66 @@
+@startuml
+abstract class Key {
+    # keyValue : String
+    # exponent : BigInteger
+    # modulus : BigInteger
+    + Key(key : String)
+    + Key(keyFile : File)
+    + Key(modulus : BigInteger, exponent : BigInteger)
+    + getExponent() : BigInteger
+    + getModulus() : BigInteger
+    + getKeyValue() : String
+    # parseKeyValue(keyValue : String) : void
+    # importFromFile(keyFile : File) : String
+    # exportToFile(fileName : String) : void
+}
+
+class PrivateKey {
+    - p : BigInteger
+    - q : BigInteger
+    - phi : BigInteger
+    - e : BigInteger
+    + PrivateKey(N : BigInteger, d : BigInteger)
+    + PrivateKey(N : BigInteger, p : BigInteger, q : BigInteger, phi : BigInteger, e : BigInteger, d : BigInteger)
+    + PrivateKey(key : String)
+    + PrivateKey(privKeyFile : File)
+    + getP() : BigInteger
+    + getQ() : BigInteger
+    + getPhi() : BigInteger
+    + getE() : BigInteger
+}
+
+class PublicKey {
+    + PublicKey(N : BigInteger, e : BigInteger)
+    + PublicKey(key : String)
+    + PublicKey(pubKeyFile : File)
+}
+
+class KeyPair {
+    - privateKey : PrivateKey
+    - publicKey : PublicKey
+    + KeyPair(privateKey : PrivateKey, publicKey : PublicKey)
+    + getPrivateKey() : PrivateKey
+    + getPublicKey() : PublicKey
+}
+
+class GenRSA {
+  - DEFAULTSIZE: int
+  - MAXKEYSIZE: int
+  - MINKEYSIZE: int
+  - CERTAINTY: int
+  - keySize: int
+  + GenRSA(keySize: int)
+  - generatePrimeComponents() : BigInteger[]
+  - computePhi(BigInteger p, BigInteger q) : BigInteger
+  - computeE(BigInteger phi) : BigInteger
+  + generateKeyPair() : KeyPair
+  + getKeySize() : int
+  + getCertainty() : int
+}
+
+PrivateKey --|> Key : extends
+PublicKey --|> Key : extends
+KeyPair *-- PrivateKey
+KeyPair *-- PublicKey
+GenRSA ..> KeyPair : creates
+@enduml

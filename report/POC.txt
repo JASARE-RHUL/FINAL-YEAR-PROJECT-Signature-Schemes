@@ -1,0 +1,107 @@
+@startuml
+
+' View Implementations
+class SignView implements SignatureViewInterface {
+}
+
+class VerifyView implements SignatureViewInterface {
+}
+
+class GenerateKeysView {
+}
+
+class MainMenuView {
+}
+
+' Controller Classes
+class SignatureController {
+  signView : SignView
+  verifyView : VerifyView
+  signatureModel : SignatureModel
+  + SignatureController(signView : SignView, verifyView : VerifyView, signatureModel : SignatureModel)
+
+}
+class MainController {
+    -SignView signView
+    -VerifyView verifyView
+    -GenerateKeysView generateKeysView
+    -MainMenuView mainMenuView
+    -SignatureController signatureController
+    -GenController genController
+    +showGenView(): void
+    +showSignView(): void
+    +showVerifyView(): void
+    +switchView(view: String): void
+}
+
+class GenController {
+  genView : GenView
+  genModel : GenModel
+  + GenController(genView : GenView, genModel : GenModel)
+}
+
+class GenRSA {
+}
+
+' Model Classes
+class SignatureModel {
+  currentSignatureScheme : SigSchemeInterface
+  key : Key
+  currentType : SignatureType
+}
+
+class GenerateKeysModel {
+  keySize : int
+  currentGen : GenRSA
+  generatedKeyPair : KeyPair
+}
+
+' Enum and Factory
+enum SigType {
+  RSASSA_PKCS1_v1_5
+  ANSI_X9_31_RDSA
+  ISO_IEC_9796_2_SCHEME_1
+}
+
+class SchemeFactory {
+    +createScheme(type: SigType): SigSchemeInterface
+}
+
+interface SigSchemeInterface {
+  sign(M : byte[]) : byte[]
+  verify(M : byte[], signature : byte[]) : boolean
+}
+
+class RSASSA_PKCS1_v1_5 implements SigSchemeInterface {
+}
+
+class ANSI_X9_31_RDSA implements SigSchemeInterface {
+}
+
+class ISO_IEC_9796_2_SCHEME_1 implements SigSchemeInterface {
+}
+
+
+' Relationships
+SignatureController --> SignView
+SignatureController --> VerifyView
+SignatureController <.. SignView
+SignatureController <.. VerifyView
+SignatureController --> SignatureModel
+GenController --> GenerateKeysModel
+GenController --> GenerateKeysView
+GenController <.. GenerateKeysView
+MainController o-- SignView
+MainController o-- VerifyView
+MainController o-- MainMenuView
+MainController o-- GenerateKeysView
+MainController o-- SignatureController
+MainController o-- GenController
+SchemeFactory --> SigType: uses
+SchemeFactory --> SigSchemeInterface: creates
+SignatureModel --> SchemeFactory
+GenerateKeysModel o-- GenRSA
+
+
+
+@enduml
