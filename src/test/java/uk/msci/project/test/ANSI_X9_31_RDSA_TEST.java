@@ -38,7 +38,7 @@ public class ANSI_X9_31_RDSA_TEST {
   void testANSI_X9_31_RDSA_initialBytePadding()
       throws DataFormatException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
     byte[] message = "test message 1".getBytes();
-    Method encodeMethod = ANSI_X9_31_RDSA.class.getDeclaredMethod("ANSI_X9_31_RDSA_ENCODE",
+    Method encodeMethod = ANSI_X9_31_RDSA.class.getDeclaredMethod("encodeMessage",
         byte[].class);
     encodeMethod.setAccessible(true);
     byte[] encodedMessage = (byte[]) encodeMethod.invoke(scheme, (Object) message);
@@ -51,7 +51,7 @@ public class ANSI_X9_31_RDSA_TEST {
   void testANSI_X9_31_RDSA_finalBytePadding()
       throws DataFormatException, NoSuchMethodException, InvocationTargetException, IllegalAccessException, NoSuchAlgorithmException {
     byte[] message = "test message 1".getBytes();
-    Method encodeMethod = ANSI_X9_31_RDSA.class.getDeclaredMethod("ANSI_X9_31_RDSA_ENCODE",
+    Method encodeMethod = ANSI_X9_31_RDSA.class.getDeclaredMethod("encodeMessage",
         byte[].class);
     encodeMethod.setAccessible(true);
     byte[] encodedMessage = (byte[]) encodeMethod.invoke(scheme, (Object) message);
@@ -66,10 +66,10 @@ public class ANSI_X9_31_RDSA_TEST {
 
 
   @Test
-  void testANSI_X9_31_RDSA_ENCODE_PaddingString()
+  void testencodeMessage_PaddingString()
       throws DataFormatException, NoSuchAlgorithmException, InvocationTargetException, IllegalAccessException, NoSuchMethodException {
     byte[] message = "test message 7".getBytes();
-    Method encodeMethod = ANSI_X9_31_RDSA.class.getDeclaredMethod("ANSI_X9_31_RDSA_ENCODE",
+    Method encodeMethod = ANSI_X9_31_RDSA.class.getDeclaredMethod("encodeMessage",
         byte[].class);
     encodeMethod.setAccessible(true);
     byte[] encodedMessage = (byte[]) encodeMethod.invoke(scheme, (Object) message);
@@ -87,10 +87,10 @@ public class ANSI_X9_31_RDSA_TEST {
 
 
   @Test
-  public void testANSI_X9_31_RDSA_ENCODE_MessagePlacement()
+  public void testencodeMessage_MessagePlacement()
       throws DataFormatException, NoSuchAlgorithmException, InvocationTargetException, IllegalAccessException, NoSuchMethodException {
     byte[] message = "test message 9".getBytes();
-    Method encodeMethod = ANSI_X9_31_RDSA.class.getDeclaredMethod("ANSI_X9_31_RDSA_ENCODE",
+    Method encodeMethod = ANSI_X9_31_RDSA.class.getDeclaredMethod("encodeMessage",
         byte[].class);
     encodeMethod.setAccessible(true);
     byte[] encodedMessage = (byte[]) encodeMethod.invoke(scheme, (Object) message);
@@ -106,12 +106,12 @@ public class ANSI_X9_31_RDSA_TEST {
   }
 
   @Test
-  public void testANSI_X9_31_RDSA_ENCODE_HashIncorporation()
+  public void testencodeMessage_HashIncorporation()
       throws DataFormatException, NoSuchAlgorithmException, InvocationTargetException, IllegalAccessException, NoSuchMethodException {
     byte[] message = "Test message 10".getBytes();
     MessageDigest md = MessageDigest.getInstance("SHA-256");
 
-    Method encodeMethod = ANSI_X9_31_RDSA.class.getDeclaredMethod("ANSI_X9_31_RDSA_ENCODE",
+    Method encodeMethod = ANSI_X9_31_RDSA.class.getDeclaredMethod("encodeMessage",
         byte[].class);
     encodeMethod.setAccessible(true);
     byte[] encodedMessage = (byte[]) encodeMethod.invoke(scheme, (Object) message);
@@ -137,14 +137,14 @@ public class ANSI_X9_31_RDSA_TEST {
     byte[] message = "test message".getBytes();
 
     // Use reflection to invoke the private 'sign' method
-    Method signMethod = ANSI_X9_31_RDSA.class.getDeclaredMethod("sign", byte[].class);
+    Method signMethod = ANSI_X9_31_RDSA.class.getMethod("sign", byte[].class);
     signMethod.setAccessible(true);
 
     // Invoke the 'sign' method and get the signature
     byte[] signature = (byte[]) signMethod.invoke(schemeForSigning, (Object) message);
 
     // Use reflection to invoke the private 'verify' method
-    Method verifyMethod = ANSI_X9_31_RDSA.class.getDeclaredMethod("ANSI_X9_31_RDSA_VERIFY",
+    Method verifyMethod = ANSI_X9_31_RDSA.class.getMethod("verifyMessage",
         byte[].class, byte[].class);
     verifyMethod.setAccessible(true);
 
@@ -167,7 +167,7 @@ public class ANSI_X9_31_RDSA_TEST {
     new SecureRandom().nextBytes(invalidSignature); // Fill with random data
 
     // Use reflection to invoke the private 'verify' method
-    Method verifyMethod = ANSI_X9_31_RDSA.class.getDeclaredMethod("ANSI_X9_31_RDSA_VERIFY",
+    Method verifyMethod = ANSI_X9_31_RDSA.class.getMethod("verifyMessage",
         byte[].class, byte[].class);
     verifyMethod.setAccessible(true);
 
@@ -184,7 +184,7 @@ public class ANSI_X9_31_RDSA_TEST {
     ANSI_X9_31_RDSA schemeForVerifying = new ANSI_X9_31_RDSA(keyPair.getPublicKey());
     // Sign a message
     byte[] originalMessage = "test message".getBytes();
-    Method signMethod = ANSI_X9_31_RDSA.class.getDeclaredMethod("sign", byte[].class);
+    Method signMethod = ANSI_X9_31_RDSA.class.getMethod("sign", byte[].class);
     signMethod.setAccessible(true);
     byte[] signature = (byte[]) signMethod.invoke(schemeForSigning, (Object) originalMessage);
 
@@ -192,7 +192,7 @@ public class ANSI_X9_31_RDSA_TEST {
     byte[] alteredMessage = "test message altered".getBytes();
 
     // Use reflection to invoke the private 'verify' method
-    Method verifyMethod = ANSI_X9_31_RDSA.class.getDeclaredMethod("ANSI_X9_31_RDSA_VERIFY",
+    Method verifyMethod = ANSI_X9_31_RDSA.class.getMethod("verifyMessage",
         byte[].class, byte[].class);
     verifyMethod.setAccessible(true);
 
@@ -209,7 +209,7 @@ public class ANSI_X9_31_RDSA_TEST {
     ANSI_X9_31_RDSA schemeForSigning = new ANSI_X9_31_RDSA(keyPair.getPrivateKey());
     ANSI_X9_31_RDSA schemeForVerifying = new ANSI_X9_31_RDSA(keyPair.getPublicKey());
     byte[] message = "test message".getBytes();
-    Method signMethod = ANSI_X9_31_RDSA.class.getDeclaredMethod("sign", byte[].class);
+    Method signMethod = ANSI_X9_31_RDSA.class.getMethod("sign", byte[].class);
     signMethod.setAccessible(true);
     byte[] signature = (byte[]) signMethod.invoke(schemeForSigning, (Object) message);
 
@@ -217,7 +217,7 @@ public class ANSI_X9_31_RDSA_TEST {
     signature[signature.length - 1] ^= 1;
 
     // Use reflection to invoke the private 'verify' method
-    Method verifyMethod = ANSI_X9_31_RDSA.class.getDeclaredMethod("ANSI_X9_31_RDSA_VERIFY",
+    Method verifyMethod = ANSI_X9_31_RDSA.class.getMethod("verifyMessage",
         byte[].class, byte[].class);
     verifyMethod.setAccessible(true);
 
@@ -235,11 +235,11 @@ public class ANSI_X9_31_RDSA_TEST {
     ANSI_X9_31_RDSA schemeForVerifying1 = new ANSI_X9_31_RDSA(keyPair.getPublicKey());
     // Sign a message
     byte[] message = "test message".getBytes();
-    Method signMethod = ANSI_X9_31_RDSA.class.getDeclaredMethod("sign", byte[].class);
+    Method signMethod = ANSI_X9_31_RDSA.class.getMethod("sign", byte[].class);
     signMethod.setAccessible(true);
     byte[] signature = (byte[]) signMethod.invoke(schemeForSigning1, (Object) message);
 
-    Method verifyMethod = ANSI_X9_31_RDSA.class.getDeclaredMethod("ANSI_X9_31_RDSA_VERIFY",
+    Method verifyMethod = ANSI_X9_31_RDSA.class.getMethod("verifyMessage",
         byte[].class, byte[].class);
     verifyMethod.setAccessible(true);
     // Use the correct public key for verification

@@ -3,6 +3,8 @@ package uk.msci.project.rsa;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
+import java.util.zip.DataFormatException;
 
 
 public abstract class SigScheme implements SigSchemeInterface {
@@ -70,6 +72,69 @@ public abstract class SigScheme implements SigSchemeInterface {
     }
 
   }
+
+  // Abstract method to be implemented by derived classes for encoding
+  protected abstract byte[] encodeMessage(byte[] M) throws DataFormatException;
+
+//  // Abstract method to be implemented by derived classes for verification
+//  protected abstract boolean verifyMessage(byte[] M, byte[] S) throws DataFormatException;
+
+  /**
+   * Signs the provided message using RSA private key operations. The method encodes the message,
+   * generates a signature, and returns it as a byte array.
+   *
+   * @param M The message to be signed.
+   * @return The RSA signature of the message.
+   * @throws DataFormatException If the message encoding fails.
+   */
+  @Override
+  public byte[] sign(byte[] M) throws DataFormatException {
+    byte[] EM = encodeMessage(M);
+
+    BigInteger m = OS2IP(EM);
+
+    BigInteger s = RSASP1(m);
+
+    byte[] S = I2OSP(s);
+
+    // Output the signature S.
+    return S;
+  }
+  /**
+   * Verifies an RSA signature against a given message. Returns true if the signature is valid.
+   *
+   * @param M The original message.
+   * @param S The RSA signature to be verified.
+   * @return true if the signature is valid, false otherwise.
+   * @throws DataFormatException If verification fails due to incorrect format.
+   */
+  @Override
+  public boolean verify(byte[] M, byte[] S) throws DataFormatException {
+    return verifyMessage(M, S);
+  }
+
+  /**
+   * Verifies an RSA signature against a given message. Returns true if the signature is valid.
+   *
+   * @param M The original message.
+   * @param S The RSA signature to be verified.
+   * @return true if the signature is valid, false otherwise.
+   * @throws DataFormatException If verification fails due to incorrect format.
+   */
+  public boolean verifyMessage(byte[] M, byte[] S)
+      throws DataFormatException {
+
+    BigInteger s = OS2IP(S);
+
+    BigInteger m = RSAVP1(s);
+
+    byte[] EM = I2OSP(m);
+
+    byte[] EMprime = encodeMessage(M);
+
+    return Arrays.equals(EM, EMprime);
+  }
+
 
   /**
    * Converts an octet string (byte array) to a non-negative integer.
