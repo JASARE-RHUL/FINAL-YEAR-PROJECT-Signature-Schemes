@@ -22,26 +22,7 @@ public class RSASSA_PKCS1_v1_5 extends SigScheme {
     super(key);
   }
 
-  /**
-   * Signs the provided message using RSA private key operations. The method encodes the message,
-   * generates a signature, and returns it as a byte array.
-   *
-   * @param M The message to be signed.
-   * @return The RSA signature of the message.
-   * @throws DataFormatException If the message encoding fails.
-   */
-  public byte[] sign(byte[] M) throws DataFormatException {
-    byte[] EM = EMSA_PKCS1_v1_5_ENCODE(M);
 
-    BigInteger m = OS2IP(EM);
-
-    BigInteger s = RSASP1(m);
-
-    byte[] S = I2OSP(s);
-
-    // Output the signature S.
-    return S;
-  }
 
 
   /**
@@ -51,7 +32,8 @@ public class RSASSA_PKCS1_v1_5 extends SigScheme {
    * @param M The message to be encoded.
    * @return The encoded message as a byte array.
    */
-  private byte[] EMSA_PKCS1_v1_5_ENCODE(byte[] M) throws DataFormatException {
+  @Override
+  protected byte[] encodeMessage(byte[] M) throws DataFormatException {
 
     this.md.update(M);
     byte[] mHash = this.md.digest();
@@ -94,41 +76,6 @@ public class RSASSA_PKCS1_v1_5 extends SigScheme {
     System.arraycopy(this.hashID, 0, digestInfo, 0, this.hashID.length);
     System.arraycopy(hash, 0, digestInfo, this.hashID.length, hash.length);
     return digestInfo;
-  }
-
-  /**
-   * Verifies an RSA signature against a given message. Returns true if the signature is valid.
-   *
-   * @param M The original message.
-   * @param S The RSA signature to be verified.
-   * @return true if the signature is valid, false otherwise.
-   * @throws DataFormatException If verification fails due to incorrect format.
-   */
-  public boolean verify(byte[] M, byte[] S) throws DataFormatException {
-    return RSASSA_PKCS1_V1_5_VERIFY(M, S);
-  }
-
-  /**
-   * A custom implementation of the RSASSA-PKCS1-v1_5 signature verification. Compares the encoded
-   * message with the signature to determine if the signature is valid.
-   *
-   * @param M The original message that was signed.
-   * @param S The signature to be verified.
-   * @return true if the signature is valid; false otherwise.
-   * @throws DataFormatException If verification fails due to formatting issues.
-   */
-  private boolean RSASSA_PKCS1_V1_5_VERIFY(byte[] M, byte[] S)
-      throws DataFormatException {
-
-    BigInteger s = OS2IP(S);
-
-    BigInteger m = RSAVP1(s);
-
-    byte[] EM = I2OSP(m);
-
-    byte[] EMprime = EMSA_PKCS1_v1_5_ENCODE(M);
-
-    return Arrays.equals(EM, EMprime);
   }
 
 }

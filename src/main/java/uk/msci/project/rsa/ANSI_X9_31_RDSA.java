@@ -24,27 +24,6 @@ public class ANSI_X9_31_RDSA extends SigScheme {
     this.hashID = new byte[]{(byte) 0x34, (byte) 0xCC};
   }
 
-  /**
-   * Signs the provided message using RSA private key operations. The method encodes the message,
-   * generates a signature, and returns it as a byte array.
-   *
-   * @param M The message to be signed.
-   * @return The RSA signature of the message.
-   * @throws DataFormatException If the message encoding fails.
-   */
-  public byte[] sign(byte[] M) throws DataFormatException {
-    byte[] EM = ANSI_X9_31_RDSA_ENCODE(M);
-
-    BigInteger m = OS2IP(EM);
-
-    BigInteger s = RSASP1(m);
-
-    byte[] S = I2OSP(s);
-
-    // Output the signature S.
-    return S;
-  }
-
 
   /**
    * Encodes a message as per the ANSI X9.31 rDSA standard. Includes hashing the message and
@@ -54,7 +33,8 @@ public class ANSI_X9_31_RDSA extends SigScheme {
    * @param M The message to be encoded.
    * @return The encoded message as a byte array.
    */
-  private byte[] ANSI_X9_31_RDSA_ENCODE(byte[] M) throws DataFormatException {
+  @Override
+  protected byte[] encodeMessage(byte[] M) throws DataFormatException {
 
     this.md.update(M);
     byte[] mHash = this.md.digest();
@@ -105,41 +85,6 @@ public class ANSI_X9_31_RDSA extends SigScheme {
     System.arraycopy(hash, 0, digestInfo, 0, hash.length);
     System.arraycopy(this.hashID, 0, digestInfo, hash.length, this.hashID.length);
     return digestInfo;
-  }
-
-  /**
-   * Verifies an RSA signature against a given message. Returns true if the signature is valid.
-   *
-   * @param M The original message.
-   * @param S The RSA signature to be verified.
-   * @return true if the signature is valid, false otherwise.
-   * @throws DataFormatException If verification fails due to incorrect format.
-   */
-  public boolean verify(byte[] M, byte[] S) throws DataFormatException {
-    return ANSI_X9_31_RDSA_VERIFY(M, S);
-  }
-
-  /**
-   * Verifies a signature-message pairing as per the ANSI X9.31 rDSA standard. Compares the encoded
-   * message with the signature to determine if the signature is valid.
-   *
-   * @param M The original message that was signed.
-   * @param S The signature to be verified.
-   * @return true if the signature is valid; false otherwise.
-   * @throws DataFormatException If verification fails due to formatting issues.
-   */
-  private boolean ANSI_X9_31_RDSA_VERIFY(byte[] M, byte[] S)
-      throws DataFormatException {
-
-    BigInteger s = OS2IP(S);
-
-    BigInteger m = RSAVP1(s);
-
-    byte[] EM = I2OSP(m);
-
-    byte[] EMprime = ANSI_X9_31_RDSA_ENCODE(M);
-
-    return Arrays.equals(EM, EMprime);
   }
 
 }
