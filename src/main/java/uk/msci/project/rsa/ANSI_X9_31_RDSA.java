@@ -1,6 +1,5 @@
 package uk.msci.project.rsa;
 
-import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.zip.DataFormatException;
 
@@ -35,57 +34,60 @@ public class ANSI_X9_31_RDSA extends SigScheme {
    */
   @Override
   protected byte[] encodeMessage(byte[] M) throws DataFormatException {
-
+    // Assuming hashID is already set elsewhere to the correct value for SHA-256
     this.md.update(M);
     byte[] mHash = this.md.digest();
 
-    byte[] digestInfo = createDigestInfo(mHash);
-    int tLen = digestInfo.length;
+
+    int tLen = mHash.length + this.hashID.length;
+
+    // Calculate the length of the padding 'BBBB...BBA'
+    int psLen = emLen - tLen - 1; // Subtract 1 for the '6' at the beginning
 
 
-    /*
-    The non -repetitive part of the padding consists of the starting half - byte 0x6 (which
-    is combined with the first 0xB to form 0x6B) and the ending half - byte 0xA (which is combined
-    with the last 0xB to form 0xBA). Since these are combined into full bytes, they count as 2
-    bytes in total.
-     */
+    byte[] PS = new byte[psLen];
 
-    // Calculate the length of the repeated 0xB padding
-    int repeatedPadLength = emLen - tLen - 2;
+    Arrays.fill(PS, (byte) 0xBB);
 
-    byte[] repeatedPad = new byte[repeatedPadLength];
-    Arrays.fill(repeatedPad, (byte) 0xBB);
+    PS[psLen - 1] = (byte) 0xBA;
 
     byte[] EM = new byte[emLen];
-    // Set the first byte to 0x6B
-    EM[0] = (byte) 0x6B;
+    int pos = 0;
 
-    // Copy the repeated padding into the EM array
-    System.arraycopy(repeatedPad, 0, EM, 1, repeatedPadLength);
+    // Set the first byte to '6'
+    EM[pos++] = (byte) 0x06;
 
-    // Set the last byte of padding to 0xBA
-    EM[repeatedPadLength + 1] = (byte) 0xBA;
+    // Copy the padding into the EM
+    System.arraycopy(PS, 0, EM, pos, psLen);
+    pos += psLen;
+    byte[] digestInfo = createDigestInfo(mHash);
 
-    // Copy the trailer into the EM array
-    System.arraycopy(digestInfo, 0, EM, 2 + repeatedPadLength, tLen);
+
+    System.arraycopy(digestInfo, 0, EM, pos, digestInfo.length);
+    pos += digestInfo.length;
 
     return EM;
   }
 
+
   /**
-   * Creates a DigestInfo structure manually as per the ANSI X9.31 rDSA standard standard by
-   * appending the hash to the corresponding hash ID
+   * Creates a DigestInfo structure manually as per the ANSI X9.31 rDSA standard by appending the
+   * hash to the corresponding hash ID.
    *
    * @param hash The hash of the message to be included in the DigestInfo.
    * @return A byte array representing the DigestInfo structure.
    */
   public byte[] createDigestInfo(byte[] hash) {
-    //ordering swapped as compared to PKCS
     byte[] digestInfo = new byte[hash.length + this.hashID.length];
+
     System.arraycopy(hash, 0, digestInfo, 0, hash.length);
+
+    // Copy the hash ID into the digestInfo array, immediately after the hash.
     System.arraycopy(this.hashID, 0, digestInfo, hash.length, this.hashID.length);
+
     return digestInfo;
   }
+
 
 }
 

@@ -3,12 +3,10 @@ package uk.msci.project.test;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
@@ -17,11 +15,9 @@ import java.util.zip.DataFormatException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.msci.project.rsa.ANSI_X9_31_RDSA;
-import uk.msci.project.rsa.ByteArrayConverter;
 import uk.msci.project.rsa.GenRSA;
 import uk.msci.project.rsa.Key;
 import uk.msci.project.rsa.KeyPair;
-import uk.msci.project.rsa.ANSI_X9_31_RDSA;
 
 public class ANSI_X9_31_RDSA_TEST {
 
@@ -43,7 +39,7 @@ public class ANSI_X9_31_RDSA_TEST {
     encodeMethod.setAccessible(true);
     byte[] encodedMessage = (byte[]) encodeMethod.invoke(scheme, (Object) message);
 
-    assertEquals(0x6B, encodedMessage[0], "The first byte of the encoded message should be 0x6B");
+    assertEquals(0x6, encodedMessage[0], "The first byte of the encoded message should be 0x6");
 
   }
 
@@ -153,6 +149,7 @@ public class ANSI_X9_31_RDSA_TEST {
         signature);
 
     // Assert that the signature is valid
+
     assertTrue(isSignatureValid, "The signature should be verified successfully.");
   }
 
