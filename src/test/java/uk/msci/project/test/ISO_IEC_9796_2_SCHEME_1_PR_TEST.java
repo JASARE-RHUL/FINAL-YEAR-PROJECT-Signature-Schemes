@@ -63,5 +63,51 @@ public class ISO_IEC_9796_2_SCHEME_1_PR_TEST {
         "The final byte of the encoded message should be PADR.");
   }
 
+  @Test
+  void testMessagePlacement() throws Exception {
+    byte[] message = "Test message".getBytes();
+    byte[] message2 = ("Test message for signing Test message for signing Test mes"
+        + "sage for signing Test message for signing Test message for signing Test message for signi"
+        + "ng Test message for signing Test message for signing Test message for signing Test message "
+        + "for signing Test message for signingTest message for signing Test message for signingTest mes"
+        + "sage for signingTest message for signingTest message for signingTest message for "
+        + "signingv Test message for signing Test message for signing Test message for signing Test"
+        + " message for signing Test message for signing Test message for signing Test message for signing").getBytes();
+
+    Method encodeMethod = ISO_IEC_9796_2_SCHEME_1_PR.class.getMethod("encodeMessage", byte[].class);
+    encodeMethod.setAccessible(true);
+    byte[] EM = (byte[]) encodeMethod.invoke(scheme, (Object) message2);
+    Field emLen = SigScheme.class.getDeclaredField("emLen");
+    emLen.setAccessible(true);
+    int emLenVal = (int) emLen.get(scheme);
+
+    int hashStartIndex = emLenVal - 1 - 32;
+
+    // Calculate the length of m1
+    int m1Length = hashStartIndex - 3; // Subtracting bytes for 0x06, 0xA0
+
+    // Create array for m1
+    byte[] m1Candidate = new byte[m1Length];
+
+    // Start copying from the third byte of EM, as first two bytes are padding
+    System.arraycopy(EM, 2, m1Candidate, 0, m1Length);
+
+    // Trim potential trailing zeros from m1
+    int m1EndIndex = m1Candidate.length;
+    while (m1EndIndex > 0 && m1Candidate[m1EndIndex - 1] == 0) {
+      m1EndIndex--;
+    }
+
+
+    byte[] m1Actual = Arrays.copyOfRange(m1Candidate, 0, m1EndIndex);
+
+    int availableSpace = emLenVal - 3 - 32 - 1;
+    int messageLength = Math.min(message2.length, availableSpace);
+    byte[] expectedRecoveryMessage = new byte[messageLength];
+    System.arraycopy(message2, 0, expectedRecoveryMessage, 0, messageLength);
+    assertArrayEquals(expectedRecoveryMessage, m1Actual,
+        "The recoverable message (m1) should be correctly placed in the encoded message.");
+  }
+
 
 }
