@@ -61,7 +61,6 @@ public class ISO_IEC_9796_2_SCHEME_1_FR extends ISO_IEC_9796_2_SCHEME_1 {
    */
   public SignatureRecovery verifyMessageISO(byte[] S) throws DataFormatException {
     return super.verifyMessageISO(null, S);
-
   }
 
 }

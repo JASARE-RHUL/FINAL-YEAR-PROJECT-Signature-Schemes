@@ -162,5 +162,66 @@ public class ISO_IEC_9796_2_SCHEME_1_FR_TEST {
     }
   }
 
+  @Test
+  void testVerificationFailsForInvalidSignature() throws Exception {
+    KeyPair keyPair = new GenRSA(2, new int[]{512, 512}).generateKeyPair();
+    ISO_IEC_9796_2_SCHEME_1_FR schemeForVerifying = new ISO_IEC_9796_2_SCHEME_1_FR(
+        keyPair.getPublicKey());
+
+    byte[] message = "test message".getBytes();
+    byte[] invalidSignature = new byte[128]; // Assuming RSA 1024-bit key
+    new SecureRandom().nextBytes(invalidSignature); // Fill with random data
+
+
+    // No need to use reflection since we assume verifyMessageISO is public
+    SignatureRecovery result = schemeForVerifying.verifyMessageISO(invalidSignature);
+    assertFalse(result.isValid());
+  }
+
+
+
+  @Test
+  void testVerificationFailsForAlteredSignature() throws Exception {
+    KeyPair keyPair = new GenRSA(2, new int[]{512, 512}).generateKeyPair();
+    ISO_IEC_9796_2_SCHEME_1_FR schemeForSigning = new ISO_IEC_9796_2_SCHEME_1_FR(
+        keyPair.getPrivateKey());
+
+    byte[] message = "test message".getBytes();
+    byte[] signature = schemeForSigning.sign(message);
+
+    // Alter the signature (flip the last bit)
+    signature[signature.length - 1] ^= 1;
+
+    // No need to use reflection since we assume verifyMessageISO is public
+    SignatureRecovery result = schemeForSigning.verifyMessageISO(signature);
+    assertFalse(result.isValid());
+  }
+
+  @Test
+  void testVerificationWithCorrectAndIncorrectKeys() throws Exception {
+    KeyPair keyPair = new GenRSA(2, new int[]{512, 512}).generateKeyPair();
+    ISO_IEC_9796_2_SCHEME_1_FR schemeForSigning = new ISO_IEC_9796_2_SCHEME_1_FR(
+        keyPair.getPrivateKey());
+
+    byte[] message = "test message".getBytes();
+    byte[] signature = schemeForSigning.sign(message);
+
+    // Use the correct public key for verification
+    ISO_IEC_9796_2_SCHEME_1_FR schemeForVerifyingWithCorrectKey = new ISO_IEC_9796_2_SCHEME_1_FR(
+        keyPair.getPublicKey());
+    SignatureRecovery resultWithCorrectKey = schemeForVerifyingWithCorrectKey.verifyMessageISO(signature);
+    assertTrue(resultWithCorrectKey.isValid(),
+        "The signature should be valid with the correct public key.");
+
+    // Generate a new key pair, which will have a different public key
+    KeyPair keyPair2 = new GenRSA(2, new int[]{512, 512}).generateKeyPair();
+    ISO_IEC_9796_2_SCHEME_1_FR schemeForVerifyingWithIncorrectKey = new ISO_IEC_9796_2_SCHEME_1_FR(
+        keyPair2.getPublicKey());
+
+    // Try to verify the signature with the incorrect public key
+    SignatureRecovery resultWithIncorrectKey = schemeForVerifyingWithIncorrectKey.verifyMessageISO(signature);
+    assertFalse(resultWithIncorrectKey.isValid());
+  }
+
 
 }
