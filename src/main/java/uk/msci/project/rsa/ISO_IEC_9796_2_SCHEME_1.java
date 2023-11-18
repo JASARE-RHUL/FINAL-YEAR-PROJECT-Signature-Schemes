@@ -43,6 +43,12 @@ public abstract class ISO_IEC_9796_2_SCHEME_1 extends SigScheme {
    */
   final int hashSize = 32;
 
+  /**
+   * Maximum allowed bytes for message portion of encoded message.J Java Implemntation detail
+   * requires subtraction of an extra byte due to the prepending of 0x00 byte to encoded message
+   */
+  int availableSpace = emLen - hashSize - 3;
+
 
   /**
    * Constructs an instance of ISO_IEC_9796_2_SCHEME_1 with the specified RSA key and left padding
@@ -75,11 +81,7 @@ public abstract class ISO_IEC_9796_2_SCHEME_1 extends SigScheme {
     // Initialize with PADLFIRSTNIBBLE and PADLSECONDNIBBLE to make 0x6A
     EM[offset] = PADLFIRSTNIBBLE; // Set high nibble to 0110
     EM[offset++] |= (PADLSECONDNIBBLE & 0x0F); // Set low nibble to 1010
-
-    // Calculate available space for the message
-    int availableSpace = emLen - hashSize - 3; // -1 for final padding byte
     m1Len = M.length;
-    m2Len = Math.max(0, m1Len - availableSpace);
 
     int messageLength = Math.min(m1Len, availableSpace);
     byte[] m1 = new byte[messageLength];
@@ -108,6 +110,77 @@ public abstract class ISO_IEC_9796_2_SCHEME_1 extends SigScheme {
    */
   public abstract byte[] hashM1(byte[] M, byte[] M1);
 
+
+  /**
+   * Verifies an RSA signature according to the ISO/IEC 9796-2 Scheme 1 standard. Validates the
+   * encoded message structure, recovers the message, and checks the hash.
+   *
+   * @param m2 The non-recoverable part of the message (m2).
+   * @param S  The signature to be verified.
+   * @return A SignatureRecovery object containing the result of the verification and any recovered
+   * message.
+   * @throws DataFormatException if the signature format is not valid.
+   */
+  public SignatureRecovery verifyMessageISO(byte[] m2, byte[] S) throws DataFormatException {
+    BigInteger s = OS2IP(S);
+    BigInteger m = s.modPow(exponent, modulus);
+    byte[] EM = I2OSP(m);
+
+    // Check the padding
+    if (!(EM[1] == (PADLFIRSTNIBBLE |= (PADLSECONDNIBBLE & 0x0F)) && (EM[this.emLen - 1]
+        == PADR))) {
+
+      return new SignatureRecovery(false, null,
+          this.getClass());
+    }
+    byte[] EMHash = Arrays.copyOfRange(EM, EM.length - hashSize - 1, EM.length - 1);
+
+    byte[] m1 = recoverM1FromEM(EM);
+
+    md.update(m1);
+    addM2(m2);
+    byte[] m1m2Hash = md.digest();
+    // Compare the computed hash with the extracted hash from EM
+    boolean hashMatch = Arrays.equals(EMHash, m1m2Hash);
+
+    // Return a new SignatureRecovery object with the result of the verification and recovered message
+    return new SignatureRecovery(hashMatch, hashMatch ? m1 : null, this.getClass());
+  }
+
+  /**
+   * Gets the recoverable part of message of a previously signed message from its corresponding
+   * encoded message EM. This method is part of signature verification process.
+   *
+   * @param EM The encoded message from which M1 is to be recovered. It is a byte array that
+   *           contains the encoded form of the message as per the RSA signature scheme.
+   * @return A byte array representing the recovered message part M1. It is extracted from the
+   * encoded message EM and trimmed of any trailing zeros.
+   */
+  private byte[] recoverM1FromEM(byte[] EM) {
+    int hashStartIndex = emLen - 1 - hashSize;
+    // Calculate the length of m1
+    int m1Length = hashStartIndex - 3;
+    byte[] m1Candidate = new byte[m1Length];
+
+    // Start copying from the third byte of EM, as first two bytes are padding
+    System.arraycopy(EM, 2, m1Candidate, 0, m1Length);
+
+    // Trim potential trailing zeros from m1
+    int m1EndIndex = m1Candidate.length;
+    while (m1EndIndex > 0 && m1Candidate[m1EndIndex - 1] == 0) {
+      m1EndIndex--;
+    }
+
+    return Arrays.copyOfRange(m1Candidate, 0, m1EndIndex);
+  }
+
+  /**
+   * Processes and adds the non-recoverable part of the message (m2) to the message digest. This is
+   * part of the message that is not covered by the signature.
+   *
+   * @param m2 The non-recoverable part of the message (m2).
+   */
+  public abstract void addM2(byte[] m2);
 
 
 }

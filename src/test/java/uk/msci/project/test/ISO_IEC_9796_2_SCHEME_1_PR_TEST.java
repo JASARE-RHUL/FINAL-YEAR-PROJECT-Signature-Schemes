@@ -169,5 +169,56 @@ public class ISO_IEC_9796_2_SCHEME_1_PR_TEST {
 
   }
 
+  @Test
+  void testSignAndVerifyRoundTrip() throws Exception {
+    for (int i = 0; i < 100; i++) {
+      KeyPair keyPair = new GenRSA(2, new int[]{512, 512}).generateKeyPair();
+      ISO_IEC_9796_2_SCHEME_1_PR schemeForSigning = new ISO_IEC_9796_2_SCHEME_1_PR(
+          keyPair.getPrivateKey());
+      ISO_IEC_9796_2_SCHEME_1_PR schemeForVerifying = new ISO_IEC_9796_2_SCHEME_1_PR(
+          keyPair.getPublicKey());
+
+      byte[] message = "Test message".getBytes();
+      byte[] message2 = ("Test message for signing Test message for signing Test mes"
+          + "sage for signing Test message for signing Test message for signing Test message for signi"
+          + "ng Test message for signing Test message for signing Test message for signing Test message "
+          + "for signing Test message for signingTest message for signing Test message for signingTest mes"
+          + "sage for signingTest message for signingTest message for signingTest message for "
+          + "signingv Test message for signing Test message for signing Test message for signing Test"
+          + " message for signing Test message for signing Test message for signing Test message for signing").getBytes();
+
+      byte[][] signedMessage = schemeForSigning.extendedSign(message);
+
+      System.out.println("Signed message (signature): " + Arrays.toString(signedMessage[0]));
+
+      System.out.println("non recoverable message (m2): " + Arrays.toString(signedMessage[1]));
+
+      SignatureRecovery recovery = schemeForVerifying.verifyMessageISO(signedMessage[1],
+          signedMessage[0]);
+      SignatureRecovery recovery2 = schemeForVerifying.verifyMessageISO(signedMessage[1],
+          signedMessage[0]);
+
+      System.out.println("Is signature valid, recovery 1? " + recovery.isValid());
+      // assertArrayEquals(new byte[]{0, (byte) 999}, recovery.getRecoveredMessage());
+      if (recovery.getRecoveredMessage() != null) {
+        System.out.println("Recovered message: " + new String(recovery.getRecoveredMessage()));
+      } else {
+        System.out.println("No message was recovered.");
+      }
+      // Truncate the message if it's too long
+      int availableSpace = 128 - 3 - 32 - 1;
+      int messageLength = Math.min(message.length, availableSpace);
+      byte[] expectedRecoveryMessage = new byte[messageLength];
+
+      // Copy the most significant bytes into the new array
+      System.arraycopy(message, 0, expectedRecoveryMessage, 0, messageLength);
+      assertArrayEquals(expectedRecoveryMessage, recovery.getRecoveredMessage());
+      assertTrue(recovery.isValid());
+
+    }
+
+
+  }
+
 
 }

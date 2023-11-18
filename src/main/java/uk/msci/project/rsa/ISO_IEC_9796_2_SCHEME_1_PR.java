@@ -24,10 +24,23 @@ public class ISO_IEC_9796_2_SCHEME_1_PR extends ISO_IEC_9796_2_SCHEME_1 {
     super(key, (byte) 0x60);
   }
 
+
   /**
-   * Generates a hash of the full message M, to enable later be comparison with the concatenation of
+   * Processes and adds the non-recoverable part of the message (m2) to the message digest. This is
+   * part of the message that is not covered by the signature.
+   *
+   * @param m2 The non-recoverable part of the message (m2).
+   */
+  public void addM2(byte[] m2) {
+    if (m2 != null && m2.length > 0) {
+      md.update(m2);
+    }
+  }
+
+  /**
+   * Generates a hash of the full message M, to enable later comparison with the concatenation of
    * the recoverable part of the message M1 (emLen - hashSize - 3 most significant bytes of M) and
-   * remaining non-recoverable part M2.
+   * the remaining non-recoverable part M2.
    *
    * @param M  The full message.
    * @param M1 The recoverable part of the message.
@@ -35,13 +48,13 @@ public class ISO_IEC_9796_2_SCHEME_1_PR extends ISO_IEC_9796_2_SCHEME_1 {
    */
   @Override
   public byte[] hashM1(byte[] M, byte[] M1) {
+    m2Len = Math.max(0, m1Len - availableSpace);
     return md.digest(M);
   }
 
   /**
    * Creates a signature for specified message and returns it along with the extracted
-   * non-recoverable part of the message i.e., bytes remaining from the emLen - hashSize -3 most
-   * significant bytes of the Message or an empty placeholder if the message is too short.
+   * non-recoverable part of the message.
    *
    * @param M The message to be signed.
    * @return A 2D byte array where the first element is the signature and the second element is the
