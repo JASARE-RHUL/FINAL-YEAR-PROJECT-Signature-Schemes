@@ -47,5 +47,21 @@ public class ISO_IEC_9796_2_SCHEME_1_PR_TEST {
         "The first non zero byte of the encoded message should match PADL.");
   }
 
+  @Test
+  void testFinalBytePadding() throws Exception {
+    byte[] message = "test".getBytes();
+    Method encodeMethod = ISO_IEC_9796_2_SCHEME_1.class.getDeclaredMethod("encodeMessage",
+        byte[].class);
+    encodeMethod.setAccessible(true);
+    byte[] encodedMessage = (byte[]) encodeMethod.invoke(scheme, (Object) message);
+
+    Field PADR = ISO_IEC_9796_2_SCHEME_1.class.getDeclaredField("PADR");
+    PADR.setAccessible(true);
+    byte fieldValue = (byte) PADR.get(scheme);
+
+    assertEquals(fieldValue, encodedMessage[encodedMessage.length - 1],
+        "The final byte of the encoded message should be PADR.");
+  }
+
 
 }
