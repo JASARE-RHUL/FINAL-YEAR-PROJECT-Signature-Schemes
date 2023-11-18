@@ -38,12 +38,12 @@ public class ISO_IEC_9796_2_SCHEME_1_PR_TEST {
   @Test
   void testInitialBytePadding() throws Exception {
     byte[] message = "test message test message test message test message test message test message test message test message test message test message test message test message test message test message test message test message test message test message test message test message test message test message test message 1".getBytes();
-    Method encodeMethod = ISO_IEC_9796_2_SCHEME_1.class.getDeclaredMethod("encodeMessage", byte[].class);
+    Method encodeMethod = ISO_IEC_9796_2_SCHEME_1.class.getDeclaredMethod("encodeMessage",
+        byte[].class);
     encodeMethod.setAccessible(true);
     byte[] encodedMessage = (byte[]) encodeMethod.invoke(scheme, (Object) message);
 
-
-    assertEquals( 0x6A, encodedMessage[1],
+    assertEquals(0x6A, encodedMessage[1],
         "The first non zero byte of the encoded message should match PADL.");
   }
 
@@ -98,7 +98,6 @@ public class ISO_IEC_9796_2_SCHEME_1_PR_TEST {
       m1EndIndex--;
     }
 
-
     byte[] m1Actual = Arrays.copyOfRange(m1Candidate, 0, m1EndIndex);
 
     int availableSpace = emLenVal - 3 - 32 - 1;
@@ -107,6 +106,33 @@ public class ISO_IEC_9796_2_SCHEME_1_PR_TEST {
     System.arraycopy(message2, 0, expectedRecoveryMessage, 0, messageLength);
     assertArrayEquals(expectedRecoveryMessage, m1Actual,
         "The recoverable message (m1) should be correctly placed in the encoded message.");
+  }
+
+
+  @Test
+  public void testHashInEncodedMessage() throws NoSuchAlgorithmException, DataFormatException {
+    // Create the message
+    byte[] message = "Test message".getBytes();
+    byte[] message2 = ("Test message for signing Test message for signing Test mes"
+        + "sage for signing Test message for signing Test message for signing Test message for signi"
+        + "ng Test message for signing Test message for signing Test message for signing Test message "
+        + "for signing Test message for signingTest message for signing Test message for signingTest mes"
+        + "sage for signingTest message for signingTest message for signingTest message for "
+        + "signingv Test message for signing Test message for signing Test message for signing Test"
+        + " message for signing Test message for signing Test message for signing Test message for signing").getBytes();
+
+    // Hash the message using the same algorithm as the scheme
+    MessageDigest md = MessageDigest.getInstance("SHA-256");
+    byte[] messageHash = md.digest(message2);
+
+    // Encode the message using the scheme
+    byte[] encodedMessage = scheme.encodeMessage(message2);
+
+    byte[] extractedHash = Arrays.copyOfRange(encodedMessage, encodedMessage.length - 33,
+        encodedMessage.length - 1);
+
+    assertArrayEquals(messageHash, extractedHash,
+        "The hash in the encoded message does not match the expected hash.");
   }
 
 
