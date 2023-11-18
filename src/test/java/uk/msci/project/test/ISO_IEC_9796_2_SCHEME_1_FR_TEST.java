@@ -14,8 +14,10 @@ import java.util.Arrays;
 import java.util.zip.DataFormatException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import uk.msci.project.rsa.ANSI_X9_31_RDSA;
 import uk.msci.project.rsa.GenRSA;
 import uk.msci.project.rsa.ISO_IEC_9796_2_SCHEME_1;
+import uk.msci.project.rsa.ISO_IEC_9796_2_SCHEME_1_FR;
 import uk.msci.project.rsa.ISO_IEC_9796_2_SCHEME_1_FR;
 import uk.msci.project.rsa.ISO_IEC_9796_2_SCHEME_1_FR;
 import uk.msci.project.rsa.KeyPair;
@@ -131,6 +133,34 @@ public class ISO_IEC_9796_2_SCHEME_1_FR_TEST {
     assertArrayEquals(messageHash, extractedHash,
         "The hash in the encoded message does not match the expected hash.");
 
-
   }
+
+  @Test
+  void testSignAndVerifyRoundTrip() throws Exception {
+    for (int i = 0; i < 100; i++) {
+      KeyPair keyPair = new GenRSA(2, new int[]{512, 512}).generateKeyPair();
+      ISO_IEC_9796_2_SCHEME_1_FR schemeForSigning = new ISO_IEC_9796_2_SCHEME_1_FR(
+          keyPair.getPrivateKey());
+      ISO_IEC_9796_2_SCHEME_1_FR schemeForVerifying = new ISO_IEC_9796_2_SCHEME_1_FR(
+          keyPair.getPublicKey());
+
+      byte[] message = "Test message".getBytes();
+      byte[] message2 = ("ISOIEC FULL MESSAGE RECOVERYSOIEC FULL MESSAGE RECOVERY SOIEC FULL"
+          + " MESSAGE RECOVERY SOIEC FULL MESSAGE RECOVERY").getBytes();
+
+      byte[] signedMessage = schemeForSigning.sign(message);
+
+      SignatureRecovery recovery = schemeForVerifying.verifyMessageISO(signedMessage);
+
+      System.out.println("Is signature valid, recovery 1? " + recovery.isValid());
+      if (recovery.getRecoveredMessage() != null) {
+        System.out.println("Recovered message: " + new String(recovery.getRecoveredMessage()));
+      } else {
+        System.out.println("No message was recovered.");
+      }
+      assertTrue(recovery.isValid());
+    }
+  }
+
+
 }

@@ -49,6 +49,21 @@ public class ISO_IEC_9796_2_SCHEME_1_FR extends ISO_IEC_9796_2_SCHEME_1 {
     return md.digest(M1);
   }
 
+  /**
+   * Verifies an RSA signature according to the ISO/IEC 9796-2 Scheme 1 standard. Validates the
+   * encoded message structure, recovers the message, and checks the hash. In this case the full
+   * message is recoverable so the non-recoverable portion is set to null.
+   *
+   * @param S The signature to be verified.
+   * @return A SignatureRecovery object containing the result of the verification and any recovered
+   * message.
+   * @throws DataFormatException if the signature format is not valid.
+   */
+  public SignatureRecovery verifyMessageISO(byte[] S) throws DataFormatException {
+    return super.verifyMessageISO(null, S);
+
+  }
+
 }
 
 
