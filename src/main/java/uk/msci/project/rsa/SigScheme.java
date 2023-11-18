@@ -76,8 +76,6 @@ public abstract class SigScheme implements SigSchemeInterface {
   // Abstract method to be implemented by derived classes for encoding
   protected abstract byte[] encodeMessage(byte[] M) throws DataFormatException;
 
-//  // Abstract method to be implemented by derived classes for verification
-//  protected abstract boolean verifyMessage(byte[] M, byte[] S) throws DataFormatException;
 
   /**
    * Signs the provided message using RSA private key operations. The method encodes the message,
@@ -90,7 +88,6 @@ public abstract class SigScheme implements SigSchemeInterface {
   @Override
   public byte[] sign(byte[] M) throws DataFormatException {
     byte[] EM = encodeMessage(M);
-
     BigInteger m = OS2IP(EM);
 
     BigInteger s = RSASP1(m);
