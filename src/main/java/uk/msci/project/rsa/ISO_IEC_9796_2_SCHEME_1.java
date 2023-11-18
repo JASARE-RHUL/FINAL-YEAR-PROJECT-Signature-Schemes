@@ -44,7 +44,7 @@ public abstract class ISO_IEC_9796_2_SCHEME_1 extends SigScheme {
   final int hashSize = 32;
 
   /**
-   * Maximum allowed bytes for message portion of encoded message.J Java Implemntation detail
+   * Maximum allowed bytes for message portion of encoded message. Java Implementation detail
    * requires subtraction of an extra byte due to the prepending of 0x00 byte to encoded message
    */
   int availableSpace = emLen - hashSize - 3;
