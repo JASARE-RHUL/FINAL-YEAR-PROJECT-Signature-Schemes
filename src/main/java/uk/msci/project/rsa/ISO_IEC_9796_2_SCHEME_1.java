@@ -78,8 +78,8 @@ public abstract class ISO_IEC_9796_2_SCHEME_1 extends SigScheme {
     int offset = 0;
 
     EM[offset++] = 0x00; // Initially zero
-    // Initialize with PADLFIRSTNIBBLE and PADLSECONDNIBBLE to make 0x6A
-    EM[offset] = PADLFIRSTNIBBLE; // Set high nibble to 0110
+
+    EM[offset] = PADLFIRSTNIBBLE;
     EM[offset++] |= (PADLSECONDNIBBLE & 0x0F); // Set low nibble to 1010
     m1Len = M.length;
 

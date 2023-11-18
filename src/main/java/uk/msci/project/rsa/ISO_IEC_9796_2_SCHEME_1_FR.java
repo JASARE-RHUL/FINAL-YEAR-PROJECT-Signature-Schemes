@@ -1,5 +1,6 @@
 package uk.msci.project.rsa;
 
+import java.math.BigInteger;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.zip.DataFormatException;
