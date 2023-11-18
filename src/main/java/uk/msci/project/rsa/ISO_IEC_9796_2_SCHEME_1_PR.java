@@ -12,6 +12,7 @@ import java.util.zip.DataFormatException;
  * part of the original message from the signature.
  */
 public class ISO_IEC_9796_2_SCHEME_1_PR extends ISO_IEC_9796_2_SCHEME_1 {
+
   /**
    * Constructs an ISO_IEC_9796_2_SCHEME_PR instance with the specified RSA key. Initializes the
    * modulus and exponent from the key, sets up the SHA-256 message digest, and configures the
@@ -35,6 +36,29 @@ public class ISO_IEC_9796_2_SCHEME_1_PR extends ISO_IEC_9796_2_SCHEME_1 {
   @Override
   public byte[] hashM1(byte[] M, byte[] M1) {
     return md.digest(M);
+  }
+
+  /**
+   * Creates a signature for specified message and returns it along with the extracted
+   * non-recoverable part of the message i.e., bytes remaining from the emLen - hashSize -3 most
+   * significant bytes of the Message or an empty placeholder if the message is too short.
+   *
+   * @param M The message to be signed.
+   * @return A 2D byte array where the first element is the signature and the second element is the
+   * non-recoverable part of the message.
+   * @throws DataFormatException If there is an error in data format during the signing process.
+   */
+  public byte[][] extendedSign(byte[] M) throws DataFormatException {
+    byte[] S = super.sign(M);
+    // Extract m2 from the original message M using the computed m2's length
+    byte[] m2;
+    if (m2Len > 0) {
+      m2 = Arrays.copyOfRange(M, m1Len - m2Len - 1, m1Len);
+    } else {
+      // If m2Length is 0, then m2 is empty
+      m2 = new byte[0];
+    }
+    return new byte[][]{S, m2};
   }
 
 }
