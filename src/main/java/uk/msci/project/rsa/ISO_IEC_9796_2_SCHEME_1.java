@@ -2,6 +2,7 @@ package uk.msci.project.rsa;
 
 import static java.lang.Math.max;
 
+import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.zip.DataFormatException;
 
@@ -136,6 +137,84 @@ public class ISO_IEC_9796_2_SCHEME_1 extends SigScheme {
       m2 = new byte[0];
     }
     return new byte[][]{S, m2};
+  }
+
+  /**
+   * Verifies an RSA signature according to the ISO/IEC 9796-2 Scheme 1 standard. Validates the
+   * encoded message structure, allows for implicit message recovery by automatically choosing the
+   * mode of recovery based on the length of provided message.
+   *
+   * @param m2 The non-recoverable part of the message (m2).
+   * @param S  The signature to be verified.
+   * @return A SignatureRecovery object containing the result of the verification and any recovered
+   * message.
+   * @throws DataFormatException if the signature format is not valid.
+   */
+  public SignatureRecovery verifyMessageISO(byte[] m2, byte[] S)
+      throws DataFormatException {
+
+    BigInteger s = OS2IP(S);
+    BigInteger m = RSAVP1(s);
+    byte[] EM = I2OSP(m);
+
+    // Checks to see that the first two bits are 01 as per the 9796-2 standard
+    if (((EM[1] & 0xC0) ^ 0x40) != 0) {
+      return new SignatureRecovery(false, null,
+          this.getClass());
+    }
+
+    // Checks the recovery that the signature was created in by checking if the third bit is 1
+    if ((EM[1] & 0x20) == 0 && m2 == null) {
+      PADLFIRSTNIBBLE = 0x40;
+      isFullRecovery = true;
+    } else {
+      PADLFIRSTNIBBLE = 0x60;
+      isFullRecovery = false;
+    }
+
+    if ((EM[emLen - 1] != PADR)) {
+      return new SignatureRecovery(false, null, this.getClass());
+    }
+    int hashStart = emLen - hashSize - 1;
+    int mStart = 0;
+    //finds the starting index of the recoverable message by checking the first 0x0A nibble
+    for (mStart = 0; mStart != emLen; mStart++) {
+      if (((EM[mStart] & 0x0f) ^ 0x0a) == 0) {
+        break;
+      }
+    }
+    mStart++;
+
+    byte[] EMHash = Arrays.copyOfRange(EM, hashStart, emLen - 1);
+
+    byte[] m1 = Arrays.copyOfRange(EM, mStart, hashStart);
+
+    md.update(m1);
+
+    // Full recovery mode does not have a second message portion
+    if (!isFullRecovery) {
+      addM2(m2);
+    }
+    byte[] m1m2Hash = md.digest();
+    // Compare the computed hash with the extracted hash from EM
+    boolean hashMatch = Arrays.equals(EMHash, m1m2Hash);
+
+    // Return a new SignatureRecovery object with the result of the verification and recovered message
+    return new SignatureRecovery(hashMatch, hashMatch ? m1 : null,
+        this.getClass());
+  }
+
+
+  /**
+   * Processes and adds the non-recoverable part of the message (m2) to the message digest. This is
+   * part of the message that is not covered by the signature.
+   *
+   * @param m2 The non-recoverable part of the message (m2).
+   */
+  public void addM2(byte[] m2) {
+    if (m2 != null && m2.length > 0) {
+      md.update(m2);
+    }
   }
 
 
