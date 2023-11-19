@@ -108,8 +108,39 @@ public class ISO_IEC_9796_2_SCHEME_1_TEST {
         "The recoverable message (m1) should be correctly placed in the encoded message.");
   }
 
+  @Test
+  void testMessagePlacementFullRecovery() throws Exception {
+    byte[] message = "Test message".getBytes();
 
+    Method encodeMethod = ISO_IEC_9796_2_SCHEME_1.class.getMethod("encodeMessage", byte[].class);
+    encodeMethod.setAccessible(true);
+    byte[] EM = (byte[]) encodeMethod.invoke(scheme, (Object) message);
+    Field emLen = SigScheme.class.getDeclaredField("emLen");
+    emLen.setAccessible(true);
+    int emLenVal = (int) emLen.get(scheme);
+    Field emBits = SigScheme.class.getDeclaredField("emBits");
+    emBits.setAccessible(true);
+    int emBitsVal = (int) emBits.get(scheme);
+    int hashSize = 32;
 
+    int hashStart = emLenVal - hashSize - 1;
+    int mStart = 0;
+    for (mStart = 0; mStart != emLenVal; mStart++) {
+      if (((EM[mStart] & 0x0f) ^ 0x0a) == 0) {
+        break;
+      }
+    }
+    mStart++;
+
+    byte[] m1Actual = Arrays.copyOfRange(EM, mStart, hashStart);
+
+    int availableSpace = (hashSize + message.length) * 8 + 8 + 4 - emBitsVal;
+    int messageLength = Math.min(message.length, message.length - ((availableSpace + 7) / 8) - 1);
+    byte[] expectedRecoveryMessage = new byte[messageLength];
+    System.arraycopy(message, 0, expectedRecoveryMessage, 0, messageLength);
+    assertArrayEquals(expectedRecoveryMessage, m1Actual,
+        "The recoverable message (m1) should be correctly placed in the encoded message.");
+  }
 
 
 }
