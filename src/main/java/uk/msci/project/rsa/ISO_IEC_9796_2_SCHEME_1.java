@@ -1,15 +1,19 @@
 package uk.msci.project.rsa;
 
+import static java.lang.Math.max;
+
 import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.zip.DataFormatException;
 
+
 /**
- * This abstract class implements the ISO/IEC 9796-2 Scheme 1 signature scheme using RSA keys. It
- * provides functionalities for signing and verifying messages with RSA digital signatures,
- * conforming to the ISO/IEC 9796-2:2010 specification.
+ * This class implements the ISO/IEC 9796-2 Scheme 1 signature scheme using RSA keys. It provides
+ * functionalities for signing and verifying messages with RSA digital signatures, conforming to the
+ * ISO/IEC 9796-2:2010 specification and chooses the appropriate mode of message recovery according
+ * to the length of message provided to its sign algorithm.
  */
-public abstract class ISO_IEC_9796_2_SCHEME_1 extends SigScheme {
+public class ISO_IEC_9796_2_SCHEME_1 extends SigScheme {
 
   /**
    * Length of the non-recoverable part of the message (m2).
@@ -20,12 +24,6 @@ public abstract class ISO_IEC_9796_2_SCHEME_1 extends SigScheme {
    * Length of the recoverable part of the message (m1).
    */
   int m1Len;
-
-
-  /**
-   * Second nibble of Left padding byte in the encoded message.
-   */
-  final byte PADLSECONDNIBBLE = (byte) 0x0A;
 
   /**
    * First nibble of Left padding byte in the encoded message.
@@ -44,76 +42,107 @@ public abstract class ISO_IEC_9796_2_SCHEME_1 extends SigScheme {
   final int hashSize = 32;
 
   /**
-   * Maximum allowed bytes for message portion of encoded message. Java Implementation detail
-   * requires subtraction of an extra byte due to the prepending of 0x00 byte to encoded message
+   * Indicator of the current mode of recovery
    */
-  int availableSpace = emLen - hashSize - 3;
+  boolean isFullRecovery;
 
 
   /**
    * Constructs an instance of ISO_IEC_9796_2_SCHEME_1 with the specified RSA key and left padding
    * byte.
    *
-   * @param key             The RSA key containing the modulus and exponent.
-   * @param PADLFIRSTNIBBLE The first nibble of the left padding byte to be used in the encoded
-   *                        message.
+   * @param key The RSA key containing the modulus and exponent.
    */
-  public ISO_IEC_9796_2_SCHEME_1(Key key, byte PADLFIRSTNIBBLE) {
+  public ISO_IEC_9796_2_SCHEME_1(Key key) {
     super(key);
-    this.PADLFIRSTNIBBLE = PADLFIRSTNIBBLE;
   }
 
   /**
    * Encodes a message following the ISO/IEC 9796-2:2010 standard, which includes hashing the
    * message and preparing the encoded message with specified padding. The format of the encoded
    * message is: Partial Recovery: 0x6A ∥ m1 ∥ hash ∥ 0xBC. Full Recovery: 0x4A ∥ m ∥ hash ∥ 0xBC.
-   * Java equivalent format requires prepending of 0x00 byte.
+   * <p>
+   * Java equivalent format requires prepending of 0x00 byte ton ensure encoded message is smaller
+   * than modulus
    *
    * @param M The message to be encoded.
    * @return The encoded message as a byte array.
    */
   public byte[] encodeMessage(byte[] M) throws DataFormatException {
-
     byte[] EM = new byte[emLen];
-    int offset = 0;
-
-    EM[offset++] = 0x00; // Initially zero
-
-    EM[offset] = PADLFIRSTNIBBLE;
-    EM[offset++] |= (PADLSECONDNIBBLE & 0x0F); // Set low nibble to 1010
     m1Len = M.length;
+    int availableSpace = (hashSize + m1Len) * 8 + 8 + 4 - emBits;
+    //Full recovery if message is larger than available space
+    // else scheme proceeds with partial recovery.
+    if (availableSpace > 0) {
+      PADLFIRSTNIBBLE = 0x60;
+      isFullRecovery = false;
+    } else {
+      PADLFIRSTNIBBLE = 0x40;
+      isFullRecovery = true;
+    }
 
-    int messageLength = Math.min(m1Len, availableSpace);
+    int hashStart = emLen - hashSize - 1;
+    int delta = hashStart;
+    //length of the message to be copied is either the availableSpace most significant bits of
+    // M or alternatively the full length of the original message if the message  is too short
+    int messageLength = Math.min(m1Len, m1Len - ((availableSpace + 7) / 8) - 1);
+    // m2 comprises the non-recoverable message portion
+    m2Len = max(m1Len - messageLength - 1, 0);
+    //copying the message
+    delta -= messageLength;
     byte[] m1 = new byte[messageLength];
     System.arraycopy(M, 0, m1, 0, messageLength);
-    System.arraycopy(m1, 0, EM, offset, messageLength);
-    offset += messageLength;
+    System.arraycopy(m1, 0, EM, delta, messageLength);
+    //Returns hash of full or partial message depending on the current mode of recovery
+    byte[] hashedM = isFullRecovery ? md.digest(m1) : md.digest(M);
+    System.arraycopy(hashedM, 0, EM, hashStart, hashSize);
 
-    // Pad with zeros if m_r (m1) is shorter than the available space
-    offset += (availableSpace - messageLength);
-
-    byte[] hashedM = hashM1(M, m1);
-    System.arraycopy(hashedM, 0, EM, offset, hashSize);
-    offset += hashSize;
-    EM[offset] = PADR;
-
+    // Pad with Bs if m_r (m1) is shorter than the available space
+    if ((delta - 2) > 0) {
+      for (int i = delta - 1; i != 1; i--) {
+        EM[i] = (byte) 0xbb;
+      }
+      //modify the second nibble of final padding byte to contain 0x0A as per the scheme
+      EM[delta - 1] ^= (byte) 0x01;
+      EM[1] = (byte) 0x0b;
+      EM[1] |= PADLFIRSTNIBBLE;
+    } else {
+      //no sequence of Bs so message is sufficiently long enough
+      // without further padding bits
+      EM[1] = (byte) 0x0a;
+      EM[1] |= PADLFIRSTNIBBLE;
+    }
+    EM[emLen - 1] = PADR;
     return EM;
   }
 
   /**
-   * Generates a corresponding hash of the recoverable part of specified message according to the
-   * mode of recovery of the currently instantiated ISO_IEC_9796_2_SCHEME_1 instance.
+   * Creates a signature for specified message and returns it along with the extracted
+   * non-recoverable part of the message.
    *
-   * @param M  The full message.
-   * @param M1 The recoverable part of the message.
-   * @return A byte array representing the hash of M1 and M.
+   * @param M The message to be signed.
+   * @return A 2D byte array where the first element is the signature and the second element is the
+   * non-recoverable part of the message.
+   * @throws DataFormatException If there is an error in data format during the signing process.
    */
-  public abstract byte[] hashM1(byte[] M, byte[] M1);
-
+  public byte[][] extendedSign(byte[] M) throws DataFormatException {
+    byte[] S = super.sign(M);
+    // Extract m2 from the original message M using the computed m2's length
+    byte[] m2;
+    if (m2Len > 0) {
+      m2 = Arrays.copyOfRange(M, m1Len - m2Len - 1, m1Len);
+    } else {
+      // If m2Length is 0, then m2 is empty
+      m2 = new byte[0];
+    }
+    return new byte[][]{S, m2};
+  }
 
   /**
    * Verifies an RSA signature according to the ISO/IEC 9796-2 Scheme 1 standard. Validates the
-   * encoded message structure, recovers the message, and checks the hash.
+   * encoded message structure, allows for implicit message recovery by automatically choosing the
+   * mode of recovery based on the length of provided message.
    *
    * @param m2 The non-recoverable part of the message (m2).
    * @param S  The signature to be verified.
@@ -121,58 +150,60 @@ public abstract class ISO_IEC_9796_2_SCHEME_1 extends SigScheme {
    * message.
    * @throws DataFormatException if the signature format is not valid.
    */
-  public SignatureRecovery verifyMessageISO(byte[] m2, byte[] S) throws DataFormatException {
+  public SignatureRecovery verifyMessageISO(byte[] m2, byte[] S)
+      throws DataFormatException {
+
     BigInteger s = OS2IP(S);
-    BigInteger m = s.modPow(exponent, modulus);
+    BigInteger m = RSAVP1(s);
     byte[] EM = I2OSP(m);
 
-    // Check the padding
-    if (!(EM[1] == (PADLFIRSTNIBBLE |= (PADLSECONDNIBBLE & 0x0F)) && (EM[this.emLen - 1]
-        == PADR))) {
-
+    // Checks to see that the first two bits are 01 as per the 9796-2 standard
+    if (((EM[1] & 0xC0) ^ 0x40) != 0) {
       return new SignatureRecovery(false, null,
           this.getClass());
     }
-    byte[] EMHash = Arrays.copyOfRange(EM, EM.length - hashSize - 1, EM.length - 1);
 
-    byte[] m1 = recoverM1FromEM(EM);
+    // Checks the recovery that the signature was created in by checking if the third bit is 1
+    if ((EM[1] & 0x20) == 0 && m2 == null) {
+      PADLFIRSTNIBBLE = 0x40;
+      isFullRecovery = true;
+    } else {
+      PADLFIRSTNIBBLE = 0x60;
+      isFullRecovery = false;
+    }
+
+    if ((EM[emLen - 1] != PADR)) {
+      return new SignatureRecovery(false, null, this.getClass());
+    }
+    int hashStart = emLen - hashSize - 1;
+    int mStart = 0;
+    //finds the starting index of the recoverable message by checking the first 0x0A nibble
+    for (mStart = 0; mStart != emLen; mStart++) {
+      if (((EM[mStart] & 0x0f) ^ 0x0a) == 0) {
+        break;
+      }
+    }
+    mStart++;
+
+    byte[] EMHash = Arrays.copyOfRange(EM, hashStart, emLen - 1);
+
+    byte[] m1 = Arrays.copyOfRange(EM, mStart, hashStart);
 
     md.update(m1);
-    addM2(m2);
+
+    // Full recovery mode does not have a second message portion
+    if (!isFullRecovery) {
+      addM2(m2);
+    }
     byte[] m1m2Hash = md.digest();
     // Compare the computed hash with the extracted hash from EM
     boolean hashMatch = Arrays.equals(EMHash, m1m2Hash);
 
     // Return a new SignatureRecovery object with the result of the verification and recovered message
-    return new SignatureRecovery(hashMatch, hashMatch ? m1 : null, this.getClass());
+    return new SignatureRecovery(hashMatch, hashMatch ? m1 : null,
+        this.getClass());
   }
 
-  /**
-   * Gets the recoverable part of message of a previously signed message from its corresponding
-   * encoded message EM. This method is part of signature verification process.
-   *
-   * @param EM The encoded message from which M1 is to be recovered. It is a byte array that
-   *           contains the encoded form of the message as per the RSA signature scheme.
-   * @return A byte array representing the recovered message part M1. It is extracted from the
-   * encoded message EM and trimmed of any trailing zeros.
-   */
-  private byte[] recoverM1FromEM(byte[] EM) {
-    int hashStartIndex = emLen - 1 - hashSize;
-    // Calculate the length of m1
-    int m1Length = hashStartIndex - 3;
-    byte[] m1Candidate = new byte[m1Length];
-
-    // Start copying from the third byte of EM, as first two bytes are padding
-    System.arraycopy(EM, 2, m1Candidate, 0, m1Length);
-
-    // Trim potential trailing zeros from m1
-    int m1EndIndex = m1Candidate.length;
-    while (m1EndIndex > 0 && m1Candidate[m1EndIndex - 1] == 0) {
-      m1EndIndex--;
-    }
-
-    return Arrays.copyOfRange(m1Candidate, 0, m1EndIndex);
-  }
 
   /**
    * Processes and adds the non-recoverable part of the message (m2) to the message digest. This is
@@ -180,7 +211,11 @@ public abstract class ISO_IEC_9796_2_SCHEME_1 extends SigScheme {
    *
    * @param m2 The non-recoverable part of the message (m2).
    */
-  public abstract void addM2(byte[] m2);
+  public void addM2(byte[] m2) {
+    if (m2 != null && m2.length > 0) {
+      md.update(m2);
+    }
+  }
 
 
 }
