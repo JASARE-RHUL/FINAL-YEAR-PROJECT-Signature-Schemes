@@ -168,5 +168,39 @@ public class ISO_IEC_9796_2_SCHEME_1_TEST {
         "The hash in the encoded message does not match the expected hash.");
   }
 
+  @Test
+  void testSign()
+      throws DataFormatException, NoSuchFieldException, IllegalAccessException, NoSuchAlgorithmException {
+    byte[] message = "Test message".getBytes();
+    byte[] message2 = ("Test message for signing Test message for signing Test mes"
+        + "sage for signing Test message for signing Test message for signing Test message for signi"
+        + "ng Test message for signing Test message for signing Test message for signing Test message "
+        + "for signing Test message for signingTest message for signing Test message for signingTest mes"
+        + "sage for signingTest message for signingTest message for signingTest message for "
+        + "signingv Test message for signing Test message for signing Test message for signing Test"
+        + " message for signing Test message for signing Test message for signing Test message for signing").getBytes();
+    byte[][] signedMessage = scheme.extendedSign(message);
+
+    Field m2Len = ISO_IEC_9796_2_SCHEME_1.class.getDeclaredField("m2Len");
+    m2Len.setAccessible(true);
+    int m2LenVal = (int) m2Len.get(scheme);
+
+    Field m1Len = ISO_IEC_9796_2_SCHEME_1.class.getDeclaredField("m1Len");
+    m1Len.setAccessible(true);
+    int m1LenVal = (int) m1Len.get(scheme);
+
+    byte[] latter;
+    if (m2LenVal > 0) {
+      latter = Arrays.copyOfRange(message2, m1LenVal - m2LenVal, m1LenVal);
+    } else {
+      // If m2Length is 0, then m2 is empty
+      latter = new byte[0];
+    }
+
+    assertArrayEquals(latter, signedMessage[1],
+        "m2 should match the latter part of the original message.");
+
+  }
+
 
 }

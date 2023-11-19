@@ -2,7 +2,6 @@ package uk.msci.project.rsa;
 
 import static java.lang.Math.max;
 
-import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.zip.DataFormatException;
 
@@ -116,4 +115,28 @@ public class ISO_IEC_9796_2_SCHEME_1 extends SigScheme {
     EM[emLen - 1] = PADR;
     return EM;
   }
+
+  /**
+   * Creates a signature for specified message and returns it along with the extracted
+   * non-recoverable part of the message.
+   *
+   * @param M The message to be signed.
+   * @return A 2D byte array where the first element is the signature and the second element is the
+   * non-recoverable part of the message.
+   * @throws DataFormatException If there is an error in data format during the signing process.
+   */
+  public byte[][] extendedSign(byte[] M) throws DataFormatException {
+    byte[] S = super.sign(M);
+    // Extract m2 from the original message M using the computed m2's length
+    byte[] m2;
+    if (m2Len > 0) {
+      m2 = Arrays.copyOfRange(M, m1Len - m2Len - 1, m1Len);
+    } else {
+      // If m2Length is 0, then m2 is empty
+      m2 = new byte[0];
+    }
+    return new byte[][]{S, m2};
+  }
+
+
 }
