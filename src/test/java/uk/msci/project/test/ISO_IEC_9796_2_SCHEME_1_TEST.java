@@ -51,6 +51,23 @@ public class ISO_IEC_9796_2_SCHEME_1_TEST {
         "The first non zero byte of the encoded message should match 0x4A for shorter message that do not have a recoverable component");
   }
 
+  @Test
+  void testFinalBytePadding() throws Exception {
+    byte[] message = "test".getBytes();
+    Method encodeMethod = ISO_IEC_9796_2_SCHEME_1.class.getDeclaredMethod("encodeMessage",
+        byte[].class);
+    encodeMethod.setAccessible(true);
+    byte[] encodedMessage = (byte[]) encodeMethod.invoke(scheme, (Object) message);
+
+    Field PADR = ISO_IEC_9796_2_SCHEME_1.class.getDeclaredField("PADR");
+    PADR.setAccessible(true);
+    byte fieldValue = (byte) PADR.get(scheme);
+
+    assertEquals(fieldValue, encodedMessage[encodedMessage.length - 1],
+        "The final byte of tzhe encoded message should be PADR or 0xBC");
+  }
+
+
 
 
 
