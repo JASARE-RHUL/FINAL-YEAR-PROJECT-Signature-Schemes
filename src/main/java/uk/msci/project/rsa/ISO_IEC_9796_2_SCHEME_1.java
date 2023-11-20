@@ -48,8 +48,7 @@ public class ISO_IEC_9796_2_SCHEME_1 extends SigScheme {
 
 
   /**
-   * Constructs an instance of ISO_IEC_9796_2_SCHEME_1 with the specified RSA key and left padding
-   * byte.
+   * Constructs an instance of ISO_IEC_9796_2_SCHEME_1 with the specified RSA key
    *
    * @param key The RSA key containing the modulus and exponent.
    */
@@ -60,7 +59,8 @@ public class ISO_IEC_9796_2_SCHEME_1 extends SigScheme {
   /**
    * Encodes a message following the ISO/IEC 9796-2:2010 standard, which includes hashing the
    * message and preparing the encoded message with specified padding. The format of the encoded
-   * message is: Partial Recovery: 0x6A ∥ m1 ∥ hash ∥ 0xBC. Full Recovery: 0x4A ∥ m ∥ hash ∥ 0xBC.
+   * message is: Partial Recovery: 0x6A ∥ m1 ∥ hash ∥ 0xBC. Full Recovery: 0x4B...BA ∥ m ∥ hash ∥
+   * 0xBC.
    * <p>
    * Java equivalent format requires prepending of 0x00 byte ton ensure encoded message is smaller
    * than modulus
@@ -72,8 +72,8 @@ public class ISO_IEC_9796_2_SCHEME_1 extends SigScheme {
     byte[] EM = new byte[emLen];
     m1Len = M.length;
     int availableSpace = (hashSize + m1Len) * 8 + 8 + 4 - emBits;
-    //Full recovery if message is larger than available space
-    // else scheme proceeds with partial recovery.
+    //Partial recovery if message is larger than available space
+    // else scheme proceeds with full recovery.
     if (availableSpace > 0) {
       PADLFIRSTNIBBLE = 0x60;
       isFullRecovery = false;
@@ -103,13 +103,16 @@ public class ISO_IEC_9796_2_SCHEME_1 extends SigScheme {
       for (int i = delta - 1; i != 1; i--) {
         EM[i] = (byte) 0xbb;
       }
-      //modify the second nibble of final padding byte to contain 0x0A as per the scheme
+      // The case of full recovery:
+      // modify the second nibble of final padding byte to
+      // contain 0x0A as per the scheme
       EM[delta - 1] ^= (byte) 0x01;
       EM[1] = (byte) 0x0b;
       EM[1] |= PADLFIRSTNIBBLE;
     } else {
-      //no sequence of Bs so message is sufficiently long enough
-      // without further padding bits
+      //The case of partial recovery: no B bytes required
+      // So update the second nibble of final and first padding byte
+      // to contain 0x0A as per the scheme
       EM[1] = (byte) 0x0a;
       EM[1] |= PADLFIRSTNIBBLE;
     }
@@ -150,8 +153,7 @@ public class ISO_IEC_9796_2_SCHEME_1 extends SigScheme {
    * message.
    * @throws DataFormatException if the signature format is not valid.
    */
-  public SignatureRecovery verifyMessageISO(byte[] m2, byte[] S)
-      throws DataFormatException {
+  public SignatureRecovery verifyMessageISO(byte[] m2, byte[] S) throws DataFormatException {
 
     BigInteger s = OS2IP(S);
     BigInteger m = RSAVP1(s);
@@ -159,11 +161,11 @@ public class ISO_IEC_9796_2_SCHEME_1 extends SigScheme {
 
     // Checks to see that the first two bits are 01 as per the 9796-2 standard
     if (((EM[1] & 0xC0) ^ 0x40) != 0) {
-      return new SignatureRecovery(false, null,
-          this.getClass());
+      return new SignatureRecovery(false, null, this.getClass());
     }
 
-    // Checks the recovery that the signature was created in by checking if the third bit is 1
+    // Checks the recovery mode the signature was created in by checking third bit
+    // if third bit is one that indicates full recovery.
     if ((EM[1] & 0x20) == 0 && m2 == null) {
       PADLFIRSTNIBBLE = 0x40;
       isFullRecovery = true;
@@ -200,8 +202,7 @@ public class ISO_IEC_9796_2_SCHEME_1 extends SigScheme {
     boolean hashMatch = Arrays.equals(EMHash, m1m2Hash);
 
     // Return a new SignatureRecovery object with the result of the verification and recovered message
-    return new SignatureRecovery(hashMatch, hashMatch ? m1 : null,
-        this.getClass());
+    return new SignatureRecovery(hashMatch, hashMatch ? m1 : null, this.getClass());
   }
 
 
