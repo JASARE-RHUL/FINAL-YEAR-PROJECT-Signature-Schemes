@@ -43,3 +43,14 @@ Focused on enhancing the clarity and structure of my project report, I began by 
 ## Diary Entry - Week of 6th November - 12th November 2023
 
 This week, I had the 4th meeting with my supervisor, where we clarified the required content for the security proofs in my report, focusing on the practical implications for the signature schemes. My progress on the interim report was positively noted, and I announced my intention to submit a draft shortly. I began conceptualising (Wednesday) and then coding the PKCS#1 v1.5 signature scheme (Thursday) with a focus on modularity. By the end of the week, I had not only implemented this scheme but also completed the security proof chapter of my report, emphasising the implications for practical parameter choices. I also improved the key generation process to be more parametrisable, setting a foundation for term 2 work where this is required.
+
+
+Diary Entry - Week of 13th November - 19th November 2023
+
+This week, I focused on implementing various signature schemes, starting with conceptualising and drafting the ANSI X9.31 signature scheme. Using Test-Driven Development, I developed and refined this implementation, leveraging the modular code structure from the earlier PKCS scheme.
+
+A significant part of the week involved troubleshooting and resolving issues related to signature verification. In the ANSI implementation, legitimate signatures occasionally failed to verify. The problem was traced to the message encoding method and was fixed by adjusting the first padding byte.
+
+When implementing the ISO/IEC 9796-2 scheme, I encountered a similar issue with signature verification failures. This time, it was due to the first padding byte causing the encoded message's big integer representation to sometimes exceed the modulus size, leading to verification failures. After thorough research and comparison with open-source implementations, I realised the necessity of prepending an initial 0x00 byte to the encoded message array, a Java-specific implementation detail.
+
+The week concluded with a substantial refactoring of the ISO scheme's class structure, simplifying it to a single class that automatically adjusts the recovery mode based on the user's message length.
