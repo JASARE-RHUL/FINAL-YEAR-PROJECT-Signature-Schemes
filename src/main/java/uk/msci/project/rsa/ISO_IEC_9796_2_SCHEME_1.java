@@ -54,6 +54,7 @@ public class ISO_IEC_9796_2_SCHEME_1 extends SigScheme {
    */
   public ISO_IEC_9796_2_SCHEME_1(Key key) {
     super(key);
+    emLen--;
   }
 
   /**
@@ -62,8 +63,8 @@ public class ISO_IEC_9796_2_SCHEME_1 extends SigScheme {
    * message is: Partial Recovery: 0x6A ∥ m1 ∥ hash ∥ 0xBC. Full Recovery: 0x4B...BA ∥ m ∥ hash ∥
    * 0xBC.
    * <p>
-   * Java equivalent format requires prepending of 0x00 byte ton ensure encoded message is smaller
-   * than modulus
+   * Java equivalent format requires the encoding to be a byte less than the modulus byte size to
+   * ensure resulting value is less than modulus.
    *
    * @param M The message to be encoded.
    * @return The encoded message as a byte array.
@@ -99,22 +100,22 @@ public class ISO_IEC_9796_2_SCHEME_1 extends SigScheme {
     System.arraycopy(hashedM, 0, EM, hashStart, hashSize);
 
     // Pad with Bs if m_r (m1) is shorter than the available space
-    if ((delta - 2) > 0) {
-      for (int i = delta - 1; i != 1; i--) {
+    if ((delta - 1) > 0) {
+      for (int i = delta - 1; i != 0; i--) {
         EM[i] = (byte) 0xbb;
       }
       // The case of full recovery:
-      // modify the second nibble of final padding byte to
+      // modify the second nibble of final PAD_L byte to
       // contain 0x0A as per the scheme
       EM[delta - 1] ^= (byte) 0x01;
-      EM[1] = (byte) 0x0b;
-      EM[1] |= PADLFIRSTNIBBLE;
+      EM[0] = (byte) 0x0b;
+      EM[0] |= PADLFIRSTNIBBLE;
     } else {
       //The case of partial recovery: no B bytes required
-      // So update the second nibble of final and first padding byte
+      // So update the second nibble of final and first PAD_L byte
       // to contain 0x0A as per the scheme
-      EM[1] = (byte) 0x0a;
-      EM[1] |= PADLFIRSTNIBBLE;
+      EM[0] = (byte) 0x0a;
+      EM[0] |= PADLFIRSTNIBBLE;
     }
     EM[emLen - 1] = PADR;
     return EM;
@@ -130,7 +131,13 @@ public class ISO_IEC_9796_2_SCHEME_1 extends SigScheme {
    * @throws DataFormatException If there is an error in data format during the signing process.
    */
   public byte[][] extendedSign(byte[] M) throws DataFormatException {
-    byte[] S = super.sign(M);
+    byte[] EM = encodeMessage(M);
+    BigInteger m = OS2IP(EM);
+
+    BigInteger s = RSASP1(m);
+
+    byte[] S = s.toByteArray();
+
     // Extract m2 from the original message M using the computed m2's length
     byte[] m2;
     if (m2Len > 0) {
@@ -154,19 +161,18 @@ public class ISO_IEC_9796_2_SCHEME_1 extends SigScheme {
    * @throws DataFormatException if the signature format is not valid.
    */
   public SignatureRecovery verifyMessageISO(byte[] m2, byte[] S) throws DataFormatException {
-
     BigInteger s = OS2IP(S);
     BigInteger m = RSAVP1(s);
-    byte[] EM = I2OSP(m);
+    byte[] EM = m.toByteArray();
 
     // Checks to see that the first two bits are 01 as per the 9796-2 standard
-    if (((EM[1] & 0xC0) ^ 0x40) != 0) {
+    if (((EM[0] & 0xC0) ^ 0x40) != 0) {
       return new SignatureRecovery(false, null, this.getClass());
     }
 
     // Checks the recovery mode the signature was created in by checking third bit
     // if third bit is one that indicates full recovery.
-    if ((EM[1] & 0x20) == 0 && m2 == null) {
+    if ((EM[0] & 0x20) == 0 && m2 == null) {
       PADLFIRSTNIBBLE = 0x40;
       isFullRecovery = true;
     } else {
