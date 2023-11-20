@@ -72,13 +72,16 @@ interface SigSchemeInterface {
   verify(M : byte[], signature : byte[]) : boolean
 }
 
-class RSASSA_PKCS1_v1_5 implements SigSchemeInterface {
+class SigScheme implements SigSchemeInterface {
 }
 
-class ANSI_X9_31_RDSA implements SigSchemeInterface {
+class RSASSA_PKCS1_v1_5 extends SigScheme {
 }
 
-class ISO_IEC_9796_2_SCHEME_1 implements SigSchemeInterface {
+class ANSI_X9_31_RDSA extends SigScheme {
+}
+
+class ISO_IEC_9796_2_SCHEME_1 extends SigScheme {
 }
 
 

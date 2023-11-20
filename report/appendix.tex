@@ -65,8 +65,7 @@ For the development of software related artefacts related to this project I util
 \end{itemize}
 
 \subsection{Test-Driven Development (TDD)}
-Given the critical nature of cryptographic operations and the necessity for them to be error-free, I adopted the TDD approach (Red-Green-Refactor Cycle). This ensured that every function or method had corresponding tests that were written during the implementation as a side effect. I also made an efforts to ensure high test coverage, striving for more than 90\% to ensure most edge cases were handled.
-
+Given the critical nature of cryptographic operations and as best practice for writing "good" code that that both works and is readable, I adopted the TDD approach. This ensured that every function or method had corresponding tests that were written during the implementation as a side effect. 
 \subsection{Documentation and Training}
 Recognising the importance of clear documentation in software, especially one centred on security, I produced documentation.
 
@@ -172,7 +171,7 @@ The program will form the foundation for the eventual delivery of the benchmarki
     \item User inputs desired key size into the box.
     \item System processes the request and generates the public-private key pair.
     \item System displays a notification informing the user that the key generation process was successful.
-    \item User is presented with options "Export to file" and "Copy to clipboard".
+    \item User is presented with options "Export to file" and "Copy to clipboard" for the signature.
     \item User selects desired option to either save the keys to a file or copy them to clipboard.
 \end{enumerate}
 
@@ -186,6 +185,7 @@ The program will form the foundation for the eventual delivery of the benchmarki
     \begin{enumerate}
         \item[5a1.] System displays an error message and prompts the user to try again.
     \end{enumerate}
+     
 \end{enumerate}
 
 
@@ -214,6 +214,10 @@ The program will form the foundation for the eventual delivery of the benchmarki
     \begin{enumerate}
         \item[5a1.] System displays an error message and prompts the user to try again.
     \end{enumerate}
+    \item[7a.]  User selected an ISO\slash IEC 9796-2 scheme in step 4.
+    \begin{enumerate}
+        \item[7a1.] User is presented with options "Export to file" and "Copy to clipboard" for the computed signature and additionally if applicable. a computed non recoverable portion of their initially submitted message.
+    \end{enumerate}
 \end{enumerate}
 
 \textbf{Verify Signature Use Case}
@@ -221,7 +225,8 @@ The program will form the foundation for the eventual delivery of the benchmarki
 \noindent\textbf{Flow of Events:}
 \begin{enumerate}
     \item User selects "Verify Signature" from the main menu options panel.
-    \item User is presented with options to input the message, its corresponding signature, and the public key.
+    \item User selects the desired signature scheme from options like "PKCS\#1 v1.5 Signature", "ANSI X9.31 rDSA", etc..
+    \item User is presented with options to input the message, its corresponding signature, and the public key
     \item User provides all required inputs.
     \item System processes the information and verifies the authenticity of the signature.
     \item System displays a notification with the result, either confirming the authenticity or notifying of a mismatch.
@@ -229,17 +234,29 @@ The program will form the foundation for the eventual delivery of the benchmarki
 
 \noindent\textbf{Alternative flows:}
 \begin{enumerate}
-    \item[3a.] User inputs mismatched or incorrect information.
+ \item[3a.]  User selected the ISO\slash IEC 9796-2 scheme 1 with full message recovery option scheme in step 2.
     \begin{enumerate}
-        \item[3a1.] System warns user about the incorrect input and suggests rechecking the inputs.
+        \item[3a1.] System greys out box requiring message input so that user cannot input a message.
     \end{enumerate}
-    \item[4a.] System encounters an error during verification.
+  \item[3b.]  User selected the ISO\slash IEC 9796-2 scheme 1 with partial message recovery option scheme in step 2.
     \begin{enumerate}
-        \item[4a1.] System displays an error message and prompts the user to try again.
+        \item[3b1.] System changes the displayed label for message input to non-recoverable message portion.
+    \end{enumerate}
+    \item[4a.] User inputs mismatched or incorrect information.
+    \begin{enumerate}
+        \item[4a1.] System warns user about the incorrect input and suggests rechecking the inputs.
+    \end{enumerate}
+    \item[5a.] System encounters an error during verification.
+    \begin{enumerate}
+        \item[5a1.] System displays an error message and prompts the user to try again.
+    \end{enumerate}
+    \item[6a.]  User selected an ISO\slash IEC 9796-2 scheme in step 2.
+    \begin{enumerate}
+        \item[6a1.] User is presented with options "Export to file" and "Copy to clipboard" for the computed signature and additionally if applicable a recovered portion of a message submitted some time in the past to the signature generation process.
     \end{enumerate}
 \end{enumerate}
 
-Acceptance Tests
+\subsection{Acceptance Tests}
 
 \textbf{1. Key Pair Generation:}
 \begin{enumerate}
@@ -285,30 +302,60 @@ Acceptance Tests
 \item Sign a test message and verify its signature using the previous steps. Ensure both processes succeed.
 \end{enumerate}
 
-\textbf{6. Signature and Verification with ISO/IEC 9796-2:2010 Scheme 1:}
+\textbf{6. Signature Generation with ISO/IEC 9796-2:2010 Scheme 1:}
 \begin{enumerate}
 \item Set the application to use the ISO/IEC 9796-2:2010 Signature Scheme 1.
-\item Sign a test message (both with partial and full recovery) and verify its signature using the previous steps. Ensure both processes succeed.
+\item Locate the signature generation section in the application.
+\item Use the text box or file browse option to input the original test message if scheme variant for partial message recovery is selected.
+\item Check that there is no option to input a message if scheme variant for full message recovery is selected.
+\item Input a test message into the provided text box. 
+\item Use the browse option to provide a valid private key file.
+\item If empty message or invalid file is provided, the user is informed to try again. 
+\item Ensure no errors or exceptions are displayed during the signing process.
+\item Confirm that a notification is presented to the signer upon successful signature generation.
+\item Check and verify separate options (copying to clipboard and saving to a file) for both the signature and potentially returned non recoverable message portion (if message is too short there is no non recoverable portion).
 \end{enumerate}
+
+\textbf{6. Signature Verification with ISO/IEC 9796-2:2010 Scheme 1}
+\begin{enumerate}
+\item Set the application to use a variant of ISO/IEC 9796-2:2010 Signature Scheme 1.
+\item Locate the signature verification section in the application.
+\item Use the browse option to provide the generated signature file.
+\item If empty message or invalid file is provided, the user is informed to try again. 
+\item Ensure no errors or exceptions are displayed during the verification process.
+\item Confirm that a notification is presented to the verifier upon successful verification.
+\item Check and verify separate options (copying to clipboard and saving to a file) for both the signature and returned  recoverable message portion.
+\end{enumerate}
+
 \section{Appendix A.3 Design}
 \begin{landscape}
 \thispagestyle{lscape} % Apply the custom page style
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\linewidth,keepaspectratio]{POC.png}
+    \includegraphics[width=21.7cm]{POC.png}
     \caption{POC program Class Design}
     \label{fig:POCCLASSES}
 \end{figure}
 \end{landscape}
 Figure \ref{fig:POCCLASSES} depicts the structure of classes to be used in the implementation of the PoC program.  There is a focus on separation of concerns following the Model-View-Controller (MVC) design pattern. At the heart of the deign is the MainController, which orchestrates the application flow by responding to user actions and coordinating the display of different views. In support is the SignatureController, which manages the signature processes, linking the signature-related views (SignView and VerifyView) with the SignatureModel. SignatureModel encapsulates the cryptographic logic and relies on a SchemeFactory to instantiate a concrete signature scheme as per user selection. The system is further extended by the GenController which isfocused on generating cryptographic keys through the GenerateKeysModel which manages the GenRSA facilitated key creation.
+\subsection{Program packages}
 \begin{figure}[H]
     \centering
-    \includegraphics[scale=0.48]{sequence.png}
+    \includegraphics[scale=0.31]{package.png}
+    \caption{POC program Packages}
+    \label{fig:pack}
+\end{figure}
+Figure \ref{fig:pack} depicts the core functionality of the POC program and is in direct alignment with previously elaborated on (see requirements) user activities of signing, creating keys, and verifying, using a specified scheme like PKCS\#1-v1.5.
+\subsection{UML sequence diagram}
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.38]{seq2.png}
     \caption{UML Sequence Diagram}
     \label{fig:uc}
 \end{figure}
-Initially, the user is prompted to generate cryptographic keys, providing a key size that, if valid, leads to the creation of a private and public key pair. The user can then opt to save these keys onto their file system.
+The above diagram is mostly a high level view of the core behaviour that can be expected to performed by a user of the proof of concept of program. The point at which the diagram departs this is the specialised functionality to related to the message recovery signature schemes of the ISO standard. These schemes require special consideration because the related behaviour differs from the standard digital signature process. The ISO/IEC 9796-2 schemes incorporate message recovery features, where part or all of the original message can be reconstructed from the signature itself. This necessitates additional logic in both the signing and verifying processes. For partial message recovery, the signer needs to manage the non-recoverable portion of the message, ensuring that it is correctly incorporated into the signature.   For full message recovery, the entire message is embedded in the signature, eliminating the need for a separate message input during verification but requiring careful handling to extract and validate the message from the signature. These nuances demand specialised user interfaces and system checks, making the ISO schemes distinct in their interaction and processing requirements within the application.
 
+Initially, the user is prompted to generate cryptographic keys, providing a key size that, if valid, leads to the creation of a private and public key pair. The user can then opt to save these keys onto their file system.
 Once keys are in place, the user can sign a message. They input the message into the system and load their private key. If the inputs are correct, the system employs a chosen signature algorithm to create a digital signature, which the user can save or copy to their clipboard. In case of invalid input or an error during signature creation, the user is informed with an error message.
 
 For verification, the user inputs a message, loads the digital signature and the corresponding public key. The system checks the signature against the message using the public key. If the signature is valid, a success notification is displayed; otherwise, the user is alerted to a verification error. Throughout this process, the system guides the user with notifications or error messages based on the success or failure of the operations performed.

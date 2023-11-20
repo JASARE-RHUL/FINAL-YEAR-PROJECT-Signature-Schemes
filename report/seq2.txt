@@ -1,0 +1,99 @@
+@startuml
+
+participant "Signer" as S
+participant "System" as Sys
+participant "Verifier" as V
+participant "Clipboard" as C
+participant "File System" as FS
+
+note over S: Key Generation
+S -> Sys: Input Key Size
+activate Sys
+
+alt Valid Key Size
+    Sys -> Sys: Generate Keys
+
+    alt Key Generation Successful
+        Sys --> S: Key Generation Successful Notification
+        opt Save to File
+            S -> Sys: Save Key to File
+            Sys -> FS: Save Key
+        end opt
+    else Key Generation Error
+        Sys --> S: Display Key Generation Error
+    end alt
+
+else Invalid Key Size
+    Sys --> S: Display Invalid Key Size Error
+end alt
+deactivate Sys
+
+note over S: Signature Generation
+S -> Sys: Input Message and Private Key via File Selection
+activate Sys
+
+alt Valid Inputs
+    Sys -> Sys: Create Signature using selected Scheme
+
+    alt Signature Scheme is ISO\slash IEC 9796-2
+        Sys -> Sys: Check for Message Recovery Option
+        alt Full Message Recovery
+            Sys --> S: Process Full Message Recovery
+        else Partial Message Recovery
+            Sys --> S: Process Partial Message Recovery
+            Sys --> S: Provide Options for Non-recoverable Part
+        end alt
+    end alt
+
+    alt Signature Creation Successful
+        Sys --> S: Signature Creation Successful Notification
+        opt Save to File or Clipboard
+            alt Save to File
+                S -> Sys: Save Signature to File
+                Sys -> FS: Save Signature
+            else Copy to Clipboard
+                S -> Sys: Copy Signature
+                Sys -> C: Copy
+            end alt
+        end opt
+    else Signature Creation Error
+        Sys --> S: Display Signature Creation Error
+    end alt
+
+else Invalid Inputs
+    Sys --> S: Display Invalid Input Error
+end alt
+deactivate Sys
+
+note over V: Verification
+V -> Sys: Input Message, Signature via File Selection, and Public Key
+activate Sys
+
+alt Valid Inputs
+    Sys -> Sys: Verify Signature using selected Scheme
+
+    alt Signature Scheme is ISO\slash IEC 9796-2
+        Sys -> Sys: Determine Message Recovery Type
+        alt Full Message Recovery
+            Sys --> V: Handle Full Recovery Verification
+        else Partial Message Recovery
+            Sys --> V: Handle Partial Recovery Verification
+            Sys --> V: Require Non-recoverable Message Portion Input
+        end alt
+    end alt
+
+    alt Verification Successful
+        Sys --> V: Verification Successful Notification
+        opt Message Recovered
+            Sys --> V: Present Recovered Message Options
+        end opt
+    else Verification Error
+        Sys --> V: Display Verification Error
+    end alt
+
+else Invalid Inputs
+    Sys --> V: Display Invalid Input Error
+end alt
+deactivate Sys
+
+@enduml

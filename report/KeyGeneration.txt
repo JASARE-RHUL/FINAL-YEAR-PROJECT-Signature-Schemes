@@ -48,10 +48,12 @@ class GenRSA {
   - MAXKEYSIZE: int
   - MINKEYSIZE: int
   - CERTAINTY: int
-  - keySize: int
-  + GenRSA(keySize: int)
+  - k: int
+  - lambda: int[]
+  + GenRSA(int k, int[] lambda)
   - generatePrimeComponents() : BigInteger[]
-  - computePhi(BigInteger p, BigInteger q) : BigInteger
+ - genModulus(BigInteger[] primes) : BigInteger
+  - computePhi(BigInteger[] components) : BigInteger
   - computeE(BigInteger phi) : BigInteger
   + generateKeyPair() : KeyPair
   + getKeySize() : int
