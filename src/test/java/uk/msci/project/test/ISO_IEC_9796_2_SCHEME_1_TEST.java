@@ -202,7 +202,117 @@ public class ISO_IEC_9796_2_SCHEME_1_TEST {
 
   }
 
+  @Test
+  void testSignAndVerifyRoundTrip() throws Exception {
+    for (int i = 0; i < 10; i++) {
+      KeyPair keyPair = new GenRSA(2, new int[]{512, 512}).generateKeyPair();
+      ISO_IEC_9796_2_SCHEME_1 schemeForSigning = new ISO_IEC_9796_2_SCHEME_1(
+          keyPair.getPrivateKey());
+      ISO_IEC_9796_2_SCHEME_1 schemeForVerifying = new ISO_IEC_9796_2_SCHEME_1(
+          keyPair.getPublicKey());
 
+      byte[] message = "Test message".getBytes();
+      byte[] message2 = ("Test message for signing Test message for signing Test mes"
+          + "sage for signing Test message for signing Test message for signing Test message for signi"
+          + "ng Test message for signing Test message for signing Test message for signing Test message "
+          + "for signing Test message for signingTest message for signing Test message for signingTest mes"
+          + "sage for signingTest message for signingTest message for signingTest message for "
+          + "signingv Test message for signing Test message for signing Test message for signing Test"
+          + " message for signing Test message for signing Test message for signing Test message for signing").getBytes();
+
+      byte[] signedMessage = schemeForSigning.sign(message);
+      byte[] nonRecoverableM = schemeForSigning.getNonRecoverableM();
+
+      System.out.println("Signed message (signature): " + Arrays.toString(signedMessage));
+
+      System.out.println("non recoverable message (m2): " + Arrays.toString(nonRecoverableM));
+
+      boolean isValidSignature = schemeForVerifying.verifyMessage(nonRecoverableM, signedMessage);
+
+      System.out.println("Is signature valid, recovery 1? " + isValidSignature);
+      // assertArrayEquals(new byte[]{0, (byte) 999}, recovery.getRecoveredMessage());
+      if (schemeForVerifying.getRecoverableM() != null) {
+        System.out.println("Recovered message: " + new String(schemeForVerifying.getRecoverableM()));
+      } else {
+        System.out.println("No message was recovered.");
+      }
+      // Truncate the message if it's too long
+      int availableSpace = 128 - 3 - 32 - 1;
+      int messageLength = Math.min(message.length, availableSpace);
+      byte[] expectedRecoveryMessage = new byte[messageLength];
+
+      // Copy the most significant bytes into the new array
+      // System.arraycopy(message, 0, expectedRecoveryMessage, 0, messageLength);
+      //  assertEquals(new String(recovery.getRecoveredMessage()), new String(message2));
+      //assertArrayEquals(expectedRecoveryMessage, recovery.getRecoveredMessage());
+      assertTrue(isValidSignature);
+
+    }
+  }
+
+  @Test
+  void testVerificationFailsForInvalidSignature() throws Exception {
+    KeyPair keyPair = new GenRSA(2, new int[]{512, 512}).generateKeyPair();
+    ISO_IEC_9796_2_SCHEME_1 schemeForVerifying = new ISO_IEC_9796_2_SCHEME_1(
+        keyPair.getPublicKey());
+
+    byte[] message = "test message".getBytes();
+    byte[] invalidSignature = new byte[128]; // Assuming RSA 1024-bit key
+    new SecureRandom().nextBytes(invalidSignature); // Fill with random data
+
+
+    boolean result = schemeForVerifying.verifyMessage(new byte[0], invalidSignature);
+    assertFalse(result);
+  }
+
+
+  @Test
+  void testVerificationFailsForAlteredSignature() throws Exception {
+    KeyPair keyPair = new GenRSA(2, new int[]{512, 512}).generateKeyPair();
+    ISO_IEC_9796_2_SCHEME_1 schemeForSigning = new ISO_IEC_9796_2_SCHEME_1(
+        keyPair.getPrivateKey());
+    ISO_IEC_9796_2_SCHEME_1 schemeForVerifying = new ISO_IEC_9796_2_SCHEME_1(
+        keyPair.getPublicKey());
+
+    byte[] message = "test message".getBytes();
+    byte[] signatureWithM2 = schemeForSigning.sign(message);
+
+    // Alter the signature (flip the last bit)
+    signatureWithM2[signatureWithM2.length - 1] ^= 1;
+
+
+    boolean result = schemeForVerifying.verifyMessage(schemeForSigning.getNonRecoverableM(),
+        signatureWithM2);
+    assertFalse(result);
+  }
+
+  @Test
+  void testVerificationWithCorrectAndIncorrectKeys() throws Exception {
+    KeyPair keyPair = new GenRSA(2, new int[]{512, 512}).generateKeyPair();
+    ISO_IEC_9796_2_SCHEME_1 schemeForSigning = new ISO_IEC_9796_2_SCHEME_1(
+        keyPair.getPrivateKey());
+
+    byte[] message = "test message".getBytes();
+    byte[] signatureWithM2 = schemeForSigning.sign(message);
+
+    // Use the correct public key for verification
+    ISO_IEC_9796_2_SCHEME_1 schemeForVerifyingWithCorrectKey = new ISO_IEC_9796_2_SCHEME_1(
+        keyPair.getPublicKey());
+    boolean resultWithCorrectKey = schemeForVerifyingWithCorrectKey.verifyMessage(
+        schemeForSigning.getNonRecoverableM(), signatureWithM2);
+    assertTrue(resultWithCorrectKey,
+        "The signature should be valid with the correct public key.");
+
+    // Generate a new key pair, which will have a different public key
+    KeyPair keyPair2 = new GenRSA(2, new int[]{512, 512}).generateKeyPair();
+    ISO_IEC_9796_2_SCHEME_1 schemeForVerifyingWithIncorrectKey = new ISO_IEC_9796_2_SCHEME_1(
+        keyPair2.getPublicKey());
+
+    // Try to verify the signature with the incorrect public key
+    boolean resultWithIncorrectKey = schemeForVerifyingWithIncorrectKey.verifyMessage(
+        schemeForSigning.getNonRecoverableM(), signatureWithM2);
+    assertFalse(resultWithIncorrectKey);
+  }
 
 
 }
