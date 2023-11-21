@@ -105,7 +105,7 @@ public class ISO_IEC_9796_2_SCHEME_1 extends SigScheme {
         EM[i] = (byte) 0xbb;
       }
       // The case of full recovery:
-      // modify the second nibble of final PAD_L byte to
+      // modify the second nibble of final PAD_L 0xBB byte to
       // contain 0x0A as per the scheme
       EM[delta - 1] ^= (byte) 0x01;
       EM[0] = (byte) 0x0b;
@@ -136,7 +136,7 @@ public class ISO_IEC_9796_2_SCHEME_1 extends SigScheme {
 
     BigInteger s = RSASP1(m);
 
-    byte[] S = s.toByteArray();
+    byte[] S = ByteArrayConverter.toFixedLengthByteArray(s, ++emLen);
 
     // Extract m2 from the original message M using the computed m2's length
     byte[] m2;
@@ -163,7 +163,7 @@ public class ISO_IEC_9796_2_SCHEME_1 extends SigScheme {
   public SignatureRecovery verifyMessageISO(byte[] m2, byte[] S) throws DataFormatException {
     BigInteger s = OS2IP(S);
     BigInteger m = RSAVP1(s);
-    byte[] EM = m.toByteArray();
+    byte[] EM = ByteArrayConverter.toFixedLengthByteArray(m, emLen);
 
     // Checks to see that the first two bits are 01 as per the 9796-2 standard
     if (((EM[0] & 0xC0) ^ 0x40) != 0) {
