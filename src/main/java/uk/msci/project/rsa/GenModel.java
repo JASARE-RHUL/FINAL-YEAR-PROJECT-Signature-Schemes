@@ -1,5 +1,6 @@
 package uk.msci.project.rsa;
 
+import uk.msci.project.rsa.KeyPair;
 import java.io.IOException;
 
 /**
@@ -25,6 +26,12 @@ public class GenModel {
   private GenRSA currentGen;
 
   /**
+   * The Key pair corresponding to the current Key Generation instance
+   */
+  private KeyPair generatedKeyPair;
+
+
+  /**
    * Constructor for GenModel. This initialises the model which will be bound to the runtime
    * behavior of the signature program. At the point of launch, the model does not have any state
    * until it is initiated by the user.
@@ -48,6 +55,18 @@ public class GenModel {
    */
   public void setGen() {
     this.currentGen = new GenRSA(this.k, this.lambda);
+  }
+
+  /**
+   * Generates an RSA key with usint the currently tracked generation processs.
+   *
+   * @throws IllegalStateException if key parameters are not set before key generation.
+   */
+  public void generateKey() {
+    if (currentGen == null) {
+      throw new IllegalStateException("Key Size needs to be set before a key can be generated");
+    }
+    generatedKeyPair = currentGen.generateKeyPair();
   }
 
 

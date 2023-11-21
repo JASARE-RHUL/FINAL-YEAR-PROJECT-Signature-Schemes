@@ -23,6 +23,7 @@ import uk.msci.project.rsa.ISO_IEC_9796_2_SCHEME_1;
 import uk.msci.project.rsa.Key;
 import uk.msci.project.rsa.KeyPair;
 import uk.msci.project.rsa.PrivateKey;
+import uk.msci.project.rsa.PublicKey;
 
 
 public class GenModelTest {
@@ -81,6 +82,26 @@ public class GenModelTest {
 
     assertArrayEquals(lambda, actualLambdaVal);
     assertEquals(k, kVal);
+
+  }
+
+  @Test
+  public void testGenerateKeyValid() throws NoSuchFieldException, IllegalAccessException {
+    int k = 3;
+    int[] lambda = {1024, 1024, 1024};
+    genModel.setKeyParameters(k, lambda);
+    genModel.setGen();
+    genModel.generateKey();
+    Field generatedKeyPair = GenModel.class.getDeclaredField("k");
+    generatedKeyPair.setAccessible(true);
+    KeyPair generatedKeyPairVal = (KeyPair) generatedKeyPair.get(genModel);
+    assertNotNull(generatedKeyPairVal);
+  }
+
+  @Test
+  public void testGenerateKeyNullParam() throws NoSuchFieldException, IllegalAccessException {
+    assertThrows(IllegalStateException.class, () -> genModel.generateKey(),
+        "Should throw an exception when Key Size is set before a key can be generated");
 
   }
 
