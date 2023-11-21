@@ -18,8 +18,10 @@ import java.nio.charset.StandardCharsets;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.msci.project.rsa.GenModel;
+import uk.msci.project.rsa.GenRSA;
 import uk.msci.project.rsa.ISO_IEC_9796_2_SCHEME_1;
 import uk.msci.project.rsa.Key;
+import uk.msci.project.rsa.KeyPair;
 import uk.msci.project.rsa.PrivateKey;
 
 
@@ -54,7 +56,32 @@ public class GenModelTest {
     actualLambda.setAccessible(true);
     int[] actualLambdaVal = (int[]) actualLambda.get(genModel);
     assertArrayEquals(lambda, actualLambdaVal);
-    assertEquals(k, 3);
+    assertEquals(k, kVal);
+  }
+
+  @Test
+  public void testGenerateKeyWithParameters() throws NoSuchFieldException, IllegalAccessException {
+    int k = 2;
+    int[] lambda = {512, 512};
+    genModel.setKeyParameters(k, lambda);
+    genModel.setGen();
+
+    Field currentGen = GenModel.class.getDeclaredField("currentGen");
+    currentGen.setAccessible(true);
+    GenRSA currentGenVal = (GenRSA) currentGen.get(genModel);
+    assertNotNull(currentGenVal);
+
+    Field actualK = GenModel.class.getDeclaredField("k");
+    actualK.setAccessible(true);
+    int kVal = (int) actualK.get(genModel);
+
+    Field actualLambda = GenModel.class.getDeclaredField("lambda");
+    actualLambda.setAccessible(true);
+    int[] actualLambdaVal = (int[]) actualLambda.get(genModel);
+
+    assertArrayEquals(lambda, actualLambdaVal);
+    assertEquals(k, kVal);
+
   }
 
 }
