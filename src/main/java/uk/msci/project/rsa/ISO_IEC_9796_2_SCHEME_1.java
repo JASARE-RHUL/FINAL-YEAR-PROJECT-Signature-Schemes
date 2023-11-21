@@ -122,31 +122,27 @@ public class ISO_IEC_9796_2_SCHEME_1 extends SigScheme {
   }
 
   /**
-   * Creates a signature for specified message and returns it along with the extracted
-   * non-recoverable part of the message.
+   * Creates a signature for specified message and stores the extracted non-recoverable part of the
+   * message by initialising its corresponding field in the class
    *
    * @param M The message to be signed.
-   * @return A 2D byte array where the first element is the signature and the second element is the
-   * non-recoverable part of the message.
+   * @return A combined byte array containing signature and an appended non-recoverable part of the
+   * message.
    * @throws DataFormatException If there is an error in data format during the signing process.
    */
-  public byte[][] extendedSign(byte[] M) throws DataFormatException {
+  @Override
+  public byte[] sign(byte[] M) throws DataFormatException {
     byte[] EM = encodeMessage(M);
     BigInteger m = OS2IP(EM);
-
     BigInteger s = RSASP1(m);
 
     byte[] S = ByteArrayConverter.toFixedLengthByteArray(s, ++emLen);
 
     // Extract m2 from the original message M using the computed m2's length
-    byte[] m2;
     if (m2Len > 0) {
-      m2 = Arrays.copyOfRange(M, m1Len - m2Len - 1, m1Len);
-    } else {
-      // If m2Length is 0, then m2 is empty
-      m2 = new byte[0];
+      nonRecoverableM = Arrays.copyOfRange(M, m1Len - m2Len - 1, m1Len);
     }
-    return new byte[][]{S, m2};
+    return S;
   }
 
   /**
@@ -160,14 +156,21 @@ public class ISO_IEC_9796_2_SCHEME_1 extends SigScheme {
    * message.
    * @throws DataFormatException if the signature format is not valid.
    */
-  public SignatureRecovery verifyMessageISO(byte[] m2, byte[] S) throws DataFormatException {
+  @Override
+  public boolean verifyMessage(byte[] m2, byte[] S) throws DataFormatException {
     BigInteger s = OS2IP(S);
     BigInteger m = RSAVP1(s);
-    byte[] EM = ByteArrayConverter.toFixedLengthByteArray(m, emLen);
+    byte[] EM;
+    try {
+      EM = ByteArrayConverter.toFixedLengthByteArray(m, emLen);
+    } catch (IllegalArgumentException e) {
+      return false;
+    }
+
 
     // Checks to see that the first two bits are 01 as per the 9796-2 standard
     if (((EM[0] & 0xC0) ^ 0x40) != 0) {
-      return new SignatureRecovery(false, null, this.getClass());
+      return false;
     }
 
     // Checks the recovery mode the signature was created in by checking third bit
@@ -181,7 +184,7 @@ public class ISO_IEC_9796_2_SCHEME_1 extends SigScheme {
     }
 
     if ((EM[emLen - 1] != PADR)) {
-      return new SignatureRecovery(false, null, this.getClass());
+      return false;
     }
     int hashStart = emLen - hashSize - 1;
     int mStart = 0;
@@ -205,12 +208,13 @@ public class ISO_IEC_9796_2_SCHEME_1 extends SigScheme {
     }
     byte[] m1m2Hash = md.digest();
     // Compare the computed hash with the extracted hash from EM
-    boolean hashMatch = Arrays.equals(EMHash, m1m2Hash);
+    if(!(Arrays.equals(EMHash, m1m2Hash))) {
+      return false;
+    }
+    recoverableM = m1;
+    return true;
 
-    // Return a new SignatureRecovery object with the result of the verification and recovered message
-    return new SignatureRecovery(hashMatch, hashMatch ? m1 : null, this.getClass());
   }
-
 
   /**
    * Processes and adds the non-recoverable part of the message (m2) to the message digest. This is
@@ -223,6 +227,5 @@ public class ISO_IEC_9796_2_SCHEME_1 extends SigScheme {
       md.update(m2);
     }
   }
-
 
 }
