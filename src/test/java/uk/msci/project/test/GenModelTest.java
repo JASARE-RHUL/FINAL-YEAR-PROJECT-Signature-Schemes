@@ -37,6 +37,5 @@ public class GenModelTest {
     assertNotNull("GenModel should initialise an object", genModel);
   }
 
-
 }
 

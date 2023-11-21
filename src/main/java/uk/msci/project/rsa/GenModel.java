@@ -14,7 +14,5 @@ public class GenModel {
    * behavior of the signature program. At the point of launch, the model does not have any state
    * until it is initiated by the user.
    */
-  public GenModel() {
-  }
-
+  public GenModel() {}
 }
