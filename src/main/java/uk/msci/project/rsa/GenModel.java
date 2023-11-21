@@ -70,13 +70,27 @@ public class GenModel {
   }
 
   /**
-   * Gets the generated KeyPair object that is currently stored and resets the stored reference to
-   * preserve the integrity of operations
+   * Gets the freshly generated key pair after first making sure to reset the stored reference to it
+   * preserve the integrity of operations.
    */
   public KeyPair getGeneratedKeyPair() {
     KeyPair keyPair = generatedKeyPair;
     generatedKeyPair = null;
     return keyPair;
+  }
+
+  /**
+   * Exports the generated RSA key pair to files.
+   *
+   * @throws IOException           if there is an error during the export process.
+   * @throws IllegalStateException if no key has been generated yet.
+   */
+  public void export() throws IOException {
+    if (generatedKeyPair == null) {
+      throw new IllegalStateException("No key has been generated yet.");
+    }
+    generatedKeyPair.getPrivateKey().exportKey("key.rsa");
+    generatedKeyPair.getPublicKey().exportKey("publicKey.rsa");
   }
 
 

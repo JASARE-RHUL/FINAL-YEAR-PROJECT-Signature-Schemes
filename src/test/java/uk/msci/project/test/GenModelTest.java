@@ -2,28 +2,15 @@ package uk.msci.project.test;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.lang.reflect.Field;
-import java.math.BigInteger;
-import java.nio.charset.StandardCharsets;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.msci.project.rsa.GenModel;
 import uk.msci.project.rsa.GenRSA;
-import uk.msci.project.rsa.ISO_IEC_9796_2_SCHEME_1;
-import uk.msci.project.rsa.Key;
 import uk.msci.project.rsa.KeyPair;
-import uk.msci.project.rsa.PrivateKey;
-import uk.msci.project.rsa.PublicKey;
 
 
 public class GenModelTest {
@@ -104,6 +91,13 @@ public class GenModelTest {
         "Should throw an exception when Key Size is set before a key can be generated");
 
   }
+
+  @Test
+  public void testExport() throws NoSuchFieldException, IllegalAccessException {
+    assertThrows(IllegalStateException.class, () -> genModel.generateKey(),
+        "Should throw an exception no key has been generated");
+  }
+
 
 }
 
