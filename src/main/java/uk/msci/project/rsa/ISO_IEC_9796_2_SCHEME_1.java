@@ -122,31 +122,27 @@ public class ISO_IEC_9796_2_SCHEME_1 extends SigScheme {
   }
 
   /**
-   * Creates a signature for specified message and returns it along with the extracted
-   * non-recoverable part of the message.
+   * Creates a signature for specified message and stores the extracted non-recoverable part of the
+   * message by initialising its corresponding field in the class
    *
    * @param M The message to be signed.
-   * @return A 2D byte array where the first element is the signature and the second element is the
-   * non-recoverable part of the message.
+   * @return A combined byte array containing signature and an appended non-recoverable part of the
+   * message.
    * @throws DataFormatException If there is an error in data format during the signing process.
    */
-  public byte[][] extendedSign(byte[] M) throws DataFormatException {
+  @Override
+  public byte[] sign(byte[] M) throws DataFormatException {
     byte[] EM = encodeMessage(M);
     BigInteger m = OS2IP(EM);
-
     BigInteger s = RSASP1(m);
 
     byte[] S = ByteArrayConverter.toFixedLengthByteArray(s, ++emLen);
 
     // Extract m2 from the original message M using the computed m2's length
-    byte[] m2;
     if (m2Len > 0) {
-      m2 = Arrays.copyOfRange(M, m1Len - m2Len - 1, m1Len);
-    } else {
-      // If m2Length is 0, then m2 is empty
-      m2 = new byte[0];
+      nonRecoverableM = Arrays.copyOfRange(M, m1Len - m2Len - 1, m1Len);
     }
-    return new byte[][]{S, m2};
+    return S;
   }
 
   /**

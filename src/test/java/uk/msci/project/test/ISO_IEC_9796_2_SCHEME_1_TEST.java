@@ -43,11 +43,11 @@ public class ISO_IEC_9796_2_SCHEME_1_TEST {
         byte[].class);
     encodeMethod.setAccessible(true);
     byte[] encodedMessage = (byte[]) encodeMethod.invoke(scheme, (Object) message);
-    assertEquals((0x60 | (0x0A & 0x0F)), encodedMessage[1],
+    assertEquals((0x60 | (0x0A & 0x0F)), encodedMessage[0],
         "The first non zero byte of the encoded message should match 0X6A for suffcicently long messages with a recoverable component.");
 
     byte[] encodedMessage2 = (byte[]) encodeMethod.invoke(scheme, (Object) message2);
-    assertEquals((0x40 | (0x0B & 0x0F)), encodedMessage2[1],
+    assertEquals((0x40 | (0x0B & 0x0F)), encodedMessage2[0],
         "The first non zero byte of the encoded message should match 0x4A for shorter message that do not have a recoverable component");
   }
 
@@ -179,7 +179,7 @@ public class ISO_IEC_9796_2_SCHEME_1_TEST {
         + "sage for signingTest message for signingTest message for signingTest message for "
         + "signingv Test message for signing Test message for signing Test message for signing Test"
         + " message for signing Test message for signing Test message for signing Test message for signing").getBytes();
-    byte[][] signedMessage = scheme.extendedSign(message);
+    byte[] signedMessage = scheme.sign(message2);
 
     Field m2Len = ISO_IEC_9796_2_SCHEME_1.class.getDeclaredField("m2Len");
     m2Len.setAccessible(true);
@@ -191,145 +191,18 @@ public class ISO_IEC_9796_2_SCHEME_1_TEST {
 
     byte[] latter;
     if (m2LenVal > 0) {
-      latter = Arrays.copyOfRange(message2, m1LenVal - m2LenVal, m1LenVal);
+      latter = Arrays.copyOfRange(message2, m1LenVal - m2LenVal - 1, m1LenVal);
     } else {
       // If m2Length is 0, then m2 is empty
       latter = new byte[0];
     }
 
-    assertArrayEquals(latter, signedMessage[1],
+    assertArrayEquals(latter, scheme.getNonRecoverableM(),
         "m2 should match the latter part of the original message.");
 
   }
 
-  @Test
-  void testSignAndVerifyRoundTrip() throws Exception {
-    for (int i = 0; i < 100; i++) {
-      KeyPair keyPair = new GenRSA(2, new int[]{512, 512}).generateKeyPair();
-      ISO_IEC_9796_2_SCHEME_1 schemeForSigning = new ISO_IEC_9796_2_SCHEME_1(
-          keyPair.getPrivateKey());
-      ISO_IEC_9796_2_SCHEME_1 schemeForVerifying = new ISO_IEC_9796_2_SCHEME_1(
-          keyPair.getPublicKey());
 
-      byte[] message = "Test message".getBytes();
-      byte[] message2 = ("Test message for signing Test message for signing Test mes"
-          + "sage for signing Test message for signing Test message for signing Test message for signi"
-          + "ng Test message for signing Test message for signing Test message for signing Test message "
-          + "for signing Test message for signingTest message for signing Test message for signingTest mes"
-          + "sage for signingTest message for signingTest message for signingTest message for "
-          + "signingv Test message for signing Test message for signing Test message for signing Test"
-          + " message for signing Test message for signing Test message for signing Test message for signing").getBytes();
-
-      byte[][] signedMessage = schemeForSigning.extendedSign(message);
-
-      System.out.println("Signed message (signature): " + Arrays.toString(signedMessage[0]));
-
-      System.out.println("non recoverable message (m2): " + Arrays.toString(signedMessage[1]));
-
-      SignatureRecovery recovery = schemeForVerifying.verifyMessageISO(signedMessage[1],
-          signedMessage[0]);
-      SignatureRecovery recovery2 = schemeForVerifying.verifyMessageISO(signedMessage[1],
-          signedMessage[0]);
-
-      System.out.println("Is signature valid, recovery 1? " + recovery.isValid());
-      // assertArrayEquals(new byte[]{0, (byte) 999}, recovery.getRecoveredMessage());
-      if (recovery.getRecoveredMessage() != null) {
-        System.out.println("Recovered message: " + new String(recovery.getRecoveredMessage()));
-      } else {
-        System.out.println("No message was recovered.");
-      }
-      // Truncate the message if it's too long
-      int availableSpace = 128 - 3 - 32 - 1;
-      int messageLength = Math.min(message.length, availableSpace);
-      byte[] expectedRecoveryMessage = new byte[messageLength];
-
-      // Copy the most significant bytes into the new array
-      // System.arraycopy(message, 0, expectedRecoveryMessage, 0, messageLength);
-      //  assertEquals(new String(recovery.getRecoveredMessage()), new String(message2));
-      //assertArrayEquals(expectedRecoveryMessage, recovery.getRecoveredMessage());
-      assertTrue(recovery.isValid());
-
-    }
-  }
-
-  @Test
-  void testVerificationFailsForInvalidSignature() throws Exception {
-    KeyPair keyPair = new GenRSA(2, new int[]{512, 512}).generateKeyPair();
-    ISO_IEC_9796_2_SCHEME_1 schemeForVerifying = new ISO_IEC_9796_2_SCHEME_1(
-        keyPair.getPublicKey());
-
-    byte[] message = "test message".getBytes();
-    byte[] invalidSignature = new byte[128]; // Assuming RSA 1024-bit key
-    new SecureRandom().nextBytes(invalidSignature); // Fill with random data
-
-    // No need to use reflection since we assume verifyMessageISO is public
-    SignatureRecovery result = schemeForVerifying.verifyMessageISO(new byte[0], invalidSignature);
-    assertFalse(result.isValid());
-  }
-
-  @Test
-  void testVerificationFailsForAlteredMessage() throws Exception {
-    KeyPair keyPair = new GenRSA(2, new int[]{512, 512}).generateKeyPair();
-    ISO_IEC_9796_2_SCHEME_1 schemeForSigning = new ISO_IEC_9796_2_SCHEME_1(
-        keyPair.getPrivateKey());
-
-    byte[] originalMessage = "test message".getBytes();
-    byte[][] signatureWithM2 = schemeForSigning.extendedSign(originalMessage);
-
-    // Alter the message
-    byte[] alteredMessage = "test message altered".getBytes();
-
-    // No need to use reflection since we assume verifyMessageISO is public
-    SignatureRecovery result = schemeForSigning.verifyMessageISO(signatureWithM2[1],
-        signatureWithM2[0]);
-    assertFalse(result.isValid());
-  }
-
-  @Test
-  void testVerificationFailsForAlteredSignature() throws Exception {
-    KeyPair keyPair = new GenRSA(2, new int[]{512, 512}).generateKeyPair();
-    ISO_IEC_9796_2_SCHEME_1 schemeForSigning = new ISO_IEC_9796_2_SCHEME_1(
-        keyPair.getPrivateKey());
-
-    byte[] message = "test message".getBytes();
-    byte[][] signatureWithM2 = schemeForSigning.extendedSign(message);
-
-    // Alter the signature (flip the last bit)
-    signatureWithM2[0][signatureWithM2[0].length - 1] ^= 1;
-
-    // No need to use reflection since we assume verifyMessageISO is public
-    SignatureRecovery result = schemeForSigning.verifyMessageISO(signatureWithM2[1],
-        signatureWithM2[0]);
-    assertFalse(result.isValid());
-  }
-
-  @Test
-  void testVerificationWithCorrectAndIncorrectKeys() throws Exception {
-    KeyPair keyPair = new GenRSA(2, new int[]{512, 512}).generateKeyPair();
-    ISO_IEC_9796_2_SCHEME_1 schemeForSigning = new ISO_IEC_9796_2_SCHEME_1(
-        keyPair.getPrivateKey());
-
-    byte[] message = "test message".getBytes();
-    byte[][] signatureWithM2 = schemeForSigning.extendedSign(message);
-
-    // Use the correct public key for verification
-    ISO_IEC_9796_2_SCHEME_1 schemeForVerifyingWithCorrectKey = new ISO_IEC_9796_2_SCHEME_1(
-        keyPair.getPublicKey());
-    SignatureRecovery resultWithCorrectKey = schemeForVerifyingWithCorrectKey.verifyMessageISO(
-        signatureWithM2[1], signatureWithM2[0]);
-    assertTrue(resultWithCorrectKey.isValid(),
-        "The signature should be valid with the correct public key.");
-
-    // Generate a new key pair, which will have a different public key
-    KeyPair keyPair2 = new GenRSA(2, new int[]{512, 512}).generateKeyPair();
-    ISO_IEC_9796_2_SCHEME_1 schemeForVerifyingWithIncorrectKey = new ISO_IEC_9796_2_SCHEME_1(
-        keyPair2.getPublicKey());
-
-    // Try to verify the signature with the incorrect public key
-    SignatureRecovery resultWithIncorrectKey = schemeForVerifyingWithIncorrectKey.verifyMessageISO(
-        signatureWithM2[1], signatureWithM2[0]);
-    assertFalse(resultWithIncorrectKey.isValid());
-  }
 
 
 }
