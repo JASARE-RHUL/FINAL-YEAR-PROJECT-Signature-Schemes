@@ -58,7 +58,7 @@ public class GenModel {
   }
 
   /**
-   * Generates an RSA key with usint the currently tracked generation processs.
+   * Generates an RSA key with using the currently tracked generation process.
    *
    * @throws IllegalStateException if key parameters are not set before key generation.
    */
@@ -67,6 +67,16 @@ public class GenModel {
       throw new IllegalStateException("Key Size needs to be set before a key can be generated");
     }
     generatedKeyPair = currentGen.generateKeyPair();
+  }
+
+  /**
+   * Gets the generated KeyPair object that is currently stored and resets the stored reference to
+   * preserve the integrity of operations
+   */
+  public KeyPair getGeneratedKeyPair() {
+    KeyPair keyPair = generatedKeyPair;
+    generatedKeyPair = null;
+    return keyPair;
   }
 
 
