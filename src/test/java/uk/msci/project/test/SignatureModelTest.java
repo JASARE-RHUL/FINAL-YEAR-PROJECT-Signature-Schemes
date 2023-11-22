@@ -2,6 +2,7 @@ package uk.msci.project.test;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -9,12 +10,18 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import java.lang.reflect.Field;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import uk.msci.project.rsa.ANSI_X9_31_RDSA;
+import uk.msci.project.rsa.ByteArrayConverter;
 import uk.msci.project.rsa.GenModel;
 import uk.msci.project.rsa.GenRSA;
 import uk.msci.project.rsa.ISO_IEC_9796_2_SCHEME_1;
+import uk.msci.project.rsa.InvalidSignatureTypeException;
 import uk.msci.project.rsa.KeyPair;
 import uk.msci.project.rsa.PrivateKey;
 import uk.msci.project.rsa.PublicKey;
+import uk.msci.project.rsa.RSASSA_PKCS1_v1_5;
+import uk.msci.project.rsa.SigScheme;
+import uk.msci.project.rsa.SignatureFactory;
 import uk.msci.project.rsa.SignatureModel;
 import uk.msci.project.rsa.SignatureType;
 
@@ -29,11 +36,13 @@ public class SignatureModelTest {
     signatureModel = new SignatureModel();
 
   }
+
   @Test
   void testInitialization() {
     assertNotNull("SignatureModel should initialise an object", signatureModel);
 
   }
+
   @Test
   public void testSetPrivateKey() throws IllegalAccessException, NoSuchFieldException {
     KeyPair keyPair = new GenRSA(2, new int[]{512, 512}).generateKeyPair();
@@ -58,7 +67,9 @@ public class SignatureModelTest {
     // Test that all enum values are present
     SignatureType[] types = SignatureType.values();
     assertEquals(3, types.length);
-    assertArrayEquals(new SignatureType[]{SignatureType.RSASSA_PKCS1_v1_5, SignatureType.ANSI_X9_31_RDSA, SignatureType.ISO_IEC_9796_2_SCHEME_1}, types);
+    assertArrayEquals(
+        new SignatureType[]{SignatureType.RSASSA_PKCS1_v1_5, SignatureType.ANSI_X9_31_RDSA,
+            SignatureType.ISO_IEC_9796_2_SCHEME_1}, types);
   }
 
   @Test
@@ -78,10 +89,11 @@ public class SignatureModelTest {
   }
 
   @Test
-  public void testSetSigTypePKCS()  {
+  public void testSetSigTypePKCS() {
     signatureModel.setSignatureType(SignatureType.RSASSA_PKCS1_v1_5);
     assertEquals(SignatureType.RSASSA_PKCS1_v1_5, signatureModel.getSignatureType());
   }
+
   @Test
   public void testSetSigTypeANSI() {
     signatureModel.setSignatureType(SignatureType.ANSI_X9_31_RDSA);
@@ -94,7 +106,46 @@ public class SignatureModelTest {
     assertEquals(SignatureType.ISO_IEC_9796_2_SCHEME_1, signatureModel.getSignatureType());
   }
 
+  @Test
+  public void testGetSignatureSchemeRSASSA_PKCS1_v1_5() throws InvalidSignatureTypeException {
+    KeyPair keyPair = new GenRSA(2, new int[]{512, 512}).generateKeyPair();
+    SigScheme resultPriv = SignatureFactory.getSignatureScheme(SignatureType.RSASSA_PKCS1_v1_5,
+        keyPair.getPrivateKey());
+    SigScheme resultPub = SignatureFactory.getSignatureScheme(SignatureType.RSASSA_PKCS1_v1_5,
+        keyPair.getPrivateKey());
+    assertTrue(resultPriv instanceof RSASSA_PKCS1_v1_5);
+    assertTrue(resultPub instanceof RSASSA_PKCS1_v1_5);
+  }
 
+  @Test
+  public void testGetSignatureSchemeANSI_X9_31_RDSA() throws InvalidSignatureTypeException {
+    KeyPair keyPair = new GenRSA(2, new int[]{512, 512}).generateKeyPair();
+    SigScheme resultPriv = SignatureFactory.getSignatureScheme(SignatureType.ANSI_X9_31_RDSA,
+        keyPair.getPrivateKey());
+    SigScheme resultPub = SignatureFactory.getSignatureScheme(SignatureType.ANSI_X9_31_RDSA,
+        keyPair.getPrivateKey());
+    assertTrue(resultPriv instanceof ANSI_X9_31_RDSA);
+    assertTrue(resultPub instanceof ANSI_X9_31_RDSA);
+  }
+
+  @Test
+  public void testGetSignatureSchemeISO_IEC_9796_2_SCHEME_1() throws InvalidSignatureTypeException {
+    KeyPair keyPair = new GenRSA(2, new int[]{512, 512}).generateKeyPair();
+    SigScheme resultPriv = SignatureFactory.getSignatureScheme(SignatureType.ISO_IEC_9796_2_SCHEME_1,
+        keyPair.getPrivateKey());
+    SigScheme resultPub = SignatureFactory.getSignatureScheme(SignatureType.ISO_IEC_9796_2_SCHEME_1,
+        keyPair.getPrivateKey());
+    assertTrue(resultPriv instanceof ISO_IEC_9796_2_SCHEME_1);
+    assertTrue(resultPub instanceof ISO_IEC_9796_2_SCHEME_1);
+  }
+
+  @Test
+  public void testGetSignatureSchemeWithInvalidType() throws InvalidSignatureTypeException {
+    KeyPair keyPair = new GenRSA(2, new int[]{512, 512}).generateKeyPair();
+    assertThrows(NullPointerException.class,
+        () -> SignatureFactory.getSignatureScheme(null, keyPair.getPublicKey()),
+        "Should thrown NullPointerException when signature type is invalid ");
+  }
 
 
 }
