@@ -17,11 +17,35 @@ public class SignatureModel {
   private Key key;
 
   /**
+   * The type of to the current Signature Scheme instance
+   */
+  private SignatureType currentType;
+
+
+  /**
    * Constructs a new {@code SignatureModel} without requiring an initial key representative of the
    * fact that at program launch, the model does not have any state: until it is initiated by the
    * user
    */
   public SignatureModel() {
+  }
+
+  /**
+   * Sets the type of signature to be used.
+   *
+   * @param signatureType The type of signature to be set.
+   */
+  public void setSignatureType(SignatureType signatureType) {
+    this.currentType = signatureType;
+  }
+
+  /**
+   * Returns the current type of signature set in the model.
+   *
+   * @return The current type of signature.
+   */
+  public SignatureType getSignatureType() {
+    return currentType;
   }
 
   /**

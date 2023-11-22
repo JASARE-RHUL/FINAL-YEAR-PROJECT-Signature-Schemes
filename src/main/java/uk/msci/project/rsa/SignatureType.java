@@ -1,7 +1,8 @@
 package uk.msci.project.rsa;
 
 /**
- * This Enum represents full suite of deterministic digital signature schemes.
+ * This Enum represents the full suite of deterministic and standardised RSA digital signature
+ * schemes.
  */
 public enum SignatureType {
 
