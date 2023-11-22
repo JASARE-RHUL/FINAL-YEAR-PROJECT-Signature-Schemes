@@ -77,6 +77,24 @@ public class SignatureModelTest {
     assertEquals("ISO_IEC_9796_2_SCHEME_1", SignatureType.ISO_IEC_9796_2_SCHEME_1.toString());
   }
 
+  @Test
+  public void testSetSigTypePKCS()  {
+    signatureModel.setSignatureType(SignatureType.RSASSA_PKCS1_v1_5);
+    assertEquals(SignatureType.RSASSA_PKCS1_v1_5, signatureModel.getSignatureType());
+  }
+  @Test
+  public void testSetSigTypeANSI() {
+    signatureModel.setSignatureType(SignatureType.ANSI_X9_31_RDSA);
+    assertEquals(SignatureType.ANSI_X9_31_RDSA, signatureModel.getSignatureType());
+  }
+
+  @Test
+  public void testSetSigTypeISO() {
+    signatureModel.setSignatureType(SignatureType.ISO_IEC_9796_2_SCHEME_1);
+    assertEquals(SignatureType.ISO_IEC_9796_2_SCHEME_1, signatureModel.getSignatureType());
+  }
+
+
 
 
 }
