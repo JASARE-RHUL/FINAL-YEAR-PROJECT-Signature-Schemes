@@ -5,6 +5,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.lang.reflect.Field;
@@ -60,6 +61,7 @@ public class SignatureModelTest {
     Field key = SignatureModel.class.getDeclaredField("key");
     key.setAccessible(true);
     PublicKey keyVal = (PublicKey) key.get(signatureModel);
+    assertEquals(keyPair.getPublicKey(), keyVal);
   }
 
   @Test
@@ -131,7 +133,8 @@ public class SignatureModelTest {
   @Test
   public void testGetSignatureSchemeISO_IEC_9796_2_SCHEME_1() throws InvalidSignatureTypeException {
     KeyPair keyPair = new GenRSA(2, new int[]{512, 512}).generateKeyPair();
-    SigScheme resultPriv = SignatureFactory.getSignatureScheme(SignatureType.ISO_IEC_9796_2_SCHEME_1,
+    SigScheme resultPriv = SignatureFactory.getSignatureScheme(
+        SignatureType.ISO_IEC_9796_2_SCHEME_1,
         keyPair.getPrivateKey());
     SigScheme resultPub = SignatureFactory.getSignatureScheme(SignatureType.ISO_IEC_9796_2_SCHEME_1,
         keyPair.getPrivateKey());
@@ -145,6 +148,69 @@ public class SignatureModelTest {
     assertThrows(NullPointerException.class,
         () -> SignatureFactory.getSignatureScheme(null, keyPair.getPublicKey()),
         "Should thrown NullPointerException when signature type is invalid ");
+  }
+
+  @Test
+  void testInstantiateSignatureSchemeValidPKCS()
+      throws IllegalAccessException, NoSuchFieldException, InvalidSignatureTypeException {
+    signatureModel.setSignatureType(SignatureType.RSASSA_PKCS1_v1_5);
+    signatureModel.setKey(new GenRSA(2, new int[]{512, 512}).generateKeyPair().getPrivateKey());
+    signatureModel.instantiateSignatureScheme();
+    Field currentSignatureScheme = SignatureModel.class.getDeclaredField("currentSignatureScheme");
+    currentSignatureScheme.setAccessible(true);
+    SigScheme currentSignatureSchemeVal = (SigScheme) currentSignatureScheme.get(signatureModel);
+    assertTrue(currentSignatureSchemeVal instanceof RSASSA_PKCS1_v1_5);
+
+  }
+
+  @Test
+  void testInstantiateSignatureSchemeValidANSI()
+      throws IllegalAccessException, NoSuchFieldException, InvalidSignatureTypeException {
+    signatureModel.setSignatureType(SignatureType.ANSI_X9_31_RDSA);
+    signatureModel.setKey(new GenRSA(2, new int[]{512, 512}).generateKeyPair().getPrivateKey());
+    signatureModel.instantiateSignatureScheme();
+    Field currentSignatureScheme = SignatureModel.class.getDeclaredField("currentSignatureScheme");
+    currentSignatureScheme.setAccessible(true);
+    SigScheme currentSignatureSchemeVal = (SigScheme) currentSignatureScheme.get(signatureModel);
+    assertTrue(currentSignatureSchemeVal instanceof ANSI_X9_31_RDSA);
+
+  }
+
+  @Test
+  void testInstantiateSignatureSchemeValidISO()
+      throws IllegalAccessException, NoSuchFieldException, InvalidSignatureTypeException {
+    signatureModel.setSignatureType(SignatureType.ISO_IEC_9796_2_SCHEME_1);
+    signatureModel.setKey(new GenRSA(2, new int[]{512, 512}).generateKeyPair().getPrivateKey());
+    signatureModel.instantiateSignatureScheme();
+    Field currentSignatureScheme = SignatureModel.class.getDeclaredField("currentSignatureScheme");
+    currentSignatureScheme.setAccessible(true);
+    SigScheme currentSignatureSchemeVal = (SigScheme) currentSignatureScheme.get(signatureModel);
+    assertTrue(currentSignatureSchemeVal instanceof ISO_IEC_9796_2_SCHEME_1);
+
+  }
+  @Test
+  void testInstantiateSignatureNullKey()
+      throws IllegalAccessException, NoSuchFieldException, InvalidSignatureTypeException {
+    signatureModel.setSignatureType(SignatureType.ISO_IEC_9796_2_SCHEME_1);
+    assertThrows(IllegalStateException.class,
+        () -> signatureModel.instantiateSignatureScheme(),
+        "Both key and signature type need to be set before instantiating a signature scheme");
+
+  }
+  @Test
+  void testInstantiateSignatureNullType()
+      throws IllegalAccessException, NoSuchFieldException, InvalidSignatureTypeException {
+    signatureModel.setKey(new GenRSA(2, new int[]{512, 512}).generateKeyPair().getPrivateKey());
+    assertThrows(IllegalStateException.class,
+        () -> signatureModel.instantiateSignatureScheme(),
+        "Both key and signature type need to be set before instantiating a signature scheme");
+  }
+  @Test
+  void testInstantiateSignatureNull()
+      throws IllegalAccessException, NoSuchFieldException, InvalidSignatureTypeException {
+    assertThrows(IllegalStateException.class,
+        () -> signatureModel.instantiateSignatureScheme(),
+        "Both key and signature type need to be set before instantiating a signature scheme");
   }
 
 

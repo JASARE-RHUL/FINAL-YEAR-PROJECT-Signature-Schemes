@@ -57,4 +57,17 @@ public class SignatureModel {
     this.key = key;
   }
 
+  /**
+   * Instantiates a signature scheme based on the current key and signature type. Throws an
+   * exception if either the key or the signature type is not set.
+   */
+  public void instantiateSignatureScheme() throws InvalidSignatureTypeException {
+    if (key != null && currentType != null) {
+      currentSignatureScheme = SignatureFactory.getSignatureScheme(currentType, key);
+    } else {
+      throw new IllegalStateException(
+          "Both key and signature type need to be set before instantiating a signature scheme");
+    }
+  }
+
 }

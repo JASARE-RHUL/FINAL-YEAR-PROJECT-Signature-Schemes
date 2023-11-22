@@ -1,8 +1,8 @@
 package uk.msci.project.rsa;
 
 /**
- * This class is factory for returning the Signature scheme instance corresponding to a user
- * specified signature Type.
+ * This class is a factory for returning the Signature scheme instance corresponding to a user
+ * specified signature type.
  */
 public class SignatureFactory {
   /**
