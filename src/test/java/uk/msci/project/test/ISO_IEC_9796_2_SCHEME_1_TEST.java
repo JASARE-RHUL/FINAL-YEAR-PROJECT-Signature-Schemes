@@ -16,10 +16,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.msci.project.rsa.GenRSA;
 import uk.msci.project.rsa.ISO_IEC_9796_2_SCHEME_1;
-import uk.msci.project.rsa.ISO_IEC_9796_2_SCHEME_1;
 import uk.msci.project.rsa.KeyPair;
 import uk.msci.project.rsa.SigScheme;
-import uk.msci.project.rsa.SignatureRecovery;
 
 public class ISO_IEC_9796_2_SCHEME_1_TEST {
 

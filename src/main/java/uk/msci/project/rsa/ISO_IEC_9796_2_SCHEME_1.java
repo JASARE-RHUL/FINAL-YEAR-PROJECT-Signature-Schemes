@@ -69,6 +69,7 @@ public class ISO_IEC_9796_2_SCHEME_1 extends SigScheme {
    * @param M The message to be encoded.
    * @return The encoded message as a byte array.
    */
+  @Override
   public byte[] encodeMessage(byte[] M) throws DataFormatException {
     byte[] EM = new byte[emLen];
     m1Len = M.length;
