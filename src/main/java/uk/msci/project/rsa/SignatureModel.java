@@ -71,6 +71,7 @@ public class SignatureModel {
           "Both key and signature type need to be set before instantiating a signature scheme");
     }
   }
+
   /**
    * Signs the given data using the current signature scheme.
    *
@@ -85,6 +86,21 @@ public class SignatureModel {
     return currentSignatureScheme.sign(data);
   }
 
+  /**
+   * Verifies a signature against the provided data using the current signature scheme.
+   *
+   * @param data      The data to be verified against the signature.
+   * @param signature The signature to be verified.
+   * @return {@code true} if the signature is valid, {@code false} otherwise.
+   * @throws IllegalStateException if the key or signature type is not set before verification.
+   */
+  public boolean verify(byte[] data, byte[] signature) throws DataFormatException {
+    if (currentSignatureScheme == null) {
+      throw new IllegalStateException(
+          "Both key and signature type need to be set before verification");
+    }
+    return currentSignatureScheme.verify(data, signature);
+  }
 
 
 }
