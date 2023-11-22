@@ -1,5 +1,7 @@
 package uk.msci.project.rsa;
 
+import java.util.zip.DataFormatException;
+
 /**
  * This class is part of the Model component specific to digital signature operations providing
  * methods to sign data and verify signatures.  It encapsulates the data and the logic required to
@@ -69,5 +71,20 @@ public class SignatureModel {
           "Both key and signature type need to be set before instantiating a signature scheme");
     }
   }
+  /**
+   * Signs the given data using the current signature scheme.
+   *
+   * @param data The data to be signed.
+   * @return A byte array representing the digital signature.
+   * @throws IllegalStateException if the key or signature type is not set before signing.
+   */
+  public byte[] sign(byte[] data) throws DataFormatException {
+    if (currentSignatureScheme == null) {
+      throw new IllegalStateException("Both key and signature type need to be set before signing");
+    }
+    return currentSignatureScheme.sign(data);
+  }
+
+
 
 }
