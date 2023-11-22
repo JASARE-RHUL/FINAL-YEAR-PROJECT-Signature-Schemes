@@ -16,6 +16,7 @@ import uk.msci.project.rsa.KeyPair;
 import uk.msci.project.rsa.PrivateKey;
 import uk.msci.project.rsa.PublicKey;
 import uk.msci.project.rsa.SignatureModel;
+import uk.msci.project.rsa.SignatureType;
 
 
 public class SignatureModelTest {
@@ -50,6 +51,30 @@ public class SignatureModelTest {
     Field key = SignatureModel.class.getDeclaredField("key");
     key.setAccessible(true);
     PublicKey keyVal = (PublicKey) key.get(signatureModel);
+  }
+
+  @Test
+  public void testEnumValues() {
+    // Test that all enum values are present
+    SignatureType[] types = SignatureType.values();
+    assertEquals(3, types.length);
+    assertArrayEquals(new SignatureType[]{SignatureType.RSASSA_PKCS1_v1_5, SignatureType.ANSI_X9_31_RDSA, SignatureType.ISO_IEC_9796_2_SCHEME_1}, types);
+  }
+
+  @Test
+  public void testGetSchemeName() {
+    // Test getSchemeName method
+    assertEquals("RSASSA_PKCS1_v1_5", SignatureType.RSASSA_PKCS1_v1_5.getSchemeName());
+    assertEquals("ANSI_X9_31_RDSA", SignatureType.ANSI_X9_31_RDSA.getSchemeName());
+    assertEquals("ISO_IEC_9796_2_SCHEME_1", SignatureType.ISO_IEC_9796_2_SCHEME_1.getSchemeName());
+  }
+
+  @Test
+  public void testToString() {
+    // Test toString method
+    assertEquals("RSASSA_PKCS1_v1_5", SignatureType.RSASSA_PKCS1_v1_5.toString());
+    assertEquals("ANSI_X9_31_RDSA", SignatureType.ANSI_X9_31_RDSA.toString());
+    assertEquals("ISO_IEC_9796_2_SCHEME_1", SignatureType.ISO_IEC_9796_2_SCHEME_1.toString());
   }
 
 
