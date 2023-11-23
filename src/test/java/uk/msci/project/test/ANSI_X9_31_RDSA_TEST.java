@@ -39,7 +39,7 @@ public class ANSI_X9_31_RDSA_TEST {
     encodeMethod.setAccessible(true);
     byte[] encodedMessage = (byte[]) encodeMethod.invoke(scheme, (Object) message);
 
-    assertEquals(0x6, encodedMessage[0], "The first byte of the encoded message should be 0x6");
+    assertEquals(0x6B, encodedMessage[0], "The first byte of the encoded message should be 0x6");
 
   }
 

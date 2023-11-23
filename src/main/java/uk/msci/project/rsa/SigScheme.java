@@ -70,7 +70,8 @@ public abstract class SigScheme implements SigSchemeInterface {
     // emBits is the bit length of the modulus n, minus one.
     this.emBits = modulus.bitLength() - 1;
     // emLen is the maximum message length in bytes.
-    this.emLen = (this.emBits + 7) / 8; // Convert bits to bytes and round up if necessary..
+    this.emLen = (this.emBits + 7) / 8; // Convert bits to bytes and round up if necessary
+    emLen--;
     try {
       this.md = MessageDigest.getInstance("SHA-256");
       this.hashID = new byte[]{(byte) 0x30, (byte) 0x31, (byte) 0x30, (byte) 0x0d, (byte) 0x06,
@@ -104,7 +105,7 @@ public abstract class SigScheme implements SigSchemeInterface {
 
     BigInteger s = RSASP1(m);
 
-    byte[] S = I2OSP(s);
+    byte[] S = ByteArrayConverter.toFixedLengthByteArray(s, emLen + 1);
 
     // Output the signature S.
     return S;
@@ -133,12 +134,14 @@ public abstract class SigScheme implements SigSchemeInterface {
    */
   public boolean verifyMessage(byte[] M, byte[] S)
       throws DataFormatException {
-
     BigInteger s = OS2IP(S);
-
     BigInteger m = RSAVP1(s);
-
-    byte[] EM = I2OSP(m);
+    byte[] EM;
+    try {
+      EM = I2OSP(m);
+    } catch (IllegalArgumentException e) {
+      return false;
+    }
 
     byte[] EMprime = encodeMessage(M);
 

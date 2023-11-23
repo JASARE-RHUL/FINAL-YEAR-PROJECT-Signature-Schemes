@@ -54,7 +54,6 @@ public class ISO_IEC_9796_2_SCHEME_1 extends SigScheme {
    */
   public ISO_IEC_9796_2_SCHEME_1(Key key) {
     super(key);
-    emLen--;
   }
 
   /**
@@ -133,12 +132,7 @@ public class ISO_IEC_9796_2_SCHEME_1 extends SigScheme {
    */
   @Override
   public byte[] sign(byte[] M) throws DataFormatException {
-    byte[] EM = encodeMessage(M);
-    BigInteger m = OS2IP(EM);
-    BigInteger s = RSASP1(m);
-
-    byte[] S = ByteArrayConverter.toFixedLengthByteArray(s, ++emLen);
-
+    byte[] S = super.sign(M);
     // Extract m2 from the original message M using the computed m2's length
     if (m2Len > 0) {
       nonRecoverableM = Arrays.copyOfRange(M, m1Len - m2Len - 1, m1Len);
@@ -163,7 +157,7 @@ public class ISO_IEC_9796_2_SCHEME_1 extends SigScheme {
     BigInteger m = RSAVP1(s);
     byte[] EM;
     try {
-      EM = ByteArrayConverter.toFixedLengthByteArray(m, emLen);
+      EM = I2OSP(m);
     } catch (IllegalArgumentException e) {
       return false;
     }

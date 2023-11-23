@@ -33,39 +33,28 @@ public class ANSI_X9_31_RDSA extends SigScheme {
    * @return The encoded message as a byte array.
    */
   @Override
+
   protected byte[] encodeMessage(byte[] M) throws DataFormatException {
-    // Assuming hashID is already set elsewhere to the correct value for SHA-256
+    byte[] EM = new byte[emLen];
+    //  int availableSpace = ((emBits - 48 - 8) + 7) / 8;
     this.md.update(M);
     byte[] mHash = this.md.digest();
-
-
-    int tLen = mHash.length + this.hashID.length;
-
-    // Calculate the length of the padding 'BBBB...BBA'
-    int psLen = emLen - tLen - 1; // Subtract 1 for the '6' at the beginning
-
-
-    byte[] PS = new byte[psLen];
-
-    Arrays.fill(PS, (byte) 0xBB);
-
-    PS[psLen - 1] = (byte) 0xBA;
-
-    byte[] EM = new byte[emLen];
-    int pos = 0;
-
-    // Set the first byte to '6'
-    EM[pos++] = (byte) 0x06;
-
-    // Copy the padding into the EM
-    System.arraycopy(PS, 0, EM, pos, psLen);
-    pos += psLen;
     byte[] digestInfo = createDigestInfo(mHash);
+    int tLen = digestInfo.length;
+    int hashStart = emLen - tLen;
+    System.arraycopy(digestInfo, 0, EM, hashStart, tLen);
+    int delta = hashStart;
 
-
-    System.arraycopy(digestInfo, 0, EM, pos, digestInfo.length);
-    pos += digestInfo.length;
-
+    // Pad with Bs to fill the remaining space
+    if ((delta - 1) > 0) {
+      for (int i = delta - 1; i != 0; i--) {
+        EM[i] = (byte) 0xbb;
+      }
+      EM[delta - 1] ^= (byte) 0x01;
+      EM[0] = (byte) 0x6B;
+    } else {
+      EM[0] = (byte) 0x6A;
+    }
     return EM;
   }
 
