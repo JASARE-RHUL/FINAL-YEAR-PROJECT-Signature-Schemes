@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<?import javafx.scene.image.ImageView?>
+<AnchorPane xmlns:fx="http://javafx.com/fxml" fx:controller="uk.msci.project.rsa.GenView" prefHeight="400.0" prefWidth="600.0">
+  <VBox alignment="CENTER" spacing="20" AnchorPane.topAnchor="50" AnchorPane.bottomAnchor="50" AnchorPane.leftAnchor="50" AnchorPane.rightAnchor="50">
+    <!-- Title and Logo -->
+    <VBox alignment="CENTER" spacing="10">
+      <Label text="Signature Scheme POC - Generate Keys" style="-fx-font-weight: bold; -fx-font-size: 24;"/>
+      <!-- Assuming the logo image is set in the controller or via an image path -->
+      <ImageView fx:id="logoImageView" />
+    </VBox>
+
+    <Separator />
+
+    <!-- Key Size Input Section -->
+    <VBox alignment="CENTER" spacing="5">
+      <Label text="Enter multiple bit sizes, separated by commas (e.g., 512, 256, 384)" />
+      <TextField fx:id="keySizeTextField" prefWidth="200"/>
+    </VBox>
+
+
+    <!-- Generate Button -->
+    <Button text="Generate Keys" fx:id="generateButton" minWidth="200"/>
+
+    <!-- Success Pop-up (Initially invisible) -->
+    <VBox fx:id="successPopup" alignment="CENTER" spacing="10" visible="false">
+      <Label text="Success! Keys generated successfully." style="-fx-font-weight: bold;"/>
+      <HBox spacing="20" alignment="CENTER">
+        <Button text="Export Private Key" fx:id="exportPrivateKeyButton"/>
+        <Button text="Export Public Key" fx:id="exportPublicKeyButton"/>
+      </HBox>
+    </VBox>
+
+    <Separator />
+
+    <!-- Bottom Menu -->
+    <!-- Navigation Buttons -->
+    <HBox spacing="20" alignment="CENTER">
+      <Button fx:id="backToMainMenuButton" text="Back to Main Menu"/>
+      <Button fx:id="helpButton" text="Help"/>
+      <Label text="Version: 1.0.0   Copyright 2023"/>
+    </HBox>
+
+  </VBox>
+</AnchorPane>
