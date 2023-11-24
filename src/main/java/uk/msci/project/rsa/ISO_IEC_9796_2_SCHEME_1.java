@@ -89,7 +89,7 @@ public class ISO_IEC_9796_2_SCHEME_1 extends SigScheme {
     // M or alternatively the full length of the original message if the message  is too short
     int messageLength = Math.min(m1Len, m1Len - ((availableSpace + 7) / 8) - 1);
     // m2 comprises the non-recoverable message portion
-    m2Len = max(m1Len - messageLength - 1, 0);
+    m2Len = max(m1Len - messageLength, 0);
     //copying the message
     delta -= messageLength;
     byte[] m1 = new byte[messageLength];
@@ -135,7 +135,7 @@ public class ISO_IEC_9796_2_SCHEME_1 extends SigScheme {
     byte[] S = super.sign(M);
     // Extract m2 from the original message M using the computed m2's length
     if (m2Len > 0) {
-      nonRecoverableM = Arrays.copyOfRange(M, m1Len - m2Len - 1, m1Len);
+      nonRecoverableM = Arrays.copyOfRange(M, m1Len - m2Len, m1Len);
     }
     return S;
   }
