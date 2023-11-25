@@ -47,6 +47,7 @@ public class MainController {
       primaryStage.show();
       mainMenuView.addGenerateKeysObserver(new GenerateKeysButtonObserver());
       mainMenuView.addSignDocumentObserver(new SignDocumentObserver());
+      mainMenuView.addVerifySignatureObserver(new verifySignatureObserver());
     } catch (IOException e) {
       e.printStackTrace();
     }
@@ -74,6 +75,16 @@ public class MainController {
     public void handle(ActionEvent event) {
       signatureController = new SignatureController(MainController.this);
       signatureController.showSignView(primaryStage);
+    }
+  }
+
+
+  class verifySignatureObserver implements EventHandler<ActionEvent> {
+
+    @Override
+    public void handle(ActionEvent event) {
+      signatureController = new SignatureController(MainController.this);
+      signatureController.showVerifyView(primaryStage);
     }
   }
 

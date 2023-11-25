@@ -4,6 +4,7 @@ import javafx.beans.value.ChangeListener;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
@@ -11,18 +12,30 @@ import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 
-public class VerifyView {
-
-  // Text Area and Import Text Button
-
+public class VerifyView implements SignatureViewInterface {
+  @FXML
+  private AnchorPane root;
+  @FXML
+  private Label falseLabel;
+  @FXML
+  private Label trueLabel;
   @FXML
   private Label textFileNameLabel;
 
   @FXML
-  private TextArea textToVerify;
+  private HBox textInputHBox;
+  @FXML
+  private HBox sigFileHBox;
+  @FXML
+  private TextArea textInput;
+
+  @FXML
+  private VBox recoveryOptions;
 
   @FXML
   private ImageView textFileCheckmarkImage;
@@ -31,11 +44,11 @@ public class VerifyView {
 
   // Public Key Input and Import Button
   @FXML
-  private TextField publicKeyField;
+  private TextField keyField;
   @FXML
   private ImageView checkmarkImage;
   @FXML
-  private Button importPublicKeyButton;
+  private Button importKeyButton;
 
   // Signature TextArea and Import Signature Button
   @FXML
@@ -46,6 +59,7 @@ public class VerifyView {
   private ImageView sigFileCheckmarkImage;
   @FXML
   private Button importSigButton;
+
 
   // Signature Scheme Dropdown
   @FXML
@@ -61,7 +75,6 @@ public class VerifyView {
   @FXML
   private Button helpButton;
 
-
   // Overlay Notification Pane and its components
   @FXML
   private StackPane notificationPane;
@@ -69,45 +82,95 @@ public class VerifyView {
   private Button exportRecoverableMessageButton;
   @FXML
   private Button copyRecoverableMessageButton;
+  @FXML
+  private Button closeNotificationButton;
 
-  // Getters and setters
-  // (Add getters and setters for all the components as required)
-
-  // Getters and setters
-
-  // Getter for textFileCheckmarkImage
-  public ImageView getSigFileCheckmarkImage() {
-    return sigFileCheckmarkImage;
-  }
-
-  // Setter for textFileCheckmarkImage
-  public void setSigFileCheckmarkImage(Image image) {
-    this.sigFileCheckmarkImage.setImage(image);
-  }
 
   public ImageView getTextFileCheckmarkImage() {
     return textFileCheckmarkImage;
   }
 
   // Setter for textFileCheckmarkImage
-  public void setTextFileCheckmarkImage(Image image) {
-    this.textFileCheckmarkImage.setImage(image);
+  public void setTextFileCheckmarkImage() {
+    this.textFileCheckmarkImage.setImage(new Image("/uk/msci/project/rsa/checkmark.png"));
+
+    // Set the ImageView size
+    this.textFileCheckmarkImage.setFitWidth(20);
+    this.textFileCheckmarkImage.setFitHeight(20);
+
+    // Preserve the image's aspect ratio
+    this.textFileCheckmarkImage.setPreserveRatio(true);
   }
 
   public ImageView getCheckmarkImage() {
     return checkmarkImage;
   }
 
+  public void setCheckmarkImage() {
+    this.checkmarkImage.setImage(new Image("/uk/msci/project/rsa/checkmark.png"));
+    // Set the ImageView size
+    this.checkmarkImage.setFitWidth(20);
+    this.checkmarkImage.setFitHeight(20);
+    // Preserve the image's aspect ratio
+    this.checkmarkImage.setPreserveRatio(true);
+  }
+
+  public void setCheckmarkImageVisibility(boolean visible) {
+    this.checkmarkImage.setVisible(visible);
+  }
+  public void setSigFileHBoxVisibility(boolean visible) {
+    this.sigFileHBox.setVisible(visible);
+  }
+  public void setSigFileCheckmarkImageVisibility(boolean visible) {
+    this.sigFileCheckmarkImage.setVisible(visible);
+  }
+
+  public void setTrueLabelVisibility(boolean visible) {
+    this.trueLabel.setVisible(visible);
+  }
+  public void setFalseLabelVisibility(boolean visible) {
+    this.falseLabel.setVisible(visible);
+  }
+
+  public ImageView getSigFileCheckmarkImage() {
+    return sigFileCheckmarkImage;
+  }
+
+  // Setter for textFileCheckmarkImage
+  public void setSigFileCheckmarkImage() {
+    this.sigFileCheckmarkImage.setImage(new Image("/uk/msci/project/rsa/checkmark.png"));
+    // Set the ImageView size
+    this.sigFileCheckmarkImage.setFitWidth(20);
+    this.sigFileCheckmarkImage.setFitHeight(20);
+    // Preserve the image's aspect ratio
+    this.sigFileCheckmarkImage.setPreserveRatio(true);
+  }
+
+
+  // Setter for textFileCheckmarkImage
+  public void setTextFileCheckmarkImage(Image image) {
+    this.textFileCheckmarkImage.setImage(image);
+  }
+
+
   public void setCheckmarkImage(Image image) {
     this.checkmarkImage.setImage(image);
   }
 
-  public String getTextToVerify() {
-    return textToVerify.getText();
+  public String getTextInput() {
+    return textInput.getText();
   }
 
-  public void setTextToVerify(String text) {
-    this.textToVerify.setText(text);
+  public void setTextInput(String text) {
+    this.textInput.setText(text);
+  }
+
+  public void setTextInputVisibility(boolean visible) {
+    this.textInput.setVisible(visible);
+  }
+
+  public void setTextInputHBoxVisibility(boolean visible) {
+    this.textInputHBox.setVisible(visible);
   }
 
   public String getSigText() {
@@ -118,12 +181,20 @@ public class VerifyView {
     this.signatureText.setText(text);
   }
 
-  public String getPublicKey() {
-    return publicKeyField.getText();
+  public void setSignatureTextVisibility(boolean visible) {
+    this.signatureText.setVisible(visible);
   }
 
-  public void setPublicKey(String key) {
-    this.publicKeyField.setText(key);
+  public String getKey() {
+    return keyField.getText();
+  }
+
+  public void setKey(String key) {
+    this.keyField.setText(key);
+  }
+
+  public void setKeyVisibility(boolean visible) {
+    this.keyField.setVisible(visible);
   }
 
   public String getSelectedSignatureScheme() {
@@ -167,12 +238,16 @@ public class VerifyView {
   }
 
 
+  public void setRecoveryOptionsVisibility(boolean visible) {
+    this.recoveryOptions.setVisible(visible);
+  }
+
   public StackPane getNotificationPane() {
     return notificationPane;
   }
 
 
-  void addImportTextObserver(EventHandler<ActionEvent> observer) {
+  public void addImportTextObserver(EventHandler<ActionEvent> observer) {
     importTextButton.setOnAction(observer);
   }
 
@@ -180,19 +255,19 @@ public class VerifyView {
     verifyBtn.setOnAction(observer);
   }
 
-  void addMenuButtonObserver(EventHandler<ActionEvent> observer) {
+  public void addBackToMainMenuObserver(EventHandler<ActionEvent> observer) {
     backToMainMenuButton.setOnAction(observer);
   }
 
-  void addHelpObserver(EventHandler<ActionEvent> observer) {
+  public void addHelpObserver(EventHandler<ActionEvent> observer) {
     helpButton.setOnAction(observer);
   }
 
-  void addImportKeyObserver(EventHandler<ActionEvent> observer) {
-    importPublicKeyButton.setOnAction(observer);
+  public void addImportKeyObserver(EventHandler<ActionEvent> observer) {
+    importKeyButton.setOnAction(observer);
   }
 
-  void addSignatureSchemeChangeObserver(ChangeListener<String> observer) {
+  public void addSignatureSchemeChangeObserver(ChangeListener<String> observer) {
     signatureSchemeDropdown.valueProperty().addListener(observer);
   }
 
@@ -205,8 +280,24 @@ public class VerifyView {
     copyRecoverableMessageButton.setOnAction(observer);
   }
 
+  public void addCloseNotificationObserver(EventHandler<ActionEvent> observer) {
+    closeNotificationButton.setOnAction(observer);
+  }
+
   void addImportSigButtonObserver(EventHandler<ActionEvent> observer) {
     importSigButton.setOnAction(observer);
+  }
+
+  public void showNotificationPane() {
+    // Disable all sibling nodes of notificationPane
+    for (Node child : root.getChildren()) {
+      if (child != notificationPane) {
+        child.setDisable(true);
+      }
+    }
+    // Ensure the notificationPane itself remains enabled
+    notificationPane.setVisible(true);
+    notificationPane.setDisable(false);
   }
 
 

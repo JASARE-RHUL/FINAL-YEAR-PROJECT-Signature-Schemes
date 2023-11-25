@@ -2,6 +2,7 @@ package uk.msci.project.rsa;
 
 import java.io.File;
 import java.math.BigInteger;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.regex.Pattern;
 import javafx.beans.value.ChangeListener;
@@ -13,6 +14,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import java.io.IOException;
+import uk.msci.project.rsa.GenController.BackToMainMenuObserver;
 
 
 /**
@@ -80,7 +82,7 @@ public class SignatureController {
       signatureModel = new SignatureModel();
 
       // Set up observers for SignView
-      setupObservers(primaryStage);
+      setupSignObservers(primaryStage);
 
       primaryStage.setScene(new Scene(root));
     } catch (IOException e) {
@@ -88,15 +90,33 @@ public class SignatureController {
     }
   }
 
+  public void showVerifyView(Stage primaryStage) {
+    try {
+      FXMLLoader loader = new FXMLLoader(getClass().getResource("VerifyView.fxml"));
+      Parent root = loader.load();
+      verifyView = loader.getController();
+      signatureModel = new SignatureModel();
+
+      // Set up observers for SignView
+      setupVerifyObservers(primaryStage);
+
+      primaryStage.setScene(new Scene(root));
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+  }
+
+
   /**
    * Sets up observers for the SignView controls. Observers are added to handle events like text
    * import, key import, and signature scheme changes.
    *
    * @param primaryStage The stage that observers will use for file dialogs.
    */
-  private void setupObservers(Stage primaryStage) {
-    signView.addImportTextObserver(new ImportTextObserver(primaryStage, this::handleMessageFile));
-    signView.addImportKeyObserver(new ImportKeyObserver(primaryStage, this::handlePrivateKey));
+  private void setupSignObservers(Stage primaryStage) {
+    signView.addImportTextObserver(
+        new ImportTextObserver(primaryStage, signView, this::handleMessageFile));
+    signView.addImportKeyObserver(new ImportRSAObserver(primaryStage, signView, this::handleKey));
     signView.addSignatureSchemeChangeObserver(new SignatureSchemeChangeObserver());
     signView.addCreateSignatureObserver(new CreateSignatureObserver());
     signView.addBackToMainMenuObserver(new BackToMainMenuObserver());
@@ -107,14 +127,29 @@ public class SignatureController {
     signView.addCloseNotificationObserver(new BackToMainMenuObserver());
   }
 
+  public void setupVerifyObservers(Stage primaryStage) {
+    verifyView.addImportTextObserver(
+        new ImportTextObserver(primaryStage, verifyView, this::handleMessageFile));
+    verifyView.addImportKeyObserver(
+        new ImportRSAObserver(primaryStage, verifyView, this::handleKey));
+    verifyView.addSignatureSchemeChangeObserver(new SignatureSchemeChangeObserver());
+    verifyView.addImportSigButtonObserver(
+        new ImportRSAObserver(primaryStage, verifyView, this::handleSig));
+    verifyView.addVerifyBtnObserver(new VerifyBtnObserver());
+    verifyView.addCloseNotificationObserver(new BackToMainMenuObserver());
+    verifyView.addExportRecoverableMessageObserver(new ExportRecoverableMessageObserver());
+    verifyView.addCopyRecoverableMessageObserver(new CopyRecoverableMessageObserver());
+  }
+
 
   /**
-   * Handles the importing of a private key file. Validates the key and updates the model and view
+   * Handles the importing of a key file. Validates the key and updates the model and view
    * accordingly.
    *
-   * @param file The private key file selected by the user.
+   * @param file The key file selected by the user.
+   * @param view The SignatureViewInterface instance for updating the view.
    */
-  public void handlePrivateKey(File file) {
+  public void handleKey(File file, SignatureViewInterface view) {
     String content = "";
     try {
       content = FileHandle.importFromFile(file);
@@ -124,37 +159,69 @@ public class SignatureController {
     if (!(Pattern.compile("^\\d+(,\\d+)*$").matcher(content).matches())) {
       DisplayUtility.showErrorAlert("Error, Invalid Key.");
     } else {
-      signatureModel.setKey(new PublicKey(content));
-      signView.setCheckmarkImage();
-      signView.setCheckmarkImageVisibility(true);
-      signView.setPrivateKey(file.getName());
-      signView.setPrivateKeyVisibility(true);
+      if (view instanceof SignView) {
+        signatureModel.setKey(new PrivateKey(content));
+      } else {
+        signatureModel.setKey(new PublicKey(content));
+      }
+      view.setCheckmarkImage();
+      view.setCheckmarkImageVisibility(true);
+      view.setKey(file.getName());
+      view.setKeyVisibility(true);
+
     }
   }
 
   /**
-   * Observer responsible for handling the import of a private key file. It utilises a file chooser
-   * to select a key file and then processes it using a provided Consumer.
+   * Handles the importing of a signature file and updates the model and view accordingly.
+   *
+   * @param file The key file selected by the user.
+   * @param view The SignatureViewInterface instance for updating the view.
    */
-  class ImportKeyObserver implements EventHandler<ActionEvent> {
+  public void handleSig(File file, SignatureViewInterface view) {
+    String content = "";
+    try {
+      content = FileHandle.importFromFile(file);
+    } catch (Exception e) {
+      DisplayUtility.showErrorAlert("Error importing file, please try again.");
+    }
+    signature = content;
+    verifyView.setSignatureText("");
+    verifyView.setSigFileCheckmarkImage();
+    verifyView.setSigFileCheckmarkImageVisibility(true);
+    verifyView.setSigFileNameLabel("Signature imported");
+    verifyView.setSignatureTextVisibility(false);
+    verifyView.setSigFileHBoxVisibility(true);
+  }
+
+
+  /**
+   * Observer responsible for handling the import of a key file. It utilises a file chooser to
+   * select a rsa file and then processes it using a provided Consumer.
+   */
+  class ImportRSAObserver implements EventHandler<ActionEvent> {
 
     private Stage stage;
-    private Consumer<File> fileConsumer;
+    private BiConsumer<File, SignatureViewInterface> fileConsumer;
+    private SignatureViewInterface view;
 
     /**
      * Constructs an observer for importing a private key file.
      *
      * @param stage        The primary stage of the application to show the file chooser.
-     * @param fileConsumer A consumer to process the selected private key file.
+     * @param view         The SignatureViewInterface instance for updating the view.
+     * @param fileConsumer The BiConsumer that processes the selected file and updates the view.
      */
-    public ImportKeyObserver(Stage stage, Consumer<File> fileConsumer) {
+    public ImportRSAObserver(Stage stage, SignatureViewInterface view,
+        BiConsumer<File, SignatureViewInterface> fileConsumer) {
       this.stage = stage;
+      this.view = view;
       this.fileConsumer = fileConsumer;
     }
 
     @Override
     public void handle(ActionEvent event) {
-      DisplayUtility.handleFileImport(stage, "*.rsa", fileConsumer);
+      DisplayUtility.handleFileImport(stage, "*.rsa", file -> fileConsumer.accept(file, view));
     }
   }
 
@@ -164,8 +231,9 @@ public class SignatureController {
    * expected format, an error alert is shown.
    *
    * @param file The file selected by the user containing the message to sign.
+   * @param view The SignatureViewInterface instance for updating the view.
    */
-  public void handleMessageFile(File file) {
+  public void handleMessageFile(File file, SignatureViewInterface view) {
     String content = "";
     try {
       content = FileHandle.importFromFile(file);
@@ -176,11 +244,11 @@ public class SignatureController {
       DisplayUtility.showErrorAlert(file.getName() + " is empty. Please try again.");
     } else {
       message = content.getBytes();
-      signView.setTextToSign("");
-      signView.setTextFileNameLabel(file.getName());
-      signView.setTextToSignVisibility(false);
-      signView.setTextFileCheckmarkImage();
-      signView.setTextToSignHBoxVisibility(true);
+      view.setTextInput("");
+      view.setTextFileNameLabel(file.getName());
+      view.setTextInputVisibility(false);
+      view.setTextFileCheckmarkImage();
+      view.setTextInputHBoxVisibility(true);
     }
   }
 
@@ -191,24 +259,29 @@ public class SignatureController {
   class ImportTextObserver implements EventHandler<ActionEvent> {
 
     private Stage stage;
-    private Consumer<File> fileConsumer;
+    private BiConsumer<File, SignatureViewInterface> fileConsumer;
+    private SignatureViewInterface view;
 
     /**
-     * Constructs an ImportTextObserver with a stage and a file consumer.
+     * Constructs an observer for importing a  text file.
      *
-     * @param stage        The stage to be used for showing file dialogs.
-     * @param fileConsumer The consumer that will process the selected file.
+     * @param stage        The primary stage of the application to show the file chooser.
+     * @param view         The SignatureViewInterface instance for updating the view.
+     * @param fileConsumer The BiConsumer that processes the selected file and updates the view.
      */
-    public ImportTextObserver(Stage stage, Consumer<File> fileConsumer) {
+    public ImportTextObserver(Stage stage, SignatureViewInterface view,
+        BiConsumer<File, SignatureViewInterface> fileConsumer) {
       this.stage = stage;
+      this.view = view;
       this.fileConsumer = fileConsumer;
     }
 
     @Override
     public void handle(ActionEvent event) {
-      DisplayUtility.handleFileImport(stage, "*.txt", fileConsumer);
+      DisplayUtility.handleFileImport(stage, "*.txt", file -> fileConsumer.accept(file, view));
     }
   }
+
 
   /**
    * The observer for changes in signature scheme selection. This class reacts to changes in the
@@ -248,7 +321,7 @@ public class SignatureController {
 
     @Override
     public void handle(ActionEvent event) {
-      if ((signView.getTextToSign().equals("") && message == null)
+      if ((signView.getTextInput().equals("") && message == null)
           || signatureModel.getKey() == null
           || signView.getSelectedSignatureScheme() == null) {
         DisplayUtility.showErrorAlert(
@@ -256,7 +329,7 @@ public class SignatureController {
         return;
       }
       try {
-        String textToSign = signView.getTextToSign();
+        String textToSign = signView.getTextInput();
         if (!textToSign.equals("")) {
           message = textToSign.getBytes();
         }
@@ -267,6 +340,60 @@ public class SignatureController {
           signView.setRecoveryOptionsVisibility(true);
         }
         signView.showNotificationPane();
+      } catch (Exception e) {
+        DisplayUtility.showErrorAlert(
+            "There was an error generating a signature. Please try again.");
+        e.printStackTrace();
+
+      }
+    }
+  }
+
+  /**
+   * The observer for verifying signatures. This class handles the action event triggered for the
+   * signature verification process.
+   */
+  class VerifyBtnObserver implements EventHandler<ActionEvent> {
+
+    @Override
+    public void handle(ActionEvent event) {
+      if ((verifyView.getTextInput().equals("") && message == null)) {
+        if (!verifyView.getSelectedSignatureScheme().equals("ISO\\IEC 9796-2 Scheme 1")) {
+          DisplayUtility.showErrorAlert(
+              "You must provide an input for all required fields. Please try again.");
+          return;
+        }
+      }
+      if (signatureModel.getKey() == null
+          || verifyView.getSelectedSignatureScheme() == null
+          || (verifyView.getSigText().equals("") && signature == null)) {
+        DisplayUtility.showErrorAlert(
+            "You must provide an input for all required fields. Please try again.");
+        return;
+      }
+      try {
+        String textToVerify = verifyView.getTextInput();
+        if (!textToVerify.equals("")) {
+          message = textToVerify.getBytes();
+        }
+        String signatureInput = verifyView.getSigText();
+        if (!signatureInput.equals("")) {
+          signature = signatureInput;
+        }
+
+        signatureModel.instantiateSignatureScheme();
+        byte[] signatureBytes = new BigInteger(signature).toByteArray();
+        boolean verificationResult = signatureModel.verify(message, signatureBytes);
+        if (verificationResult) {
+          verifyView.setTrueLabelVisibility(true);
+          if (signatureModel.getRecoverableM() != null) {
+            verifyView.setRecoveryOptionsVisibility(true);
+          }
+        } else {
+          verifyView.setFalseLabelVisibility(true);
+        }
+        verifyView.showNotificationPane();
+
       } catch (Exception e) {
         DisplayUtility.showErrorAlert(
             "There was an error generating a signature. Please try again.");
@@ -319,7 +446,7 @@ public class SignatureController {
     @Override
     public void handle(ActionEvent event) {
       try {
-        FileHandle.exportToFile("recoverableMessage.rsa",
+        FileHandle.exportToFile("nonRecoverableMessage.txt",
             new String(signatureModel.getNonRecoverableM()));
         DisplayUtility.showInfoAlert("Export",
             "Non recoverable message was successfully exported!");
@@ -349,6 +476,45 @@ public class SignatureController {
   }
 
   /**
+   * The observer for exporting the recoverable message to a file. This class handles the action
+   * event triggered when the user wants to export the recoverable part of the message generated
+   * from the signature.
+   */
+  class ExportRecoverableMessageObserver implements EventHandler<ActionEvent> {
+
+    @Override
+    public void handle(ActionEvent event) {
+      try {
+        FileHandle.exportToFile("recoverableMessage.txt",
+            new String(signatureModel.getRecoverableM()));
+        DisplayUtility.showInfoAlert("Export",
+            "Recoverable message was successfully exported!");
+      } catch (Exception e) {
+        e.printStackTrace();
+
+      }
+    }
+  }
+
+  /**
+   * The observer for copying the non-recoverable message to the clipboard. This class handles the
+   * action event triggered when the user wants to copy the recoverable part of the message
+   * (generated from the signature) to the clipboard.
+   */
+  class CopyRecoverableMessageObserver implements EventHandler<ActionEvent> {
+
+    @Override
+    public void handle(ActionEvent event) {
+      try {
+        String nonRecoverableMessage = new String(signatureModel.getRecoverableM());
+        DisplayUtility.copyToClipboard(nonRecoverableMessage, "Recoverable message");
+      } catch (Exception e) {
+        DisplayUtility.showErrorAlert("Failed to copy recoverable message to clipboard.");
+      }
+    }
+  }
+
+  /**
    * The observer for returning to the main menu. This class handles the action event triggered when
    * the user wishes to return to the main menu from the signature view.
    */
@@ -360,7 +526,6 @@ public class SignatureController {
       signView = null;
       verifyView = null;
       signatureModel = null;
-
     }
   }
 }
