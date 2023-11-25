@@ -120,7 +120,7 @@ public class GenController {
     @Override
     public void handle(ActionEvent event) {
       try {
-        genModel.getGeneratedKeyPair().getPrivateKey().exportKey("publicKey.rsa");
+        genModel.getGeneratedKeyPair().getPublicKey().exportKey("publicKey.rsa");
         DisplayUtility.showInfoAlert("Export", "The public key was successfully exported!");
 
       } catch (IOException e) {

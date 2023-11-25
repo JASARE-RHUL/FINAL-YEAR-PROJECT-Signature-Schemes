@@ -6,33 +6,37 @@
 
 <?import javafx.scene.image.ImageView?>
 <?import java.lang.String?>
-<AnchorPane xmlns:fx="http://javafx.com/fxml" fx:controller="uk.msci.project.rsa.VerifyView" prefHeight="400.0" prefWidth="600.0">
-  <VBox alignment="CENTER" spacing="20" AnchorPane.topAnchor="50" AnchorPane.bottomAnchor="50" AnchorPane.leftAnchor="50" AnchorPane.rightAnchor="50">
+<AnchorPane xmlns:fx="http://javafx.com/fxml" fx:controller="uk.msci.project.rsa.VerifyView"
+  prefHeight="400.0" prefWidth="600.0" fx:id="root">
+  <VBox alignment="CENTER" spacing="20" AnchorPane.topAnchor="50" AnchorPane.bottomAnchor="50"
+    AnchorPane.leftAnchor="50" AnchorPane.rightAnchor="50">
     <!-- Title and Logo -->
     <HBox alignment="CENTER" spacing="10">
       <Label text="Signature Scheme POC - Verify" style="-fx-font-weight: bold; -fx-font-size: 24;">
         <graphic>
           <!-- Assuming you have a logo image named 'logo.png' in the resources directory -->
-          <ImageView fitHeight="30" fitWidth="30" preserveRatio="true" />
+          <ImageView fitHeight="30" fitWidth="30" preserveRatio="true"/>
         </graphic>
       </Label>
     </HBox>
 
-    <Separator />
+    <Separator/>
 
     <!-- Text Area and Import Text Button -->
     <HBox spacing="10" alignment="CENTER_LEFT">
       <VBox spacing="5">
         <HBox spacing="10" alignment="CENTER_LEFT">
-        <Label text="ENTER TEXT TO VERIFY:"/>
+          <Label text="ENTER TEXT TO VERIFY:"/>
           <Button fx:id="importTextButton" text="Import Text..."/>
         </HBox>
         <!-- StackPane allows overlapping items, initially TextArea is visible, Label is not -->
         <StackPane>
-          <TextArea fx:id="textToVerify" prefHeight="100" prefWidth="400" wrapText="true" visible="true"/>
-          <HBox alignment="CENTER_LEFT" spacing="5" visible="false">
-            <Label fx:id="textFileNameLabel" text="" />
-            <ImageView fx:id="textFileCheckmarkImage" fitWidth="20" fitHeight="20" preserveRatio="true" visible="false"/>
+          <TextArea fx:id="textInput" prefHeight="100" prefWidth="400" wrapText="true"
+            visible="true"/>
+          <HBox alignment="CENTER_LEFT" spacing="5" visible="false" fx:id="textInputHBox">
+            <Label fx:id="textFileNameLabel" text=""/>
+            <ImageView fx:id="textFileCheckmarkImage" fitWidth="20" fitHeight="20"
+              preserveRatio="true"/>
           </HBox>
         </StackPane>
       </VBox>
@@ -40,14 +44,15 @@
     </HBox>
 
 
-    <!-- Private Key Input and Import Button -->
+    <!-- Public Key Input and Import Button -->
     <HBox alignment="CENTER_LEFT" spacing="10">
       <Label text="PUBLIC KEY:"/>
-      <TextField fx:id="publicKeyField" prefWidth="200" text="PublicKey.pem" editable="false"/>
-      <ImageView fx:id="checkmarkImage" fitWidth="20" fitHeight="20" preserveRatio="true" visible="false"/>
-      <Button fx:id="importPublicKeyButton" text="Import Public Key"/>
+      <TextField fx:id="keyField" prefWidth="200" text="Please Import a key" editable="false"/>
+      <ImageView fx:id="checkmarkImage" fitWidth="20" fitHeight="20" preserveRatio="true"
+        visible="false"/>
+      <Button fx:id="importKeyButton" text="Import Public Key"/>
     </HBox>
-    <Label text="(If no key loaded, prompt: [G] Generate Private Key)"/>
+    <!-- <Label text="(If no key loaded, prompt: [G] Generate Private Key)"/>-->
 
     <!-- Signature -->
 
@@ -59,10 +64,12 @@
         </HBox>
         <!-- StackPane allows overlapping items, initially TextArea is visible, Label is not -->
         <StackPane>
-          <TextArea fx:id="signatureText" prefHeight="100" prefWidth="400" wrapText="true" visible="true"/>
-          <HBox alignment="CENTER_LEFT" spacing="5" visible="false">
-            <Label fx:id="sigFileNameLabel" text="" />
-            <ImageView fx:id="sigFileCheckmarkImage" fitWidth="20" fitHeight="20" preserveRatio="true" visible="false"/>
+          <TextArea fx:id="signatureText" prefHeight="100" prefWidth="400" wrapText="true"
+            visible="true"/>
+          <HBox alignment="CENTER_LEFT" spacing="5" visible="false" fx:id="sigFileHBox">
+            <Label fx:id="sigFileNameLabel"/>
+            <ImageView fx:id="sigFileCheckmarkImage" fitWidth="20" fitHeight="20"
+              preserveRatio="true"/>
           </HBox>
         </StackPane>
       </VBox>
@@ -71,20 +78,21 @@
 
     <!-- Signature Scheme Dropdown -->
     <HBox spacing="10">
-      <Label text="SIGNATURE SCHEME:" />
+      <Label text="SIGNATURE SCHEME:"/>
       <ComboBox fx:id="signatureSchemeDropdown" prefWidth="200">
         <items>
           <FXCollections fx:factory="observableArrayList">
-            <String fx:value="PKCS#1 v1.5" />
-            <!-- Add other signature schemes here as needed -->
+            <String fx:value="PKCS#1 v1.5"/>
+            <String fx:value="ANSI X9.31 rDSA"/>
+            <String fx:value="ISO\IEC 9796-2 Scheme 1"/>
           </FXCollections>
         </items>
       </ComboBox>
     </HBox>
 
-    <Button text="Verify Signature" fx:id="verifyBtn" maxWidth="Infinity" />
+    <Button text="Verify Signature" fx:id="verifyBtn" maxWidth="Infinity"/>
 
-    <Separator />
+    <Separator/>
 
     <!-- Navigation Buttons -->
     <HBox spacing="20" alignment="CENTER">
@@ -95,16 +103,23 @@
   </VBox>
   <StackPane fx:id="notificationPane" alignment="CENTER" visible="false" disable="true"
     style="-fx-background-color: rgba(0,0,0,0.5);"
-    AnchorPane.topAnchor="0" AnchorPane.rightAnchor="0" AnchorPane.bottomAnchor="0" AnchorPane.leftAnchor="0">
+    AnchorPane.topAnchor="0" AnchorPane.rightAnchor="0" AnchorPane.bottomAnchor="0"
+    AnchorPane.leftAnchor="0">
     <VBox alignment="CENTER" spacing="20"
       style="-fx-background-color: white; -fx-padding: 20; -fx-border-radius: 5; -fx-background-radius: 5;">
-      <Label text="The verification process was successful!" style="-fx-font-weight: bold; -fx-text-fill: green;"/>
-      <VBox spacing="10" alignment="CENTER" visible="false">
+      <Label fx:id="trueLabel"
+        text="The verification process was successful! The signature is valid"
+        style="-fx-font-weight: bold; -fx-text-fill: green;" visible="false"/>
+      <Label fx:id="falseLabel"
+        text="The Verification process returned False. Signature is Invalid."
+        style="-fx-font-weight: bold; -fx-text-fill: red;" visible="false"/>
+      <VBox spacing="10" alignment="CENTER" visible="false" fx:id="recoveryOptions">
         <HBox spacing="10" alignment="CENTER">
-          <Button fx:id="exportRecoverableMessageButton"  text="Export Recovered Message to file"/>
-          <Button fx:id="copyRecoverableMessageButton"  text="Copy Recovered Message to clipboard"/>
+          <Button fx:id="exportRecoverableMessageButton" text="Export Recovered Message to file"/>
+          <Button fx:id="copyRecoverableMessageButton" text="Copy Recovered Message to clipboard"/>
         </HBox>
       </VBox>
+      <Button fx:id="closeNotificationButton" text="Close"  alignment="CENTER"/>
     </VBox>
   </StackPane>
 
