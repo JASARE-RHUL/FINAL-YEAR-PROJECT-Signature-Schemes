@@ -9,7 +9,7 @@
 <AnchorPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="uk.msci.project.rsa.SignView" prefHeight="400.0" prefWidth="600.0" fx:id="root">
   <VBox alignment="CENTER" spacing="10" AnchorPane.topAnchor="50" AnchorPane.bottomAnchor="50" AnchorPane.leftAnchor="50" AnchorPane.rightAnchor="50">
     <Label text="Signature Scheme POC - Sign" style="-fx-font-size: 24;"/>
-    <Label text="[LOGO HERE]"/>
+    <!-- <Label text="[LOGO HERE]" />-->
     <Separator/>
 
     <!-- Text Area and Import Text Button -->

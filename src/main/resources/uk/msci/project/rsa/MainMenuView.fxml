@@ -5,7 +5,7 @@
 <AnchorPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="uk.msci.project.rsa.MainMenuView" prefHeight="400.0" prefWidth="600.0">
   <VBox alignment="CENTER" spacing="20" AnchorPane.topAnchor="0" AnchorPane.bottomAnchor="0" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0">
     <Label text="Signature Scheme POC" style="-fx-font-size: 24; -fx-font-weight: bold;" />
-    <Label text="[LOGO HERE]" />
+    <!--<Label text="[LOGO HERE]" />-->
     <Separator />
     <Button fx:id="generateKeysButton" text="[K] Generate Keys" prefWidth="200" />
     <Button fx:id="signDocumentButton" text="[S] Sign Document" prefWidth="200" />
