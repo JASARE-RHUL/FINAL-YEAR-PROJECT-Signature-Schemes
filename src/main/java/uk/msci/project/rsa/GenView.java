@@ -13,7 +13,12 @@ public class GenView {
   @FXML private ImageView logoImageView;
   @FXML private TextField keySizeTextField;
   @FXML private Button generateButton;
-  @FXML private VBox successPopup;
+  @FXML
+  private VBox successPopup;
+  @FXML
+  private VBox failurePopup;
+  @FXML
+  private Label failureLabel;
   @FXML private Button exportPrivateKeyButton;
   @FXML private Button exportPublicKeyButton;
   @FXML private Button backToMainMenuButton;
@@ -36,16 +41,20 @@ public class GenView {
     this.keySizeTextField.setText(keySize);
   }
 
+  public void setFailureLabel(String label) {
+    this.failureLabel.setText(label);
+  }
+
   public VBox getSuccessPopup() {
     return successPopup;
   }
 
-  public boolean isSuccessPopupVisible() {
-    return successPopup.isVisible();
-  }
-
   public void setSuccessPopupVisible(boolean visible) {
     this.successPopup.setVisible(visible);
+  }
+
+  public void setFailurePopupVisible(boolean visible) {
+    this.failurePopup.setVisible(visible);
   }
 
   // Event Handlers
@@ -68,5 +77,18 @@ public class GenView {
   void addHelpObserver(EventHandler<ActionEvent> observer) {
     helpButton.setOnAction(observer);
   }
+
+  void removeGenerateButtonObserver() {
+    generateButton.setOnAction(null);
+  }
+
+  void removeExportPrivateKeyObserver() {
+    exportPrivateKeyButton.setOnAction(null);
+  }
+
+  void removeExportPublicKeyObserver() {
+    exportPublicKeyButton.setOnAction(null);
+  }
+
 
 }

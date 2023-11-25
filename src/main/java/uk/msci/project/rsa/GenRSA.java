@@ -55,7 +55,7 @@ public class GenRSA {
     for (int bitLength : lambda) {
       keySize += bitLength;
     }
-    if (!(keySize >= MINKEYSIZE && keySize <= MAXKEYSIZE)) {
+    if (!(keySize >= MINKEYSIZE && keySize <= MAXKEYSIZE && k > 1)) {
       throw new IllegalArgumentException(
           "Key size cannot be smaller than " + MINKEYSIZE + "bits or larger than" + MAXKEYSIZE
               + "bits");
