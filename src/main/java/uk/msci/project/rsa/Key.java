@@ -95,6 +95,7 @@ public abstract class Key {
     checkValidKeyComponents(modulus, exponent);
     this.modulus = modulus;
     this.exponent = exponent;
+    this.keyValue = modulus.toString() + "," + exponent.toString();
   }
 
   /**

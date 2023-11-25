@@ -9,6 +9,10 @@ import javafx.scene.input.ClipboardContent;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
+/**
+ * A utility class that provides static methods for common display operations such as showing
+ * alerts, copying text to clipboard, and handling file imports within the application.
+ */
 public class DisplayUtility {
 
   /**
@@ -19,7 +23,8 @@ public class DisplayUtility {
    * @param extension    The file extension filter description used in the file chooser.
    * @param fileConsumer The consumer that will handle the chosen file.
    */
-  protected static void handleFileImport(Stage stage, String extension, Consumer<File> fileConsumer) {
+  protected static void handleFileImport(Stage stage, String extension,
+      Consumer<File> fileConsumer) {
     FileChooser fileChooser = new FileChooser();
     fileChooser.setTitle("Open Resource File");
     FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter(
@@ -53,7 +58,7 @@ public class DisplayUtility {
    * @param title   The title of the alert dialog.
    * @param content The content text to display in the alert dialog.
    */
-   protected static void showAlert(AlertType type, String title, String content) {
+  protected static void showAlert(AlertType type, String title, String content) {
     Alert alert = new Alert(type);
     alert.setTitle(title);
     alert.setHeaderText(null);
@@ -70,6 +75,12 @@ public class DisplayUtility {
     showAlert(AlertType.ERROR, "Error", content);
   }
 
+  /**
+   * Displays an informational alert with the given title and content.
+   *
+   * @param title   The title for the informational alert.
+   * @param content The message to display in the informational alert.
+   */
   protected static void showInfoAlert(String title, String content) {
     showAlert(AlertType.INFORMATION, title, content);
   }

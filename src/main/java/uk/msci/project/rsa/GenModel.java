@@ -75,7 +75,6 @@ public class GenModel {
    */
   public KeyPair getGeneratedKeyPair() {
     KeyPair keyPair = generatedKeyPair;
-    generatedKeyPair = null;
     return keyPair;
   }
 
