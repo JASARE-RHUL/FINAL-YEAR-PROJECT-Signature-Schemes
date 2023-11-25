@@ -18,8 +18,8 @@
         <Label text="ENTER TEXT TO SIGN:"/>
         <!-- StackPane allows overlapping items, initially TextArea is visible, Label is not -->
         <StackPane>
-          <TextArea fx:id="textToSign" prefHeight="100" prefWidth="400" wrapText="true" visible="true"/>
-          <HBox fx:id="textToSignHBox" alignment="CENTER_LEFT" spacing="5" visible="false">
+          <TextArea fx:id="textInput" prefHeight="100" prefWidth="400" wrapText="true" visible="true"/>
+          <HBox fx:id="textInputHBox" alignment="CENTER_LEFT" spacing="5" visible="false">
             <Label fx:id="textFileNameLabel" text="" />
             <ImageView fx:id="textFileCheckmarkImage" fitWidth="20" fitHeight="20" preserveRatio="true" visible="true"/>
           </HBox>
@@ -32,9 +32,9 @@
     <!-- Private Key Input and Import Button -->
     <HBox alignment="CENTER_LEFT" spacing="10">
       <Label text="PRIVATE KEY:"/>
-      <TextField fx:id="privateKeyField" prefWidth="200" text="Please Import a key" editable="false"/>
+      <TextField fx:id="keyField" prefWidth="200" text="Please Import a key" editable="false"/>
       <ImageView fx:id="checkmarkImage" fitWidth="20" fitHeight="20" preserveRatio="true" visible="false"/>
-      <Button fx:id="importPrivateKeyButton" text="Import Private Key" />
+      <Button fx:id="importKeyButton" text="Import Private Key" />
     </HBox>
     <Label text="(If no key loaded, prompt: [G] Generate Private Key)"/>
 

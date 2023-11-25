@@ -18,17 +18,17 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 
 
-public class SignView {
+public class SignView implements SignatureViewInterface {
 
   // Text Area and Import Text Button
   @FXML
-  private TextArea textToSign;
+  private TextArea textInput;
 
   @FXML
   private AnchorPane root;
 
   @FXML
-  private HBox textToSignHBox;
+  private HBox textInputHBox;
 
   @FXML
   private HBox recoveryOptions;
@@ -41,11 +41,11 @@ public class SignView {
 
   // Private Key Input and Import Button
   @FXML
-  private TextField privateKeyField;
+  private TextField keyField;
   @FXML
   private ImageView checkmarkImage;
   @FXML
-  private Button importPrivateKeyButton;
+  private Button importKeyButton;
 
   // Signature Scheme Dropdown
   @FXML
@@ -66,7 +66,7 @@ public class SignView {
   private StackPane notificationPane;
 
   @FXML
-  private Button exportSignatureButton; // Assuming you want to access these buttons
+  private Button exportSignatureButton;
   @FXML
   private Button copySignatureButton;
   @FXML
@@ -75,7 +75,6 @@ public class SignView {
   private Button copyNonRecoverableMessageButton;
   @FXML
   private Button closeNotificationButton;
-  // Other fields...
 
   // Getters and setters
 
@@ -117,32 +116,32 @@ public class SignView {
     this.notificationPane.setVisible(visible);
   }
 
-  public String getTextToSign() {
-    return textToSign.getText();
+  public String getTextInput() {
+    return textInput.getText();
   }
 
-  public void setTextToSign(String text) {
-    this.textToSign.setText(text);
+  public void setTextInput(String text) {
+    this.textInput.setText(text);
   }
 
-  public void setTextToSignVisibility(boolean visible) {
-    this.textToSign.setVisible(visible);
+  public void setTextInputVisibility(boolean visible) {
+    this.textInput.setVisible(visible);
   }
 
-  public void setTextToSignHBoxVisibility(boolean visible) {
-    this.textToSignHBox.setVisible(visible);
+  public void setTextInputHBoxVisibility(boolean visible) {
+    this.textInputHBox.setVisible(visible);
   }
 
-  public String getPrivateKey() {
-    return privateKeyField.getText();
+  public String getKey() {
+    return keyField.getText();
   }
 
-  public void setPrivateKey(String key) {
-    this.privateKeyField.setText(key);
+  public void setKey(String key) {
+    this.keyField.setText(key);
   }
 
-  public void setPrivateKeyVisibility(boolean visible) {
-    this.privateKeyField.setVisible(visible);
+  public void setKeyVisibility(boolean visible) {
+    this.keyField.setVisible(visible);
   }
 
   public String getSelectedSignatureScheme() {
@@ -177,7 +176,7 @@ public class SignView {
     this.recoveryOptions.setVisible(visible);
   }
 
-  void addImportTextObserver(EventHandler<ActionEvent> observer) {
+  public void addImportTextObserver(EventHandler<ActionEvent> observer) {
     importTextButton.setOnAction(observer);
   }
 
@@ -185,19 +184,19 @@ public class SignView {
     createSignatureButton.setOnAction(observer);
   }
 
-  void addBackToMainMenuObserver(EventHandler<ActionEvent> observer) {
+  public void addBackToMainMenuObserver(EventHandler<ActionEvent> observer) {
     backToMainMenuButton.setOnAction(observer);
   }
 
-  void addHelpObserver(EventHandler<ActionEvent> observer) {
+  public void addHelpObserver(EventHandler<ActionEvent> observer) {
     helpButton.setOnAction(observer);
   }
 
-  void addImportKeyObserver(EventHandler<ActionEvent> observer) {
-    importPrivateKeyButton.setOnAction(observer);
+  public void addImportKeyObserver(EventHandler<ActionEvent> observer) {
+    importKeyButton.setOnAction(observer);
   }
 
-  void addSignatureSchemeChangeObserver(ChangeListener<String> observer) {
+  public void addSignatureSchemeChangeObserver(ChangeListener<String> observer) {
     signatureSchemeDropdown.valueProperty().addListener(observer);
   }
 
@@ -217,7 +216,7 @@ public class SignView {
     copyNonRecoverableMessageButton.setOnAction(observer);
   }
 
-  void addCloseNotificationObserver(EventHandler<ActionEvent> observer) {
+  public void addCloseNotificationObserver(EventHandler<ActionEvent> observer) {
     closeNotificationButton.setOnAction(observer);
   }
 
@@ -233,11 +232,11 @@ public class SignView {
     notificationPane.setDisable(false);
   }
 
-  private void closeNotificationPane() {
+   public void closeNotificationPane() {
     notificationPane.setVisible(false);
     notificationPane.setDisable(true);
-    privateKeyField.setText("");
-    textToSign.setText("");
+    keyField.setText("");
+    textInput.setText("");
 
     signatureSchemeDropdown.setValue(null); // Or set to your default value
 
@@ -248,7 +247,6 @@ public class SignView {
       child.setDisable(false);
     }
   }
-
 
 
 }
