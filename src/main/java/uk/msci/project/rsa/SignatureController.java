@@ -3,7 +3,6 @@ package uk.msci.project.rsa;
 import java.io.File;
 import java.math.BigInteger;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 import java.util.regex.Pattern;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -14,7 +13,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import java.io.IOException;
-import uk.msci.project.rsa.GenController.BackToMainMenuObserver;
+
 
 
 /**
@@ -127,12 +126,19 @@ public class SignatureController {
     signView.addCloseNotificationObserver(new BackToMainMenuObserver());
   }
 
+  /**
+   * Sets up observers for the VerifyView controls. Observers are added to handle events like text
+   * import, key import, and signature scheme changes.
+   *
+   * @param primaryStage The stage that observers will use for file dialogs.
+   */
   public void setupVerifyObservers(Stage primaryStage) {
     verifyView.addImportTextObserver(
         new ImportTextObserver(primaryStage, verifyView, this::handleMessageFile));
     verifyView.addImportKeyObserver(
         new ImportRSAObserver(primaryStage, verifyView, this::handleKey));
     verifyView.addSignatureSchemeChangeObserver(new SignatureSchemeChangeObserver());
+    verifyView.addBackToMainMenuObserver(new BackToMainMenuObserver());
     verifyView.addImportSigButtonObserver(
         new ImportRSAObserver(primaryStage, verifyView, this::handleSig));
     verifyView.addVerifyBtnObserver(new VerifyBtnObserver());
@@ -396,7 +402,7 @@ public class SignatureController {
 
       } catch (Exception e) {
         DisplayUtility.showErrorAlert(
-            "There was an error generating a signature. Please try again.");
+            "There was an error in the verification process. Please try again.");
         e.printStackTrace();
 
       }
