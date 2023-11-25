@@ -7,9 +7,9 @@
     <Label text="Signature Scheme POC" style="-fx-font-size: 24; -fx-font-weight: bold;" />
     <Label text="[LOGO HERE]" />
     <Separator />
-    <Button text="[K] Generate Keys" prefWidth="200" />
-    <Button text="[S] Sign Document" prefWidth="200" />
-    <Button text="[V] Verify Signature" prefWidth="200" />
+    <Button fx:id="generateKeysButton" text="[K] Generate Keys" prefWidth="200" />
+    <Button fx:id="signDocumentButton" text="[S] Sign Document" prefWidth="200" />
+    <Button fx:id="verifySignatureButton" text="[V] Verify Signature" prefWidth="200" />
     <Separator />
 
     <!-- Navigation Buttons -->

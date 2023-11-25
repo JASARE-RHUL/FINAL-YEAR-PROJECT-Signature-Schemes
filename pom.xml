@@ -31,7 +31,7 @@
         <artifactId>javafx-maven-plugin</artifactId>
         <version>0.0.8</version> <!-- Check for the latest version -->
         <configuration>
-          <mainClass>uk.msci.project.rsa.MainMenuView</mainClass>
+          <mainClass>uk.msci.project.rsa.LaunchMainMenu</mainClass>
         </configuration>
       </plugin>
     </plugins>
@@ -45,6 +45,7 @@
           <include>**/*.fxml</include>
           <include>**/*.css</include>
           <include>**/*.txt</include>
+          <include>**/*.png</include>
         </includes>
       </resource>
     </resources>
