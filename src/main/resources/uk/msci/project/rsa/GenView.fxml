@@ -20,7 +20,7 @@
 
     <!-- Key Size Input Section -->
     <VBox alignment="CENTER" spacing="5">
-      <Label text="Enter multiple bit sizes, separated by commas (e.g., 512, 256, 384)"/>
+      <Label text="Enter multiple bit sizes, separated by commas eg., (512, 512)" style="-fx-font-weight: bold;" />
       <TextField fx:id="keySizeTextField" prefWidth="200"/>
     </VBox>
 

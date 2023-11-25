@@ -15,8 +15,8 @@
     <!-- Text Area and Import Text Button -->
     <HBox spacing="10" alignment="CENTER_LEFT">
       <VBox spacing="5">
-        <Label text="ENTER TEXT TO SIGN:"/>
-        <!-- StackPane allows overlapping items, initially TextArea is visible, Label is not -->
+        <Label text="ENTER TEXT TO SIGN:" style="-fx-font-weight: bold;"/>
+
         <StackPane>
           <TextArea fx:id="textInput" prefHeight="100" prefWidth="400" wrapText="true" visible="true"/>
           <HBox fx:id="textInputHBox" alignment="CENTER_LEFT" spacing="5" visible="false">
@@ -31,7 +31,7 @@
 
     <!-- Private Key Input and Import Button -->
     <HBox alignment="CENTER_LEFT" spacing="10">
-      <Label text="PRIVATE KEY:"/>
+      <Label text="PRIVATE KEY:" style="-fx-font-weight: bold;"/>
       <TextField fx:id="keyField" prefWidth="200" text="Please Import a key" editable="false"/>
       <ImageView fx:id="checkmarkImage" fitWidth="20" fitHeight="20" preserveRatio="true" visible="false"/>
       <Button fx:id="importKeyButton" text="Import Private Key" />
@@ -40,14 +40,14 @@
 
     <!-- Signature Scheme Dropdown -->
     <HBox alignment="CENTER_LEFT" spacing="10">
-      <Label text="SIGNATURE SCHEME:"/>
+      <Label text="SIGNATURE SCHEME:" style="-fx-font-weight: bold;"/>
       <ComboBox fx:id="signatureSchemeDropdown" prefWidth="200">
         <items>
           <FXCollections fx:factory="observableArrayList">
             <String fx:value="PKCS#1 v1.5"/>
             <String fx:value="ANSI X9.31 rDSA"/>
             <String fx:value="ISO\IEC 9796-2 Scheme 1"/>
-            <!-- Add more signature schemes here if needed -->
+
           </FXCollections>
         </items>
       </ComboBox>
