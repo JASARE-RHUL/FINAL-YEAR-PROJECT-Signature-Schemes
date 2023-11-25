@@ -6,7 +6,7 @@
 <?import java.lang.String?>
 <?import javafx.scene.image.ImageView?>
 
-<AnchorPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="uk.msci.project.rsa.SignView" prefHeight="400.0" prefWidth="600.0">
+<AnchorPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="uk.msci.project.rsa.SignView" prefHeight="400.0" prefWidth="600.0" fx:id="root">
   <VBox alignment="CENTER" spacing="10" AnchorPane.topAnchor="50" AnchorPane.bottomAnchor="50" AnchorPane.leftAnchor="50" AnchorPane.rightAnchor="50">
     <Label text="Signature Scheme POC - Sign" style="-fx-font-size: 24;"/>
     <Label text="[LOGO HERE]"/>
@@ -19,9 +19,9 @@
         <!-- StackPane allows overlapping items, initially TextArea is visible, Label is not -->
         <StackPane>
           <TextArea fx:id="textToSign" prefHeight="100" prefWidth="400" wrapText="true" visible="true"/>
-          <HBox alignment="CENTER_LEFT" spacing="5" visible="false">
+          <HBox fx:id="textToSignHBox" alignment="CENTER_LEFT" spacing="5" visible="false">
             <Label fx:id="textFileNameLabel" text="" />
-            <ImageView fx:id="textFileCheckmarkImage" fitWidth="20" fitHeight="20" preserveRatio="true" visible="false"/>
+            <ImageView fx:id="textFileCheckmarkImage" fitWidth="20" fitHeight="20" preserveRatio="true" visible="true"/>
           </HBox>
         </StackPane>
       </VBox>
@@ -32,7 +32,7 @@
     <!-- Private Key Input and Import Button -->
     <HBox alignment="CENTER_LEFT" spacing="10">
       <Label text="PRIVATE KEY:"/>
-      <TextField fx:id="privateKeyField" prefWidth="200" text="PrivateKey.pem" editable="false"/>
+      <TextField fx:id="privateKeyField" prefWidth="200" text="Please Import a key" editable="false"/>
       <ImageView fx:id="checkmarkImage" fitWidth="20" fitHeight="20" preserveRatio="true" visible="false"/>
       <Button fx:id="importPrivateKeyButton" text="Import Private Key" />
     </HBox>
@@ -45,6 +45,8 @@
         <items>
           <FXCollections fx:factory="observableArrayList">
             <String fx:value="PKCS#1 v1.5"/>
+            <String fx:value="ANSI X9.31 rDSA"/>
+            <String fx:value="ISO\IEC 9796-2 Scheme 1"/>
             <!-- Add more signature schemes here if needed -->
           </FXCollections>
         </items>
@@ -73,15 +75,15 @@
       <Label text="The signing process was successful!" style="-fx-font-weight: bold; -fx-text-fill: green;"/>
       <VBox spacing="10" alignment="CENTER">
         <HBox spacing="10" alignment="CENTER">
-        <Button text="Export Signature to file" />
-        <Button text="Copy Signature to clipboard" />
+        <Button fx:id="exportSignatureButton" text="Export Signature to file" />
+        <Button fx:id="copySignatureButton" text="Copy Signature to clipboard" />
         </HBox>
-        <HBox spacing="10" alignment="CENTER" visible="false">
-          <Button text="Export Non Recoverable Message to file"/>
-          <Button text="Copy Non Recoverable Message to clipboard" />
+        <HBox spacing="10" alignment="CENTER" visible="false" fx:id="recoveryOptions">
+          <Button fx:id="exportNonRecoverableMessageButton" text="Export Non Recoverable Message to file"/>
+          <Button fx:id="copyNonRecoverableMessageButton" text="Copy Non Recoverable Message to clipboard" />
         </HBox>
 
-        <Button text="Close"  alignment="CENTER"/>
+        <Button fx:id="closeNotificationButton" text="Close"  alignment="CENTER"/>
       </VBox>
     </VBox>
   </StackPane>
