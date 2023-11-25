@@ -60,6 +60,15 @@ public class SignatureModel {
   }
 
   /**
+   * Returns the key for corresponding to current signature scheme.
+   *
+   * @return The Key repsective the currently set signature scheme.
+   */
+  public Key getKey() {
+    return key;
+  }
+
+  /**
    * Instantiates a signature scheme based on the current key and signature type. Throws an
    * exception if either the key or the signature type is not set.
    */
