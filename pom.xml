@@ -34,13 +34,74 @@
           <mainClass>uk.msci.project.rsa.LaunchMainMenu</mainClass>
         </configuration>
       </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <version>3.2.0</version>
+        <executions>
+          <execution>
+            <id>add-source</id>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>add-source</goal>
+            </goals>
+            <configuration>
+              <sources>
+                <source>application/models</source>
+                <source>application/views</source>
+                <source>application/controllers</source>
+                <source>application/utility</source>
+                <source>application/modules/key_generation/models</source>
+                <source>application/modules/key_generation/views</source>
+                <source>application/modules/key_generation/controllers</source>
+                <source>application/modules/signatures/models</source>
+                <source>application/modules/signatures/views</source>
+                <source>application/modules/signatures/controllers</source>
+                <source>application/modules/signatures/utility</source>
+                <!-- Add other source directories as needed -->
+              </sources>
+            </configuration>
+          </execution>
+          <execution>
+            <id>add-test-source</id>
+            <phase>generate-test-sources</phase>
+            <goals>
+              <goal>add-test-source</goal>
+            </goals>
+            <configuration>
+              <sources>
+                <source>application/tests</source>
+                <source>application/modules/key_generation/tests</source>
+                <source>application/modules/signatures/tests</source>
+                <!-- Add other test directories as needed -->
+              </sources>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
     </plugins>
     <resources>
+
       <resource>
-        <directory>src/main/java</directory>
+        <directory>application/resources</directory>
+        <includes>
+          <include>**/*.fxml</include>
+          <include>**/*.css</include>
+          <include>**/*.txt</include>
+          <include>**/*.png</include>
+        </includes>
       </resource>
       <resource>
-        <directory>src/main/resources</directory>
+        <directory>application/modules/key_generation/resources</directory>
+        <includes>
+          <include>**/*.fxml</include>
+          <include>**/*.css</include>
+          <include>**/*.txt</include>
+          <include>**/*.png</include>
+        </includes>
+      </resource>
+      <resource>
+        <directory>application/modules/signatures/resources</directory>
         <includes>
           <include>**/*.fxml</include>
           <include>**/*.css</include>
@@ -74,7 +135,7 @@
     <dependency>
       <groupId>org.openjfx</groupId>
       <artifactId>javafx-fxml</artifactId>
-      <version>20</version> <!-- Ensure this matches your installed JavaFX version -->
+      <version>20</version>
     </dependency>
     <!-- Other dependencies -->
     <dependency>
