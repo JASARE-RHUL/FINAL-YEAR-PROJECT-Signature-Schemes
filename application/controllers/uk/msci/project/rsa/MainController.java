@@ -53,6 +53,10 @@ public class MainController {
     }
   }
 
+  public SignatureController getSignatureController(){
+    return signatureController;
+  }
+
   /**
    * Observers the "Generate Keys" button click. Instantiates the GenController and displays the key
    * generation view.

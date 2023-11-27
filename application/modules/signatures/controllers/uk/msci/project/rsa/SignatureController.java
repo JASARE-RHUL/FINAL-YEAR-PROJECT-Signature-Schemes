@@ -158,7 +158,6 @@ public class SignatureController {
     String content = "";
     try {
       content = FileHandle.importFromFile(file);
-      System.out.println(content);
     } catch (Exception e) {
       MainMenuView.DisplayUtility.showErrorAlert("Error importing file, please try again.");
     }

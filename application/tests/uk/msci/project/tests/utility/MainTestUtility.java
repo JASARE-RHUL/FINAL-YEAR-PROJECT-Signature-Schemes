@@ -1,5 +1,7 @@
 package uk.msci.project.tests;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -67,4 +69,35 @@ public class MainTestUtility {
         () -> new AssertionError("Button with text '" + buttonType.getText() + "' not found.")
     ));
   }
+
+  /**
+   * Tests whether a file is exported successfully when clicking an export button in the UI. This
+   * method clicks the specified export button and then checks if the expected file with the given
+   * name and extension is present in the current working directory.
+   *
+   * @param robot         The robot used to simulate user interactions.
+   * @param buttonID      The ID of the export button in the UI.
+   * @param fileName      The base name of the file expected to be exported.
+   * @param fileExtension The extension of the file expected to be exported.
+   * @throws NoSuchFieldException   if a field with the specified name is not found.
+   * @throws IllegalAccessException if this {@code Field} object is enforcing Java language access
+   *                                control and the underlying field is inaccessible.
+   * @throws IOException            if an I/O error occurs when accessing the file system.
+   */
+  protected static void testFileExport(FxRobot robot, String buttonID, String fileName,
+      String fileExtension)
+      throws NoSuchFieldException, IllegalAccessException, IOException {
+    Button exportButton = robot.lookup(buttonID).queryAs(Button.class);
+    assertTrue(exportButton.isVisible(), "Export file button should be visible.");
+
+    robot.clickOn(exportButton);
+    uk.msci.project.tests.MainTestUtility.clickOnDialogButton(robot, ButtonType.OK);
+
+    //logic to verify that the signature was actually exported
+    Optional<File> file = uk.msci.project.tests.MainTestUtility.getFile(fileName,
+        fileExtension);
+    assertTrue(file.isPresent(), "Expected exported file not found.");
+    assertTrue(file.get().exists(), "Exported file should exist.");
+  }
+
 }
