@@ -159,10 +159,10 @@ public class SignatureController {
     try {
       content = FileHandle.importFromFile(file);
     } catch (Exception e) {
-      MainMenuView.DisplayUtility.showErrorAlert("Error importing file, please try again.");
+      uk.msci.project.rsa.DisplayUtility.showErrorAlert("Error importing file, please try again.");
     }
     if (!(Pattern.compile("^\\d+,\\d+$").matcher(content).matches())) {
-      MainMenuView.DisplayUtility.showErrorAlert("Error: Invalid key. Key could not be imported.");
+      uk.msci.project.rsa.DisplayUtility.showErrorAlert("Error: Invalid key. Key could not be imported.");
     } else {
       if (view instanceof SignView) {
         signatureModel.setKey(new PrivateKey(content));
@@ -188,7 +188,7 @@ public class SignatureController {
     try {
       content = FileHandle.importFromFile(file);
     } catch (Exception e) {
-      MainMenuView.DisplayUtility.showErrorAlert("Error importing file, please try again.");
+      uk.msci.project.rsa.DisplayUtility.showErrorAlert("Error importing file, please try again.");
     }
     signature = content;
     verifyView.setSignatureText("");
@@ -226,7 +226,7 @@ public class SignatureController {
 
     @Override
     public void handle(ActionEvent event) {
-      MainMenuView.DisplayUtility.handleFileImport(stage, "*.rsa", file -> fileConsumer.accept(file, view));
+      uk.msci.project.rsa.DisplayUtility.handleFileImport(stage, "*.rsa", file -> fileConsumer.accept(file, view));
     }
   }
 
@@ -243,10 +243,10 @@ public class SignatureController {
     try {
       content = FileHandle.importFromFile(file);
     } catch (Exception e) {
-      MainMenuView.DisplayUtility.showErrorAlert("Error importing file, please try again.");
+      uk.msci.project.rsa.DisplayUtility.showErrorAlert("Error importing file, please try again.");
     }
     if (content == "") {
-      MainMenuView.DisplayUtility.showErrorAlert(file.getName() + " is empty. Please try again.");
+      uk.msci.project.rsa.DisplayUtility.showErrorAlert(file.getName() + " is empty. Please try again.");
     } else {
       message = content.getBytes();
       view.setTextInput("");
@@ -283,7 +283,7 @@ public class SignatureController {
 
     @Override
     public void handle(ActionEvent event) {
-      MainMenuView.DisplayUtility.handleFileImport(stage, "*.txt", file -> fileConsumer.accept(file, view));
+      uk.msci.project.rsa.DisplayUtility.handleFileImport(stage, "*.txt", file -> fileConsumer.accept(file, view));
     }
   }
 
@@ -329,7 +329,7 @@ public class SignatureController {
       if ((signView.getTextInput().equals("") && message == null)
           || signatureModel.getKey() == null
           || signView.getSelectedSignatureScheme() == null) {
-        MainMenuView.DisplayUtility.showErrorAlert(
+        uk.msci.project.rsa.DisplayUtility.showErrorAlert(
             "You must provide an input for all fields. Please try again.");
         return;
       }
@@ -346,7 +346,7 @@ public class SignatureController {
         }
         signView.showNotificationPane();
       } catch (Exception e) {
-        MainMenuView.DisplayUtility.showErrorAlert(
+        uk.msci.project.rsa.DisplayUtility.showErrorAlert(
             "There was an error generating a signature. Please try again.");
         e.printStackTrace();
 
@@ -364,7 +364,7 @@ public class SignatureController {
     public void handle(ActionEvent event) {
       if ((verifyView.getTextInput().equals("") && message == null)) {
         if (!verifyView.getSelectedSignatureScheme().equals("ISO\\IEC 9796-2 Scheme 1")) {
-          MainMenuView.DisplayUtility.showErrorAlert(
+          uk.msci.project.rsa.DisplayUtility.showErrorAlert(
               "You must provide an input for all required fields. Please try again.");
           return;
         }
@@ -372,7 +372,7 @@ public class SignatureController {
       if (signatureModel.getKey() == null
           || verifyView.getSelectedSignatureScheme() == null
           || (verifyView.getSigText().equals("") && signature == null)) {
-        MainMenuView.DisplayUtility.showErrorAlert(
+        uk.msci.project.rsa.DisplayUtility.showErrorAlert(
             "You must provide an input for all required fields. Please try again.");
         return;
       }
@@ -406,7 +406,7 @@ public class SignatureController {
         verifyView.showNotificationPane();
 
       } catch (Exception e) {
-        MainMenuView.DisplayUtility.showErrorAlert(
+        uk.msci.project.rsa.DisplayUtility.showErrorAlert(
             "There was an error in the verification process. Please try again.");
         e.printStackTrace();
 
@@ -423,9 +423,9 @@ public class SignatureController {
     @Override
     public void handle(ActionEvent event) {
       try {
-        MainMenuView.DisplayUtility.copyToClipboard(signature, "Signature");
+        uk.msci.project.rsa.DisplayUtility.copyToClipboard(signature, "Signature");
       } catch (Exception e) {
-        MainMenuView.DisplayUtility.showErrorAlert("Failed to copy signature to clipboard.");
+        uk.msci.project.rsa.DisplayUtility.showErrorAlert("Failed to copy signature to clipboard.");
       }
     }
   }
@@ -440,7 +440,7 @@ public class SignatureController {
     public void handle(ActionEvent event) {
       try {
         FileHandle.exportToFile("signature.rsa", signature);
-        MainMenuView.DisplayUtility.showInfoAlert("Export", "Signature was successfully exported!");
+        uk.msci.project.rsa.DisplayUtility.showInfoAlert("Export", "Signature was successfully exported!");
       } catch (Exception e) {
         e.printStackTrace();
       }
@@ -459,7 +459,7 @@ public class SignatureController {
       try {
         FileHandle.exportToFile("nonRecoverableMessage.txt",
             new String(signatureModel.getNonRecoverableM()));
-        MainMenuView.DisplayUtility.showInfoAlert("Export",
+        uk.msci.project.rsa.DisplayUtility.showInfoAlert("Export",
             "Non recoverable message was successfully exported!");
       } catch (Exception e) {
         e.printStackTrace();
@@ -479,9 +479,9 @@ public class SignatureController {
     public void handle(ActionEvent event) {
       try {
         String nonRecoverableMessage = new String(signatureModel.getNonRecoverableM());
-        MainMenuView.DisplayUtility.copyToClipboard(nonRecoverableMessage, "Non-recoverable message");
+        uk.msci.project.rsa.DisplayUtility.copyToClipboard(nonRecoverableMessage, "Non-recoverable message");
       } catch (Exception e) {
-        MainMenuView.DisplayUtility.showErrorAlert("Failed to copy non-recoverable message to clipboard.");
+        uk.msci.project.rsa.DisplayUtility.showErrorAlert("Failed to copy non-recoverable message to clipboard.");
       }
     }
   }
@@ -498,7 +498,7 @@ public class SignatureController {
       try {
         FileHandle.exportToFile("recoverableMessage.txt",
             new String(signatureModel.getRecoverableM()));
-        MainMenuView.DisplayUtility.showInfoAlert("Export",
+        uk.msci.project.rsa.DisplayUtility.showInfoAlert("Export",
             "Recoverable message was successfully exported!");
       } catch (Exception e) {
         e.printStackTrace();
@@ -518,9 +518,9 @@ public class SignatureController {
     public void handle(ActionEvent event) {
       try {
         String nonRecoverableMessage = new String(signatureModel.getRecoverableM());
-        MainMenuView.DisplayUtility.copyToClipboard(nonRecoverableMessage, "Recoverable message");
+        uk.msci.project.rsa.DisplayUtility.copyToClipboard(nonRecoverableMessage, "Recoverable message");
       } catch (Exception e) {
-        MainMenuView.DisplayUtility.showErrorAlert("Failed to copy recoverable message to clipboard.");
+        uk.msci.project.rsa.DisplayUtility.showErrorAlert("Failed to copy recoverable message to clipboard.");
       }
     }
   }

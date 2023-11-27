@@ -33,7 +33,7 @@ public class MainMenuTest {
   @Start
   public void start(Stage stage) throws Exception {
     MainController mainController = new MainController(stage);
-    // setup procedures before tests run
+
   }
 
   /**

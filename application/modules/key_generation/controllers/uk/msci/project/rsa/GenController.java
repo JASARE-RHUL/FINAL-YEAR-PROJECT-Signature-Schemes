@@ -88,7 +88,14 @@ public class GenController {
         Alert alert = new Alert(AlertType.INFORMATION);
         int k = numberStrings.length;
         for (int i = 0; i < k; i++) {
-          intArray[i] = Integer.parseInt(numberStrings[i]);
+          // if number is too big to parse as Integer
+          // pass, use a bit size larger than the maximum bit size
+          // to cause the process to fail
+          try {
+            intArray[i] = Integer.parseInt(numberStrings[i]);
+          } catch (NumberFormatException e) {
+            intArray[i] = 8000;
+          }
         }
         genModel.setKeyParameters(k, intArray);
         try {
@@ -121,7 +128,8 @@ public class GenController {
     public void handle(ActionEvent event) {
       try {
         genModel.getGeneratedKeyPair().getPublicKey().exportKey("publicKey.rsa");
-        MainMenuView.DisplayUtility.showInfoAlert("Export", "The public key was successfully exported!");
+        uk.msci.project.rsa.DisplayUtility.showInfoAlert("Export",
+            "The public key was successfully exported!");
 
       } catch (IOException e) {
         e.printStackTrace();
@@ -139,7 +147,8 @@ public class GenController {
     public void handle(ActionEvent event) {
       try {
         genModel.getGeneratedKeyPair().getPrivateKey().exportKey("key.rsa");
-        MainMenuView.DisplayUtility.showInfoAlert("Export", "The private key was successfully exported!");
+        uk.msci.project.rsa.DisplayUtility.showInfoAlert("Export",
+            "The private key was successfully exported!");
       } catch (IOException e) {
         e.printStackTrace();
       }
