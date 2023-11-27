@@ -158,11 +158,12 @@ public class SignatureController {
     String content = "";
     try {
       content = FileHandle.importFromFile(file);
+      System.out.println(content);
     } catch (Exception e) {
       MainMenuView.DisplayUtility.showErrorAlert("Error importing file, please try again.");
     }
-    if (!(Pattern.compile("^\\d+(,\\d+)*$").matcher(content).matches())) {
-      MainMenuView.DisplayUtility.showErrorAlert("Error, Invalid Key.");
+    if (!(Pattern.compile("^\\d+,\\d+$").matcher(content).matches())) {
+      MainMenuView.DisplayUtility.showErrorAlert("Error: Invalid key. Key could not be imported.");
     } else {
       if (view instanceof SignView) {
         signatureModel.setKey(new PrivateKey(content));
