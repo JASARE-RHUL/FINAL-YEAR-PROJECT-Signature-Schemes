@@ -128,7 +128,7 @@ Additionally considered in a broader sense, for a cryptographic scheme i.e., RSA
 In this direction a landmark development came in 2018 when Jager, Kakvi, and May \cite{jager2018security} provided a security proof (an improvement on Coron \cite{coron2002security} proof that was limited to the Rabin-Williams variant with e=2) for the PKCS\#1 v1.5 signature scheme, with a caveat: usage of larger parameters are required. Their work offered insights that also apply to other deterministic RSA signature schemes, including ISO/IEC 9796-2 Scheme and ANSI X9.31.
 
 \subsection{What: The Primary Goal}
-The aim of this project was to bridge the theoretical insights presented by the authors \cite{jager2018security} with practical implementation, subsequently evaluating the computational overhead induced by the application of provably secure parameters to deterministic RSA schemes, with a particular focus on the PKCS standard. 
+The aim of this project was to connect the theoretical concepts introduced by Jager et al. \cite{jager2018security} with their practical application. This involved implementing and then assessing the computational burden that arises when using provably secure parameters in deterministic RSA signature schemes, particularly within the context of the PKCS standard.
 
 \subsection{How: Overview of Objectives}
 The influence of the application of provably secure parameters to each of the mentioned deterministic schemes in terms of computational cost was investigated. This was done through the production of algorithms respective to both cases (standard and provably secure parameters) allowing for comparison. Performing the investigation across standards was means of ascertaining a more reliable and accurate assessment by enabling further comparison of introduced overhead across different schemes. The final deliverable constituted an all-incorporative user-interfaced benchmarking program for which results from automation of signature processes applied to data were generated for appropriate evaluations and conclusions to be drawn.
@@ -137,10 +137,10 @@ The influence of the application of provably secure parameters to each of the me
 \section{Objectives}
 To achieve the aim, the project will involve:
 \begin{itemize}
-    \item Develop concrete implementations of the PKCS\#1 v1.5 signature schemes using both standard and provably secure parameters.
-    \item Develop concrete implementations of  the ISO/IEC 9796-2 Scheme, and separately the ANSI X9.31 signature schemes using both standard and provably secure parameters.
-    \item Demonstrate in practice, with larger parameters, how deterministic schemes, particularly the PKCS\#1 v1.5 signature scheme  can achieve a security level on par with less-practical, signature schemes, such as RSA-PSS.
-    \item Create a user-interfaced benchmarking program that incorporates all objectives of the project to assess this overhead in various scenarios across standards
+    \item Developing concrete implementations of the PKCS\#1 v1.5 signature schemes using both standard and provably secure parameters.
+    \item Developing concrete implementations of  the ISO/IEC 9796-2 Scheme, and separately the ANSI X9.31 signature schemes using both standard and provably secure parameters.
+    \item Demonstrating in practice, with larger parameters, how deterministic schemes, particularly the PKCS\#1 v1.5 signature scheme  can achieve a security level on par with less-practical, signature schemes, such as RSA-PSS.
+    \item Creating a user-interfaced benchmarking program that incorporates all objectives of the project to assess this overhead in various scenarios across standards
 \end{itemize}
 
 
@@ -165,7 +165,15 @@ A full discussion of provable security extending to non-deterministic schemes li
 \chapter{Cryptographic Foundations}
 \section{Notations}
 The security parameter is denoted as \( \lambda \). 
-This parameter determines a system's security level/key sizes (higher values mean better security but more computational effort). For all \( n \in \mathbb{N} \), the symbol \( 1^n \) represents the n-bit string of all ones. Given any set \( S \), the notation \( x \stackrel{R}{\leftarrow} S \) signifies that \( x \) is chosen uniformly at random from \( S \).  The set of prime numbers is represented as \( \mathbb{P} \) and the set of \( k \)-bit integers is denoted as \( \mathbb{Z}[k] \). Similarly, the set of \( k \)-bit primes is indicated by \( \mathbb{P}[k] \). The notation \( \mathbb{Z}_N^* \) represents the multiplicative group modulo \( N \) where \( N \in \mathbb{N} \). Game-based proofs are employed, and the notation \( G^A \Rightarrow 1 \) indicates an event where the adversary \( A \) succeeds in game \( G \), specifically when the Finalise Procedure yields an output of 1.
+This parameter determines a system's security level or key sizes. A larger value of $\lambda$ indicates stronger security, though it requires more computational effort. For all \( n \in \mathbb{N} \), the symbol \( 1^n \) represents the n-bit string of consecutive ones. 
+
+Given any set \( S \), the notation \( x \in_{R} S \) signifies that \( x \) is chosen uniformly at random from \( S \).  
+
+The set of prime numbers is represented as \( \mathbb{P} \) and the set of \( k \)-bit primes is denoted as \( \mathbb{P}[k] \). Similarly, the set of integers is represented by \( \mathbb{Z} \) and \( \mathbb{Z}[k] \) respectively. 
+
+The notation \( \mathbb{Z}_N^* \) represents the multiplicative group modulo \( N \) where \( N \in \mathbb{N} \). 
+
+Game-based proofs are employed, and the notation \( G^A \Rightarrow 1 \) indicates an event where the adversary \( A \) succeeds in game \( G \), specifically when the Finalise Procedure yields an output of 1.
 
 
 \section{Digital Signature Schemes}
@@ -248,7 +256,7 @@ A signature scheme DS is UF-CMA secure, if for any forger $\mathcal{F}$ running 
 \subsection{Stronger Notion of Secure Signatures}
 While a secure digital signature ensures that an adversary cannot forge a signature for a new, previously unsigned message, it does not prevent the adversary from generating a new, valid signature for a message that has already been signed. To address this, a stronger notion of security can be considered.
 
-Consider a modified game \texttt{SUF-CMA(ROM)} defined in exactly the same way as Game \texttt{UF-CMA(ROM)}, except that  now queries are to be restricted to an underlying Signature-Messages space $\mathcal{S}$, containing pairs of oracle queries and their associated responses (e.g., $(m^*, \sigma^*) \in \mathcal{S}$ if  $\mathcal{F}$ queried Sign$(m^*)$ and received in response the signature $\sigma^*$). The Sign and Finalise oracles are adapted as follows:
+Consider a modified game \texttt{SUF-CMA(ROM)} defined in exactly the same way as Game \texttt{UF-CMA(ROM)}, except that  now queries are to be restricted to an underlying Signature-Messages space $\mathcal{S}$. $\mathcal{S}$ instead contains pairs of oracle queries and their associated responses (e.g., $(m^*, \sigma^*) \in \mathcal{S}$ if  $\mathcal{F}$ queried Sign$(m^*)$ and received in response the signature $\sigma^*$). The Sign and Finalise oracles are adapted as follows:
 \begin{figure}[H]
 \centering
 \hfill Game SUF-CMA(ROM)\hfill\phantom{} 
@@ -330,7 +338,7 @@ Additionally, $e \in \mathbb{Z}_{\phi(N)}^{*}$, and $x \in_R \mathbb{Z}_N$. k-\t
 \[ \textbf{Adv}_ \mathcal{A}^{\text{k-}\texttt{RSA}[\lambda]} = \Pr [x =  \mathcal{A}(N, e, x^e \bmod N) ] \leq \varepsilon. \]
 \end{definition}
 
-The assumption is the same as saying that the RSA function is a trapdoor permutation. In turn the security of any RSA-based signature scheme can be reduced to the security of the RSA function as a trapdoor permutation.
+The assumption is the same as saying that the RSA function is a trapdoor function. In turn the security of any RSA-based signature scheme can be reduced to the security of the RSA function as a trapdoor function.
 
 
 \section{Textbook RSA}
@@ -345,7 +353,10 @@ Regrettably, textbook RSA signatures have security issues because the difficulty
 Hash-and-Sign is designed to counteract the vulnerabilities observed in the textbook RSA signature schemes by enabling the disruption of algebraic relationships between plaintexts and ciphertexts. Respective to real world uses of digital signatures, it can also be noted that messages are bit strings of arbitrary lengths and not in the format of group elements required for plain RSA signatures.
 
 Both issues are typically dealt with by pre-processing or in other words applying some transformation to a message x i.e., H(x) where H is a suitable (public) hash function (with outputs interpreted as elements of $\mathbb{Z}^*_{N}$).
-The idea revolves around pre-processing messages or in other words applying some transformation to a message m i.e., H(m) where H is a suitable (public) hash function, into elements of \( \mathbb{Z}^*_{N} \). Signatures are then computed on the resulting message representative while verification now ensures signature equivalence with the corresponding representative. This significantly thwarts the efficacy of the discussed attacks if \( H \) is not efficiently invertible.
+\begin{comment}
+The idea revolves around pre-processing messages or in other words applying some transformation to a message m i.e., H(m) where H is a suitable (public) hash function, into elements of \( \mathbb{Z}^*_{N} \). 
+\end{comment}
+Signatures are then computed on the resulting message representative while verification now ensures signature equivalence with the corresponding representative. This significantly thwarts the efficacy of the discussed attacks if \( H \) is not efficiently invertible.
 
 \begin{definition}
 \label{def:hashed rsa}
@@ -382,12 +393,12 @@ Digital signature schemes with appendix are the most commonly used in practice. 
 
 
 \section{RSASSA-PKCS1-v1.5}
-PKCS1 signature scheme is one of the earliest standardised Hash-and-Sign signature schemes on record. The scheme was initially disclosed in version 1.5 \cite{rfc2313}, which is why it is typically known as PKCS1 v1.5.
+The PKCS\#1 signature scheme is one of the earliest standardised Hash-and-Sign signature schemes on record. The scheme was initially disclosed in version 1.5 \cite{rfc2313}, which is why it is typically known as PKCS1 v1.5.
 
 Messages are encoded in representative “blocks” in PKCS v1.5\#1 with the (hexadecimal) format
 \[0x00\||BT\|PS\|0x00\|D\]
 
-The leading 00 block ensures that the full message representative is less than the modulus N when interpreted as an integer. BT refers to the type of block which is 0x01 for signatures. D is the encoding of the message: the hash of the message prefixed with the hash id $ID_{H}$. PS is the “padding string”, used to ensure the length of message representative has equality with the number of bits n. PS is fixed to 0xFF . . . FF.
+This format starts with a leading 0x00 block, which serves to guarantee that the entire message representative, when converted to an integer, remains smaller than the modulus N. BT refers to the type of block which is 0x01 for signatures. 'D' represents the encoded message, consisting of the message's hash preceded by the hash identifier $ID_{H}$. 'PS' is the padding string, which is utilised to make sure that the message representative's length matches the bit length of the modulus. In this format, 'PS' is a sequence of 0xFF repeated as needed.
 \[0x00\|0x01\|0xFF . . . FF\|0x00\|ID_{H}\|H(m)\]
 
 For all of the signature scheme definitions to follow: let GenRSA be adapted as to not compute and subsequently return d but instead return the prime factors of N as additional arguments.
@@ -431,13 +442,13 @@ For all of the signature scheme definitions to follow: let GenRSA be adapted as 
 
 
 \section{ANSI X9.31 rDSA Signatures}
-ANSI X9.31 \cite{ANSI-1998-X9-31} is another Hash-and-Sign signature scheme standardised around a similar time to RSASSA-PKCS. Designed for use in the banking sector, the scheme is very similar RSASSA-PKCS1-v1 5. Both variants of the signature schemes with appendix class of signatures (requires message input to Verify), the two differ slightly with respect to padding and ordering of hash related data.
+ANSI X9.31 \cite{ANSI-1998-X9-31} is another Hash-and-Sign signature scheme standardised around a similar time to RSASSA-PKCS. Designed for use in the banking sector, the scheme is very similar RSASSA-PKCS1-v1 5. Both variants of the signature schemes with appendix class of signatures, the two differ slightly with respect to padding and ordering of hash related data.
 
 
 \[PS\|D\]
 
-In this format, D composed a hash id and message again forms the encoded message alternately, this time the hash id $ID_{H}$ is prefixed with hash of the message. The padding string PS is fixed to 0x6B...BA with 0xB...B forming the repetitive portion of the padding. More specifically the padding is structured with the a header 0x06 byte and a trailer 0x0A nibble (the last nibble of the final padding byte), indicating the start and end of the padding. 
-\[0x06\|0xB . . . BA\|H(m)\|ID_{H}\]
+In this format, the segment labeled 'D' contains the encoded message, which again includes a hash identifier and the message hash. Notably, the sequence here is inverted from the PKCS format: the message's hash is placed before the hash identifier. Before 'D', there's a padding string (PS). PS is set to the sequence 0x6B...BA. Within this, 0xB...B represents a the repetitive part of padding, which fills up the necessary space to ensure that the message representative's length matches the length of the modulus. An initial 0x6 nibble signifies the start of padding while a trailing 0x0A nibble indicates the end of padding.
+\[0x6B . . . BA\|H(m)\|ID_{H}\]
 
 It should be noted that the considered changes to padding are insignificant in the context of the proofs to follow, as they are both for arbitrary padding.
 
@@ -456,7 +467,7 @@ It should be noted that the considered changes to padding are insignificant in t
 %&\quad\text{2. }p_{3},...,p_{k} \in_{R} \mathbb{P}[\lambda/2]  \\
 &\text{Choose a hash function } H : \{0, 1\}^* \rightarrow \{0, 1\}^\ell. \\
 &\text{Look-up } 16\text{-bit } ID_{H} \text{ for } H \\
-&\text{Compute } \nu = \frac{(\lambda - \ell - 24)}{4} \\
+&\text{Compute } \nu = \frac{(\lambda - \ell - 16 - 8)}{4} \\
 &\text{Compute PAD} = 0110 \| (1011)^{\nu} \| 1010 \\
 &\text{return } (pk = (N, e, PAD, ID_{H}, H), sk =  (p_{1},...,p_{k})) \\
 \\
@@ -482,11 +493,11 @@ It should be noted that the considered changes to padding are insignificant in t
 
 
 \section{ISO/IEC 9796-2:2010 Signature Scheme 1}
-ISO/IEC 9796-2:2010 \cite{ISO/2010/9796-2-2010} Signature Scheme is the final standardised scheme to be considered. The scheme has widespread practical significance, primarily in the payments sector where it is used in the EMV payment system for chip and pin cards. 
+The ISO/IEC 9796-2:2010 \cite{ISO/2010/9796-2-2010} Signature Scheme is the final standardised scheme to be considered. The scheme has widespread practical significance, primarily in the payments sector where it is used in the EMV payment system for chip and pin cards. 
 
 A variant of the signature schemes with message recovery class of signatures, ISO/IEC 9796-2:2010 offers a swift departure from the more common practice of signing with appendix. It differs from convention by embedding either the entire message or a part of it within the signature. This allows for the recovery of the corresponding message representative upon verification. This approach yields space and message length savings, although it requires more computational effort to extract the message during verification.
 
-\textbf{EMV Protocol:} The consideration of ISO/IEC 9796-2:2010 Signature Scheme 1 is confined to its application within the EMV standard. Previous versions of the schemes general susceptibility to attacks \cite{10.1007/3-540-48405-1_1, coron2016practical} is thus immaterial since such attacks work only on message spaces that exceed the length of the messages space used by the EMV protocol.
+\textbf{EMV Protocol:} The consideration of ISO/IEC 9796-2 Signature Scheme 1 is confined to its application within the EMV standard. Previous versions of the schemes general susceptibility to attacks \cite{10.1007/3-540-48405-1_1, coron2016practical} is thus immaterial since such attacks work only on message spaces that exceed the length of the messages space used by the EMV protocol.
 
 The standard offers two modes: full message recovery for sufficiently shorter messages that can be completely embedded in the signature and partial message recovery, which is applicable for extensively ranged messages that exceed the signature's capacity. As part of the latter, any message excess is transmitted along with the signature.
 
@@ -504,12 +515,12 @@ The standard offers two modes: full message recovery for sufficiently shorter me
 \end{table}
 In this format the message representative starts with an initial padding pattern to the left of message which can be denoted as $PAD_L$ for illustration purposes. $PAD_L$ starts with a header nibble that distinguishes between the two variants of the scheme with 0x6 for partial message recovery or alternatively 0x4 for full message recovery. The trailer nibble of 0xA is an indicator to the end of $PAD_L$. 
 
-In between $PAD_L$'s header and the trailing 0x0A nibble is a repetitive portion padding: an optional sequence of Bs, $B_{0},...,B_{q}$ where q is the number of bytes required to fill in the remaining space for the full message representative. This sequence is optional and is utilised only when the recoverable message following $PAD_L$ is shorter than the available space, as seen in the full message recovery scheme. The last nibble of this B sequence, $B_{q}$, combines with the trailing 0x0A nibble to finalise $PAD_L$.
+In between $PAD_L$'s header and the trailing 0x0A nibble is a repetitive portion of padding: an optional sequence of Bs, $B_{0},...,B_{q}$ where q is the number of bytes required to fill in the remaining space for the full message representative. This sequence is optional and is utilised only when the recoverable message following $PAD_L$ is shorter than the available space, as seen in the full message recovery scheme. The first nibble in the $B_{q}$ byte i.e., 0xB0 combines with the trailing 0x0A nibble to finalise $PAD_L$.
 After $PAD_L$ is the message portion that is recoverable which is followed by the hash of the complete message. The signatures conclude with a right padding pattern 0xBC denoted as $PAD_R$.
 
 Typically, descriptions of the scheme do not mention the optional Bs and present $PAD_L$ as solely comprising the header and trailer, i.e., $PAD_L = 0x4A$ or $PAD_L = 0x6A$.
 
-*Note: For formal definitions  next to follow, this simplification will be used with $PAD_L$ assumed to take the values of $0x4A$ or $0x6A$. Additionally, for any sufficiently long bit string x, MSBs(x, n) denotes the n most significant bits of x
+*Note: For formal definitions to follow, for any sufficiently long bit string x, MSBs(x, n) denotes the n most significant bits of x.
 
 \begin{definition}
 \begin{figure}[H]
@@ -539,7 +550,7 @@ Typically, descriptions of the scheme do not mention the optional Bs and present
 &\underline{\textbf{\text{Vrfy}} (pk, m_{2}, \sigma)} \\
 &\text{Compute } y^{'} = \sigma^{e} \bmod N \text{ and parse } y^{'} \text{ as: } \\
 &\quad y^{'} = PAD_{L} \| m_{1} \| z \| PAD_{R} \\
-&\text{If } (H(m_{1} \| m_{2}) == z  \text{ } \& \text{ } PAD_{L} == 6A_{16} \text{ } \& \text{ } PAD_{R} == BC_{16}) \\
+&\text{If } (H(m_{1} \| m_{2}) == z) \\
 &\quad \text{return } 1 \\
 &\text{else} \\
 &\quad \text{return } 0 
@@ -565,7 +576,8 @@ Typically, descriptions of the scheme do not mention the optional Bs and present
 %&\quad P, Q \in_{R} \mathbb{P}[\lambda/2] \\
 %&\quad\text{2. }p_{3},...,p_{k} \in_{R} \mathbb{P}[\lambda/2]  \\
 &\text{Choose a hash function } H : \{0, 1\}^* \rightarrow \{0, 1\}^\ell. \\
-&\text{Compute } PAD_{L} = 01001010 \\
+&\text{Compute } \nu = \frac{(\lambda - \ell - 8 - 4)}{4} \\
+&\text{Compute } PAD_{L} = 0100 \| (1011)^{\nu} \| 1010 \\
 &\text{Compute } PAD_{R} = 10111100 \\
 &\text{return } (pk = (N, e, PAD_{L}, PAD_{R}, H), sk = (p_{1},...,p_{k})) \\
 \\
@@ -577,7 +589,7 @@ Typically, descriptions of the scheme do not mention the optional Bs and present
 &\underline{\textbf{\text{Vrfy}} (pk, \sigma)} \\
 &\text{Compute } y^{'} = \sigma^{e} \bmod N \text{ and parse } y^{'} \text{ as: } \\
 &\quad y^{'} = PAD_{L} \| m \| z \| PAD_{R} \\
-&\text{If } (H(m) == z \text{ } \& \text{ } PAD_{L} == 4A_{16} \text{ } \& \text{ } PAD_{R} == BC_{16}) \\
+&\text{If } (H(m) == z) \\
 &\quad \text{return } 1 \\
 &\text{else} \\
 &\quad \text{return } 0 
@@ -591,7 +603,7 @@ Typically, descriptions of the scheme do not mention the optional Bs and present
 
 
 \section{Motivation for Provable Security}
-The hash-and-sign paradigm shows potential in countering known attacks by enabling the admission of a function H not efficiently invertible, but it's not a replacement for formal proof. This is especially true considering the Multiplicative property that hash-and-sign methods inherit from textbook RSA. It becomes hard to imagine how $H(m_{1}) \cdot H(m_{2}) \bmod N$ could have the algebraic structure required to make it look like the hash of some other distinct message m. While at the very most a solution to this problem is not evident, this is not a proof that the attack is impossible and thereby immaterial.
+The hash-and-sign paradigm shows potential in countering known attacks by enabling the admission of a function H not efficiently invertible. However this is no replacement for formal proof. This is especially evident considering the Multiplicative property that hash-and-sign methods inherit from textbook RSA. It becomes hard to imagine how $H(m_{1}) \cdot H(m_{2}) \bmod N$ could have the algebraic structure required to make it look like the hash of some other distinct message m. While at the very most a solution to this problem is not evident, this is not a proof that the attack is impossible and thereby immaterial.
 
 For a provably secure signature in the UF-CMA sense, a Hash function \(H\) that avoids multiplicative relations is needed. Moreover a stronger assumption to make would be: it must be hard to find collisions in H. Currently, there's no way to ensure the basic hashed RSA signature scheme is provably secure in standard settings.
 
@@ -617,7 +629,7 @@ In summary, the lack of known attacks does not guarantee the security of the PKC
 
 
 \subsection{Limitations of Provable Security}
-As central as the paradigm of Provable Security it is important to keep in mind some of its limitations. It does not entail security absolute sense but indicates that security hinges on certain assumptions. Actual security may not always align with provable claims, as real-world applications might introduce vulnerabilities not covered in theoretical models. Indicatively, security claims might not completely encompass real-world scenarios. A cryptographic primitive with a theoretically defined break may still have unrelated vulnerabilities when put into practice. To formulate security definitions that provide meaningful guarantees it is thus necessary to understand how primitives are used in practice.
+As central as the paradigm of Provable Security is, it is important to keep in mind some of its limitations. It does not entail security absolute sense but indicates that security hinges on certain assumptions. Actual security may not always align with provable claims, as real-world applications might introduce vulnerabilities not covered in theoretical models. Indicatively, it is a possibility that security claims might not completely encompass real-world scenarios. In accordance with this, a cryptographic primitive with a theoretically defined break may still have unrelated vulnerabilities when put into practice. To formulate security definitions that provide meaningful guarantees, it is thus necessary to understand how primitives are used in practice.
 
 For instance, while indistinguishability theory posits that encrypted plaintexts of the same length should be indiscernible, real-world scenarios might allow deductions from ciphertext lengths, potentially compromising confidentiality. It's crucial to understand what security is guaranteed by a proof, as opposed to merely security requirements of particular primitive. Moreover, theoretical adversary models may not mirror the capabilities of genuine adversaries. Padding oracle attacks, where adversaries glean plaintext information, are not always accounted for in security models. Similarly, side-channel attacks exploit external information beyond a model's scope. A model's relevancy hinges on its accurate representation of actual adversary capabilities.
 
@@ -645,15 +657,40 @@ Although truly random functions cannot be implemented in reality, the resulting 
 
 
 
+\chapter{Software Development}
+\section{Software Development Approach}
+I intend to follow the full software development lifecycle with adherence to standard software engineering principles (Test-driven Development (TDD) etc). This approach encompasses the five stages of (1) requirements specification, (2) software design that serves as a blueprint for development, (3) implementation with a focus on code quality and functionality, (4) testing to guarantee software reliability and performance, and (5) documentation, for both programmers and users to enhance understanding and usability of the software.
 
+I have chosen to use the Agile methodology due to its precision and adaptability, which could prove crucial for handling the complex cryptographic proofs at the core of signature scheme security. The iterative and flexible nature of Agile allows me to constantly reassess and integrate theoretical insights into my coding, ensuring accurate implementation and prompt identification of discrepancies. In TDD, where coding is a byproduct of testing, I make sure each component functions correctly, a critical aspect in cryptographic software where errors can have serious security consequences. This approach is particularly beneficial for the extended scope of my project (beyond PKCS\#1-v1.5), which includes implementing the full suite of deterministic RSA signatures. Agile's iterative sprints and milestones help me in making accurate estimations of time and effort, preventing overruns and ensuring systematic progress. TDD complements this by ensuring that each part of the project is thoroughly tested before moving on, which is particularly important in the integration of the multiple signature schemes. 
+
+With this, I consider each of the constituent software development phases as fluid and adaptable. The plan is not to adhere strictly to them, but rather to remain open to revisiting previous phases as necessary. This might occur where I may have mis-estimated tasks, or received new feedback. To aid this adaptive process, I conduct bi-weekly meetings with my project supervisor to discuss ongoing progress, address any concerns, and define short-term objectives. Moreover, I have established review reflection points to regularly evaluate progress and make adjustments as needed.
+
+
+\begin{comment}
+For the development I will utilise the Agile methodology (with Test-Driven Development (TDD)) due to its suitability for projects that demand a high degree of precision and adaptability. The complexity of cryptographic proofs, central to the security of signature schemes, requires an approach that accommodates frequent reassessment and fine-tuning, which Agile provides. The theoretical aspects, particularly the cryptographic proofs, are complex and demand a deep understanding to ensure they are implemented correctly. Misinterpretations or errors in this area could lead to significant security flaws. The iterative nature of Agile, with its emphasis on iterative development and continuous reassessment, provides a structured and flexible approach that will enable me to gradually incorporate any implications from theoretical insights into the coding process. Moreover by using TDD I aim for code will be written as a side effect of the testing process. This will help to ensures that each code component  functions as intended, a critical aspect in cryptographic implementations where errors can have severe security implications. This is essential to ensure that the implemented code accurately reflects the theoretical constructs and so that any discrepancies can be promptly identified and corrected. The agile approach also encompasses incremental delivery which is especially valuable given the project's broad scope. It includes implementing the full suite of deterministic RSA signatures, which increases the risk of any underestimations I may make in the time and effort required for project objectives. The iterative sprints and milestones in Agile provide a clear framework for estimating, tracking, and adjusting work as the project progresses, thus avoiding potential overruns and ensuring that each phase of the project builds upon the last. TDD complements this by ensuring that each part of the project is thoroughly tested before moving on, which is particularly important in the integration of the multiple signature schemes. 
+\end{comment}
+
+\begin{comment}
+In line with this, as part of my plan I strategically organised tasks around feature-based high-level objectives stemming from initial requirements, breaking them down into specific, targeted deliverables. These deliverables then act as subtasks, each underpinning a segment of the broader task. This breakdown also guided my organisation of weekly deliverables, which are categorised into either software engineering or theory. By strategically dividing my efforts between these two aspects of the project, I intend to maintain a balanced and efficient workflow that maximises productivity and ensures that both the theoretical and practical dimensions of the work progress harmoniously.
+\end{comment}
+
+\section{Technology Choices}
+When considering the implementation of an RSA digital signature program, multiple programming languages offer distinct features that can influence the efficacy. The choice of language is crucial, as it dictates the available libraries and tools, as well as the overall robustness and performance of the cryptographic operations.
+
+Considering various languages, C and C++ are known for their high performance and control over system resources, which can be advantageous in cryptography. However, they do not have built-in support for big integers, relying instead on libraries like GMP for bigint operations. While these libraries are powerful, they introduce additional dependencies and complexities.
+
+Python, with its simplicity and readability, offers native big integer support and is capable of modular exponentiation, random integer generation, and other necessary operations. However, Python's bigint functionalities are scattered across its standard library, and its cryptographic capabilities are still maturing, with many updates and changes since its initial support in 2009. 
+
+Considering the above, I opted to use Java for the implementation of the digital signature program. Particularly, its BigInteger class is well-suited for RSA due to its design. In practice it can handle arbitrarily long integers, provides essential arithmetic operations on these integers, and offers RSA-specific methods. Notably, the maturity and reliability of the BigInteger class add to its suitability. Being a part of Java since version 1.1 (1997), the class has undergone extensive testing and refinement, ensuring its robustness and reliability. These factors, along with the robustness and reliability of the Java programming language, contribute to its suitability for cryptographic applications. The ongoing support and maintenance of the BigInteger class are vital in a domain where the reliability of algorithms and their implementations cannot be compromised.
 
 
 
 \chapter{Proof of Concept program}
 
+
 \section{Requirements Specification}
-The overall goal of the system is to provide primarily, a basic implementation of the PKCS signature scheme from which a user can interact with via a user interface to perform relevant actions. The program will also include the other considered schemes, to be integrated once the implementation for the PKCS scheme has been established.
-The core actions comprise, the generation of keys, creation of signatures and finally verification of previously created signatures. 
+The overall goal of the system is to offer a fundamental implementation of the PKCS signature scheme from which a user can interact with, via a user interface to perform relevant actions. The program will also include the other considered schemes, to be integrated once the implementation for the PKCS scheme has been established.
+The core functionalities encompass key generation, signature creation, and the verification of generated signatures.
 The program will form the foundation for the eventual delivery of the benchmarking program used to examine the discussed provable security overhead.
 
 \subsection{Description of Actors}
@@ -680,10 +717,9 @@ The program will form the foundation for the eventual delivery of the benchmarki
     \label{fig:uc}
 \end{figure}
 
-Please see Appendix A for a description of the involved actors, a full breakdown of relevant requirements (capturing essential behaviour), and a flow-of-events type description for figure \ref{fig:uc} representing completed UML use cases, derived from preceding user stories.
+Please see Appendix A for a full breakdown of relevant requirements (capturing essential behaviour), and a flow-of-events type description for figure \ref{fig:uc} representing completed UML use cases, derived from preceding user stories.
 
-\section{Technology Choices}
-I opted to use Java for implementation detail. Particularly, its BigInteger class is well-suited for RSA due to its design. In practice it can handle arbitrarily long integers, provides essential arithmetic operations on these integers, and offers RSA-specific methods. Notably, the maturity and reliability of the BigInteger class add to its suitability. Being a part of Java since version 1.1 (1997), the class has undergone extensive testing and refinement, ensuring its robustness and reliability. Moreover, the class benefits from active and ongoing support and maintenance. These factors are especially valuable in the context of security, where the reliability of underlying algorithms and implementations is paramount.
+
 
 \section{Key Generation}
 \subsection{Design}
@@ -798,7 +834,24 @@ The remaining computation in the attempt to obtain the private exponent d is str
     \label{fig:POCCLASSES}
 \end{figure}
 \end{landscape}
-Figure \ref{fig:POCCLASSES} depicts the structure of classes to be used in the implementation of the PoC program.  There is a focus on separation of concerns following the Model-View-Controller (MVC) design pattern. At the heart of the deign is the MainController, which orchestrates the application flow by responding to user actions and coordinating the display of different views. In support is the SignatureController, which manages the signature processes, linking the signature-related views (SignView and VerifyView) with the SignatureModel. SignatureModel encapsulates the cryptographic logic and relies on a SchemeFactory to instantiate a concrete signature scheme as per user selection. The system is further extended by the GenController which is focused on generating cryptographic keys through the GenerateKeysModel which manages the GenRSA facilitated key creation.
+
+\subsection{MVC pattern}
+Figure \ref{fig:POCCLASSES} depicts the structure of classes to be used in the implementation of the PoC program.  There is a focus on separation of concerns following the Model-View-Controller (MVC) design pattern. In general terms it separates the application logic from the user interface and the control between the user interface and the application logic. At the heart of the design is the MainController, which orchestrates the application flow by responding to user actions and coordinating the display of different views. There are two applications of the MVC encapsulated within the MainController.
+
+The first of these In support is the SignatureController, which manages the signature processes, linking the signature-related views (SignView and VerifyView) with the SignatureModel. The SignatureModel serves as software approximation of a real-world processes of the signing and verification processes. It encapsulates the cryptographic logic and relies on a SchemeFactory to instantiate a concrete signature scheme (as per user selection). The SignatureModel acts as an interface for the SignatureController into a tracked instance of a signature scheme (SigScheme). 
+
+The signature-related views (SignView and VerifyView) render the contents of the SignatureModel updating presentation as needed if the model data changes.
+The GenController mirrors the structure of the SignatureController but  is focused on generating cryptographic keys through the GenerateKeysModel which manages the GenRSA facilitated key creation.
+
+\subsection{Observer pattern}
+The UML diagram also hints at the observer pattern, a subset of MVC, with the Controllers acting as observers to the Views, which are the observables. When a user interacts with a View, such as initiating a signature generation request, the View notifies the SignatureController, which in turn invokes the necessary methods in both the View and the Model to fulfil the request. This decouples the user interface from the business logic, allowing for independent development and refinement of each component.
+
+\subsection{Factory pattern}
+The architecture of the signature program is based on the factory design pattern to enhance modularity and integration. This design choice is particularly useful when incorporating different RSA signature schemes like ANSI X9.31 and ISO/IEC 9796-2. In the program, each signature scheme is an implementation of a SigScheme class that follows a SigSchemeInterface. This interface is beneficial because it ensures that all signature schemes, despite their differences, conform to a standard set of operations such as key generation, hashing, and the signing and verification processes. These processes involve common cryptographic operations like encoding and converting between integers and octet strings.
+
+The SchemeFactory class abstracts the complexity of creating instances of these signature schemes. This abstraction allows the SignatureModel to reference and use different signature schemes without being tied to their concrete implementations. Essentially, the SchemeFactory takes care of the details behind object creation, allowing the SignatureModel to work with a higher level of abstraction and to interact with any signature scheme through a common interface.
+
+This approach helps keep the SignatureModel clean and focused on its primary responsibilities rather than the nuances of how each signature scheme is instantiated. The result is a flexible and easily maintainable codebase that can readily accommodate new signature schemes as they become relevant, without the need to overhaul the existing system.
 
 
 
@@ -1012,7 +1065,7 @@ First, [5,20] observed that if \( e > N \) and \( e \) is prime, then the RSA fu
 
 \subsection{Security Proof under the Phi-Hiding Assumption}
 The computation assumption relevant to security statements in the second proof is the $\varphi$-Hiding Assumption k-$\phi$HA[$\lambda$]. 
-It posits that for a given modulus \( N \) and a sufficiently small exponent \( e \) (\( e < N^{\frac{1}{4}} \)), determining if \(\frac{e}{\phi(N)}\) is hard. 
+It posits that for a given modulus \( N \) and a sufficiently small exponent \( e \) (\( e < N^{\frac{1}{4}} \)), determining if \(\frac{\phi(N)}{e}\) is hard. 
 
 By definition \ref{def:reg-los} when gcd(\( \hat{e}_{\text{loss}} \),\( \phi(N) \)) = \( \hat{e}_{\text{loss}} \) the $RSA_{N, \hat{e}_{loss}}$ function is \( \hat{e}_{loss}{\text{-to-}}1 \) i.e., \( \hat{e}_{\text{loss}}- \)regular lossy.
 
