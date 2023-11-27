@@ -15,7 +15,6 @@ import javafx.stage.Stage;
 import java.io.IOException;
 
 
-
 /**
  * This class is part of the controller component specific to digital signature operations
  * responsible for handling user interactions for the signature process. It also communicates with
@@ -388,7 +387,13 @@ public class SignatureController {
         }
 
         signatureModel.instantiateSignatureScheme();
-        byte[] signatureBytes = new BigInteger(signature).toByteArray();
+        byte[] signatureBytes = new byte[0];
+        try {
+         signatureBytes = new BigInteger(signature).toByteArray();
+        } catch (Exception e) {
+
+        }
+
         boolean verificationResult = signatureModel.verify(message, signatureBytes);
         if (verificationResult) {
           verifyView.setTrueLabelVisibility(true);
