@@ -1,6 +1,7 @@
 package uk.msci.project.rsa;
 
 import java.util.zip.DataFormatException;
+import uk.msci.project.rsa.exceptions.InvalidSignatureTypeException;
 
 /**
  * This class is part of the Model component specific to digital signature operations providing

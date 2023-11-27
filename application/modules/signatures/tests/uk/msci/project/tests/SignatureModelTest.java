@@ -16,7 +16,6 @@ import uk.msci.project.rsa.ByteArrayConverter;
 import uk.msci.project.rsa.GenModel;
 import uk.msci.project.rsa.GenRSA;
 import uk.msci.project.rsa.ISO_IEC_9796_2_SCHEME_1;
-import uk.msci.project.rsa.InvalidSignatureTypeException;
 import uk.msci.project.rsa.KeyPair;
 import uk.msci.project.rsa.PrivateKey;
 import uk.msci.project.rsa.PublicKey;
@@ -25,6 +24,7 @@ import uk.msci.project.rsa.SigScheme;
 import uk.msci.project.rsa.SignatureFactory;
 import uk.msci.project.rsa.SignatureModel;
 import uk.msci.project.rsa.SignatureType;
+import uk.msci.project.rsa.exceptions.InvalidSignatureTypeException;
 
 
 public class SignatureModelTest {

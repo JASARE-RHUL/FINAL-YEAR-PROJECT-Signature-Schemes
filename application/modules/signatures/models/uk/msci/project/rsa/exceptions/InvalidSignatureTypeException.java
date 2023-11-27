@@ -1,4 +1,4 @@
-package uk.msci.project.rsa;
+package uk.msci.project.rsa.exceptions;
 
 /**
  * Exception thrown when an invalid signature type is specified.

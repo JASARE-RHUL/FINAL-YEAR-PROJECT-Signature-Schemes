@@ -1,5 +1,7 @@
 package uk.msci.project.rsa;
 
+import uk.msci.project.rsa.exceptions.InvalidSignatureTypeException;
+
 /**
  * This class is a factory for returning the Signature scheme instance corresponding to a user
  * specified signature type.
@@ -21,11 +23,11 @@ public class SignatureFactory {
       throws InvalidSignatureTypeException {
     switch (signatureType) {
       case RSASSA_PKCS1_v1_5:
-        return new RSASSA_PKCS1_v1_5(key);
+        return new uk.msci.project.rsa.RSASSA_PKCS1_v1_5(key);
       case ANSI_X9_31_RDSA:
-        return new ANSI_X9_31_RDSA(key);
+        return new uk.msci.project.rsa.ANSI_X9_31_RDSA(key);
       case ISO_IEC_9796_2_SCHEME_1:
-        return new ISO_IEC_9796_2_SCHEME_1(key);
+        return new uk.msci.project.rsa.ISO_IEC_9796_2_SCHEME_1(key);
       default:
         throw new InvalidSignatureTypeException("Invalid signature type");
     }
