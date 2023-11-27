@@ -19,11 +19,15 @@ import javafx.scene.layout.StackPane;
 
 /**
  * The {@code SignView} class is responsible for managing the user interface related to the signing
- * process in the Signature Scheme POC application. I
+ * process in the Signature Scheme POC application.
  */
 public class SignView implements SignatureViewInterface {
 
 
+  @FXML
+  /**
+   * Text Area for text to be signed.
+   */
   private TextArea textInput;
 
   /**
