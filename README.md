@@ -60,7 +60,7 @@ Below is an overview of the structure and the Maven configuration used to accomm
 │   │   └── checkmark.png                       # Resource image file
 │   ├── docs/                                   # Documentation files
 │   └── tests/
-│       └── uk.msci.project.tests/              # Unit tests for the application
+│       └── uk.msci.project.tests/              # integration tests for the application
 └── ...
 ```
 
@@ -121,6 +121,7 @@ The following additional test directories are configured:
 - `application/modules/key_generation/tests`
 - `application/modules/signatures/tests`
 
+The top level application/tests directory houses integration tests.
 ### Resource Directories
 
 Resources are configured to be included from the following directories:
