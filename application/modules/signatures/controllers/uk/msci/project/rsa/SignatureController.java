@@ -13,6 +13,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import java.io.IOException;
+import uk.msci.project.rsa.ISO_IEC_9796_2_SCHEME_1;
 
 
 /**
@@ -363,14 +364,14 @@ public class SignatureController {
     @Override
     public void handle(ActionEvent event) {
       if ((verifyView.getTextInput().equals("") && message == null)) {
-        if (!verifyView.getSelectedSignatureScheme().equals("ISO\\IEC 9796-2 Scheme 1")) {
+        if ((signatureModel.getSigType() != SignatureType.ISO_IEC_9796_2_SCHEME_1)) {
           uk.msci.project.rsa.DisplayUtility.showErrorAlert(
               "You must provide an input for all required fields. Please try again.");
           return;
         }
       }
       if (signatureModel.getKey() == null
-          || verifyView.getSelectedSignatureScheme() == null
+          || signatureModel.getSigType() == null
           || (verifyView.getSigText().equals("") && signature == null)) {
         uk.msci.project.rsa.DisplayUtility.showErrorAlert(
             "You must provide an input for all required fields. Please try again.");
