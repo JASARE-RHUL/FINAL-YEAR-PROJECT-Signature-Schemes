@@ -3,7 +3,6 @@ package uk.msci.project.tests;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.testfx.api.FxAssert.verifyThat;
@@ -21,9 +20,9 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -32,15 +31,13 @@ import org.testfx.api.FxRobot;
 import org.testfx.framework.junit5.ApplicationExtension;
 import org.testfx.framework.junit5.Start;
 import org.testfx.matcher.control.LabeledMatchers;
+import org.testfx.matcher.control.TextInputControlMatchers;
 import org.testfx.service.query.EmptyNodeQueryException;
 import org.testfx.util.WaitForAsyncUtils;
 import uk.msci.project.rsa.FileHandle;
-import uk.msci.project.rsa.GenModel;
 import uk.msci.project.rsa.GenRSA;
 import uk.msci.project.rsa.KeyPair;
 import uk.msci.project.rsa.MainController;
-import uk.msci.project.rsa.MainMenuView;
-import uk.msci.project.rsa.PrivateKey;
 import uk.msci.project.rsa.SignView;
 import uk.msci.project.rsa.SignatureController;
 import uk.msci.project.rsa.SignatureModel;
@@ -48,10 +45,16 @@ import uk.msci.project.rsa.SignatureType;
 
 
 /**
- * This class contains tests for the signing functionality of the Signature Scheme POC application.
- * It includes tests for UI component existence, error handling in various scenarios such as missing
- * key or text, handling of different signature schemes, and the export functionality for signatures
- * and non-recoverable messages.
+ * This class provides automated UI tests for the signature generation feature in the Signature
+ * Scheme POC application. It employs the TestFX framework to simulate user interactions with the
+ * verification view and ensures that all aspects of the UI are functioning as expected.
+ *
+ * <p>Each test method is designed to be independent, setting up the necessary preconditions and
+ * cleaning up afterwards to avoid side effects that could affect other tests.
+ *
+ * @see Test
+ * @see ApplicationExtension
+ * @see FxRobot
  */
 @ExtendWith(ApplicationExtension.class)
 public class SignFunctionalityTest {
@@ -70,9 +73,11 @@ public class SignFunctionalityTest {
   }
 
   /**
-   * Sets up the application's UI to the key generation view before each test.
+   * Prepares the application's UI for the sign view before each test. It deletes files with a
+   * specific suffix to ensure a clean state and navigates to the sign view by simulating a button
+   * click.
    *
-   * @param robot The robot used to simulate user interactions.
+   * @param robot The robot used to simulate user interactions for testing.
    */
   @BeforeEach
   public void setup(FxRobot robot) {
@@ -150,7 +155,7 @@ public class SignFunctionalityTest {
 
     keyPair.getPrivateKey().exportKey("key.rsa");
     keyPair.getPublicKey().exportKey("publicKey.rsa");
-    Optional<File> privateKeyFile = uk.msci.project.tests.MainTestUtility.
+    Optional<File> privateKeyFile = MainTestUtility.
         getFile("key", ".rsa");
     // Simulate invoking the file import method directly
     Platform.runLater(() -> {
@@ -201,7 +206,7 @@ public class SignFunctionalityTest {
 
     keyPair.getPrivateKey().exportKey("key.rsa");
     keyPair.getPublicKey().exportKey("publicKey.rsa");
-    Optional<File> privateKeyFile = uk.msci.project.tests.MainTestUtility.
+    Optional<File> privateKeyFile = MainTestUtility.
         getFile("key", ".rsa");
     // Simulate invoking the file import method directly
     Platform.runLater(() -> {
@@ -221,7 +226,8 @@ public class SignFunctionalityTest {
   }
 
   /**
-   * Tests the application's behavior when a corrupted key file is used for signing.
+   * Ensures that the application properly notifies the user when the provided public key is
+   * corrupted or otherwise unreadable.
    *
    * @param robot The robot used to simulate user interactions.
    * @throws NoSuchFieldException   if the signature view field is not found in the
@@ -245,7 +251,7 @@ public class SignFunctionalityTest {
     KeyPair keyPair = genRSA.generateKeyPair();
 
     FileHandle.exportToFile("corruptKey.rsa", "awsedfrgttgdfrs");
-    Optional<File> corruptKey = uk.msci.project.tests.MainTestUtility.
+    Optional<File> corruptKey = MainTestUtility.
         getFile("corruptKey", ".rsa");
     // Simulate invoking the file import method directly
     Platform.runLater(() -> {
@@ -264,7 +270,7 @@ public class SignFunctionalityTest {
 
   /**
    * Validates the application's ability to successfully create a signature given valid text and a
-   * valid key.
+   * valid key. It simulates the process of importing a private key.
    *
    * @param robot The robot used to simulate user interactions.
    * @throws NoSuchFieldException   if the signature view field is not found in the
@@ -289,7 +295,7 @@ public class SignFunctionalityTest {
 
     keyPair.getPrivateKey().exportKey("key.rsa");
     keyPair.getPublicKey().exportKey("publicKey.rsa");
-    Optional<File> privateKeyFile = uk.msci.project.tests.MainTestUtility.
+    Optional<File> privateKeyFile = MainTestUtility.
         getFile("key", ".rsa");
     // Simulate invoking the file import method directly
     Platform.runLater(() -> {
@@ -302,7 +308,6 @@ public class SignFunctionalityTest {
     robot.clickOn(signatureSchemeDropdown);
     robot.clickOn("PKCS#1 v1.5");
 
-    // Attempt to create a signature with no scheme selected
     robot.clickOn("#createSignatureButton");
     StackPane successPopUp = robot.lookup("#notificationPane").queryAs(StackPane.class);
     assertTrue(successPopUp.isVisible(),
@@ -344,7 +349,7 @@ public class SignFunctionalityTest {
 
     keyPair.getPrivateKey().exportKey("key.rsa");
     keyPair.getPublicKey().exportKey("publicKey.rsa");
-    Optional<File> privateKeyFile = uk.msci.project.tests.MainTestUtility.
+    Optional<File> privateKeyFile = MainTestUtility.
         getFile("key", ".rsa");
     // Simulate invoking the file import method directly
     Platform.runLater(() -> {
@@ -399,7 +404,7 @@ public class SignFunctionalityTest {
 
     keyPair.getPrivateKey().exportKey("key.rsa");
     keyPair.getPublicKey().exportKey("publicKey.rsa");
-    Optional<File> privateKeyFile = uk.msci.project.tests.MainTestUtility.
+    Optional<File> privateKeyFile = MainTestUtility.
         getFile("key", ".rsa");
     // Simulate invoking the file import method directly
     Platform.runLater(() -> {
@@ -439,6 +444,94 @@ public class SignFunctionalityTest {
     assertNotNull(node, "The component should exist.");
     // Verify that the button with the text "[K] Generate Keys" is present
     verifyThat("#signDocumentButton", LabeledMatchers.hasText("[S] Sign Document"));
+  }
+
+  @Test
+  public void shouldChangeSignatureType(FxRobot robot)
+      throws NoSuchFieldException, IllegalAccessException {
+    // Test that the signature scheme dropdown changes the signature when a new option is selected.
+
+    Field sigModel = SignatureController.class.getDeclaredField("signatureModel");
+    sigModel.setAccessible(true);
+    SignatureModel sigModelVal = (SignatureModel) sigModel.get(
+        mainController.getSignatureController());
+    ComboBox<String> schemeDropdown = robot.lookup("#signatureSchemeDropdown").queryComboBox();
+    assertFalse(schemeDropdown.getItems().isEmpty());
+    robot.clickOn(schemeDropdown);
+    robot.clickOn("PKCS#1 v1.5");
+    assertEquals(SignatureType.RSASSA_PKCS1_v1_5, sigModelVal.getSignatureType());
+    robot.clickOn(schemeDropdown);
+    robot.clickOn("ANSI X9.31 rDSA");
+    assertEquals(SignatureType.ANSI_X9_31_RDSA, sigModelVal.getSignatureType());
+    robot.clickOn(schemeDropdown);
+    robot.clickOn("ISO\\IEC 9796-2 Scheme 1");
+    assertEquals(SignatureType.ISO_IEC_9796_2_SCHEME_1, sigModelVal.getSignatureType());
+  }
+
+  /**
+   * Tests the functionality of the import text (for which a signature is to be verified with)
+   * action. It simulates the action of a user importing a text file and verifies that the UI
+   * reflects the successful import of the text.
+   *
+   * @param robot The robot used to simulate user interactions for testing.
+   */
+  @Test
+  public void shouldHandleImportTextAction(FxRobot robot)
+      throws IOException, NoSuchFieldException, IllegalAccessException {
+    // Test importing text functionality.
+    // Simulate file chooser action...
+    FileHandle.exportToFile("testFile.txt", "This is a random test message");
+    Optional<File> testFile = MainTestUtility.
+        getFile("testFile", ".txt");
+    // Simulate invoking the file import method directly
+    Field signView = SignatureController.class.getDeclaredField("signView");
+    signView.setAccessible(true);
+    SignView signViewVal = (SignView) signView.get(mainController.getSignatureController());
+    Platform.runLater(() -> {
+      mainController.getSignatureController()
+          .handleMessageFile(testFile.get(), signViewVal);
+    });
+    WaitForAsyncUtils.waitForFxEvents();
+
+    ImageView importSuccessImage = robot.lookup("#textFileCheckmarkImage").queryAs(ImageView.class);
+    assertTrue(importSuccessImage.isVisible(),
+        "Green checkmark image should appear indicating a success in importing file");
+    verifyThat("#textFileNameLabel", LabeledMatchers.hasText(testFile.get().getName()));
+
+  }
+
+  /**
+   * Simulates the action of importing a private key and verifies the UI reflects this action
+   * correctly. The test checks if the application displays a green checkmark to indicate the
+   * successful import of the public key file and that the key field is updated with the file's
+   * name.
+   *
+   * @param robot The robot used to simulate user interactions for testing.
+   */
+  @Test
+  public void shouldHandleImportPrivateKeyAction(FxRobot robot)
+      throws IOException, NoSuchFieldException, IllegalAccessException {
+    // Test importing public key functionality.
+    // Simulate invoking the file import method directly
+    Field signView = SignatureController.class.getDeclaredField("signView");
+    signView.setAccessible(true);
+    SignView signViewVal = (SignView) signView.get(mainController.getSignatureController());
+    GenRSA genRSA = new GenRSA(2, new int[]{512, 512});
+    KeyPair keyPair = genRSA.generateKeyPair();
+
+    keyPair.getPrivateKey().exportKey("key.rsa");
+    keyPair.getPublicKey().exportKey("publicKey.rsa");
+    Optional<File> privateKeyFile = MainTestUtility.
+        getFile("key", ".rsa");
+    Platform.runLater(() -> {
+      mainController.getSignatureController()
+          .handleKey(privateKeyFile.get(), signViewVal);
+    });
+    WaitForAsyncUtils.waitForFxEvents();
+    ImageView importSuccessImage = robot.lookup("#checkmarkImage").queryAs(ImageView.class);
+    assertTrue(importSuccessImage.isVisible(),
+        "Green checkmark image should appear indicating a success in importing public key");
+    verifyThat("#keyField", TextInputControlMatchers.hasText(privateKeyFile.get().getName()));
   }
 
 }
