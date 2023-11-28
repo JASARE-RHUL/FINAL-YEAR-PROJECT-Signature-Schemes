@@ -45,7 +45,7 @@ import uk.msci.project.rsa.MainMenuView;
 @ExtendWith(ApplicationExtension.class)
 public class KeyGenFunctionalityTest {
 
-  private MainMenuView mainMenuView;
+  private MainController mainController;
 
   /**
    * Initialises the test fixture with the main stage.
@@ -55,7 +55,7 @@ public class KeyGenFunctionalityTest {
    */
   @Start
   public void start(Stage stage) throws Exception {
-    MainController mainController = new MainController(stage);
+    mainController = new MainController(stage);
 
   }
 
