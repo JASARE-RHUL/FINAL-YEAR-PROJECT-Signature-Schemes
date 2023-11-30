@@ -6,7 +6,15 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.zip.DataFormatException;
 
-
+/**
+ * This abstract class provides a specialised framework for implementing a signature scheme using
+ * the RSA algorithm. It implements the SigSchemeInterface and provides concrete and standardised
+ * implementations of some of its methods, along with additional functionality specific to RSA-based
+ * signature schemes.
+ * <p>
+ * Key components are encapsulated within the class, allowing for a modular and extensible design
+ * suitable for various RSA-based signature schemes.
+ */
 public abstract class SigScheme implements SigSchemeInterface {
 
   /**
@@ -161,8 +169,8 @@ public abstract class SigScheme implements SigSchemeInterface {
 
 
   /**
-   * Converts a BigInteger to an octet string of length emLen where emLen is the ceiling of
-   * ((modBits - 1)/8) and modBits is the bit length of the RSA modulus.
+   * Converts a BigInteger to an octet string of length emLen where emLen is the ceiling of ((emBits
+   * - 1)/8) and emBits is the bit length of the RSA modulus.
    *
    * @param m The BigInteger to be converted into an octet string.
    * @return A byte array representing the BigInteger in its octet string form, of length emLen.
@@ -174,8 +182,8 @@ public abstract class SigScheme implements SigSchemeInterface {
   }
 
   /**
-   * Calculates the RSA signature of a given message representative by computing the eth root/ dth
-   * power.
+   * Calculates the RSA signature of a given message representative by raising it to the power of
+   * the private exponent as outlined by the RSA algorithm.
    *
    * @param m The message representative, an integer representation of the message.
    * @return The signature representative, an integer representation of the signature.
@@ -186,8 +194,8 @@ public abstract class SigScheme implements SigSchemeInterface {
   }
 
   /**
-   * Facilitates the verification of RSA signature by enabling the computation of its eth power of a
-   * provided signature representative
+   * Facilitates the verification of RSA signature by raising it to the power of the public exponent
+   * as outlined by the RSA algorithm.
    *
    * @param s The signature representative, an integer representation of the signature.
    * @return The message representative, an integer representation of the message.

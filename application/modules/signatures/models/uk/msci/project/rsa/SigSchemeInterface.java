@@ -4,6 +4,14 @@ import java.math.BigInteger;
 import java.security.SignatureException;
 import java.util.zip.DataFormatException;
 
+
+/**
+ * This interface defines the essential functionalities of a signature scheme.
+ * <p>
+ * It is intended to be implemented by classes that provide concrete implementations of signature
+ * schemes. The methods defined are fundamental to any digital signature scheme and provide a
+ * standardised contract to sign and verify data.
+ */
 public interface SigSchemeInterface {
 
   /**
@@ -45,8 +53,8 @@ public interface SigSchemeInterface {
   byte[] I2OSP(BigInteger m) throws IllegalArgumentException;
 
   /**
-   * Calculates the RSA signature of a given message representative by computing the eth root/ dth
-   * power.
+   * Calculates the RSA signature of a given message representative by raising it to the power of
+   * the private exponent as outlined by the RSA algorithm.
    *
    * @param m The message representative, an integer representation of the message.
    * @return The signature representative, an integer representation of the signature.
@@ -54,8 +62,8 @@ public interface SigSchemeInterface {
   BigInteger RSASP1(BigInteger m);
 
   /**
-   * Facilitates the verification of RSA signature by enabling the computation of its eth power of a
-   * provided signature representative
+   * Facilitates the verification of RSA signature by raising it to the power of the public exponent
+   * as outlined by the RSA algorithm.
    *
    * @param s The signature representative, an integer representation of the signature.
    * @return The message representative, an integer representation of the message.
