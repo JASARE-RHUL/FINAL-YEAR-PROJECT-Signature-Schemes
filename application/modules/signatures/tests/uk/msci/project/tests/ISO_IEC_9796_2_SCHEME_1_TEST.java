@@ -189,7 +189,7 @@ public class ISO_IEC_9796_2_SCHEME_1_TEST {
 
     byte[] latter;
     if (m2LenVal > 0) {
-      latter = Arrays.copyOfRange(message2, m1LenVal - m2LenVal - 1, m1LenVal);
+      latter = Arrays.copyOfRange(message2, m1LenVal - m2LenVal, m1LenVal);
     } else {
       // If m2Length is 0, then m2 is empty
       latter = new byte[0];
