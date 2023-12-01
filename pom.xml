@@ -4,9 +4,9 @@
 
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>com.yourgroup</groupId>
-  <artifactId>your-artifact</artifactId>
-  <version>1.0-SNAPSHOT</version>
+  <groupId>uk.msci.project.rsa</groupId>
+  <artifactId>digital-signature-poc</artifactId>
+  <version>1.0</version>
 
   <properties>
     <!-- Set a valid Java version here -->
