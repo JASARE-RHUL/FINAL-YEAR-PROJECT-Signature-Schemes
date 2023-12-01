@@ -67,7 +67,6 @@ public abstract class Key {
    *
    * @param modulus  the modulus component of the public key.
    * @param exponent the exponent component of the public key.
-   * @return {@code true} if both the modulus and exponent are valid.
    * @throws NullPointerException     if either the modulus or the exponent is {@code null}.
    * @throws IllegalArgumentException if either the modulus or the exponent is less than or equal to
    *                                  0.

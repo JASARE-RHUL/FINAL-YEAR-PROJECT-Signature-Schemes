@@ -5,6 +5,11 @@ import static java.math.BigInteger.ONE;
 import java.math.BigInteger;
 import java.security.SecureRandom;
 
+/**
+ * The GenRSA class is responsible for generating RSA key pairs. It allows for the creation of keys
+ * with a modulus derived from multiple distinct prime numbers, offering flexibility in terms of the
+ * number and size of these primes.
+ */
 public class GenRSA {
 
   /**
@@ -107,6 +112,12 @@ public class GenRSA {
     return e;
   }
 
+  /**
+   * Generates the RSA modulus by multiplying a given array of prime numbers.
+   *
+   * @param primes An array of BigInteger prime numbers.
+   * @return The RSA modulus as a BigInteger, resulting from the product of the prime numbers.
+   */
   public BigInteger genModulus(BigInteger[] primes) {
     BigInteger modulus = BigInteger.ONE;
     for (BigInteger prime : primes) {
@@ -114,6 +125,7 @@ public class GenRSA {
     }
     return modulus;
   }
+
 
   /**
    * Generates the RSA key pair.

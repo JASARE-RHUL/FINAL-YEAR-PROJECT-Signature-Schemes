@@ -197,6 +197,12 @@ public class VerifyView implements SignatureViewInterface {
     this.falseLabel.setVisible(visible);
   }
 
+  /**
+   * Gets the ImageView that shows the checkmark that indicates the success in importing a
+   * signature
+   *
+   * @return The ImageView with the checkmark.
+   */
   public ImageView getSigFileCheckmarkImage() {
     return sigFileCheckmarkImage;
   }
@@ -217,6 +223,8 @@ public class VerifyView implements SignatureViewInterface {
 
   /**
    * Sets the image for the text file checkmark to indicate the status of the text file import.
+   *
+   * @param image The Image to be set on the text file checkmark ImageView.
    */
   public void setTextFileCheckmarkImage(Image image) {
     this.textFileCheckmarkImage.setImage(image);
@@ -225,6 +233,8 @@ public class VerifyView implements SignatureViewInterface {
 
   /**
    * Sets the image for the checkmark to indicate the status of the public key import.
+   *
+   * @param image The Image to be set on the checkmark ImageView.
    */
   public void setCheckmarkImage(Image image) {
     this.checkmarkImage.setImage(image);
@@ -342,6 +352,12 @@ public class VerifyView implements SignatureViewInterface {
     this.textFileNameLabel.setText(fileName);
   }
 
+  /**
+   * Retrieves the text from the sigFileNameLabel Label which displays the name of the imported
+   * signature.
+   *
+   * @return A String representing the file name.
+   */
   public String getSigFileNameLabel() {
     return sigFileNameLabel.getText();
   }
@@ -370,6 +386,11 @@ public class VerifyView implements SignatureViewInterface {
   }
 
 
+  /**
+   * Retrieves the label text of the importSigButton Button.
+   *
+   * @return A String representing the button's label.
+   */
   public String getImportSigButtonLabel() {
     return this.importSigButton.getText();
   }

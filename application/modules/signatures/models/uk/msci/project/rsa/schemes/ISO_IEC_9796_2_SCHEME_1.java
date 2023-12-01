@@ -128,7 +128,7 @@ public class ISO_IEC_9796_2_SCHEME_1 extends SigScheme {
    * @param M The message to be signed.
    * @return A combined byte array containing signature and an appended non-recoverable part of the
    * message.
-   * @throws DataFormatException If there is an error in data format during the signing process.
+   * @throws DataFormatException If the message encoding fails.
    */
   @Override
   public byte[] sign(byte[] M) throws DataFormatException {
@@ -161,7 +161,6 @@ public class ISO_IEC_9796_2_SCHEME_1 extends SigScheme {
     } catch (IllegalArgumentException e) {
       return false;
     }
-
 
     // Checks to see that the first two bits are 01 as per the 9796-2 standard
     if (((EM[0] & 0xC0) ^ 0x40) != 0) {
@@ -203,7 +202,7 @@ public class ISO_IEC_9796_2_SCHEME_1 extends SigScheme {
     }
     byte[] m1m2Hash = md.digest();
     // Compare the computed hash with the extracted hash from EM
-    if(!(Arrays.equals(EMHash, m1m2Hash))) {
+    if (!(Arrays.equals(EMHash, m1m2Hash))) {
       return false;
     }
     recoverableM = m1;

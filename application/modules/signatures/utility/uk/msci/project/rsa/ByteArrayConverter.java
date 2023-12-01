@@ -2,6 +2,10 @@ package uk.msci.project.rsa;
 
 import java.math.BigInteger;
 
+/**
+ * Provides utility methods for converting BigInteger to fixed-length byte arrays, commonly used in
+ * cryptographic operations.
+ */
 public class ByteArrayConverter {
 
   /**

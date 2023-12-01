@@ -94,7 +94,14 @@ public abstract class SigScheme implements SigSchemeInterface {
 
   }
 
-  // Abstract method to be implemented by derived classes for encoding
+
+  /**
+   * Encodes a message according to concrete signature scheme.
+   *
+   * @param M The message to be encoded.
+   * @return The encoded message as a byte array.
+   * @throws DataFormatException if the signature format is not valid.
+   */
   protected abstract byte[] encodeMessage(byte[] M) throws DataFormatException;
 
 

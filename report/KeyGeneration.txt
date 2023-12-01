@@ -6,9 +6,6 @@ abstract class Key {
     + Key(key : String)
     + Key(keyFile : File)
     + Key(modulus : BigInteger, exponent : BigInteger)
-    + getExponent() : BigInteger
-    + getModulus() : BigInteger
-    + getKeyValue() : String
     # parseKeyValue(keyValue : String) : void
     # importFromFile(keyFile : File) : String
     # exportToFile(fileName : String) : void
@@ -20,13 +17,8 @@ class PrivateKey {
     - phi : BigInteger
     - e : BigInteger
     + PrivateKey(N : BigInteger, d : BigInteger)
-    + PrivateKey(N : BigInteger, p : BigInteger, q : BigInteger, phi : BigInteger, e : BigInteger, d : BigInteger)
     + PrivateKey(key : String)
     + PrivateKey(privKeyFile : File)
-    + getP() : BigInteger
-    + getQ() : BigInteger
-    + getPhi() : BigInteger
-    + getE() : BigInteger
 }
 
 class PublicKey {
@@ -52,7 +44,7 @@ class GenRSA {
   - lambda: int[]
   + GenRSA(int k, int[] lambda)
   - generatePrimeComponents() : BigInteger[]
- - genModulus(BigInteger[] primes) : BigInteger
+  - genModulus(BigInteger[] primes) : BigInteger
   - computePhi(BigInteger[] components) : BigInteger
   - computeE(BigInteger phi) : BigInteger
   + generateKeyPair() : KeyPair

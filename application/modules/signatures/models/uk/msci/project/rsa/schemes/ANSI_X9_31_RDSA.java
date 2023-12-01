@@ -34,7 +34,7 @@ public class ANSI_X9_31_RDSA extends SigScheme {
    */
   @Override
 
-  protected byte[] encodeMessage(byte[] M) throws DataFormatException {
+  protected byte[] encodeMessage(byte[] M) {
     byte[] EM = new byte[emLen];
     //  int availableSpace = ((emBits - 48 - 8) + 7) / 8;
     this.md.update(M);

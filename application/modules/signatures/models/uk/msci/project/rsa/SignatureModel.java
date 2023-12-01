@@ -63,7 +63,7 @@ public class SignatureModel {
   /**
    * Returns the key for corresponding to current signature scheme.
    *
-   * @return The Key repsective the currently set signature scheme.
+   * @return The Key respective to the currently set signature scheme.
    */
   public Key getKey() {
     return key;
@@ -81,6 +81,9 @@ public class SignatureModel {
   /**
    * Instantiates a signature scheme based on the current key and signature type. Throws an
    * exception if either the key or the signature type is not set.
+   *
+   * @throws InvalidSignatureTypeException if the parameter passed SignatureType is not valid or
+   *                                       supported.
    */
   public void instantiateSignatureScheme() throws InvalidSignatureTypeException {
     if (key != null && currentType != null) {
@@ -97,6 +100,7 @@ public class SignatureModel {
    * @param data The data to be signed.
    * @return A byte array representing the digital signature.
    * @throws IllegalStateException if the key or signature type is not set before signing.
+   * @throws DataFormatException   If signing process fails due to incorrect format.
    */
   public byte[] sign(byte[] data) throws DataFormatException {
     if (currentSignatureScheme == null) {
@@ -112,6 +116,7 @@ public class SignatureModel {
    * @param signature The signature to be verified.
    * @return {@code true} if the signature is valid, {@code false} otherwise.
    * @throws IllegalStateException if the key or signature type is not set before verification.
+   * @throws DataFormatException   If verification fails due to incorrect format.
    */
   public boolean verify(byte[] data, byte[] signature) throws DataFormatException {
     if (currentSignatureScheme == null) {

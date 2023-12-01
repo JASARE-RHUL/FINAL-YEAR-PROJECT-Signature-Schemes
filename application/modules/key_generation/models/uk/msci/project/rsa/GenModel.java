@@ -1,6 +1,6 @@
 package uk.msci.project.rsa;
 
-import uk.msci.project.rsa.KeyPair;
+
 import java.io.IOException;
 
 /**
@@ -54,7 +54,7 @@ public class GenModel {
    * Initialises the state i.e., the current Generation process to be tracked.
    */
   public void setGen() {
-    this.currentGen = new GenRSA(this.k, this.lambda);
+    this.currentGen = new GenRSA(k, lambda);
   }
 
   /**
@@ -70,8 +70,9 @@ public class GenModel {
   }
 
   /**
-   * Gets the freshly generated key pair after first making sure to reset the stored reference to it
-   * preserve the integrity of operations.
+   * Gets the freshly generated key pair
+   *
+   * @return KeyPair representing the generated public and private key
    */
   public KeyPair getGeneratedKeyPair() {
     KeyPair keyPair = generatedKeyPair;

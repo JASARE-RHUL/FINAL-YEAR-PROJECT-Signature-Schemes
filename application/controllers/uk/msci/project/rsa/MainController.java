@@ -53,7 +53,12 @@ public class MainController {
     }
   }
 
-  public SignatureController getSignatureController(){
+  /**
+   * Gets the signature controller used manage and operate signature related functionalities
+   *
+   * @return The signature controller.
+   */
+  public SignatureController getSignatureController() {
     return signatureController;
   }
 
@@ -75,6 +80,7 @@ public class MainController {
    * document signing view.
    */
   class SignDocumentObserver implements EventHandler<ActionEvent> {
+
     @Override
     public void handle(ActionEvent event) {
       signatureController = new SignatureController(MainController.this);

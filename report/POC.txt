@@ -18,26 +18,21 @@ class SignatureController {
   signView : SignView
   verifyView : VerifyView
   signatureModel : SignatureModel
-  + SignatureController(signView : SignView, verifyView : VerifyView, signatureModel : SignatureModel)
+  + SignatureController(mainController : MainController)
 
 }
 class MainController {
-    -SignView signView
-    -VerifyView verifyView
-    -GenerateKeysView generateKeysView
+    -Stage primaryStage
     -MainMenuView mainMenuView
     -SignatureController signatureController
     -GenController genController
-    +showGenView(): void
-    +showSignView(): void
-    +showVerifyView(): void
-    +switchView(view: String): void
+    +showMainMenuView(): void
 }
 
 class GenController {
   genView : GenView
   genModel : GenModel
-  + GenController(genView : GenView, genModel : GenModel)
+  + GenController(mainController : MainController)
 }
 
 class GenRSA {
@@ -94,10 +89,8 @@ SignatureController --> SignatureModel
 GenController --> GenerateKeysModel
 GenController --> GenerateKeysView
 GenController <.. GenerateKeysView
-MainController o-- SignView
-MainController o-- VerifyView
-MainController o-- MainMenuView
-MainController o-- GenerateKeysView
+MainController --> MainMenuView
+MainController <.. MainMenuView
 MainController o-- SignatureController
 MainController o-- GenController
 SchemeFactory --> SigType: uses

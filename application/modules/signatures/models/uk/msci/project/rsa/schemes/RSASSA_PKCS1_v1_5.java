@@ -23,14 +23,13 @@ public class RSASSA_PKCS1_v1_5 extends SigScheme {
   }
 
 
-
-
   /**
    * Encodes a message using a custom implementation of the EMSA-PKCS1-v1_5 encoding method.
    * Includes hashing the message and preparing the encoded message with padding.
    *
    * @param M The message to be encoded.
    * @return The encoded message as a byte array.
+   * @throws DataFormatException If the message encoding fails.
    */
   @Override
   protected byte[] encodeMessage(byte[] M) throws DataFormatException {

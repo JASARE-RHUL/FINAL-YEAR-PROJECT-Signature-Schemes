@@ -19,9 +19,9 @@ public interface SigSchemeInterface {
    *
    * @param M Data to be signed.
    * @return The digital signature.
-   * @throws SignatureException if there's an error during signing.
+   * @throws DataFormatException if the signature format is not valid.
    */
-  byte[] sign(byte[] M) throws SignatureException, DataFormatException;
+  byte[] sign(byte[] M) throws DataFormatException;
 
   /**
    * Verifies a given signature.
@@ -29,9 +29,9 @@ public interface SigSchemeInterface {
    * @param data      Original data that was signed.
    * @param signature The digital signature to be verified.
    * @return true if the signature is valid, false otherwise.
-   * @throws SignatureException if there's an error during verification.
+   * @throws DataFormatException if there's an error during verification.
    */
-  boolean verify(byte[] data, byte[] signature) throws SignatureException, DataFormatException;
+  boolean verify(byte[] data, byte[] signature) throws DataFormatException;
 
   /**
    * Converts an octet string (byte array) to a non-negative integer.

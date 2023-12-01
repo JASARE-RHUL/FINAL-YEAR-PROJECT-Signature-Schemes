@@ -89,6 +89,12 @@ public class SignatureController {
     }
   }
 
+  /**
+   * Initialises and displays the verifyView stage. It loads the FXML for the verifyView and sets up
+   * the scene and the stage.
+   *
+   * @param primaryStage The primary stage for this application.
+   */
   public void showVerifyView(Stage primaryStage) {
     try {
       FXMLLoader loader = new FXMLLoader(getClass().getResource("/VerifyView.fxml"));
@@ -163,7 +169,8 @@ public class SignatureController {
       uk.msci.project.rsa.DisplayUtility.showErrorAlert("Error importing file, please try again.");
     }
     if (!(Pattern.compile("^\\d+,\\d+$").matcher(content).matches())) {
-      uk.msci.project.rsa.DisplayUtility.showErrorAlert("Error: Invalid key. Key could not be imported.");
+      uk.msci.project.rsa.DisplayUtility.showErrorAlert(
+          "Error: Invalid key. Key could not be imported.");
     } else {
       if (view instanceof SignView) {
         signatureModel.setKey(new PrivateKey(content));
@@ -227,7 +234,8 @@ public class SignatureController {
 
     @Override
     public void handle(ActionEvent event) {
-      uk.msci.project.rsa.DisplayUtility.handleFileImport(stage, "*.rsa", file -> fileConsumer.accept(file, view));
+      uk.msci.project.rsa.DisplayUtility.handleFileImport(stage, "*.rsa",
+          file -> fileConsumer.accept(file, view));
     }
   }
 
@@ -247,7 +255,8 @@ public class SignatureController {
       uk.msci.project.rsa.DisplayUtility.showErrorAlert("Error importing file, please try again.");
     }
     if (content == "") {
-      uk.msci.project.rsa.DisplayUtility.showErrorAlert(file.getName() + " is empty. Please try again.");
+      uk.msci.project.rsa.DisplayUtility.showErrorAlert(
+          file.getName() + " is empty. Please try again.");
     } else {
       message = content.getBytes();
       view.setTextInput("");
@@ -284,7 +293,8 @@ public class SignatureController {
 
     @Override
     public void handle(ActionEvent event) {
-      uk.msci.project.rsa.DisplayUtility.handleFileImport(stage, "*.txt", file -> fileConsumer.accept(file, view));
+      uk.msci.project.rsa.DisplayUtility.handleFileImport(stage, "*.txt",
+          file -> fileConsumer.accept(file, view));
     }
   }
 
@@ -390,7 +400,7 @@ public class SignatureController {
         signatureModel.instantiateSignatureScheme();
         byte[] signatureBytes = new byte[0];
         try {
-         signatureBytes = new BigInteger(signature).toByteArray();
+          signatureBytes = new BigInteger(signature).toByteArray();
         } catch (Exception e) {
 
         }
@@ -441,7 +451,8 @@ public class SignatureController {
     public void handle(ActionEvent event) {
       try {
         FileHandle.exportToFile("signature.rsa", signature);
-        uk.msci.project.rsa.DisplayUtility.showInfoAlert("Export", "Signature was successfully exported!");
+        uk.msci.project.rsa.DisplayUtility.showInfoAlert("Export",
+            "Signature was successfully exported!");
       } catch (Exception e) {
         e.printStackTrace();
       }
@@ -480,9 +491,11 @@ public class SignatureController {
     public void handle(ActionEvent event) {
       try {
         String nonRecoverableMessage = new String(signatureModel.getNonRecoverableM());
-        uk.msci.project.rsa.DisplayUtility.copyToClipboard(nonRecoverableMessage, "Non-recoverable message");
+        uk.msci.project.rsa.DisplayUtility.copyToClipboard(nonRecoverableMessage,
+            "Non-recoverable message");
       } catch (Exception e) {
-        uk.msci.project.rsa.DisplayUtility.showErrorAlert("Failed to copy non-recoverable message to clipboard.");
+        uk.msci.project.rsa.DisplayUtility.showErrorAlert(
+            "Failed to copy non-recoverable message to clipboard.");
       }
     }
   }
@@ -519,9 +532,11 @@ public class SignatureController {
     public void handle(ActionEvent event) {
       try {
         String nonRecoverableMessage = new String(signatureModel.getRecoverableM());
-        uk.msci.project.rsa.DisplayUtility.copyToClipboard(nonRecoverableMessage, "Recoverable message");
+        uk.msci.project.rsa.DisplayUtility.copyToClipboard(nonRecoverableMessage,
+            "Recoverable message");
       } catch (Exception e) {
-        uk.msci.project.rsa.DisplayUtility.showErrorAlert("Failed to copy recoverable message to clipboard.");
+        uk.msci.project.rsa.DisplayUtility.showErrorAlert(
+            "Failed to copy recoverable message to clipboard.");
       }
     }
   }

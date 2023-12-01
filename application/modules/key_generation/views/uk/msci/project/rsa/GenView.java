@@ -10,7 +10,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.VBox;
 
 /**
- * the domain object corresponding to GenView FXML file that will serve as a controllers interface
+ * The domain object corresponding to GenView FXML file that will serve as a controllers interface
  * into observing and manipulating the graphical layout of the view.
  */
 public class GenView {
