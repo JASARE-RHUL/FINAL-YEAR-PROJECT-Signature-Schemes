@@ -5,6 +5,40 @@ of concerns. The directory structure is customised to reflect this design princi
 facilitate the implementation of the Proof of Concept (PoC) program as described in the report.
 Below is an overview of the structure and the Maven configuration used to accommodate it.
 
+## Prerequisites
+
+Java must be installed to run this application
+
+## Demo Video
+
+1. Full demo of the application: https://youtu.be/saX__2eaFAI
+2. Optional video (Recovering a partial message from a Signature (ISO\IEC 9796-2
+   Scheme 1)): https://youtu.be/R0csFIayPJY
+
+## Running the application
+
+To run the application, run
+
+```
+mvn javafx:run
+```
+
+or alternatively, using the provided jar
+
+```
+java -jar digital-signature-poc-1.0.jar
+```
+
+from the command line in the same directory that this README is contained in.
+
+## Viewing javadoc
+
+Code documentation in the form of javadoc can be found in the application/docs/apidocs directory.
+
+```
+Simply open `index.html` to view.
+```
+
 ## Directory Structure
 
 ```bash
@@ -122,6 +156,7 @@ The following additional test directories are configured:
 - `application/modules/signatures/tests`
 
 The top level application/tests directory houses integration tests.
+
 ### Resource Directories
 
 Resources are configured to be included from the following directories:
