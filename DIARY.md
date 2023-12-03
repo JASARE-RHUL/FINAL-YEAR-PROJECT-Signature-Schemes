@@ -2,12 +2,10 @@
 
 ## Diary Entry: Week of 18th - 24th September 2023
 
-This week was dedicated to writing a first draft of the abstract for my project PKCS#1 v1.5 digital
-signature scheme for my project and researching arbitrary precision arithmetic for I library I may
-look to implement as part of the aims for the project
-
-On Monday, I started writing about its importance, touching on its widespread use and history.
-Tuesday was a continuation, emphasising why it's such a vital system.
+This week was dedicated to writing a first draft of the abstract for my project (PKCS signature
+scheme) and researching arbitrary precision arithmetic for a library I may look to implement as part
+of the aims for the project On Monday, I started writing about its importance, touching on its
+widespread use and history. Tuesday was a continuation, emphasising why it’s such a vital system.
 
 By Wednesday, I added details on potential security issues, particularly focusing on something
 called the Bleichenbaucher attacks. I was initially puzzled about how these attacks affected the
@@ -26,7 +24,7 @@ the project and hopefully advance significantly in the creation of the project p
 
 ## Diary Entry - Week of 25th September - 1st October 2023
 
-Met with my supervisor for initial meeting. Discussed potential extensions to the original project
+Met with supervisor for initial meeting. Discussed potential extensions to the original project
 specifications and in general what the project entails. Refocused and refined the project plan,
 emphasising deterministic RSA hash-and-sign schemes, especially PKCS#1 v1.5. Made structural changes
 to the introduction and abstract, enhancing clarity. Set up the Maven project directory on GitLab
@@ -137,3 +135,25 @@ Over the weekend, I finished the SignatureController, integrating it seamlessly 
 developed the MainController to manage the application flow. The application was functionally
 complete, albeit pending more rigorous testing. I concluded the week by reorganizing the project and
 code directory to better reflect the MVC pattern and separate different functional modules.
+
+## Diary Entry - Week of 27th November - 3rd December 2023
+
+This week, I focused on finalising my project for the interim submission I started with integration
+testing for the mainMenu and Sign view features using TestFX, ensuring the UI and
+model-view-controller interactions worked correctly. By Tuesday, I had completed all integration
+testing, including tests for the verify view, and updated the appendix with detailed test cases.
+
+Midweek, I shifted to preparing my project presentation, developing introductory slides and key
+concept overviews. During this period, I also enhanced the JavaDoc documentation across the project
+and detailed the system testing results in the appendix.
+
+On Friday, I create a new launch class for the application and generated a fat jar containing the
+full application (with all classes and dependencies needed to run it). Additionally, I started
+recording demo videos for the presentation and the final project submission.
+
+Over the weekend, I put the finishing touches on the presentation slides and the demo videos. I also
+updated the project's README with detailed run instructions and refined the report to incorporate
+specifics from my implementation of the signature schemes.
+
+Next, I will organise everything in a manner appropriate for the final submission and clean up any
+remaining loose ends, ensuring that all elements of the project are polished.
