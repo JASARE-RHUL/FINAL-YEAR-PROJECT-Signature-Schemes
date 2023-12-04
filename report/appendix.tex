@@ -109,8 +109,8 @@ After evaluating these options, I decided to use Java for the project. The Java 
 
 
 \section{Appendix B.1 Requirements and Analysis}
-The overall goal of the system is to provide primarily, a basic implementation of the PKCS signature scheme from which a user can interact with via a user interface to perform relevant actions. The program will also include the other considered schemes, to be integrated once the implementation for the PKCS scheme has been established.
-The core actions comprise, the generation of keys, creation of signatures and finally verification of previously created signatures. 
+The overall goal of the system is to offer a fundamental implementation of the PKCS signature scheme from which a user can interact with, via a user interface to perform relevant actions. The program will also include the other considered schemes, to be integrated once the implementation for the PKCS scheme has been established.
+The core functionalities encompass key generation, signature creation, and signature verification.
 The program will form the foundation for the eventual delivery of the benchmarking program used to examine the discussed provable security overhead.
 
 \subsection{Description of Actors}
@@ -382,141 +382,11 @@ Once keys are in place, the user can sign a message. They input the message into
 For verification, the user inputs a message, loads the digital signature and the corresponding public key. The system checks the signature against the message using the public key. If the signature is valid, a success notification is displayed; otherwise, the user is alerted to a verification error. Throughout this process, the system guides the user with notifications or error messages based on the success or failure of the operations performed.
 
 
-
-
-\section{Appendix B.3 Implementation: An Extensible Signature Scheme framework}
-The foundation of this framework is provided by SigSchemeInterface, an interface that outlines the essential functionalities required for any digital signature scheme. This interface serves as a contract for implementing classes, ensuring that fundamental operations such as signing, verifying, and data conversion between different formats are standardised and consistent.
-
-\begin{lstlisting}[caption=SigSchemeInterface Interface code] 
-public interface SigSchemeInterface {
-
-  byte[] sign(byte[] M) throws SignatureException, DataFormatException;
-
-  boolean verify(byte[] data, byte[] signature) throws SignatureException, DataFormatException;
-
-  BigInteger OS2IP(byte[] EM);
-
-  byte[] I2OSP(BigInteger m) throws IllegalArgumentException;
-
-  BigInteger RSASP1(BigInteger m);
-
-  BigInteger RSAVP1(BigInteger s);
-}
- \end{lstlisting}
-
-Signing a message m (sign(m)) works as follows:
-\begin{enumerate}
-\item Encode the message: encodeMessage(m).
-
-\item Convert the message to representative integer form: OS2IP(m).
-
-\item Using a private key sk, calculate the signature representative s using RSA: RSASP1(sk,m).
-
-\item Convert the signature (integer) representative back to a byte string: I2OSP(s).
-\end{enumerate}
-
-Verification is the reverse, adapted accordingly. Given a signature s (verify(s)):
-
-\begin{enumerate}
-\item Convert s into an integer representative: OS2IP(s).
-
-\item Using public key vk, calculate the message representative m: RSAVP1(vk,s)
-
-\item Convert m to a byte string: I2OSP(m).
-
-\item Verify the byte string using verifyMessage.
-\end{enumerate}
-
-We also note two further methods: 'encodeMessage', an algorithm to format data before performing a cryptographic signing operation on its integer representation, and 'verifyMessage', an algorithm that verifies the signature after a cryptographic verification operation has been performed on its integer representation. 
- 
-Building upon the SigSchemeInterface, the abstract class SigScheme is introduced as a concrete implementation of the Interface for implementing RSA-based signature schemes. This class provides standardised implementations of the interface's methods and 
-includes additional functionality specific to RSA operations. It encapsulates key components like the RSA modulus, exponent, and message digest, contributing to a modular and extensible design suitable for various RSA-based signature schemes.
-
-\begin{lstlisting}[caption=Implementation of RSA primitives]
-
-  /**
-   * Converts a BigInteger to an octet string of length emLen is the byte length of the RSA modulus.
-   */
-  public byte[] I2OSP(BigInteger m) throws IllegalArgumentException {
-    return ByteArrayConverter.toFixedLengthByteArray(m, this.emLen);
-  }
-
-  /**
-   * Calculates the RSA signature of a given message representative by raising it to the power of
-   * the private exponent as outlined by the RSA algorithm.
-   */
-  public BigInteger RSASP1(BigInteger m) {
-    BigInteger s = m.modPow(this.exponent, this.modulus);
-    return s;
-  }
-
-  /**
-   * Facilitates the verification of RSA signature by raising it to the power of the public exponent
-   * as outlined by the RSA algorithm.
-   */
-  public BigInteger RSAVP1(BigInteger s) {
-    return this.RSASP1(s);
-  }
-
-}
- \end{lstlisting}
-We note that the implementation of RSAVP1 re-uses RSASP1. This design choice is viable because the exponent field in the SigScheme class is generic and can represent either the public or private exponent, depending on the type of key the scheme is instantiated with. This reuse simplifies the code and centralises the modular exponentiation logic in one place.
- 
-The implementation of signing and verification processes essentially mirrors the pseudocode from the start of the section. 
-
-\begin{lstlisting}[caption=Signature Scheme specialisation methods]
-  // Abstract method to be implemented by derived classes for encoding
-  protected abstract byte[] encodeMessage(byte[] M) throws DataFormatException;
-
-  public boolean verifyMessage(byte[] M, byte[] S)
-      throws DataFormatException {
-    BigInteger s = OS2IP(S);
-    BigInteger m = RSAVP1(s);
-    byte[] EM;
-    try {
-      EM = I2OSP(m);
-    } catch (IllegalArgumentException e) {
-      return false;
-    }
-
-    byte[] EMprime = encodeMessage(M);
-
-    return Arrays.equals(EM, EMprime);
-  }
- \end{lstlisting}
- 
-The SigScheme class provides two further additional methods as compared to the interface with encodeMessage and verifyMessage. The encodeMessage method is left abstract because the encoding of messages is what defines different signature scheme. On the other hand, verifyMessage has a standardised implementation because, in many cases, it simply reverses the signing process. Since the core logic of this reversal often follows a standard procedure that is largely independent of the specifics of the message encoding, it is feasible to provide a standardised implementation for verifyMessage within the SigScheme class.
-
-\textbf{Message Recovery}
-
-Message recovery schemes, such as ISO/IEC 9796-2 Scheme 1, represent special, thereby challenging the notion of standardised implementations for key methods like sign and verifyMessage.
-\begin{lstlisting}[caption=Implementation changes for Message Recovery Schemes]
-public abstract class SigScheme implements SigSchemeInterface {
-
-  byte[] nonRecoverableM;
-
-  byte[] recoverableM;
-}
-public class ISO_IEC_9796_2_SCHEME_1 extends SigScheme {
-  @Override
-  public byte[] sign(byte[] M) throws DataFormatException {
-    byte[] S = super.sign(M);
-    // Extract m2 from the original message M using the computed m2's length
-    if (m2Len > 0) {
-      nonRecoverableM = Arrays.copyOfRange(M, m1Len - m2Len, m1Len);
-    }
-    return S;
-  }
-}
- \end{lstlisting}
-The sign method for these schemes needs to be able to set the non recoverable message field of the class to allow the respective portion message to be returned to the user as part of the conclusion to the signature creation process. Hence, the ISO/IEC 9796-2 Scheme 1 class includes an overridden implementation of sign modified accordingly to account for this.
-
-Along these same lines the verifyMessage method which we omit for brevity has to incorporate logic related to the separation of the message into recoverable/non-recoverable parts into the verification process. During verification, the verifyMessage method must correctly reconstruct the original message from these two parts. 
  
 
-\section{Appendix B.4 Testing}
+\section{Appendix B.3 Testing}
 
-\subsection{Appendix B.4A Integration Testing}
+\subsection{Appendix B.3A Integration Testing}
 My approach towards integration testing was tailored to ensure that each of the application modules functioned correctly within their respective Model-View-Controller (MVC) frameworks. Utilising TestFX \cite{TestFX2023}, a testing framework for JavaFX applications, the testing concentrated on the internal workings of each module, examining how well the MVC components within a single module interacted with each other.
 
 The first step of this testing was to ensure that the main controller effectively managed transitions from the application-level main menu into the different functional modules. This is the only form of inter-module communication that the application utilises.
@@ -525,7 +395,7 @@ The primary role of TestFX in this scenario was to automate interactions within 
 
 
 
-\subsection{Appendix B.4B System Testing}
+\subsection{Appendix B.3B System Testing}
 In the context of this proof of concept, my approach to system testing has been intentionally focused and concise, targeting primarily the core functional requirements. Understanding that exhaustive testing is not the goal at this stage, I concentrated on verifying the key operations that are crucial for my application: key generation, signature creation, and signature verification.
 
 During the system testing phase, I employed a targeted strategy, prioritising Critical Path Testing. This involved ensuring that the essential functions of the application – generating keys, creating signatures, and verifying them – performed accurately under normal use scenarios. Alongside this, I conducted Happy Path Testing to confirm that the application behaves as expected in ideal conditions.

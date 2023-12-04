@@ -198,12 +198,27 @@ A (digital) signature scheme DS consists of three probabilistic polynomial-time 
 The correctness of DS can be confirmed if for any $\lambda \in \mathbb{N}$ and all (pk, sk) output by Gen($1^\lambda$), it holds that: 
 \[ Pr[\text{Verify}(\text{pk, m, Sign}(sk, m)) = 1]\]
  
+Such a signature scheme can be utilised in the following way: 
+\begin{enumerate}
+    \item \textbf{Key Generation by Bob (Sender):}
+    \begin{itemize}
+        \item Bob runs \texttt{Gen}($1^\lambda$) to generate keys (pk, sk).
+        \item He makes his public key (pk) available to everyone.
+    \end{itemize}
 
-Such a signature scheme can be utilised in the following way. 
-Bob (sender) runs Gen($1^\lambda$) to generate the keys (pk, sk). Bob then makes his public key (pk) available to everyone, including Alice (receiver). 
-When Bob wants to send a message m to Alice and ensure it's authentic, he generates a signature $\sigma$ for m using his private key: $\sigma \leftarrow \text{Sign}_{sk}(m)$. He then sends both the message and its signature, (m, $\sigma$), to Alice.
+    \item \textbf{Message Transmission:}
+    \begin{itemize}
+        \item To send a message \( m \) to Alice and ensure its authenticity, Bob generates a signature using his private key: \( \sigma \leftarrow \text{Sign}_{sk}(m) \).
+        \item Bob sends both the message and its signature, (m, $\sigma$), to Alice.
+    \end{itemize}
 
-Upon receipt of (m, $\sigma$), Alice, who already knows Bob's public key, can verify the authenticity of m by checking whether $\text{Vrfy}_{pk} (m, \text{Sign}_{sk}(m)$) $\stackrel{?}{=} 1$. This assures Alice both that Bob sent m, and additionally that m was not modified in transit.
+    \item \textbf{Verification by Alice (Receiver):}
+    \begin{itemize}
+        \item Upon receiving \( (m, \sigma) \) Alice verifies the authenticity of \( m \).
+        \item She checks if \( \text{Vrfy}_{pk}(m, \sigma) \stackrel{?}{=} 1 \). This assures Alice that \( m \) was sent by Bob and wasn't modified in transit.
+    \end{itemize}
+\end{enumerate}
+
 
 \section{Security of signature schemes}
 Security for a signature scheme, represented as DS = (Gen, Sign, Vrfy), is depicted through a contest between a challenger and an Adversary A (probabilistic machine operating within polynomial time). This contest emulates a situation in which A endeavours to compromise the signature scheme by employing a specific attack model. 
@@ -755,9 +770,9 @@ In summary, the lack of known attacks does not guarantee the security of the PKC
 
 
 \subsection{Limitations of Provable Security}
-As central as the paradigm of Provable Security is, it is important to keep in mind some of its limitations. It does not entail security absolute sense; instead, it indicates that security hinges on certain assumptions. The actual security in practice may deviate from provable assertions due to potential vulnerabilities that emerge in real-world applications, which might not be accounted for in theoretical models. Consequently, security claims may not completely encompass real-world scenarios. A cryptographic primitive without a theoretically defined break may still have unrelated vulnerabilities when put into practice. To formulate security definitions that provide meaningful guarantees, it is thus necessary to understand how primitives are used in practice.
+As central as the paradigm of Provable Security is, it is important to keep in mind some of its limitations. It does not entail security absolute sense; rather, it depends on specific assumptions. In practice, actual security might differ from what is provable due to real-world vulnerabilities not covered in theoretical models. This means that security claims may not fulll encompass real-world scenarios and a cryptographic primitive deemed theoretically unbreakable may still have unrelated vulnerabilities when put into practice. To formulate security definitions that provide meaningful guarantees, it is thus necessary to understand how primitives are used in practice.
 
-For instance, while indistinguishability theory posits that encrypted plaintexts of the same length should be indiscernible, real-world scenarios might allow deductions from ciphertext lengths, potentially compromising confidentiality. It's crucial to understand what security is guaranteed by a proof, as opposed to merely security requirements of particular primitive. Moreover, theoretical adversary models may not mirror the capabilities of genuine adversaries. Padding oracle attacks, where adversaries glean plaintext information, are not always accounted for in security models. Similarly, side-channel attacks exploit external information beyond a model's scope. A model's relevancy hinges on its accurate representation of actual adversary capabilities.
+For instance, while indistinguishability theory posits that encrypted plaintexts of the same length should be indiscernible, real-world scenarios might allow deductions from ciphertext lengths, potentially compromising confidentiality. It's crucial to understand what security is guaranteed by a proof, as opposed to merely security requirements of particular primitive. Moreover, theoretical adversary models may not mirror the capabilities of genuine adversaries. Padding oracle attacks, where adversaries glean plaintext information, are not always accounted for in security models. Similarly, side-channel attacks exploit external information beyond a model's scope. The relevance of a model depends on how accurately it mirrors actual adversary capabilities.
 
 Implementing cryptographic systems is intricate, with design, integration, and coding all introducing potential pitfalls. While specifications may offer some leeway for those implementing the system, lacking clear and thorough instructions could lead them to make decisions that significantly compromise the security. Even a slight tweak to a proven system can drastically compromise its security. Thus, it's paramount that real-world applications adhere to their theoretical models as closely as possible.
 
@@ -925,7 +940,7 @@ The remaining computation in the attempt to obtain the private exponent d is str
 \end{lstlisting}
 
 \section{Design}
-
+\textcolor{red} {For further design documentation see Appendix B.2.}
 
 %\begin{landscape}
 %\thispagestyle{lscape} % Apply the custom page style
@@ -956,10 +971,12 @@ The SchemeFactory class abstracts the complexity of creating instances of these 
 This approach helps keep the SignatureModel clean and focused on its primary responsibilities rather than the nuances of how each signature scheme is instantiated. The result is a flexible and easily maintainable codebase that can readily accommodate new signature schemes as they become relevant, without the need to overhaul the existing system.
 
 
-\section{Implementation}
+\section{Implementation: Overview}
 
 This section presents a high level overview of the main functionality of the overall program.
+\begin{comment}
 \textcolor{red} {For lower level detail related to implementation of the schemes, see Appendix B.3.}
+\end{comment}
 
 The application contains four main windows:
 \begin{enumerate}
@@ -986,7 +1003,7 @@ void addGenerateKeysObserver(EventHandler<ActionEvent> observer) {
   generateKeysButton.setOnAction(observer);
 }
 \end{lstlisting}
-The above is mechanism that enables the MainController to register observers and in turn observe the main menu. The MainController underpins the main menu, setting the primary stage of the application and showing the MainMenuView as the initial scene.
+The above is the mechanism that enables the MainController to register observers and in turn observe the main menu. The MainController underpins the main menu, setting the primary stage of the application and showing the MainMenuView as the initial scene.
 
 
 \begin{lstlisting}[caption=MainController registering an observer to be notified on selection of key generation button]
@@ -1043,6 +1060,7 @@ The equivalent patterns is followed for all other components in the design of th
 The key generation screen serves as a specialised portal within the application, where users are invited to specify parameters for cryptographic key creation. The screen features an input box for key size parameters and a "Generate Keys" button, which sets the key generation process in motion.
 
 Behind the scenes, the GenController class orchestrates the user interactions on this screen. It waits to be notified by the view of activation of the "Generate Keys" button, which triggers a series of operations. Initially, the input from the user is subjected to a validation process. This ensures that the provided bit sizes are in an acceptable format and within the operational range for key generation. If the input is incorrect or the key generation encounters an issue, then an alert is displayed with an appropriate message to the user. 
+
 Upon successful validation, the GenModel is engaged to carry out the key generation. It is instructed with the parameters provided by the user, after which it proceeds to generate the RSA key pair. Once the keys are generated, the application offers the facility to export them. Additionally, the screen includes a navigational aid in the "Back to Main Menu" button that gracefully transitions the user back to the main menu of the application.
 
 
@@ -1101,7 +1119,7 @@ Once the preliminary checks are satisfied, the SignatureModel takes over to perf
     \end{minipage}
 \end{figure}
 
-When using a signature scheme that supports message recovery, such as ISO \slash IEC 9796-2 Scheme 1, and a part of the document is non-recoverable (cannot be reconstructed solely from the signature), notification panel presents further relevant options for copying and exporting.
+When using a signature scheme that supports message recovery, such as ISO \slash IEC 9796-2 Scheme 1, and a part of the document is non-recoverable (cannot be reconstructed solely from the signature), the notification panel presents further relevant options for exporting.
 Finally, users can navigate back to the main menu at any point through the BackToMainMenu option, maintaining a smooth user experience throughout the application.
 
 \subsection{Signature Verification}
@@ -1129,7 +1147,7 @@ Finally, users can navigate back to the main menu at any point through the BackT
 The signature verification screen acts as a dedicated hub within the application, designed for users to engage in the verification of signatures. This screen is organised with an input field for users to either type or import the text related to the signature they wish to verify. In the event of interaction with the import button, the screen updates with a checkmark indicator that provides visual confirmation that the text was successfully imported. Similar goes for the distinct public key and signature import sections. The process echoes mechanism discussed previously as per the signature creation screen.
 
 Below these fields, a dropdown menu invites users to select the signature scheme applied when the signature was created, ensuring the correct verification method is used.
-Upon selection of the "Verify Signature" button, a chain of validation and execution steps are executed. The SignatureController first verifies that the text input and public key are valid and present. Should any discrepancies arise during this stage, the interface promptly presents an alert, informing the user of the necessary corrective measures.
+Upon selection of the "Verify Signature" button, a chain of validation and execution steps are executed. The SignatureController first verifies that the text input, public key and signature are valid and present. Should any discrepancies arise during this stage, the interface promptly presents an alert, informing the user of the necessary corrective measures.
 
 \begin{figure}[H]
     \centering
@@ -1160,9 +1178,140 @@ Once the preliminary checks are satisfied, the SignatureModel takes over to perf
     \end{minipage}
 \end{figure}
 
-When using a message recovery-type signature scheme like ISO\slash IEC 9796-2 Scheme 1, successful signature verification allows for the recovered message to be either exported to a file or copied to the clipboard. Notably, verifying an ISO/IEC 9796-2 Scheme 1 signature doesn't require the original text input in cases of full message recovery. This is because the goal of verification here is to extract the complete message initially fed into the signature generation process from the signature itself.
+When using a message recovery-type signature scheme like ISO\slash IEC 9796-2 Scheme 1, successful signature verification allows for the recovered message to be exported. Notably, verifying an ISO/IEC 9796-2 Scheme 1 signature does not require the original text input in cases of full message recovery. This is because the goal of verification here is to extract the complete message initially fed into the signature generation process from the signature itself.
 
-\textcolor{red} {For insight into the testing process see Appendix B.4 for more details.}
+\textcolor{red} {For insight into the testing process see Appendix B.3 for more details.}
+
+\section{Implementation: An Extensible Signature Scheme framework}
+Having explored the theoretical underpinnings and practical applications of digital signature schemes, we now transition to a more technical focus of how signature schemes can be concretely implemented with a generalised framework.
+
+The foundation of this is provided by SigSchemeInterface, an interface that outlines the essential functionalities required for any digital signature scheme. This interface serves as a contract for implementing classes, ensuring that fundamental operations such as signing, verifying, and data conversion between different formats are standardised and consistent.
+
+\begin{lstlisting}[caption=SigSchemeInterface Interface code] 
+public interface SigSchemeInterface {
+
+  byte[] sign(byte[] M) throws SignatureException, DataFormatException;
+
+  boolean verify(byte[] data, byte[] signature) throws SignatureException, DataFormatException;
+
+  BigInteger OS2IP(byte[] EM);
+
+  byte[] I2OSP(BigInteger m) throws IllegalArgumentException;
+
+  BigInteger RSASP1(BigInteger m);
+
+  BigInteger RSAVP1(BigInteger s);
+}
+ \end{lstlisting}
+
+Signing a message m (sign(m)) works as follows:
+\begin{enumerate}
+\item Encode the message: encodeMessage(m).
+
+\item Convert the message to representative integer form: OS2IP(m).
+
+\item Using a private key sk, calculate the signature representative s using RSA: RSASP1(sk, m).
+
+\item Convert the signature (integer) representative back to a byte string: I2OSP(s).
+\end{enumerate}
+
+Verification is the reverse, adapted accordingly. Given a signature s (verify(s)):
+
+\begin{enumerate}
+\item Convert s into an integer representative: OS2IP(s).
+
+\item Using public key vk, calculate the message representative m: RSAVP1(vk, s)
+
+\item Convert m to a byte string: I2OSP(m).
+
+\item Verify the byte string using verifyMessage.
+\end{enumerate}
+
+We also note two further methods: 'encodeMessage', an algorithm to format data before performing a cryptographic signing operation on its integer representation, and 'verifyMessage', an algorithm that verifies the signature after a cryptographic verification operation has been performed on its integer representation. 
+ 
+Building upon the SigSchemeInterface, the abstract class SigScheme is introduced as a concrete implementation of the Interface for implementing RSA-based signature schemes. This class provides standardised implementations of the interface's methods and 
+includes additional functionality specific to RSA operations. It encapsulates key components like the RSA modulus, exponent, and message digest, contributing to a modular and extensible design suitable for various RSA-based signature schemes.
+
+\begin{lstlisting}[caption=Implementation of RSA primitives]
+
+  /**
+   * Converts a BigInteger to an octet string of length emLen is the byte length of the RSA modulus.
+   */
+  public byte[] I2OSP(BigInteger m) throws IllegalArgumentException {
+    return ByteArrayConverter.toFixedLengthByteArray(m, this.emLen);
+  }
+
+  /**
+   * Calculates the RSA signature of a given message representative by raising it to the power of
+   * the private exponent as outlined by the RSA algorithm.
+   */
+  public BigInteger RSASP1(BigInteger m) {
+    BigInteger s = m.modPow(this.exponent, this.modulus);
+    return s;
+  }
+
+  /**
+   * Facilitates the verification of RSA signature by raising it to the power of the public exponent
+   * as outlined by the RSA algorithm.
+   */
+  public BigInteger RSAVP1(BigInteger s) {
+    return this.RSASP1(s);
+  }
+
+}
+ \end{lstlisting}
+We note that the implementation of RSAVP1 re-uses RSASP1. This design choice is viable because the exponent field in the SigScheme class is generic and can represent either the public or private exponent, depending on the type of key the scheme is instantiated with. This reuse simplifies the code and centralises the modular exponentiation logic in one place.
+ 
+The implementation of signing and verification processes essentially mirrors the pseudocode from the start of the section. 
+
+\begin{lstlisting}[caption=Signature Scheme specialisation methods]
+  // Abstract method to be implemented by derived classes for encoding
+  protected abstract byte[] encodeMessage(byte[] M) throws DataFormatException;
+
+  public boolean verifyMessage(byte[] M, byte[] S)
+      throws DataFormatException {
+    BigInteger s = OS2IP(S);
+    BigInteger m = RSAVP1(s);
+    byte[] EM;
+    try {
+      EM = I2OSP(m);
+    } catch (IllegalArgumentException e) {
+      return false;
+    }
+
+    byte[] EMprime = encodeMessage(M);
+
+    return Arrays.equals(EM, EMprime);
+  }
+ \end{lstlisting}
+ 
+The SigScheme class provides two further additional methods as compared to the interface with encodeMessage and verifyMessage. The encodeMessage method is left abstract because the encoding of messages is what defines different signature scheme. On the other hand, verifyMessage has a standardised implementation because, in many cases, it simply reverses the signing process. Since the core logic of this reversal often follows a standard procedure that is largely independent of the specifics of the message encoding, it is feasible to provide a standardised implementation for verifyMessage within the SigScheme class.
+
+\textbf{Message Recovery}
+
+Message recovery schemes, such as ISO/IEC 9796-2 Scheme 1, represent a special case, thereby challenging the notion of standardised implementations for key methods like sign and verifyMessage.
+\begin{lstlisting}[caption=Implementation changes for Message Recovery Schemes]
+public abstract class SigScheme implements SigSchemeInterface {
+
+  byte[] nonRecoverableM;
+
+  byte[] recoverableM;
+}
+public class ISO_IEC_9796_2_SCHEME_1 extends SigScheme {
+  @Override
+  public byte[] sign(byte[] M) throws DataFormatException {
+    byte[] S = super.sign(M);
+    // Extract m2 from the original message M using the computed m2's length
+    if (m2Len > 0) {
+      nonRecoverableM = Arrays.copyOfRange(M, m1Len - m2Len, m1Len);
+    }
+    return S;
+  }
+}
+ \end{lstlisting}
+The sign method for these schemes needs to be able to set the non recoverable message field of the class, to allow the respective portion message to be returned to the user, as part of the conclusion to the signature creation process. Hence, the ISO/IEC 9796-2 Scheme 1 class includes an overridden implementation of sign modified accordingly to account for this.
+
+Along these same lines the verifyMessage method which we omit for brevity has to incorporate logic related to the separation of the message into recoverable/non-recoverable parts into the verification process. During verification, the verifyMessage method must correctly reconstruct the original message from these two parts. 
 
 \chapter{Security Proofs}
 Due to the breakthrough in 2018 when a security proof \cite{jager2018security}  was provided for RSASSA-PKCS1-v1.5. It is possible to formally prove the security of the full class of deterministic RSA signatures. The precise statement of security is if the RSA problem is hard when H is modelled as a random oracle, then the scheme is secure (with regards to the UF-CMA notion i.e.,  existential unforgeability against adaptive chosen message attacks). There are two different proofs for this, both which consider case where the modulus $\widehat{N}$ is a product of three primes. The first is based on the RSA assumption, the second is based on the $\phi$-Hiding assumption.
