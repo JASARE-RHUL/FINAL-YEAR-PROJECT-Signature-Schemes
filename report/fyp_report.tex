@@ -198,26 +198,12 @@ A (digital) signature scheme DS consists of three probabilistic polynomial-time 
 The correctness of DS can be confirmed if for any $\lambda \in \mathbb{N}$ and all (pk, sk) output by Gen($1^\lambda$), it holds that: 
 \[ Pr[\text{Verify}(\text{pk, m, Sign}(sk, m)) = 1]\]
  
-Such a signature scheme can be utilised in the following way: 
-\begin{enumerate}
-    \item \textbf{Key Generation by Bob (Sender):}
-    \begin{itemize}
-        \item Bob runs \texttt{Gen}($1^\lambda$) to generate keys (pk, sk).
-        \item He makes his public key (pk) available to everyone.
-    \end{itemize}
+Such a signature scheme can be utilised in the following way.
+Bob, the sender, initiates the process by running Gen($1^\lambda$), which generates a pair of keys, specifically the private key (sk) and the public key (vk). He then discloses his public key (vk) to all, including Alice, the intended receiver.
 
-    \item \textbf{Message Transmission:}
-    \begin{itemize}
-        \item To send a message \( m \) to Alice and ensure its authenticity, Bob generates a signature using his private key: \( \sigma \leftarrow \text{Sign}_{sk}(m) \).
-        \item Bob sends both the message and its signature, (m, $\sigma$), to Alice.
-    \end{itemize}
+When the need arises for Bob to send a message m to Alice, ensuring its authenticity, he creates a signature $\sigma$ using his private key: $\sigma \leftarrow \text{Sign}_{sk}(m)$. This signature, along with the message itself, (m, $\sigma$), is then dispatched to Alice.
 
-    \item \textbf{Verification by Alice (Receiver):}
-    \begin{itemize}
-        \item Upon receiving \( (m, \sigma) \) Alice verifies the authenticity of \( m \).
-        \item She checks if \( \text{Vrfy}_{pk}(m, \sigma) \stackrel{?}{=} 1 \). This assures Alice that \( m \) was sent by Bob and wasn't modified in transit.
-    \end{itemize}
-\end{enumerate}
+Upon receiving the message and its corresponding signature (m, $\sigma$), Alice, already in possession of Bob's public key, proceeds to verify the authenticity of the message. This is done by checking whether $\text{Vrfy}_{vk}(m, \sigma) \stackrel{?}{=} 1$. This process not only confirms to Alice that Bob is indeed the sender of m but also assures her that the message remained unaltered during transmission.
 
 
 \section{Security of signature schemes}
