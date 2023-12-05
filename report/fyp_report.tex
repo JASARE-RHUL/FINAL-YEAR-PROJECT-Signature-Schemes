@@ -346,11 +346,19 @@ The assumption is the same as saying that the RSA function is a trapdoor functio
 
 
 \section{Textbook RSA}
-In its most basic form, RSA offers a clear blueprint for digital signatures. The loose resemblance between signatures and the RSA function hinges on their shared trait of asymmetry. While everyone should have the ability to verify a signature only the one possessing the signing key can have the capability to create a (legitimate) signature. The RSA function mirrors this asymmetry: If N and e are made public, then anyone can exponentiate using e ($m \stackrel{?}{=} [\sigma^e \bmod N]$), but only an individual with d can exponentiate using d ($\sigma := [m^d \bmod N]$). 
+In its most basic form, RSA offers a clear blueprint for digital signatures. The loose resemblance between signatures and the RSA function hinges on their shared trait of asymmetry. While everyone should have the ability to verify a signature only the one possessing the signing key can have the capability to create a (legitimate) signature. The RSA function mirrors this asymmetry: If N and e are made public, then anyone can exponentiate using e ($m \stackrel{?}{=} [\sigma^e \bmod N]$), but only the individual with d can exponentiate using d ($\sigma := [m^d \bmod N]$). 
 
 Regrettably, textbook RSA signatures have security issues because the difficulty of RSA problem does not meaningfully relate to the computation of a signature, especially for non-uniform messages. Adversaries might bypass the RSA problem or deduce new signatures from others, leading to vulnerability.
 
-\textbf{Multiplicative attacks} utilise RSA's multiplicative property: the product of two signatures is a valid signature for the product of their respective messages. If \( \sigma_{1} \) and \( \sigma_{2} \) are respective signatures for \( m_{1} \) and \( m_{2} \), then \( \sigma_{1} \cdot \sigma_{2} \) is a valid signature for \( m_{1} \cdot m_{2} \). This allows forging by choosing messages to yield a desired product modulo \( N \).
+
+\begin{figure}[H]
+\caption{Multiplicative property}
+\begin{equation}
+(m_{1}m_{2})^{d} \equiv m_{1}^{d}m_{2}^{d} \bmod N
+\end{equation}
+
+\end{figure}
+\textbf{Multiplicative attacks} leverage RSA’s inherent mathematical property outlined above. In these attacks, the product of two signatures can be manipulated to become a valid signature for the product of their respective messages. If \( \sigma_{1} \) and \( \sigma_{2} \) are respective signatures for \( m_{1} \) and \( m_{2} \), then \( \sigma_{1} \cdot \sigma_{2} \) is a valid signature for \( m_{1} \cdot m_{2} \). This allows forging by choosing messages to yield a desired product modulo \( N \) in the most the most severe form of attack.
 
 \begin{comment}
 \textbf{A no message attack}. This attack constitutes a less severe type of forgery that can be performed relying solely on the public key with absence of the signer. By its approach, the adversary can randomly choose a signature \( \sigma \in \mathbb{Z}^*_{N} \) and compute the corresponding message as  \( m \equiv \sigma^{e} \bmod N \). By construction the attack does not enable the adversary direct control over m. However, this may be sufficient in some applications, e.g.,  signing random numbers when issuing some tokens. Additionally it can be possible to influence certain bits or characteristics of m by carefully choosing differing $\sigma$ values over multiple iterations. With a high probability it is then possible to obtain an m with bits set in some desired way.
@@ -359,14 +367,13 @@ Regrettably, textbook RSA signatures have security issues because the difficulty
 
 \section{Hash-and-Sign}
 \label{def:hashed rsa}
-Hash-and-Sign is designed to counteract the vulnerabilities observed in the textbook RSA signature schemes by enabling the disruption of algebraic relationships between plaintexts and ciphertexts. Respective to real world uses of digital signatures, it can also be noted that messages are bit strings of arbitrary lengths and not in the format of group elements required for plain RSA signatures.
+Hash-and-Sign is designed to counteract the vulnerabilities observed in the textbook RSA signature schemes by enabling the disruption of algebraic relationships between plaintexts and ciphertexts. Secondly, it accounts for the fact that in real-world applications, messages are often bit strings of arbitrary lengths, not readily compatible with the format required for plain RSA signatures, which typically demand group elements.
 
-Both issues are typically dealt with by pre-processing or in other words applying some transformation to a message x i.e., H(x) where H is a suitable (public) hash function (with outputs interpreted as elements of $\mathbb{Z}^*_{N}$).
+To address these issues, a pre-processing step is commonly employed, which involves applying a transformation to a message x i.e., computing y := H(x) where H is a public hash function that outputs elements belonging to $\mathbb{Z}^{*}_{N}$.
+
+Signatures are then computed on the resulting message representative (e.g., $\sigma := [y^d \bmod N]$) while verification now ensures signature equivalence with the corresponding representative (e.g., $\sigma^e \stackrel{?}{=} y \bmod N$). This significantly thwarts the efficacy of the discussed attacks if \( H \) is not efficiently invertible.
+
 \begin{comment}
-The idea revolves around pre-processing messages or in other words applying some transformation to a message m i.e., H(m) where H is a suitable (public) hash function, into elements of \( \mathbb{Z}^*_{N} \). 
-\end{comment}
-Signatures are then computed on the resulting message representative while verification now ensures signature equivalence with the corresponding representative. This significantly thwarts the efficacy of the discussed attacks if \( H \) is not efficiently invertible.
-
 \begin{definition}
 \label{def:hashed rsa}
 Let GenRSA be as in the text. The Basic hashed RSA signature scheme.
@@ -385,6 +392,7 @@ Let GenRSA be as in the text. The Basic hashed RSA signature scheme.
 \end{mdframed}
 
 \end{definition}
+\end{comment}
 
 \section{Classification of Digital Signature Schemes}
 Digital Signature schemes can be divided according to two general classes:
@@ -1247,6 +1255,15 @@ includes additional functionality specific to RSA operations. It encapsulates ke
 }
  \end{lstlisting}
 We note that the implementation of RSAVP1 re-uses RSASP1. This design choice is viable because the exponent field in the SigScheme class is generic and can represent either the public or private exponent, depending on the type of key the scheme is instantiated with. This reuse simplifies the code and centralises the modular exponentiation logic in one place.
+\newline
+
+\begin{lstlisting}[caption=]
+  public BigInteger OS2IP(byte[] EM) {
+    return new BigInteger(1, EM);
+  }
+ \end{lstlisting}
+For octet string to integer conversion, the BigInteger(int signum, byte[] magnitude) constructor provides a concise application of the concept succinctly converting the byte array that represents an octet string. The signum is set to 1 (since messages are non-negative) and the byte array of the message acts as the magnitude. The end result is a BigInteger representation of the message, which can then be used in RSA signing or verification processes.
+
  
 The implementation of signing and verification processes essentially mirrors the pseudocode from the start of the section. 
 
@@ -1271,7 +1288,7 @@ The implementation of signing and verification processes essentially mirrors the
   }
  \end{lstlisting}
  
-The SigScheme class provides two further additional methods as compared to the interface with encodeMessage and verifyMessage. The encodeMessage method is left abstract because the encoding of messages is what defines different signature scheme. On the other hand, verifyMessage has a standardised implementation because, in many cases, it simply reverses the signing process. Since the core logic of this reversal often follows a standard procedure that is largely independent of the specifics of the message encoding, it is feasible to provide a standardised implementation for verifyMessage within the SigScheme class.
+The SigScheme class provides two further methods as compared to the interface with encodeMessage and verifyMessage. The encodeMessage method is left abstract because the encoding of messages is essentially what distinguishes different signature schemes. On the other hand, verifyMessage has a standardised implementation because, in many cases, it simply reverses the signing process. Since the core logic of this reversal often follows a standard procedure that is largely independent of the specifics of the message encoding, it is feasible to provide a standardised implementation for verifyMessage within the SigScheme class.
 
 \textbf{Message Recovery}
 
