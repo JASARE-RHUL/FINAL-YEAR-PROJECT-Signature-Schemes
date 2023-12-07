@@ -132,7 +132,7 @@ In this direction a landmark development came in 2018 when Jager, Kakvi, and May
 The aim of this project was to connect the theoretical concepts introduced by Jager et al. \cite{jager2018security} with practical application. This involved implementing and then assessing the computational burden that arises when using provably secure parameters in deterministic RSA signature schemes, particularly within the context of the PKCS standard.
 
 \subsection{How: Overview of Objectives}
-The influence of the application of provably secure parameters to each of the mentioned deterministic schemes in terms of computational cost was investigated. This was done through the production of algorithms respective to both cases (standard and provably secure parameters) allowing for comparison. Performing the investigation across standards was means of ascertaining a more reliable and accurate assessment by enabling further comparison of introduced overhead across different schemes. The final deliverable constituted an all-incorporative user-interfaced benchmarking program for which results from automation of signature processes applied to data were generated for appropriate evaluations and conclusions to be drawn.
+The project pursued a methodical approach to assess the computational impact of employing provably secure parameters in deterministic RSA signature schemes. This was achieved by developing algorithms respective to both cases (standard vs. provably secure parameters) allowing for comparison. The investigation spanned across various standards as means of enhancing the reliability and accuracy of the findings by comparing the computational overhead introduced in different schemes. The final deliverable constituted an all-incorporative user-interfaced benchmarking program for which results from the automation of signature processes, applied to data were generated, for appropriate evaluations and conclusions to be drawn.
 
 
 \section{Objectives}
@@ -358,7 +358,7 @@ Regrettably, textbook RSA signatures have security issues because the difficulty
 \end{equation}
 
 \end{figure}
-\textbf{Multiplicative attacks} leverage RSA’s inherent mathematical property outlined above. In these attacks, the product of two signatures can be manipulated to become a valid signature for the product of their respective messages. If \( \sigma_{1} \) and \( \sigma_{2} \) are respective signatures for \( m_{1} \) and \( m_{2} \), then \( \sigma_{1} \cdot \sigma_{2} \) is a valid signature for \( m_{1} \cdot m_{2} \). This allows forging by choosing messages to yield a desired product modulo \( N \) in the most the most severe form of attack.
+\textbf{Multiplicative attacks} leverage RSA’s inherent mathematical property outlined more generally above: the product of two signatures is a valid signature for the product of their respective messages. More sppecifically, if \( \sigma_{1} \) and \( \sigma_{2} \) are respective signatures for \( m_{1} \) and \( m_{2} \), then \( \sigma_{1} \cdot \sigma_{2} \) is a valid signature for \( m_{1} \cdot m_{2} \). This allows forging by choosing messages to yield a desired product modulo \( N \) in the most the most severe form of attack.
 
 \begin{comment}
 \textbf{A no message attack}. This attack constitutes a less severe type of forgery that can be performed relying solely on the public key with absence of the signer. By its approach, the adversary can randomly choose a signature \( \sigma \in \mathbb{Z}^*_{N} \) and compute the corresponding message as  \( m \equiv \sigma^{e} \bmod N \). By construction the attack does not enable the adversary direct control over m. However, this may be sufficient in some applications, e.g.,  signing random numbers when issuing some tokens. Additionally it can be possible to influence certain bits or characteristics of m by carefully choosing differing $\sigma$ values over multiple iterations. With a high probability it is then possible to obtain an m with bits set in some desired way.
@@ -398,17 +398,15 @@ Let GenRSA be as in the text. The Basic hashed RSA signature scheme.
 Digital Signature schemes can be divided according to two general classes:
 \begin{enumerate}
     \item[] \begin{basic} 
-\textit{Digital signature schemes with appendix}. Digital signature schemes that require the original message as input to the verification algorithm. Both the message and the signature are then transmitted to the verifier who applies the RSA public-key operation to the signature, and compares the result to the hash of the message.
+\textit{Digital signature schemes with appendix}. Digital signature schemes where the signature is appended to the message as a separate entity and subsequently both are required for verification. On receipt of the message and signature, the verifier uses the signer's public key to apply the relevant cryptographic operation to the signature, and compares the result to the hash of the message.
 \end{basic}
     \item[] \begin{basic}
-\textit{Digital signature schemes with message recovery}. Digital signature schemes of which additional data in the form of redundancy is utilised for verification of correctness. A priori knowledge of the message is not required for the verification algorithm. The signature only is transmitted to the verifier, who applies the RSA public-key operation to recover the padded message and thereafter the message. 
+\textit{Digital signature schemes with message recovery}. Digital signature schemes where a portion of the message (full or partial) is embedded within the signature itself and the verification algorithm only requires a message portion if the full message was unable to be embedded in the signature. In cases of the latter, the portion of the message not embedded is transmitted along with the signature. On receipt of the signature and potentially a message (if applicable), the verifier uses the signer's public key to apply the relevant cryptographic operation to the signature, to recover the padded message and thereafter the message.
 \end{basic}
 
 \end{enumerate}
 
-Digital signature schemes with appendix are the most commonly used in practice. They rely on cryptographic hash functions rather than customised redundancy functions, and are less prone to existential forgery attacks.
-
-
+Digital signature schemes with message recovery are useful in scenarios with limited bandwidth or storage capacity, as they reduce the overall data size that needs to be transmitted and stored– for example smart cards. However, In the vast majority of applications this is  unnecessary and signature schemes with appendix are typically the default choice.
 \section{RSASSA-PKCS1-v1.5}
 The PKCS\#1 signature scheme is one of the earliest standardised Hash-and-Sign signature schemes on record. The scheme was initially disclosed in version 1.5 \cite{rfc2313}, which is why it is typically known as PKCS1 v1.5.
 
@@ -1221,7 +1219,7 @@ Verification is the reverse, adapted accordingly. Given a signature s (verify(s)
 \item Verify the byte string using verifyMessage.
 \end{enumerate}
 
-We also note two further methods: 'encodeMessage', an algorithm to format data before performing a cryptographic signing operation on its integer representation, and 'verifyMessage', an algorithm that verifies the signature after a cryptographic verification operation has been performed on its integer representation. 
+This generalised flow presents two further methods: 'encodeMessage', an algorithm to format data before performing a cryptographic signing operation on its integer representation, and 'verifyMessage', an algorithm that verifies the signature after a cryptographic verification operation has been performed on its integer representation. 
  
 Building upon the SigSchemeInterface, the abstract class SigScheme is introduced as a concrete implementation of the Interface for implementing RSA-based signature schemes. This class provides standardised implementations of the interface's methods and 
 includes additional functionality specific to RSA operations. It encapsulates key components like the RSA modulus, exponent, and message digest, contributing to a modular and extensible design suitable for various RSA-based signature schemes.
@@ -1265,7 +1263,6 @@ We note that the implementation of RSAVP1 re-uses RSASP1. This design choice is 
 For octet string to integer conversion, the BigInteger(int signum, byte[] magnitude) constructor provides a concise application of the concept succinctly converting the byte array that represents an octet string. The signum is set to 1 (since messages are non-negative) and the byte array of the message acts as the magnitude. The end result is a BigInteger representation of the message, which can then be used in RSA signing or verification processes.
 
  
-The implementation of signing and verification processes essentially mirrors the pseudocode from the start of the section. 
 
 \begin{lstlisting}[caption=Signature Scheme specialisation methods]
   // Abstract method to be implemented by derived classes for encoding
