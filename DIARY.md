@@ -157,3 +157,17 @@ specifics from my implementation of the signature schemes.
 
 Next, I will organise everything in a manner appropriate for the final submission and clean up any
 remaining loose ends, ensuring that all elements of the project are polished.
+
+## Diary Entry - Week of 15th January - 21st January 2024
+
+This week was centered around preparing for the development of the more comprehensive Term 2
+benchmarking program. I started with a supervisor meeting, receiving positive feedback on my interim
+submission and noting that I could simplify the directory structure of my codebase, specific
+requirements for the benchmarking program. My focus then shifted to researching and conceptualising
+the implementation of MGF1 (Mask Generation Function 1) to meet the requirements in instantiating the
+signatures with provably secure parameters for a large hash output. I updated the requirements
+section of my report, redefining it for the more comprehensive benchmarking program and revising
+user stories to encompass its expanded functionality. The week culminated in drafting a new UML use
+case diagram and beginning to overhaul the design section to align with these new requirements.
+Looking ahead, I plan to update other design diagrams and start adapting the lower level
+implementation of the signature schemes for instantiation provably secure parameters.
