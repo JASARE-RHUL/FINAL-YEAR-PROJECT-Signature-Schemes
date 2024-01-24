@@ -39,8 +39,11 @@ public class MGF1 {
     int hLen = digest.getDigestLength();
     if (!(maskLen >= 0 && hLen <= Integer.MAX_VALUE && maskLen > 1)) {
       throw new IllegalArgumentException(
-          "maskLen cannot be smaller than " + hLen
-              + " or larger than the range for an integer");
+          "maskLen must be a valid positive integer");
+    }
+    if (mgfSeed == null) {
+      throw new IllegalArgumentException(
+          "Seed value cannot be null");
     }
 
     // 1. Let T be the empty octet string.

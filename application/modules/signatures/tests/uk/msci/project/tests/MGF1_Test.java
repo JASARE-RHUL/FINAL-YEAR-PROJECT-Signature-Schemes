@@ -94,7 +94,6 @@ public class MGF1_Test {
   }
 
 
-
   @Test
   void testLargeCounterValues() throws NoSuchAlgorithmException {
     MessageDigest md = MessageDigest.getInstance("SHA-256");
@@ -119,5 +118,12 @@ public class MGF1_Test {
         "Mask should be of the specified length for multiple iterations.");
   }
 
+  @Test
+  void testGenerateMaskWithNullSeed() {
+    int maskLen = 20;
+    Exception exception = Assertions.assertThrows(IllegalArgumentException.class, () -> {
+      mgf1.generateMask(null, maskLen);
+    });
+  }
 
 }
