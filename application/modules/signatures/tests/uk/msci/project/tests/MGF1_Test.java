@@ -84,6 +84,16 @@ public class MGF1_Test {
         "Different parts of the mask should be different, indicating a changing counter.");
   }
 
+  @Test
+  void testGenerateMaskWithNegativeLength() {
+    byte[] seed = new byte[]{1, 2, 3};
+    int maskLen = -10;
+    Exception exception = Assertions.assertThrows(IllegalArgumentException.class, () -> {
+      mgf1.generateMask(seed, maskLen);
+    });
+  }
+
+
 
   @Test
   void testLargeCounterValues() throws NoSuchAlgorithmException {

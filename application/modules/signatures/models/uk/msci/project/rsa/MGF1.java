@@ -34,21 +34,40 @@ public class MGF1 {
    * @param maskLen The desired length of the mask in bytes.
    * @return A byte array containing the generated mask.
    */
-
   public byte[] generateMask(byte[] mgfSeed, int maskLen) {
+
+    int hLen = digest.getDigestLength();
+    if (!(maskLen >= 0 && hLen <= Integer.MAX_VALUE && maskLen > 1)) {
+      throw new IllegalArgumentException(
+          "maskLen cannot be smaller than " + hLen
+              + " or larger than the range for an integer");
+    }
+
+    // 1. Let T be the empty octet string.
     byte[] mask = new byte[0];
-    for (int counter = 0; mask.length < maskLen; counter++) {
-      digest.update(mgfSeed);
-      digest.update(new byte[]{ // Simple counter logic
+    // 2.  For counter from 0 to \ceil (maskLen / hLen) - 1
+    for (int counter = 0; counter < (int) Math.ceil((double) maskLen / hLen); counter++) {
+      // a. Convert counter to an octet string C of length 4 octets
+      byte[] C = new byte[]{
           (byte) (counter >>> 24),
           (byte) (counter >>> 16),
           (byte) (counter >>> 8),
           (byte) (counter)
-      });
+      };
+
+      // b. Concatenate the hash of the seed mgfSeed and C to the octet string T
+      digest.reset(); // Clear the digest
+      // Update the digest with the seed and counter bytes
+      digest.update(mgfSeed);
+      digest.update(C);
       byte[] hash = digest.digest();
+
+      // Concatenate the hash to the current mask
       mask = Arrays.copyOf(mask, mask.length + hash.length);
       System.arraycopy(hash, 0, mask, mask.length - hash.length, hash.length);
     }
+    // 3. Output the leading maskLen octets of T as the octet string mask.
     return Arrays.copyOf(mask, maskLen);
   }
+
 }
