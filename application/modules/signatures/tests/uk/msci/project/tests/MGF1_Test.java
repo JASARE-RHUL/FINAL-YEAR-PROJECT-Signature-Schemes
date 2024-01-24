@@ -69,5 +69,45 @@ public class MGF1_Test {
         "Mask length should be correct with zero-length seed.");
   }
 
+  @Test
+  void testCounterAffectsOutput() throws NoSuchAlgorithmException {
+    MessageDigest md = MessageDigest.getInstance("SHA-256");
+    MGF1 mgf1 = new MGF1(md);
+    byte[] seed = new byte[]{1, 2, 3};
+    int maskLen = 2 * md.getDigestLength(); // Length requiring multiple iterations
+
+    byte[] mask = mgf1.generateMask(seed, maskLen);
+    byte[] firstHash = Arrays.copyOfRange(mask, 0, md.getDigestLength());
+    byte[] secondHash = Arrays.copyOfRange(mask, md.getDigestLength(), 2 * md.getDigestLength());
+
+    assertFalse(Arrays.equals(firstHash, secondHash),
+        "Different parts of the mask should be different, indicating a changing counter.");
+  }
+
+
+  @Test
+  void testLargeCounterValues() throws NoSuchAlgorithmException {
+    MessageDigest md = MessageDigest.getInstance("SHA-256");
+    MGF1 mgf1 = new MGF1(md);
+    byte[] seed = new byte[]{1, 2, 3};
+    int maskLen = 1000; // Length that will require a large counter value
+
+    byte[] mask = mgf1.generateMask(seed, maskLen);
+    Assertions.assertEquals(maskLen, mask.length,
+        "Mask length should be correct with large counter values.");
+  }
+
+  @Test
+  void testMultipleIterationMaskLength() throws NoSuchAlgorithmException {
+    MessageDigest md = MessageDigest.getInstance("SHA-256");
+    MGF1 mgf1 = new MGF1(md);
+    byte[] seed = new byte[]{1, 2, 3};
+    int maskLen = 3 * md.getDigestLength(); // Length requiring multiple iterations
+
+    byte[] mask = mgf1.generateMask(seed, maskLen);
+    Assertions.assertEquals(maskLen, mask.length,
+        "Mask should be of the specified length for multiple iterations.");
+  }
+
 
 }

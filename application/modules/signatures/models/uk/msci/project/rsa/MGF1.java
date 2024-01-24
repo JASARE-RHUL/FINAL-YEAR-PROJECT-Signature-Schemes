@@ -34,17 +34,21 @@ public class MGF1 {
    * @param maskLen The desired length of the mask in bytes.
    * @return A byte array containing the generated mask.
    */
-  // Implement the hashing logic with a simple concatenation
+
   public byte[] generateMask(byte[] mgfSeed, int maskLen) {
     byte[] mask = new byte[0];
-    for (int i = 0; i < maskLen; i += digest.getDigestLength()) {
+    for (int counter = 0; mask.length < maskLen; counter++) {
       digest.update(mgfSeed);
+      digest.update(new byte[]{ // Simple counter logic
+          (byte) (counter >>> 24),
+          (byte) (counter >>> 16),
+          (byte) (counter >>> 8),
+          (byte) (counter)
+      });
       byte[] hash = digest.digest();
       mask = Arrays.copyOf(mask, mask.length + hash.length);
       System.arraycopy(hash, 0, mask, mask.length - hash.length, hash.length);
     }
     return Arrays.copyOf(mask, maskLen);
   }
-
-
 }
