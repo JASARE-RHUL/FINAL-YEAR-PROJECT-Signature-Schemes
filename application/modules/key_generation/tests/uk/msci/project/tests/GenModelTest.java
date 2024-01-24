@@ -52,7 +52,7 @@ public class GenModelTest {
     int k = 2;
     int[] lambda = {512, 512};
     genModel.setKeyParameters(k, lambda);
-    genModel.setGen();
+    genModel.setGen(false);
 
     Field currentGen = GenModel.class.getDeclaredField("currentGen");
     currentGen.setAccessible(true);
@@ -77,7 +77,7 @@ public class GenModelTest {
     int k = 3;
     int[] lambda = {1024, 1024, 1024};
     genModel.setKeyParameters(k, lambda);
-    genModel.setGen();
+    genModel.setGen(false);
     genModel.generateKey();
     Field generatedKeyPair = GenModel.class.getDeclaredField("k");
     generatedKeyPair.setAccessible(true);

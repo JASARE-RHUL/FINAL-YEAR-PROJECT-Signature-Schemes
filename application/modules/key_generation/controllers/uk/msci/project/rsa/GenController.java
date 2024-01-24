@@ -99,7 +99,7 @@ public class GenController {
         }
         genModel.setKeyParameters(k, intArray);
         try {
-          genModel.setGen();
+          genModel.setGen(false);
         } catch (IllegalArgumentException e) {
           genView.setFailureLabel(
               "Failure. Please ensure you have entered at least two bit sizes and that the sum of your "

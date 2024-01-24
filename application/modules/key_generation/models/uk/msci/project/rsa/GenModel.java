@@ -50,12 +50,21 @@ public class GenModel {
     this.lambda = lambda;
   }
 
+
   /**
-   * Initialises the state i.e., the current Generation process to be tracked.
+   * Initialises the state of the RSA key generation process. This method sets up the current
+   * generation process with the specified parameters for the number of primes and their bit
+   * lengths. It also allows for the option to use a smaller exponent 'e' in the RSA key
+   * generation.
+   *
+   * @param isSmallE A boolean flag indicating whether a smaller 'e' should be used in the
+   *                 generation process. If true, a smaller 'e' is used. If false, a standard size
+   *                 'e' is used.
    */
-  public void setGen() {
-    this.currentGen = new GenRSA(k, lambda);
+  public void setGen(boolean isSmallE) {
+    this.currentGen = isSmallE ? new GenRSA(k, lambda, true) : new GenRSA(k, lambda);
   }
+
 
   /**
    * Generates an RSA key with using the currently tracked generation process.
