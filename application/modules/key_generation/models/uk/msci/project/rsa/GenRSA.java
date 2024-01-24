@@ -8,8 +8,11 @@ import java.security.SecureRandom;
 /**
  * The GenRSA class is responsible for generating RSA key pairs. It allows for the creation of keys
  * with a modulus derived from multiple distinct prime numbers, offering flexibility in terms of the
- * number and size of these primes.
+ * number and size of these primes. This class also provides the capability to use a smaller
+ * exponent 'e', which can be beneficial in certain cryptographic applications for efficiency or the
+ * applicability of certain proofs.
  */
+
 public class GenRSA {
 
   /**
@@ -23,7 +26,7 @@ public class GenRSA {
   private static final int MINKEYSIZE = 1024;
 
   /**
-   * The size of the key to be generated.
+   * The total key size in bits, derived from the sum of bit lengths of the distinct prime numbers.
    */
   private int keySize;
 
@@ -34,25 +37,64 @@ public class GenRSA {
   private int certainty = 75;
 
   /**
-   * The number of distinct prime numbers used to generate the RSA modulus.
+   * The number of distinct prime numbers used in generating the RSA modulus.
    */
   private int k;
 
   /**
-   * An array holding the bit lengths for each of the distinct prime numbers.
+   * An array holding the bit lengths for each of the distinct prime numbers. The sum of these bit
+   * lengths contributes to the total key size.
    */
   private int[] lambda;
 
   /**
-   * Constructs a GenRSA object that can generate RSA keys with a modulus derived from k distinct
-   * primes with specified bit lengths.
+   * The bit length of the exponent 'e' used in RSA key generation. It can be a 1/4 of the key size
+   * depending on whether a small 'e' is desired.
+   */
+  private int eBitLength;
+
+
+  /**
+   * Constructs a GenRSA object capable of generating RSA keys. The modulus is derived from 'k'
+   * distinct prime numbers, each with a specified bit length given in the 'lambda' array.
    *
    * @param k      The number of distinct primes to be generated.
    * @param lambda An array of integers representing the bit lengths of each prime number.
-   * @throws IllegalArgumentException If the lambda array does not have k elements or if the sum of
-   *                                  bit lengths does not meet the key size requirements.
+   * @throws IllegalArgumentException If the lambda array does not have 'k' elements or if the sum
+   *                                  of the bit lengths does not meet the key size requirements.
    */
   public GenRSA(int k, int[] lambda) throws IllegalArgumentException {
+    initialise(k, lambda);
+    eBitLength = keySize;
+  }
+
+  /**
+   * Constructs a GenRSA object with an option to specify a smaller bit length for 'e' (i.e., 1/4 of
+   * modulus bit length). This constructor allows for the generation of RSA keys with a modulus
+   * derived from 'k' distinct primes, each having specified bit lengths, and with a smaller 'e' for
+   * specific applications.
+   *
+   * @param k        The number of distinct primes to be generated.
+   * @param lambda   An array of integers representing the bit lengths of each prime number.
+   * @param isSmallE Flag to indicate whether a smaller 'e' should be used.
+   * @throws IllegalArgumentException If the lambda array does not have 'k' elements or if the sum
+   *                                  of the bit lengths does not meet the key size requirements.
+   */
+  public GenRSA(int k, int[] lambda, boolean isSmallE) throws IllegalArgumentException {
+    initialise(k, lambda);
+    eBitLength = isSmallE ? keySize / 4 : keySize;
+  }
+
+  /**
+   * Initialises the GenRSA object, setting its parameters based on the provided number of primes
+   * 'k' and their respective bit lengths 'lambda'.
+   *
+   * @param k      The number of distinct primes to be used.
+   * @param lambda An array containing the bit lengths of each prime.
+   * @throws IllegalArgumentException If the lambda array does not have 'k' elements, or if the
+   *                                  computed key size is not within the acceptable range.
+   */
+  public void initialise(int k, int[] lambda) throws IllegalArgumentException {
     if (lambda.length != k) {
       throw new IllegalArgumentException("Lambda array must have k elements.");
     }
@@ -73,7 +115,7 @@ public class GenRSA {
   /**
    * Generates an array of k distinct prime numbers based on the provided bit lengths.
    *
-   * @return An array of BigInteger representing the distinct prime numbers.
+   * @return An array of BigInteger, each representing a distinct prime number.
    */
   public BigInteger[] generatePrimeComponents() {
     BigInteger[] components = new BigInteger[k];
@@ -105,9 +147,9 @@ public class GenRSA {
    * @return The public exponent {@code e}.
    */
   public BigInteger computeE(BigInteger phi) {
-    BigInteger e = new BigInteger(phi.bitLength(), new SecureRandom());
+    BigInteger e = new BigInteger(eBitLength, new SecureRandom());
     while (e.compareTo(ONE) <= 0 || !phi.gcd(e).equals(ONE) || e.compareTo(phi) >= 0) {
-      e = new BigInteger(phi.bitLength(), new SecureRandom());
+      e = new BigInteger(eBitLength, new SecureRandom());
     }
     return e;
   }
