@@ -43,7 +43,7 @@ public abstract class SigScheme implements SigSchemeInterface {
   /**
    * The RSA key containing the exponent and modulus.
    */
-  final Key key;
+  Key key;
 
   /**
    * The MessageDigest instance used for hashing.
@@ -68,15 +68,50 @@ public abstract class SigScheme implements SigSchemeInterface {
    * scheme
    */
   byte[] recoverableM;
+  /**
+   * Flag to indicate whether the signature scheme should use provably secure parameters. When set
+   * to true, the scheme uses a mask generation function (MGF1) with the hash algorithm to generate
+   * a large hash output
+   */
+  boolean isProvablySecureParams;
 
   /**
-   * Constructs a Signature scheme instance with the specified RSA key. Initialises the modulus and
-   * exponent from the key, calculates the encoded message length, and sets up the SHA-256 message
-   * digest along with a predefined hash ID.
+   * Constructs a Signature scheme instance with the specified RSA key. This constructor initialises
+   * the RSA key components (modulus and exponent), calculates the encoded message length, and sets
+   * up the SHA-256 message digest as the default hashing algorithm.
    *
-   * @param key The RSA key containing the exponent and modulus.
+   * @param key The RSA key containing the exponent and modulus. This key is used for signature
+   *            operations within the scheme.
    */
   public SigScheme(Key key) {
+    initialise(key);
+  }
+
+  /**
+   * Constructs a Signature scheme instance with the specified RSA key and a flag indicating whether
+   * provably secure parameters are to be used. This constructor initialises the RSA key components,
+   * calculates the encoded message length, sets up the SHA-256 message digest, and sets the flag
+   * for using provably secure parameters.
+   *
+   * @param key                    The RSA key containing the exponent and modulus. This key is used
+   *                               for signature operations within the scheme.
+   * @param isProvablySecureParams A boolean flag indicating if provably secure parameters should be
+   *                               used in the signature scheme.
+   */
+  public SigScheme(Key key, boolean isProvablySecureParams) {
+    initialise(key);
+    this.isProvablySecureParams = isProvablySecureParams;
+  }
+
+  /**
+   * Initialises the signature scheme with the given RSA key. This method sets the RSA key
+   * components (modulus and exponent), calculates the encoded message length (emLen), and attempts
+   * to set up the SHA-256 message digest as the default hashing algorithm.
+   *
+   * @param key The RSA key to be used in the signature scheme.
+   * @throws RuntimeException If the SHA-256 hashing algorithm is not available in the environment.
+   */
+  public void initialise(Key key) {
     this.key = key;
     this.exponent = this.key.getExponent();
     this.modulus = this.key.getModulus();
@@ -92,12 +127,6 @@ public abstract class SigScheme implements SigSchemeInterface {
       // be thrown if the algorithm isn't available.
       throw new RuntimeException("SHA-256 algorithm not available", e);
     }
-
-  }
-
-
-  public void setDigest(byte[] M, byte[] S) throws DataFormatException {
-
   }
 
 
