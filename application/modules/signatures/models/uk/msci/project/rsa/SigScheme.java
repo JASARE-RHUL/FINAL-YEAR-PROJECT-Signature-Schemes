@@ -4,7 +4,10 @@ import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.zip.DataFormatException;
+import uk.msci.project.rsa.exceptions.InvalidDigestException;
 
 /**
  * This abstract class provides a specialised framework for implementing a signature scheme using
@@ -52,6 +55,8 @@ public abstract class SigScheme implements SigSchemeInterface {
    */
   byte[] hashID;
 
+  Map<DigestType, byte[]> hashIDmap = new HashMap<DigestType, byte[]>();
+
   /**
    * Non-recoverable portion of message as applicable to the signing process of a message recovery
    * scheme
@@ -82,15 +87,16 @@ public abstract class SigScheme implements SigSchemeInterface {
     emLen--;
     try {
       this.md = MessageDigest.getInstance("SHA-256");
-      this.hashID = new byte[]{(byte) 0x30, (byte) 0x31, (byte) 0x30, (byte) 0x0d, (byte) 0x06,
-          (byte) 0x09, (byte) 0x60, (byte) 0x86, (byte) 0x48, (byte) 0x01,
-          (byte) 0x65, (byte) 0x03, (byte) 0x04, (byte) 0x02, (byte) 0x01,
-          (byte) 0x05, (byte) 0x00, (byte) 0x04, (byte) 0x20};
     } catch (NoSuchAlgorithmException e) {
       // NoSuchAlgorithmException is a checked exception, RuntimeException allows an exception to
       // be thrown if the algorithm isn't available.
       throw new RuntimeException("SHA-256 algorithm not available", e);
     }
+
+  }
+
+
+  public void setDigest(byte[] M, byte[] S) throws DataFormatException {
 
   }
 
@@ -229,6 +235,22 @@ public abstract class SigScheme implements SigSchemeInterface {
    */
   public byte[] getRecoverableM() {
     return recoverableM;
+  }
+
+  /**
+   * Sets the message digest for this instance according to the specified DigestType. This method
+   * uses the DigestFactory to obtain an instance of MessageDigest corresponding to the given type.
+   * It also updates the hashID to match the chosen digest type.
+   *
+   * @param digestType The type of the digest to be used for generating or verifying signatures.
+   * @throws NoSuchAlgorithmException If the algorithm for the requested digest type is not
+   *                                  available.
+   * @throws InvalidDigestException   If the specified digest type is not supported or invalid.
+   */
+  public void setDigest(DigestType digestType)
+      throws NoSuchAlgorithmException, InvalidDigestException {
+    this.md = DigestFactory.getMessageDigest(digestType);
+    this.hashID = hashIDmap.get(digestType);
   }
 
 

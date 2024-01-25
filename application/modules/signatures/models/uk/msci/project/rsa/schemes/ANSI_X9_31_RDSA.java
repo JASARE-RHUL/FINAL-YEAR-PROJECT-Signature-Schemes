@@ -1,7 +1,11 @@
 package uk.msci.project.rsa;
 
+import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.zip.DataFormatException;
+import uk.msci.project.rsa.exceptions.InvalidDigestException;
 
 /**
  * This class implements the ANSI X9.31 RDSA signature scheme using RSA keys. It provides
@@ -19,9 +23,13 @@ public class ANSI_X9_31_RDSA extends SigScheme {
    */
   public ANSI_X9_31_RDSA(Key key) {
     super(key);
-    // hash ID for SHA-256 according the ANSI Specification
+    // hash IDs for supported hash functions according to the ANSI Specification
     this.hashID = new byte[]{(byte) 0x34, (byte) 0xCC};
+    hashIDmap.put(DigestType.SHA_256, this.hashID);
+    hashIDmap.put(DigestType.SHA_512, new byte[]{(byte) 0x35, (byte) 0xCC});
   }
+
+
 
 
   /**

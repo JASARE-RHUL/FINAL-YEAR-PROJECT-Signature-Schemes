@@ -1,8 +1,12 @@
 package uk.msci.project.rsa;
 
 import java.math.BigInteger;
+import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.zip.DataFormatException;
+import uk.msci.project.rsa.exceptions.InvalidDigestException;
 
 /**
  * This class implements the RSASSA-PKCS1-v1_5 signature scheme using RSA keys. It provides
@@ -10,6 +14,7 @@ import java.util.zip.DataFormatException;
  * v1.5 specification.
  */
 public class RSASSA_PKCS1_v1_5 extends SigScheme {
+
 
   /**
    * Constructs an RSASSA_PKCS1_v1_5 instance with the specified RSA key. Initialises the modulus
@@ -20,7 +25,20 @@ public class RSASSA_PKCS1_v1_5 extends SigScheme {
    */
   public RSASSA_PKCS1_v1_5(Key key) {
     super(key);
+    // hash IDs for supported hash functions according to the PKCS Specification
+    this.hashID = new byte[]{(byte) 0x30, (byte) 0x31, (byte) 0x30, (byte) 0x0d, (byte) 0x06,
+        (byte) 0x09, (byte) 0x60, (byte) 0x86, (byte) 0x48, (byte) 0x01,
+        (byte) 0x65, (byte) 0x03, (byte) 0x04, (byte) 0x02, (byte) 0x01,
+        (byte) 0x05, (byte) 0x00, (byte) 0x04, (byte) 0x20};
+    hashIDmap.put(DigestType.SHA_256, this.hashID);
+    hashIDmap.put(DigestType.SHA_512, new byte[]{
+        (byte) 0x30, (byte) 0x51, (byte) 0x30, (byte) 0x0D,
+        (byte) 0x06, (byte) 0x09, (byte) 0x60, (byte) 0x86,
+        (byte) 0x48, (byte) 0x01, (byte) 0x65, (byte) 0x03,
+        (byte) 0x04, (byte) 0x02, (byte) 0x03, (byte) 0x05,
+        (byte) 0x00, (byte) 0x04, (byte) 0x40});
   }
+
 
 
   /**
