@@ -5,34 +5,45 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Arrays;
+import java.util.stream.Stream;
 import java.util.zip.DataFormatException;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import uk.msci.project.rsa.ANSI_X9_31_RDSA;
 import uk.msci.project.rsa.GenRSA;
 import uk.msci.project.rsa.Key;
 import uk.msci.project.rsa.KeyPair;
+import uk.msci.project.rsa.SigScheme;
 
 public class ANSI_X9_31_RDSA_TEST {
 
   private ANSI_X9_31_RDSA scheme;
 
-  @BeforeEach
-  // Before each test is run, clear any created key files.
-  public void setup() {
-    scheme = new ANSI_X9_31_RDSA(
-        new GenRSA(2, new int[]{512, 512}).generateKeyPair().getPrivateKey());
+  private static Stream<Object[]> provableOrStandardParameters() {
+    return Stream.of(
+        // standard parameters
+        new Object[]{new GenRSA(2, new int[]{512, 512}).generateKeyPair().getPrivateKey(), null},
+        // provably secure parameters
+        new Object[]{new GenRSA(2, new int[]{512, 512}).generateKeyPair().getPrivateKey(), true}
+    );
   }
 
-  @Test
-  void testANSI_X9_31_RDSA_initialBytePadding()
+  @ParameterizedTest
+  @MethodSource("provableOrStandardParameters")
+  void testANSI_X9_31_RDSA_initialBytePadding(Key key, Boolean isProvablySecureParams)
       throws DataFormatException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+    if (isProvablySecureParams == null) {
+      scheme = new ANSI_X9_31_RDSA(key);
+    } else {
+      scheme = new ANSI_X9_31_RDSA(key, isProvablySecureParams);
+    }
     byte[] message = "test message 1".getBytes();
     Method encodeMethod = ANSI_X9_31_RDSA.class.getDeclaredMethod("encodeMessage",
         byte[].class);
@@ -43,9 +54,15 @@ public class ANSI_X9_31_RDSA_TEST {
 
   }
 
-  @Test
-  void testANSI_X9_31_RDSA_finalBytePadding()
-      throws DataFormatException, NoSuchMethodException, InvocationTargetException, IllegalAccessException, NoSuchAlgorithmException {
+
+  @ParameterizedTest
+  @MethodSource("provableOrStandardParameters") void testANSI_X9_31_RDSA_finalBytePadding(Key key, Boolean isProvablySecureParams)
+      throws DataFormatException, NoSuchMethodException, InvocationTargetException, IllegalAccessException, NoSuchAlgorithmException, NoSuchFieldException {
+    if (isProvablySecureParams == null) {
+      scheme = new ANSI_X9_31_RDSA(key);
+    } else {
+      scheme = new ANSI_X9_31_RDSA(key, isProvablySecureParams);
+    }
     byte[] message = "test message 1".getBytes();
     Method encodeMethod = ANSI_X9_31_RDSA.class.getDeclaredMethod("encodeMessage",
         byte[].class);
@@ -58,13 +75,25 @@ public class ANSI_X9_31_RDSA_TEST {
 
     assertEquals((byte) 0xBA, encodedMessage[encodedMessage.length - tLen - 1],
         "The final byte of the encoded message should be 0xBA");
+    if (isProvablySecureParams != null) {
+      Field emLen = SigScheme.class.getDeclaredField("emLen");
+      emLen.setAccessible(true);
+      int emLenVal = (int) emLen.get(scheme);
+      assertEquals((emLenVal + 1) / 2, tLen);
+    }
 
   }
 
 
-  @Test
-  void testencodeMessage_PaddingString()
-      throws DataFormatException, NoSuchAlgorithmException, InvocationTargetException, IllegalAccessException, NoSuchMethodException {
+  @ParameterizedTest
+  @MethodSource("provableOrStandardParameters")
+  void testEncodeMessage_PaddingString(Key key, Boolean isProvablySecureParams)
+      throws DataFormatException, NoSuchAlgorithmException, InvocationTargetException, IllegalAccessException, NoSuchMethodException, NoSuchFieldException {
+    if (isProvablySecureParams == null) {
+      scheme = new ANSI_X9_31_RDSA(key);
+    } else {
+      scheme = new ANSI_X9_31_RDSA(key, isProvablySecureParams);
+    }
     byte[] message = "test message 7".getBytes();
     Method encodeMethod = ANSI_X9_31_RDSA.class.getDeclaredMethod("encodeMessage",
         byte[].class);
@@ -79,12 +108,24 @@ public class ANSI_X9_31_RDSA_TEST {
       assertEquals((byte) 0xBB, encodedMessage[i],
           "Padding byte at index " + i + " should be 0xBB");
     }
+    if (isProvablySecureParams != null) {
+      Field emLen = SigScheme.class.getDeclaredField("emLen");
+      emLen.setAccessible(true);
+      int emLenVal = (int) emLen.get(scheme);
+      assertEquals((emLenVal + 1) / 2, tLen);
+    }
   }
 
 
-  @Test
-  public void testencodeMessage_MessagePlacement()
-      throws DataFormatException, NoSuchAlgorithmException, InvocationTargetException, IllegalAccessException, NoSuchMethodException {
+  @ParameterizedTest
+  @MethodSource("provableOrStandardParameters")
+  public void testEncodeMessage_MessagePlacement(Key key, Boolean isProvablySecureParams)
+      throws DataFormatException, NoSuchAlgorithmException, InvocationTargetException, IllegalAccessException, NoSuchMethodException, NoSuchFieldException {
+    if (isProvablySecureParams == null) {
+      scheme = new ANSI_X9_31_RDSA(key);
+    } else {
+      scheme = new ANSI_X9_31_RDSA(key, isProvablySecureParams);
+    }
     byte[] message = "test message 9".getBytes();
     Method encodeMethod = ANSI_X9_31_RDSA.class.getDeclaredMethod("encodeMessage",
         byte[].class);
@@ -99,11 +140,23 @@ public class ANSI_X9_31_RDSA_TEST {
 
     assertArrayEquals(digestInfo, messageInEM,
         "The message should be correctly placed at the end of the encoded message");
+    if (isProvablySecureParams != null) {
+      Field emLen = SigScheme.class.getDeclaredField("emLen");
+      emLen.setAccessible(true);
+      int emLenVal = (int) emLen.get(scheme);
+      assertEquals((emLenVal + 1) / 2, tLen);
+    }
   }
 
-  @Test
-  public void testencodeMessage_HashIncorporation()
-      throws DataFormatException, NoSuchAlgorithmException, InvocationTargetException, IllegalAccessException, NoSuchMethodException {
+  @ParameterizedTest
+  @MethodSource("provableOrStandardParameters")
+  public void testEncodeMessage_HashIncorporation(Key key, Boolean isProvablySecureParams)
+      throws DataFormatException, NoSuchAlgorithmException, InvocationTargetException, IllegalAccessException, NoSuchMethodException, NoSuchFieldException {
+    if (isProvablySecureParams == null) {
+      scheme = new ANSI_X9_31_RDSA(key);
+    } else {
+      scheme = new ANSI_X9_31_RDSA(key, isProvablySecureParams);
+    }
     byte[] message = "Test message 10".getBytes();
     MessageDigest md = MessageDigest.getInstance("SHA-256");
 
@@ -121,15 +174,31 @@ public class ANSI_X9_31_RDSA_TEST {
 
     assertArrayEquals(digestInfo, hashFromEncodedMessage,
         "The hash in the encoded message should match the actual message hash");
+    if (isProvablySecureParams != null) {
+      Field emLen = SigScheme.class.getDeclaredField("emLen");
+      emLen.setAccessible(true);
+      int emLenVal = (int) emLen.get(scheme);
+      assertEquals((emLenVal + 1) / 2, tLen);
+    }
   }
 
 
-  @Test
-  void testSignAndVerifyRoundTrip() throws Exception {
+  @ParameterizedTest
+  @MethodSource("provableOrStandardParameters")
+  void testSignAndVerifyRoundTrip(Key key, Boolean isProvablySecureParams) throws Exception {
     for (int i = 0; i < 100; i++) {
       KeyPair keyPair = new GenRSA(2, new int[]{512, 512}).generateKeyPair();
-      ANSI_X9_31_RDSA schemeForSigning = new ANSI_X9_31_RDSA(keyPair.getPrivateKey());
-      ANSI_X9_31_RDSA schemeForVerifying = new ANSI_X9_31_RDSA(keyPair.getPublicKey());
+      ANSI_X9_31_RDSA schemeForSigning;
+      ANSI_X9_31_RDSA schemeForVerifying;
+      if (isProvablySecureParams == null) {
+        schemeForSigning = new ANSI_X9_31_RDSA(keyPair.getPrivateKey());
+        schemeForVerifying = new ANSI_X9_31_RDSA(keyPair.getPublicKey());
+      } else {
+        schemeForSigning = new ANSI_X9_31_RDSA(keyPair.getPrivateKey(),
+            isProvablySecureParams);
+        schemeForVerifying = new ANSI_X9_31_RDSA(keyPair.getPublicKey(),
+            isProvablySecureParams);
+      }
       // Prepare a message
       byte[] message = "test message".getBytes();
 
@@ -155,11 +224,18 @@ public class ANSI_X9_31_RDSA_TEST {
     }
   }
 
-  @Test
+  @ParameterizedTest
+  @MethodSource("provableOrStandardParameters")
     // Test that verify correctly identifies an invalid signature.
-  void testVerificationFailsForInvalidSignature() throws Exception {
+  void testVerificationFailsForInvalidSignature(Key key, Boolean isProvablySecureParams)
+      throws Exception {
     KeyPair keyPair = new GenRSA(2, new int[]{512, 512}).generateKeyPair();
-    ANSI_X9_31_RDSA schemeForVerifying = new ANSI_X9_31_RDSA(keyPair.getPublicKey());
+    ANSI_X9_31_RDSA schemeForVerifying;
+    if (isProvablySecureParams == null) {
+      schemeForVerifying = new ANSI_X9_31_RDSA(keyPair.getPublicKey());
+    } else {
+      schemeForVerifying = new ANSI_X9_31_RDSA(keyPair.getPublicKey(), true);
+    }
     // Prepare a message and a random invalid signature
     byte[] message = "test message".getBytes();
     byte[] invalidSignature = new byte[128]; // Assuming RSA 1024-bit key
@@ -175,12 +251,23 @@ public class ANSI_X9_31_RDSA_TEST {
     assertFalse(isSignatureValid, "The invalid signature should not be verified.");
   }
 
-  @Test
+  @ParameterizedTest
+  @MethodSource("provableOrStandardParameters")
     // Test that altering a message after it's been signed results in a verification failure.
-  void testVerificationFailsForAlteredMessage() throws Exception {
+  void testVerificationFailsForAlteredMessage(Key key, Boolean isProvablySecureParams)
+      throws Exception {
     KeyPair keyPair = new GenRSA(2, new int[]{512, 512}).generateKeyPair();
-    ANSI_X9_31_RDSA schemeForSigning = new ANSI_X9_31_RDSA(keyPair.getPrivateKey());
-    ANSI_X9_31_RDSA schemeForVerifying = new ANSI_X9_31_RDSA(keyPair.getPublicKey());
+    ANSI_X9_31_RDSA schemeForSigning;
+    ANSI_X9_31_RDSA schemeForVerifying;
+    if (isProvablySecureParams == null) {
+      schemeForSigning = new ANSI_X9_31_RDSA(keyPair.getPrivateKey());
+      schemeForVerifying = new ANSI_X9_31_RDSA(keyPair.getPublicKey());
+    } else {
+      schemeForSigning = new ANSI_X9_31_RDSA(keyPair.getPrivateKey(),
+          isProvablySecureParams);
+      schemeForVerifying = new ANSI_X9_31_RDSA(keyPair.getPublicKey(),
+          isProvablySecureParams);
+    }
     // Sign a message
     byte[] originalMessage = "test message".getBytes();
     Method signMethod = ANSI_X9_31_RDSA.class.getMethod("sign", byte[].class);
@@ -201,12 +288,23 @@ public class ANSI_X9_31_RDSA_TEST {
     assertFalse(isSignatureValid, "The signature should not be valid for an altered message.");
   }
 
-  @Test
+  @ParameterizedTest
+  @MethodSource("provableOrStandardParameters")
     // Test that altering a signature after it's been generated results in a verification failure.
-  void testVerificationFailsForAlteredSignature() throws Exception {
+  void testVerificationFailsForAlteredSignature(Key key, Boolean isProvablySecureParams)
+      throws Exception {
     KeyPair keyPair = new GenRSA(2, new int[]{512, 512}).generateKeyPair();
-    ANSI_X9_31_RDSA schemeForSigning = new ANSI_X9_31_RDSA(keyPair.getPrivateKey());
-    ANSI_X9_31_RDSA schemeForVerifying = new ANSI_X9_31_RDSA(keyPair.getPublicKey());
+    ANSI_X9_31_RDSA schemeForSigning;
+    ANSI_X9_31_RDSA schemeForVerifying;
+    if (isProvablySecureParams == null) {
+      schemeForSigning = new ANSI_X9_31_RDSA(keyPair.getPrivateKey());
+      schemeForVerifying = new ANSI_X9_31_RDSA(keyPair.getPublicKey());
+    } else {
+      schemeForSigning = new ANSI_X9_31_RDSA(keyPair.getPrivateKey(),
+          isProvablySecureParams);
+      schemeForVerifying = new ANSI_X9_31_RDSA(keyPair.getPublicKey(),
+          isProvablySecureParams);
+    }
     byte[] message = "test message".getBytes();
     Method signMethod = ANSI_X9_31_RDSA.class.getMethod("sign", byte[].class);
     signMethod.setAccessible(true);
@@ -226,12 +324,23 @@ public class ANSI_X9_31_RDSA_TEST {
     assertFalse(isSignatureValid, "The signature should not be valid for an altered signature.");
   }
 
-  @Test
+  @ParameterizedTest
+  @MethodSource("provableOrStandardParameters")
     // Test that signatures are only verified correctly with the matching public key, not with a different public key
-  void testVerificationWithCorrectAndIncorrectKeys() throws Exception {
+  void testVerificationWithCorrectAndIncorrectKeys(Key key, Boolean isProvablySecureParams)
+      throws Exception {
     KeyPair keyPair = new GenRSA(2, new int[]{512, 512}).generateKeyPair();
-    ANSI_X9_31_RDSA schemeForSigning1 = new ANSI_X9_31_RDSA(keyPair.getPrivateKey());
-    ANSI_X9_31_RDSA schemeForVerifying1 = new ANSI_X9_31_RDSA(keyPair.getPublicKey());
+    ANSI_X9_31_RDSA schemeForSigning1;
+    ANSI_X9_31_RDSA schemeForVerifying1;
+    if (isProvablySecureParams == null) {
+      schemeForSigning1 = new ANSI_X9_31_RDSA(keyPair.getPrivateKey());
+      schemeForVerifying1 = new ANSI_X9_31_RDSA(keyPair.getPublicKey());
+    } else {
+      schemeForSigning1 = new ANSI_X9_31_RDSA(keyPair.getPrivateKey(),
+          isProvablySecureParams);
+      schemeForVerifying1 = new ANSI_X9_31_RDSA(keyPair.getPublicKey(),
+          isProvablySecureParams);
+    }
     // Sign a message
     byte[] message = "test message".getBytes();
     Method signMethod = ANSI_X9_31_RDSA.class.getMethod("sign", byte[].class);
