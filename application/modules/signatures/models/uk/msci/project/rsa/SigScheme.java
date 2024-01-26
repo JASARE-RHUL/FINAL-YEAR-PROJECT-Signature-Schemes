@@ -4,7 +4,10 @@ import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.zip.DataFormatException;
+import uk.msci.project.rsa.exceptions.InvalidDigestException;
 
 /**
  * This abstract class provides a specialised framework for implementing a signature scheme using
@@ -40,7 +43,7 @@ public abstract class SigScheme implements SigSchemeInterface {
   /**
    * The RSA key containing the exponent and modulus.
    */
-  final Key key;
+  Key key;
 
   /**
    * The MessageDigest instance used for hashing.
@@ -51,6 +54,8 @@ public abstract class SigScheme implements SigSchemeInterface {
    * The identifier of the hash algorithm used.
    */
   byte[] hashID;
+
+  Map<DigestType, byte[]> hashIDmap = new HashMap<DigestType, byte[]>();
 
   /**
    * Non-recoverable portion of message as applicable to the signing process of a message recovery
@@ -63,15 +68,50 @@ public abstract class SigScheme implements SigSchemeInterface {
    * scheme
    */
   byte[] recoverableM;
+  /**
+   * Flag to indicate whether the signature scheme should use provably secure parameters. When set
+   * to true, the scheme uses a mask generation function (MGF1) with the hash algorithm to generate
+   * a large hash output
+   */
+  boolean isProvablySecureParams;
 
   /**
-   * Constructs a Signature scheme instance with the specified RSA key. Initialises the modulus and
-   * exponent from the key, calculates the encoded message length, and sets up the SHA-256 message
-   * digest along with a predefined hash ID.
+   * Constructs a Signature scheme instance with the specified RSA key. This constructor initialises
+   * the RSA key components (modulus and exponent), calculates the encoded message length, and sets
+   * up the SHA-256 message digest as the default hashing algorithm.
    *
-   * @param key The RSA key containing the exponent and modulus.
+   * @param key The RSA key containing the exponent and modulus. This key is used for signature
+   *            operations within the scheme.
    */
   public SigScheme(Key key) {
+    initialise(key);
+  }
+
+  /**
+   * Constructs a Signature scheme instance with the specified RSA key and a flag indicating whether
+   * provably secure parameters are to be used. This constructor initialises the RSA key components,
+   * calculates the encoded message length, sets up the SHA-256 message digest, and sets the flag
+   * for using provably secure parameters.
+   *
+   * @param key                    The RSA key containing the exponent and modulus. This key is used
+   *                               for signature operations within the scheme.
+   * @param isProvablySecureParams A boolean flag indicating if provably secure parameters should be
+   *                               used in the signature scheme.
+   */
+  public SigScheme(Key key, boolean isProvablySecureParams) {
+    initialise(key);
+    this.isProvablySecureParams = isProvablySecureParams;
+  }
+
+  /**
+   * Initialises the signature scheme with the given RSA key. This method sets the RSA key
+   * components (modulus and exponent), calculates the encoded message length (emLen), and attempts
+   * to set up the SHA-256 message digest as the default hashing algorithm.
+   *
+   * @param key The RSA key to be used in the signature scheme.
+   * @throws RuntimeException If the SHA-256 hashing algorithm is not available in the environment.
+   */
+  public void initialise(Key key) {
     this.key = key;
     this.exponent = this.key.getExponent();
     this.modulus = this.key.getModulus();
@@ -82,16 +122,11 @@ public abstract class SigScheme implements SigSchemeInterface {
     emLen--;
     try {
       this.md = MessageDigest.getInstance("SHA-256");
-      this.hashID = new byte[]{(byte) 0x30, (byte) 0x31, (byte) 0x30, (byte) 0x0d, (byte) 0x06,
-          (byte) 0x09, (byte) 0x60, (byte) 0x86, (byte) 0x48, (byte) 0x01,
-          (byte) 0x65, (byte) 0x03, (byte) 0x04, (byte) 0x02, (byte) 0x01,
-          (byte) 0x05, (byte) 0x00, (byte) 0x04, (byte) 0x20};
     } catch (NoSuchAlgorithmException e) {
       // NoSuchAlgorithmException is a checked exception, RuntimeException allows an exception to
       // be thrown if the algorithm isn't available.
       throw new RuntimeException("SHA-256 algorithm not available", e);
     }
-
   }
 
 
@@ -229,6 +264,22 @@ public abstract class SigScheme implements SigSchemeInterface {
    */
   public byte[] getRecoverableM() {
     return recoverableM;
+  }
+
+  /**
+   * Sets the message digest for this instance according to the specified DigestType. This method
+   * uses the DigestFactory to obtain an instance of MessageDigest corresponding to the given type.
+   * It also updates the hashID to match the chosen digest type.
+   *
+   * @param digestType The type of the digest to be used for generating or verifying signatures.
+   * @throws NoSuchAlgorithmException If the algorithm for the requested digest type is not
+   *                                  available.
+   * @throws InvalidDigestException   If the specified digest type is not supported or invalid.
+   */
+  public void setDigest(DigestType digestType)
+      throws NoSuchAlgorithmException, InvalidDigestException {
+    this.md = DigestFactory.getMessageDigest(digestType);
+    this.hashID = hashIDmap.get(digestType);
   }
 
 

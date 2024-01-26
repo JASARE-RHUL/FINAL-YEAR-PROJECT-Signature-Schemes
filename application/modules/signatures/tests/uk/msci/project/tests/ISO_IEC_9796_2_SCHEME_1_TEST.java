@@ -11,26 +11,49 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Arrays;
+import java.util.stream.Stream;
 import java.util.zip.DataFormatException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import uk.msci.project.rsa.GenRSA;
 import uk.msci.project.rsa.ISO_IEC_9796_2_SCHEME_1;
+import uk.msci.project.rsa.Key;
 import uk.msci.project.rsa.KeyPair;
+import uk.msci.project.rsa.MGF1;
+import uk.msci.project.rsa.RSASSA_PKCS1_v1_5;
 import uk.msci.project.rsa.SigScheme;
 
 public class ISO_IEC_9796_2_SCHEME_1_TEST {
 
   private ISO_IEC_9796_2_SCHEME_1 scheme;
 
-  @BeforeEach
-  public void setup() {
-    scheme = new ISO_IEC_9796_2_SCHEME_1(
-        new GenRSA(2, new int[]{512, 512}).generateKeyPair().getPrivateKey());
+  private static Stream<Object[]> provableOrStandardParameters() {
+    return Stream.of(
+        // standard parameters
+        new Object[]{new GenRSA(2, new int[]{512, 512}).generateKeyPair().getPrivateKey(), null},
+        // provably secure parameters
+        new Object[]{new GenRSA(2, new int[]{512, 512}).generateKeyPair().getPrivateKey(), true}
+    );
   }
 
-  @Test
-  void testInitialBytePadding() throws Exception {
+  @ParameterizedTest
+  @MethodSource("provableOrStandardParameters")
+  void testInitialBytePadding(Key key, Boolean isProvablySecureParams) throws Exception {
+    if (isProvablySecureParams == null) {
+      scheme = new ISO_IEC_9796_2_SCHEME_1(key);
+    } else {
+      scheme = new ISO_IEC_9796_2_SCHEME_1(key, isProvablySecureParams);
+
+      Field emLen = SigScheme.class.getDeclaredField("emLen");
+      emLen.setAccessible(true);
+      int emLenVal = (int) emLen.get(scheme);
+      Field hashSize = ISO_IEC_9796_2_SCHEME_1.class.getDeclaredField("hashSize");
+      hashSize.setAccessible(true);
+      int hashSizeVal = (int) hashSize.get(scheme);
+      assertEquals((emLenVal + 1) / 2, hashSizeVal);
+    }
     byte[] message = (
         "test message test message test message test message test message test message "
             + "test message test message test message test message test message test message test messa"
@@ -49,8 +72,22 @@ public class ISO_IEC_9796_2_SCHEME_1_TEST {
         "The first non zero byte of the encoded message should match 0x4A for shorter message that do not have a recoverable component");
   }
 
-  @Test
-  void testFinalBytePadding() throws Exception {
+  @ParameterizedTest
+  @MethodSource("provableOrStandardParameters")
+  void testFinalBytePadding(Key key, Boolean isProvablySecureParams) throws Exception {
+    if (isProvablySecureParams == null) {
+      scheme = new ISO_IEC_9796_2_SCHEME_1(key);
+    } else {
+      scheme = new ISO_IEC_9796_2_SCHEME_1(key, isProvablySecureParams);
+
+      Field emLen = SigScheme.class.getDeclaredField("emLen");
+      emLen.setAccessible(true);
+      int emLenVal = (int) emLen.get(scheme);
+      Field hashSize = ISO_IEC_9796_2_SCHEME_1.class.getDeclaredField("hashSize");
+      hashSize.setAccessible(true);
+      int hashSizeVal = (int) hashSize.get(scheme);
+      assertEquals((emLenVal + 1) / 2, hashSizeVal);
+    }
     byte[] message = "test".getBytes();
     Method encodeMethod = ISO_IEC_9796_2_SCHEME_1.class.getDeclaredMethod("encodeMessage",
         byte[].class);
@@ -65,8 +102,22 @@ public class ISO_IEC_9796_2_SCHEME_1_TEST {
         "The final byte of tzhe encoded message should be PADR or 0xBC");
   }
 
-  @Test
-  void testMessagePlacementPartRecovery() throws Exception {
+  @ParameterizedTest
+  @MethodSource("provableOrStandardParameters")
+  void testMessagePlacementPartRecovery(Key key, Boolean isProvablySecureParams) throws Exception {
+    if (isProvablySecureParams == null) {
+      scheme = new ISO_IEC_9796_2_SCHEME_1(key);
+    } else {
+      scheme = new ISO_IEC_9796_2_SCHEME_1(key, isProvablySecureParams);
+
+      Field emLen = SigScheme.class.getDeclaredField("emLen");
+      emLen.setAccessible(true);
+      int emLenVal = (int) emLen.get(scheme);
+      Field hashSize = ISO_IEC_9796_2_SCHEME_1.class.getDeclaredField("hashSize");
+      hashSize.setAccessible(true);
+      int hashSizeVal = (int) hashSize.get(scheme);
+      assertEquals((emLenVal + 1) / 2, hashSizeVal);
+    }
     byte[] message = "Test message".getBytes();
     byte[] message2 = ("Test message for signing Test message for signing Test mes"
         + "sage for signing Test message for signing Test message for signing Test message for signi"
@@ -85,7 +136,7 @@ public class ISO_IEC_9796_2_SCHEME_1_TEST {
     Field emBits = SigScheme.class.getDeclaredField("emBits");
     emBits.setAccessible(true);
     int emBitsVal = (int) emBits.get(scheme);
-    int hashSize = 32;
+    int hashSize = isProvablySecureParams != null ? 64 : 32;
 
     int hashStart = emLenVal - hashSize - 1;
     int mStart = 0;
@@ -106,8 +157,22 @@ public class ISO_IEC_9796_2_SCHEME_1_TEST {
         "The recoverable message (m1) should be correctly placed in the encoded message.");
   }
 
-  @Test
-  void testMessagePlacementFullRecovery() throws Exception {
+  @ParameterizedTest
+  @MethodSource("provableOrStandardParameters")
+  void testMessagePlacementFullRecovery(Key key, Boolean isProvablySecureParams) throws Exception {
+    if (isProvablySecureParams == null) {
+      scheme = new ISO_IEC_9796_2_SCHEME_1(key);
+    } else {
+      scheme = new ISO_IEC_9796_2_SCHEME_1(key, isProvablySecureParams);
+
+      Field emLen = SigScheme.class.getDeclaredField("emLen");
+      emLen.setAccessible(true);
+      int emLenVal = (int) emLen.get(scheme);
+      Field hashSize = ISO_IEC_9796_2_SCHEME_1.class.getDeclaredField("hashSize");
+      hashSize.setAccessible(true);
+      int hashSizeVal = (int) hashSize.get(scheme);
+      assertEquals((emLenVal + 1) / 2, hashSizeVal);
+    }
     byte[] message = "Test message".getBytes();
 
     Method encodeMethod = ISO_IEC_9796_2_SCHEME_1.class.getMethod("encodeMessage", byte[].class);
@@ -119,7 +184,7 @@ public class ISO_IEC_9796_2_SCHEME_1_TEST {
     Field emBits = SigScheme.class.getDeclaredField("emBits");
     emBits.setAccessible(true);
     int emBitsVal = (int) emBits.get(scheme);
-    int hashSize = 32;
+    int hashSize = isProvablySecureParams != null ? 64 : 32;
 
     int hashStart = emLenVal - hashSize - 1;
     int mStart = 0;
@@ -140,8 +205,27 @@ public class ISO_IEC_9796_2_SCHEME_1_TEST {
         "The recoverable message (m1) should be correctly placed in the encoded message.");
   }
 
-  @Test
-  public void testHashInEncodedMessage() throws NoSuchAlgorithmException, DataFormatException {
+  @ParameterizedTest
+  @MethodSource("provableOrStandardParameters")
+  public void testHashInEncodedMessage(Key key, Boolean isProvablySecureParams)
+      throws NoSuchAlgorithmException, DataFormatException, NoSuchFieldException, IllegalAccessException {
+    int hashSizeVal = 0;
+    if (isProvablySecureParams == null) {
+      scheme = new ISO_IEC_9796_2_SCHEME_1(key);
+      Field hashSize = ISO_IEC_9796_2_SCHEME_1.class.getDeclaredField("hashSize");
+      hashSize.setAccessible(true);
+      hashSizeVal = (int) hashSize.get(scheme);
+    } else {
+      scheme = new ISO_IEC_9796_2_SCHEME_1(key, isProvablySecureParams);
+
+      Field emLen = SigScheme.class.getDeclaredField("emLen");
+      emLen.setAccessible(true);
+      int emLenVal = (int) emLen.get(scheme);
+      Field hashSize = ISO_IEC_9796_2_SCHEME_1.class.getDeclaredField("hashSize");
+      hashSize.setAccessible(true);
+      hashSizeVal = (int) hashSize.get(scheme);
+      assertEquals((emLenVal + 1) / 2, hashSizeVal);
+    }
     // Create the message
     byte[] message = "Test message".getBytes();
     byte[] message2 = ("Test message for signing Test message for signing Test mes"
@@ -154,21 +238,38 @@ public class ISO_IEC_9796_2_SCHEME_1_TEST {
 
     // Hash the message using the same algorithm as the scheme
     MessageDigest md = MessageDigest.getInstance("SHA-256");
-    byte[] messageHash = md.digest(message2);
+    byte[] messageHash =
+        isProvablySecureParams != null ? new MGF1(md).generateMask(md.digest(message2), 64)
+            : md.digest(message2);
 
     // Encode the message using the scheme
     byte[] encodedMessage = scheme.encodeMessage(message2);
 
-    byte[] extractedHash = Arrays.copyOfRange(encodedMessage, encodedMessage.length - 33,
+    byte[] extractedHash = Arrays.copyOfRange(encodedMessage,
+        encodedMessage.length - hashSizeVal - 1,
         encodedMessage.length - 1);
 
     assertArrayEquals(messageHash, extractedHash,
         "The hash in the encoded message does not match the expected hash.");
   }
 
-  @Test
-  void testSign()
+  @ParameterizedTest
+  @MethodSource("provableOrStandardParameters")
+  void testSign(Key key, Boolean isProvablySecureParams)
       throws DataFormatException, NoSuchFieldException, IllegalAccessException, NoSuchAlgorithmException {
+    if (isProvablySecureParams == null) {
+      scheme = new ISO_IEC_9796_2_SCHEME_1(key);
+    } else {
+      scheme = new ISO_IEC_9796_2_SCHEME_1(key, isProvablySecureParams);
+
+      Field emLen = SigScheme.class.getDeclaredField("emLen");
+      emLen.setAccessible(true);
+      int emLenVal = (int) emLen.get(scheme);
+      Field hashSize = ISO_IEC_9796_2_SCHEME_1.class.getDeclaredField("hashSize");
+      hashSize.setAccessible(true);
+      int hashSizeVal = (int) hashSize.get(scheme);
+      assertEquals((emLenVal + 1) / 2, hashSizeVal);
+    }
     byte[] message = "Test message".getBytes();
     byte[] message2 = ("Test message for signing Test message for signing Test mes"
         + "sage for signing Test message for signing Test message for signing Test message for signi"
@@ -200,8 +301,22 @@ public class ISO_IEC_9796_2_SCHEME_1_TEST {
 
   }
 
-  @Test
-  void testSignAndVerifyRoundTrip() throws Exception {
+  @ParameterizedTest
+  @MethodSource("provableOrStandardParameters")
+  void testSignAndVerifyRoundTrip(Key key, Boolean isProvablySecureParams) throws Exception {
+    if (isProvablySecureParams == null) {
+      scheme = new ISO_IEC_9796_2_SCHEME_1(key);
+    } else {
+      scheme = new ISO_IEC_9796_2_SCHEME_1(key, isProvablySecureParams);
+
+      Field emLen = SigScheme.class.getDeclaredField("emLen");
+      emLen.setAccessible(true);
+      int emLenVal = (int) emLen.get(scheme);
+      Field hashSize = ISO_IEC_9796_2_SCHEME_1.class.getDeclaredField("hashSize");
+      hashSize.setAccessible(true);
+      int hashSizeVal = (int) hashSize.get(scheme);
+      assertEquals((emLenVal + 1) / 2, hashSizeVal);
+    }
     for (int i = 0; i < 10; i++) {
       KeyPair keyPair = new GenRSA(2, new int[]{512, 512}).generateKeyPair();
       ISO_IEC_9796_2_SCHEME_1 schemeForSigning = new ISO_IEC_9796_2_SCHEME_1(
@@ -230,7 +345,8 @@ public class ISO_IEC_9796_2_SCHEME_1_TEST {
       System.out.println("Is signature valid, recovery 1? " + isValidSignature);
       // assertArrayEquals(new byte[]{0, (byte) 999}, recovery.getRecoveredMessage());
       if (schemeForVerifying.getRecoverableM() != null) {
-        System.out.println("Recovered message: " + new String(schemeForVerifying.getRecoverableM()));
+        System.out.println(
+            "Recovered message: " + new String(schemeForVerifying.getRecoverableM()));
       } else {
         System.out.println("No message was recovered.");
       }
@@ -248,8 +364,23 @@ public class ISO_IEC_9796_2_SCHEME_1_TEST {
     }
   }
 
-  @Test
-  void testVerificationFailsForInvalidSignature() throws Exception {
+  @ParameterizedTest
+  @MethodSource("provableOrStandardParameters")
+  void testVerificationFailsForInvalidSignature(Key key, Boolean isProvablySecureParams)
+      throws Exception {
+    if (isProvablySecureParams == null) {
+      scheme = new ISO_IEC_9796_2_SCHEME_1(key);
+    } else {
+      scheme = new ISO_IEC_9796_2_SCHEME_1(key, isProvablySecureParams);
+
+      Field emLen = SigScheme.class.getDeclaredField("emLen");
+      emLen.setAccessible(true);
+      int emLenVal = (int) emLen.get(scheme);
+      Field hashSize = ISO_IEC_9796_2_SCHEME_1.class.getDeclaredField("hashSize");
+      hashSize.setAccessible(true);
+      int hashSizeVal = (int) hashSize.get(scheme);
+      assertEquals((emLenVal + 1) / 2, hashSizeVal);
+    }
     KeyPair keyPair = new GenRSA(2, new int[]{512, 512}).generateKeyPair();
     ISO_IEC_9796_2_SCHEME_1 schemeForVerifying = new ISO_IEC_9796_2_SCHEME_1(
         keyPair.getPublicKey());
@@ -258,14 +389,28 @@ public class ISO_IEC_9796_2_SCHEME_1_TEST {
     byte[] invalidSignature = new byte[128]; // Assuming RSA 1024-bit key
     new SecureRandom().nextBytes(invalidSignature); // Fill with random data
 
-
     boolean result = schemeForVerifying.verifyMessage(new byte[0], invalidSignature);
     assertFalse(result);
   }
 
 
-  @Test
-  void testVerificationFailsForAlteredSignature() throws Exception {
+  @ParameterizedTest
+  @MethodSource("provableOrStandardParameters")
+  void testVerificationFailsForAlteredSignature(Key key, Boolean isProvablySecureParams)
+      throws Exception {
+    if (isProvablySecureParams == null) {
+      scheme = new ISO_IEC_9796_2_SCHEME_1(key);
+    } else {
+      scheme = new ISO_IEC_9796_2_SCHEME_1(key, isProvablySecureParams);
+
+      Field emLen = SigScheme.class.getDeclaredField("emLen");
+      emLen.setAccessible(true);
+      int emLenVal = (int) emLen.get(scheme);
+      Field hashSize = ISO_IEC_9796_2_SCHEME_1.class.getDeclaredField("hashSize");
+      hashSize.setAccessible(true);
+      int hashSizeVal = (int) hashSize.get(scheme);
+      assertEquals((emLenVal + 1) / 2, hashSizeVal);
+    }
     KeyPair keyPair = new GenRSA(2, new int[]{512, 512}).generateKeyPair();
     ISO_IEC_9796_2_SCHEME_1 schemeForSigning = new ISO_IEC_9796_2_SCHEME_1(
         keyPair.getPrivateKey());
@@ -278,14 +423,28 @@ public class ISO_IEC_9796_2_SCHEME_1_TEST {
     // Alter the signature (flip the last bit)
     signatureWithM2[signatureWithM2.length - 1] ^= 1;
 
-
     boolean result = schemeForVerifying.verifyMessage(schemeForSigning.getNonRecoverableM(),
         signatureWithM2);
     assertFalse(result);
   }
 
-  @Test
-  void testVerificationWithCorrectAndIncorrectKeys() throws Exception {
+  @ParameterizedTest
+  @MethodSource("provableOrStandardParameters")
+  void testVerificationWithCorrectAndIncorrectKeys(Key key, Boolean isProvablySecureParams)
+      throws Exception {
+    if (isProvablySecureParams == null) {
+      scheme = new ISO_IEC_9796_2_SCHEME_1(key);
+    } else {
+      scheme = new ISO_IEC_9796_2_SCHEME_1(key, isProvablySecureParams);
+
+      Field emLen = SigScheme.class.getDeclaredField("emLen");
+      emLen.setAccessible(true);
+      int emLenVal = (int) emLen.get(scheme);
+      Field hashSize = ISO_IEC_9796_2_SCHEME_1.class.getDeclaredField("hashSize");
+      hashSize.setAccessible(true);
+      int hashSizeVal = (int) hashSize.get(scheme);
+      assertEquals((emLenVal + 1) / 2, hashSizeVal);
+    }
     KeyPair keyPair = new GenRSA(2, new int[]{512, 512}).generateKeyPair();
     ISO_IEC_9796_2_SCHEME_1 schemeForSigning = new ISO_IEC_9796_2_SCHEME_1(
         keyPair.getPrivateKey());
