@@ -39,9 +39,9 @@ public class ISO_IEC_9796_2_SCHEME_1 extends SigScheme {
   final byte PADR = (byte) 0xBC;
 
   /**
-   * Size of the SHA-256 hash used in the encoding process, set to 32 bytes (256 bits).
+   * Size of the hash used in the encoding process, set to 32 bytes (SHA-256) by default.
    */
-  final int hashSize = 32;
+  int hashSize = 32;
 
   /**
    * Indicator of the current mode of recovery
@@ -59,10 +59,25 @@ public class ISO_IEC_9796_2_SCHEME_1 extends SigScheme {
   }
 
   /**
-   * Encodes a message following the ISO/IEC 9796-2:2010 standard, which includes hashing the
-   * message and preparing the encoded message with specified padding. The format of the encoded
-   * message is: Partial Recovery: 0x6A ∥ m1 ∥ hash ∥ 0xBC. Full Recovery: 0x4B...BA ∥ m ∥ hash ∥
-   * 0xBC.
+   * Constructs an instance of ISO_IEC_9796_2_SCHEME_1 with the specified RSA key and a flag for
+   * using provably secure parameters. It performs the same initialisations as the single-argument
+   * constructor and additionally sets the flag for using provably secure parameters in the
+   * signature scheme.
+   *
+   * @param key                    The RSA key containing the exponent and modulus.
+   * @param isProvablySecureParams A boolean flag indicating if provably secure parameters should be
+   *                               used in the signature scheme.
+   */
+  public ISO_IEC_9796_2_SCHEME_1(Key key, boolean isProvablySecureParams) {
+    super(key, isProvablySecureParams);
+    this.hashSize = isProvablySecureParams ? (emLen + 1) / 2 : md.getDigestLength();
+  }
+
+  /**
+   * Encodes a message following the ISO/IEC 9796-2:2010 standard (includes hashing the message and
+   * preparing the encoded message with specified padding) while also be designed to account for
+   * standard or provably secure parameters. The format of the encoded message is: Partial Recovery:
+   * 0x6A ∥ m1 ∥ hash ∥ 0xBC. Full Recovery: 0x4B...BA ∥ m ∥ hash ∥ 0xBC.
    * <p>
    * Java equivalent format requires the encoding to be a byte less than the modulus byte size to
    * ensure resulting value is less than modulus.
@@ -88,17 +103,19 @@ public class ISO_IEC_9796_2_SCHEME_1 extends SigScheme {
     int hashStart = emLen - hashSize - 1;
     int delta = hashStart;
     //length of the message to be copied is either the availableSpace most significant bits of
-    // M or alternatively the full length of the original message if the message  is too short
+    // M or alternatively the full length of the original message if the message is too short
     int messageLength = Math.min(m1Len, m1Len - ((availableSpace + 7) / 8) - 1);
     // m2 comprises the non-recoverable message portion
     m2Len = max(m1Len - messageLength, 0);
     //copying the message
     delta -= messageLength;
-    byte[] m1 = new byte[messageLength];
-    System.arraycopy(M, 0, m1, 0, messageLength);
-    System.arraycopy(m1, 0, EM, delta, messageLength);
-    //Returns hash of full or partial message depending on the current mode of recovery
-    byte[] hashedM = isFullRecovery ? md.digest(m1) : md.digest(M);
+    System.arraycopy(M, 0, EM, delta, messageLength);
+
+    // Hash message as normal for standard case, else apply the MGF1 to the result of
+    // initial hash to generate large hash output (1/2 length of modulus)
+    byte[] hashedM =
+        isProvablySecureParams ? new MGF1(this.md).generateMask(md.digest(M), this.hashSize)
+            : md.digest(M);
     System.arraycopy(hashedM, 0, EM, hashStart, hashSize);
 
     // Pad with Bs if m_r (m1) is shorter than the available space
@@ -237,6 +254,7 @@ public class ISO_IEC_9796_2_SCHEME_1 extends SigScheme {
   public void setDigest(DigestType digestType)
       throws NoSuchAlgorithmException, InvalidDigestException {
     this.md = DigestFactory.getMessageDigest(digestType);
+    this.hashSize = isProvablySecureParams ? (emLen + 1) / 2 : md.getDigestLength();
   }
 
 }
