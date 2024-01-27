@@ -40,9 +40,10 @@ import uk.msci.project.rsa.KeyPair;
 import uk.msci.project.rsa.MainController;
 import uk.msci.project.rsa.SignView;
 import uk.msci.project.rsa.SignViewUpdateOperations;
-import uk.msci.project.rsa.SignatureBaseController;
+import uk.msci.project.rsa.SignatureCreationController;
 import uk.msci.project.rsa.SignatureModel;
 import uk.msci.project.rsa.SignatureType;
+import uk.msci.project.rsa.SignatureCreationController;
 
 
 /**
@@ -148,9 +149,9 @@ public class SignFunctionalityTest {
         .queryAs(ComboBox.class);
 
     // Import key or simulate importing key
-    Field signView = SignatureBaseController.class.getDeclaredField("signView");
+    Field signView = SignatureCreationController.class.getDeclaredField("signView");
     signView.setAccessible(true);
-    SignView signViewVal = (SignView) signView.get(mainController.getSignatureBaseController());
+    SignView signViewVal = (SignView) signView.get(mainController.getSignatureCreationController());
     GenRSA genRSA = new GenRSA(2, new int[]{512, 512});
     KeyPair keyPair = genRSA.generateKeyPair();
 
@@ -160,7 +161,7 @@ public class SignFunctionalityTest {
         getFile("key", ".rsa");
     // Simulate invoking the file import method directly
     Platform.runLater(() -> {
-      mainController.getSignatureBaseController()
+      mainController.getSignatureCreationController()
           .handleMessageFile(privateKeyFile.get(), new SignViewUpdateOperations(signViewVal));
     });
 
@@ -186,7 +187,7 @@ public class SignFunctionalityTest {
    *
    * @param robot The robot used to simulate user interactions.
    * @throws NoSuchFieldException   if the signature view field is not found in the
-   *                                SignatureBaseController.
+   *                                SignatureCreationController.
    * @throws IllegalAccessException if the signature view field is inaccessible.
    * @throws IOException            if there is an issue handling the key files.
    */
@@ -199,9 +200,9 @@ public class SignFunctionalityTest {
         .queryAs(ComboBox.class);
 
     // Import key or simulate importing key
-    Field signView = SignatureBaseController.class.getDeclaredField("signView");
+    Field signView = SignatureCreationController.class.getDeclaredField("signView");
     signView.setAccessible(true);
-    SignView signViewVal = (SignView) signView.get(mainController.getSignatureBaseController());
+    SignView signViewVal = (SignView) signView.get(mainController.getSignatureCreationController());
     GenRSA genRSA = new GenRSA(2, new int[]{512, 512});
     KeyPair keyPair = genRSA.generateKeyPair();
 
@@ -211,7 +212,7 @@ public class SignFunctionalityTest {
         getFile("key", ".rsa");
     // Simulate invoking the file import method directly
     Platform.runLater(() -> {
-      mainController.getSignatureBaseController()
+      mainController.getSignatureCreationController()
           .handleKey(privateKeyFile.get(), new SignViewUpdateOperations(signViewVal));
     });
 
@@ -232,7 +233,7 @@ public class SignFunctionalityTest {
    *
    * @param robot The robot used to simulate user interactions.
    * @throws NoSuchFieldException   if the signature view field is not found in the
-   *                                SignatureBaseController.
+   *                                SignatureCreationController.
    * @throws IllegalAccessException if the signature view field is inaccessible.
    * @throws IOException            if there is an issue handling the key files.
    */
@@ -245,9 +246,9 @@ public class SignFunctionalityTest {
         .queryAs(ComboBox.class);
 
     // Import key or simulate importing key
-    Field signView = SignatureBaseController.class.getDeclaredField("signView");
+    Field signView = SignatureCreationController.class.getDeclaredField("signView");
     signView.setAccessible(true);
-    SignView signViewVal = (SignView) signView.get(mainController.getSignatureBaseController());
+    SignView signViewVal = (SignView) signView.get(mainController.getSignatureCreationController());
     GenRSA genRSA = new GenRSA(2, new int[]{512, 512});
     KeyPair keyPair = genRSA.generateKeyPair();
 
@@ -256,7 +257,7 @@ public class SignFunctionalityTest {
         getFile("corruptKey", ".rsa");
     // Simulate invoking the file import method directly
     Platform.runLater(() -> {
-      mainController.getSignatureBaseController()
+      mainController.getSignatureCreationController()
           .handleKey(corruptKey.get(), new SignViewUpdateOperations(signViewVal));
     });
 
@@ -275,7 +276,7 @@ public class SignFunctionalityTest {
    *
    * @param robot The robot used to simulate user interactions.
    * @throws NoSuchFieldException   if the signature view field is not found in the
-   *                                SignatureBaseController.
+   *                                SignatureCreationController.
    * @throws IllegalAccessException if the signature view field is inaccessible.
    * @throws IOException            if there is an issue handling the key files.
    */
@@ -288,9 +289,9 @@ public class SignFunctionalityTest {
         .queryAs(ComboBox.class);
 
     // Import key or simulate importing key
-    Field signView = SignatureBaseController.class.getDeclaredField("signView");
+    Field signView = SignatureCreationController.class.getDeclaredField("signView");
     signView.setAccessible(true);
-    SignView signViewVal = (SignView) signView.get(mainController.getSignatureBaseController());
+    SignView signViewVal = (SignView) signView.get(mainController.getSignatureCreationController());
     GenRSA genRSA = new GenRSA(2, new int[]{512, 512});
     KeyPair keyPair = genRSA.generateKeyPair();
 
@@ -300,7 +301,7 @@ public class SignFunctionalityTest {
         getFile("key", ".rsa");
     // Simulate invoking the file import method directly
     Platform.runLater(() -> {
-      mainController.getSignatureBaseController()
+      mainController.getSignatureCreationController()
           .handleKey(privateKeyFile.get(), new SignViewUpdateOperations(signViewVal));
     });
 
@@ -324,7 +325,7 @@ public class SignFunctionalityTest {
    *
    * @param robot The robot used to simulate user interactions.
    * @throws NoSuchFieldException   if the signature view field is not found in the
-   *                                SignatureBaseController.
+   *                                SignatureCreationController.
    * @throws IllegalAccessException if the signature view field is inaccessible.
    * @throws IOException            if there is an issue handling the key files.
    */
@@ -342,9 +343,9 @@ public class SignFunctionalityTest {
         .queryAs(ComboBox.class);
 
     // Import key or simulate importing key
-    Field signView = SignatureBaseController.class.getDeclaredField("signView");
+    Field signView = SignatureCreationController.class.getDeclaredField("signView");
     signView.setAccessible(true);
-    SignView signViewVal = (SignView) signView.get(mainController.getSignatureBaseController());
+    SignView signViewVal = (SignView) signView.get(mainController.getSignatureCreationController());
     GenRSA genRSA = new GenRSA(2, new int[]{512, 512});
     KeyPair keyPair = genRSA.generateKeyPair();
 
@@ -354,7 +355,7 @@ public class SignFunctionalityTest {
         getFile("key", ".rsa");
     // Simulate invoking the file import method directly
     Platform.runLater(() -> {
-      mainController.getSignatureBaseController()
+      mainController.getSignatureCreationController()
           .handleKey(privateKeyFile.get(), new SignViewUpdateOperations(signViewVal));
     });
 
@@ -383,7 +384,7 @@ public class SignFunctionalityTest {
    *
    * @param robot The robot used to simulate user interactions.
    * @throws NoSuchFieldException   if the signature view field is not found in the
-   *                                SignatureBaseController.
+   *                                SignatureCreationController.
    * @throws IllegalAccessException if the signature view field is inaccessible.
    * @throws IOException            if there is an issue handling the key files.
    */
@@ -397,9 +398,9 @@ public class SignFunctionalityTest {
         .queryAs(ComboBox.class);
 
     // Import key or simulate importing key
-    Field signView = SignatureBaseController.class.getDeclaredField("signView");
+    Field signView = SignatureCreationController.class.getDeclaredField("signView");
     signView.setAccessible(true);
-    SignView signViewVal = (SignView) signView.get(mainController.getSignatureBaseController());
+    SignView signViewVal = (SignView) signView.get(mainController.getSignatureCreationController());
     GenRSA genRSA = new GenRSA(2, new int[]{512, 512});
     KeyPair keyPair = genRSA.generateKeyPair();
 
@@ -409,7 +410,7 @@ public class SignFunctionalityTest {
         getFile("key", ".rsa");
     // Simulate invoking the file import method directly
     Platform.runLater(() -> {
-      mainController.getSignatureBaseController()
+      mainController.getSignatureCreationController()
           .handleKey(privateKeyFile.get(), new SignViewUpdateOperations(signViewVal));
     });
 
@@ -452,10 +453,10 @@ public class SignFunctionalityTest {
       throws NoSuchFieldException, IllegalAccessException {
     // Test that the signature scheme dropdown changes the signature when a new option is selected.
 
-    Field sigModel = SignatureBaseController.class.getDeclaredField("signatureModel");
+    Field sigModel = SignatureCreationController.class.getDeclaredField("signatureModel");
     sigModel.setAccessible(true);
     SignatureModel sigModelVal = (SignatureModel) sigModel.get(
-        mainController.getSignatureBaseController());
+        mainController.getSignatureCreationController());
     ComboBox<String> schemeDropdown = robot.lookup("#signatureSchemeDropdown").queryComboBox();
     assertFalse(schemeDropdown.getItems().isEmpty());
     robot.clickOn(schemeDropdown);
@@ -485,11 +486,11 @@ public class SignFunctionalityTest {
     Optional<File> testFile = MainTestUtility.
         getFile("testFile", ".txt");
     // Simulate invoking the file import method directly
-    Field signView = SignatureBaseController.class.getDeclaredField("signView");
+    Field signView = SignatureCreationController.class.getDeclaredField("signView");
     signView.setAccessible(true);
-    SignView signViewVal = (SignView) signView.get(mainController.getSignatureBaseController());
+    SignView signViewVal = (SignView) signView.get(mainController.getSignatureCreationController());
     Platform.runLater(() -> {
-      mainController.getSignatureBaseController()
+      mainController.getSignatureCreationController()
           .handleMessageFile(testFile.get(), new SignViewUpdateOperations(signViewVal));
     });
     WaitForAsyncUtils.waitForFxEvents();
@@ -514,9 +515,9 @@ public class SignFunctionalityTest {
       throws IOException, NoSuchFieldException, IllegalAccessException {
     // Test importing public key functionality.
     // Simulate invoking the file import method directly
-    Field signView = SignatureBaseController.class.getDeclaredField("signView");
+    Field signView = SignatureCreationController.class.getDeclaredField("signView");
     signView.setAccessible(true);
-    SignView signViewVal = (SignView) signView.get(mainController.getSignatureBaseController());
+    SignView signViewVal = (SignView) signView.get(mainController.getSignatureCreationController());
     GenRSA genRSA = new GenRSA(2, new int[]{512, 512});
     KeyPair keyPair = genRSA.generateKeyPair();
 
@@ -525,7 +526,7 @@ public class SignFunctionalityTest {
     Optional<File> privateKeyFile = MainTestUtility.
         getFile("key", ".rsa");
     Platform.runLater(() -> {
-      mainController.getSignatureBaseController()
+      mainController.getSignatureCreationController()
           .handleKey(privateKeyFile.get(), new SignViewUpdateOperations(signViewVal));
     });
     WaitForAsyncUtils.waitForFxEvents();
