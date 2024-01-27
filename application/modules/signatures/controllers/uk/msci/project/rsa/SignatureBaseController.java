@@ -11,12 +11,12 @@ import javafx.stage.Stage;
 
 
 /**
- * This class is part of the controller component specific to digital signature operations
+ * This abstract class is part of the controller component specific to digital signature operations
  * responsible for handling user interactions for the signature process. It also communicates with
  * the Signature Model to perform the actual signature processing logic. This base controller
  * provides common functionalities used in both signature creation and verification.
  */
-public class SignatureBaseController {
+public abstract class SignatureBaseController {
 
 
   /**
