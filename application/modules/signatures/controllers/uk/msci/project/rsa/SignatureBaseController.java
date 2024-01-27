@@ -20,7 +20,7 @@ import javafx.stage.Stage;
  * responsible for handling user interactions for the signature process. It also communicates with
  * the Signature Model to perform the actual signature processing logic.
  */
-public class SignatureController {
+public class SignatureBaseController {
 
   /**
    * The view component of the MVC pattern for the signing functionality. It handles the user
@@ -57,12 +57,12 @@ public class SignatureController {
   private String signature;
 
   /**
-   * Constructs a SignatureController with a reference to the MainController to be used in the event
+   * Constructs a SignatureBaseController with a reference to the MainController to be used in the event
    * of the user initiating a switch back to main menu.
    *
    * @param mainController The main controller that this controller is part of.
    */
-  public SignatureController(MainController mainController) {
+  public SignatureBaseController(MainController mainController) {
     this.mainController = mainController;
   }
 

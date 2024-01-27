@@ -18,7 +18,7 @@ public class MainController {
   private Stage primaryStage;
   private MainMenuView mainMenuView;
   private GenController genController;
-  private SignatureController signatureController;
+  private SignatureBaseController SignatureBaseController;
 
   /**
    * Constructs a MainController with the primary stage of the application. This constructor
@@ -58,8 +58,8 @@ public class MainController {
    *
    * @return The signature controller.
    */
-  public SignatureController getSignatureController() {
-    return signatureController;
+  public SignatureBaseController getSignatureBaseController() {
+    return SignatureBaseController;
   }
 
   /**
@@ -76,15 +76,15 @@ public class MainController {
   }
 
   /**
-   * Observes "Sign Document" button click. Instantiates the SignatureController and displays the
+   * Observes "Sign Document" button click. Instantiates the SignatureBaseController and displays the
    * document signing view.
    */
   class SignDocumentObserver implements EventHandler<ActionEvent> {
 
     @Override
     public void handle(ActionEvent event) {
-      signatureController = new SignatureController(MainController.this);
-      signatureController.showSignView(primaryStage);
+      SignatureBaseController = new SignatureBaseController(MainController.this);
+      SignatureBaseController.showSignView(primaryStage);
     }
   }
 
@@ -93,8 +93,8 @@ public class MainController {
 
     @Override
     public void handle(ActionEvent event) {
-      signatureController = new SignatureController(MainController.this);
-      signatureController.showVerifyView(primaryStage);
+      SignatureBaseController = new SignatureBaseController(MainController.this);
+      SignatureBaseController.showVerifyView(primaryStage);
     }
   }
 
