@@ -36,10 +36,12 @@ import uk.msci.project.rsa.FileHandle;
 import uk.msci.project.rsa.GenRSA;
 import uk.msci.project.rsa.KeyPair;
 import uk.msci.project.rsa.MainController;
+import uk.msci.project.rsa.SignViewUpdateOperations;
 import uk.msci.project.rsa.SignatureController;
 import uk.msci.project.rsa.SignatureModel;
 import uk.msci.project.rsa.SignatureType;
 import uk.msci.project.rsa.VerifyView;
+import uk.msci.project.rsa.VerifyViewUpdateOperations;
 import uk.msci.project.rsa.exceptions.InvalidSignatureTypeException;
 
 
@@ -132,7 +134,7 @@ public class VerifyFunctionalityTest {
     VerifyView verifyViewVal = (VerifyView) verifyView.get(mainController.getSignatureController());
     Platform.runLater(() -> {
       mainController.getSignatureController()
-          .handleMessageFile(testFile.get(), verifyViewVal);
+          .handleMessageFile(testFile.get(), new VerifyViewUpdateOperations(verifyViewVal));
     });
     WaitForAsyncUtils.waitForFxEvents();
 
@@ -168,7 +170,7 @@ public class VerifyFunctionalityTest {
         getFile("publicKey", ".rsa");
     Platform.runLater(() -> {
       mainController.getSignatureController()
-          .handleKey(publicKeyFile.get(), verifyViewVal);
+          .handleKey(publicKeyFile.get(), new VerifyViewUpdateOperations(verifyViewVal));
     });
     WaitForAsyncUtils.waitForFxEvents();
     ImageView importSuccessImage = robot.lookup("#checkmarkImage").queryAs(ImageView.class);
@@ -199,7 +201,7 @@ public class VerifyFunctionalityTest {
         getFile("signature", ".rsa");
     Platform.runLater(() -> {
       mainController.getSignatureController()
-          .handleSig(signatureFile.get(), verifyViewVal);
+          .handleSig(signatureFile.get(), new VerifyViewUpdateOperations(verifyViewVal));
     });
     WaitForAsyncUtils.waitForFxEvents();
     HBox importSuccessBox = robot.lookup("#sigFileHBox").queryAs(HBox.class);
@@ -234,7 +236,7 @@ public class VerifyFunctionalityTest {
         getFile("publicKey", ".rsa");
     Platform.runLater(() -> {
       mainController.getSignatureController()
-          .handleKey(publicKeyFile.get(), verifyViewVal);
+          .handleKey(publicKeyFile.get(), new VerifyViewUpdateOperations(verifyViewVal));
     });
     WaitForAsyncUtils.waitForFxEvents();
     FileHandle.exportToFile("signature.rsa", "mock signature");
@@ -242,7 +244,7 @@ public class VerifyFunctionalityTest {
         getFile("signature", ".rsa");
     Platform.runLater(() -> {
       mainController.getSignatureController()
-          .handleSig(signatureFile.get(), verifyViewVal);
+          .handleSig(signatureFile.get(), new VerifyViewUpdateOperations(verifyViewVal));
     });
 
     // Select a valid signature scheme
@@ -310,7 +312,7 @@ public class VerifyFunctionalityTest {
         getFile("publicKey", ".rsa");
     Platform.runLater(() -> {
       mainController.getSignatureController()
-          .handleKey(publicKeyFile.get(), verifyViewVal);
+          .handleKey(publicKeyFile.get(), new VerifyViewUpdateOperations(verifyViewVal));
     });
     WaitForAsyncUtils.waitForFxEvents();
     FileHandle.exportToFile("signature.rsa", "mock signature");
@@ -318,7 +320,7 @@ public class VerifyFunctionalityTest {
         getFile("signature", ".rsa");
     Platform.runLater(() -> {
       mainController.getSignatureController()
-          .handleSig(signatureFile.get(), verifyViewVal);
+          .handleSig(signatureFile.get(), new VerifyViewUpdateOperations(verifyViewVal));
     });
 
     // Select a valid signature scheme
@@ -358,7 +360,7 @@ public class VerifyFunctionalityTest {
         getFile("signature", ".rsa");
     Platform.runLater(() -> {
       mainController.getSignatureController()
-          .handleSig(signatureFile.get(), verifyViewVal);
+          .handleSig(signatureFile.get(), new VerifyViewUpdateOperations(verifyViewVal));
     });
 
     // Select a valid signature scheme
@@ -400,7 +402,7 @@ public class VerifyFunctionalityTest {
         getFile("publicKey", ".rsa");
     Platform.runLater(() -> {
       mainController.getSignatureController()
-          .handleKey(publicKeyFile.get(), verifyViewVal);
+          .handleKey(publicKeyFile.get(), new VerifyViewUpdateOperations(verifyViewVal));
     });
     WaitForAsyncUtils.waitForFxEvents();
 
@@ -447,7 +449,7 @@ public class VerifyFunctionalityTest {
         getFile("publicKey", ".rsa");
     Platform.runLater(() -> {
       mainController.getSignatureController()
-          .handleKey(publicKeyFile.get(), verifyViewVal);
+          .handleKey(publicKeyFile.get(), new VerifyViewUpdateOperations(verifyViewVal));
     });
     WaitForAsyncUtils.waitForFxEvents();
     FileHandle.exportToFile("signature.rsa", "mock signature");
@@ -455,7 +457,7 @@ public class VerifyFunctionalityTest {
         getFile("signature", ".rsa");
     Platform.runLater(() -> {
       mainController.getSignatureController()
-          .handleSig(signatureFile.get(), verifyViewVal);
+          .handleSig(signatureFile.get(), new VerifyViewUpdateOperations(verifyViewVal));
     });
 
     robot.clickOn("#verifyBtn");
@@ -507,7 +509,7 @@ public class VerifyFunctionalityTest {
     // Simulate invoking the file import method directly
     Platform.runLater(() -> {
       mainController.getSignatureController()
-          .handleKey(corruptKey.get(), verifyViewVal);
+          .handleKey(corruptKey.get(), new VerifyViewUpdateOperations(verifyViewVal));
     });
     WaitForAsyncUtils.waitForFxEvents();
 
@@ -541,7 +543,7 @@ public class VerifyFunctionalityTest {
         getFile("publicKey", ".rsa");
     Platform.runLater(() -> {
       mainController.getSignatureController()
-          .handleKey(publicKeyFile.get(), verifyViewVal);
+          .handleKey(publicKeyFile.get(), new VerifyViewUpdateOperations(verifyViewVal));
     });
     WaitForAsyncUtils.waitForFxEvents();
     FileHandle.exportToFile("signature.rsa", "mock signature");
@@ -549,7 +551,7 @@ public class VerifyFunctionalityTest {
         getFile("signature", ".rsa");
     Platform.runLater(() -> {
       mainController.getSignatureController()
-          .handleSig(signatureFile.get(), verifyViewVal);
+          .handleSig(signatureFile.get(), new VerifyViewUpdateOperations(verifyViewVal));
     });
 
     // Select a valid signature scheme

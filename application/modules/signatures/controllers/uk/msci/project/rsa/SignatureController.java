@@ -1,6 +1,7 @@
 package uk.msci.project.rsa;
 
 import java.io.File;
+import java.io.IOException;
 import java.math.BigInteger;
 import java.util.function.BiConsumer;
 import java.util.regex.Pattern;
@@ -12,8 +13,6 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
-import java.io.IOException;
-import uk.msci.project.rsa.ISO_IEC_9796_2_SCHEME_1;
 
 
 /**
@@ -120,8 +119,11 @@ public class SignatureController {
    */
   private void setupSignObservers(Stage primaryStage) {
     signView.addImportTextObserver(
-        new ImportTextObserver(primaryStage, signView, this::handleMessageFile));
-    signView.addImportKeyObserver(new ImportRSAObserver(primaryStage, signView, this::handleKey));
+        new ImportObserver(primaryStage, new SignViewUpdateOperations(signView),
+            this::handleMessageFile, "*.txt"));
+    signView.addImportKeyObserver(
+        new ImportObserver(primaryStage, new SignViewUpdateOperations(signView),
+            this::handleKey, "*.rsa"));
     signView.addSignatureSchemeChangeObserver(new SignatureSchemeChangeObserver());
     signView.addCreateSignatureObserver(new CreateSignatureObserver());
     signView.addBackToMainMenuObserver(new BackToMainMenuObserver());
@@ -140,13 +142,15 @@ public class SignatureController {
    */
   public void setupVerifyObservers(Stage primaryStage) {
     verifyView.addImportTextObserver(
-        new ImportTextObserver(primaryStage, verifyView, this::handleMessageFile));
+        new ImportObserver(primaryStage, new VerifyViewUpdateOperations(verifyView),
+            this::handleMessageFile, "*.txt"));
     verifyView.addImportKeyObserver(
-        new ImportRSAObserver(primaryStage, verifyView, this::handleKey));
+        new ImportObserver(primaryStage, new VerifyViewUpdateOperations(verifyView),
+            this::handleKey, "*.rsa"));
     verifyView.addSignatureSchemeChangeObserver(new SignatureSchemeChangeObserver());
     verifyView.addBackToMainMenuObserver(new BackToMainMenuObserver());
     verifyView.addImportSigButtonObserver(
-        new ImportRSAObserver(primaryStage, verifyView, this::handleSig));
+        new ImportObserver(primaryStage, null, this::handleSig, "*.rsa"));
     verifyView.addVerifyBtnObserver(new VerifyBtnObserver());
     verifyView.addCloseNotificationObserver(new BackToMainMenuObserver());
     verifyView.addExportRecoverableMessageObserver(new ExportRecoverableMessageObserver());
@@ -156,12 +160,13 @@ public class SignatureController {
 
   /**
    * Handles the importing of a key file. Validates the key and updates the model and view
-   * accordingly.
+   * accordingly. It expects the key file to contain a specific format and updates the view based on
+   * the result of the key validation.
    *
-   * @param file The key file selected by the user.
-   * @param view The SignatureViewInterface instance for updating the view.
+   * @param file    The key file selected by the user.
+   * @param viewOps The {@code ViewUpdate} operations that will update the view.
    */
-  public void handleKey(File file, SignatureViewInterface view) {
+  public void handleKey(File file, ViewUpdate viewOps) {
     String content = "";
     try {
       content = FileHandle.importFromFile(file);
@@ -172,26 +177,28 @@ public class SignatureController {
       uk.msci.project.rsa.DisplayUtility.showErrorAlert(
           "Error: Invalid key. Key could not be imported.");
     } else {
-      if (view instanceof SignView) {
+      if (viewOps instanceof SignViewUpdateOperations) {
         signatureModel.setKey(new PrivateKey(content));
       } else {
         signatureModel.setKey(new PublicKey(content));
       }
-      view.setCheckmarkImage();
-      view.setCheckmarkImageVisibility(true);
-      view.setKey(file.getName());
-      view.setKeyVisibility(true);
+      viewOps.setKeyName(file.getName());
+      viewOps.updateCheckmarkImage();
+      viewOps.setCheckmarkVisibility(true);
+      viewOps.setKeyVisibility(true);
 
     }
   }
 
+
   /**
-   * Handles the importing of a signature file and updates the model and view accordingly.
+   * Handles the importing of a signature file. It updates the signature model with the content of
+   * the file and updates the view to reflect the signature has been loaded.
    *
-   * @param file The key file selected by the user.
-   * @param view The SignatureViewInterface instance for updating the view.
+   * @param file    The signature file selected by the user.
+   * @param viewOps Not applicable for importing of a signature.
    */
-  public void handleSig(File file, SignatureViewInterface view) {
+  public void handleSig(File file, ViewUpdate viewOps) {
     String content = "";
     try {
       content = FileHandle.importFromFile(file);
@@ -209,45 +216,50 @@ public class SignatureController {
 
 
   /**
-   * Observer responsible for handling the import of a key file. It utilises a file chooser to
-   * select a rsa file and then processes it using a provided Consumer.
+   * Observer responsible for handling the import of a file. It utilises a file chooser to select a
+   * file with a specified extension and then processes it using a provided Consumer.
    */
-  class ImportRSAObserver implements EventHandler<ActionEvent> {
+
+  class ImportObserver implements EventHandler<ActionEvent> {
 
     private Stage stage;
-    private BiConsumer<File, SignatureViewInterface> fileConsumer;
-    private SignatureViewInterface view;
+    private BiConsumer<File, ViewUpdate> fileConsumer;
+    private ViewUpdate viewOps;
+    private String fileExtension;
 
     /**
-     * Constructs an observer for importing a private key file.
+     * Constructs an observer for importing a file. It uses a file chooser to select a file and then
+     * processes it using a provided BiConsumer.
      *
-     * @param stage        The primary stage of the application to show the file chooser.
-     * @param view         The SignatureViewInterface instance for updating the view.
-     * @param fileConsumer The BiConsumer that processes the selected file and updates the view.
+     * @param stage         The primary stage of the application to show the file chooser.
+     * @param viewOps       The {@code ViewUpdate} operations that will update the view.
+     * @param fileConsumer  The BiConsumer that processes the selected file and updates the view.
+     * @param fileExtension The file extension to filter files in the file chooser.
      */
-    public ImportRSAObserver(Stage stage, SignatureViewInterface view,
-        BiConsumer<File, SignatureViewInterface> fileConsumer) {
+    public ImportObserver(Stage stage, ViewUpdate viewOps,
+        BiConsumer<File, ViewUpdate> fileConsumer, String fileExtension) {
       this.stage = stage;
-      this.view = view;
+      this.viewOps = viewOps;
       this.fileConsumer = fileConsumer;
+      this.fileExtension = fileExtension;
     }
 
     @Override
     public void handle(ActionEvent event) {
-      uk.msci.project.rsa.DisplayUtility.handleFileImport(stage, "*.rsa",
-          file -> fileConsumer.accept(file, view));
+      uk.msci.project.rsa.DisplayUtility.handleFileImport(stage, fileExtension,
+          file -> fileConsumer.accept(file, viewOps));
     }
   }
 
   /**
-   * Handles the file selected by the user for the message to be signed. Reads the file contents and
-   * updates the view to reflect the text has been loaded. If the file content does not meet the
-   * expected format, an error alert is shown.
+   * Handles the file selected by the user for the message to be signed or verified. It reads the
+   * file contents and updates the view to reflect the text has been loaded. If the file content is
+   * empty or does not meet the expected format, an error alert is shown.
    *
-   * @param file The file selected by the user containing the message to sign.
-   * @param view The SignatureViewInterface instance for updating the view.
+   * @param file    The file selected by the user containing the message to sign.
+   * @param viewOps The {@code ViewUpdate} operations that will update the view.
    */
-  public void handleMessageFile(File file, SignatureViewInterface view) {
+  public void handleMessageFile(File file, ViewUpdate viewOps) {
     String content = "";
     try {
       content = FileHandle.importFromFile(file);
@@ -259,42 +271,11 @@ public class SignatureController {
           file.getName() + " is empty. Please try again.");
     } else {
       message = content.getBytes();
-      view.setTextInput("");
-      view.setTextFileNameLabel(file.getName());
-      view.setTextInputVisibility(false);
-      view.setTextFileCheckmarkImage();
-      view.setTextInputHBoxVisibility(true);
-    }
-  }
-
-  /**
-   * The observer for importing text files. This class handles the action event triggered when the
-   * user wants to import text to be signed.
-   */
-  class ImportTextObserver implements EventHandler<ActionEvent> {
-
-    private Stage stage;
-    private BiConsumer<File, SignatureViewInterface> fileConsumer;
-    private SignatureViewInterface view;
-
-    /**
-     * Constructs an observer for importing a  text file.
-     *
-     * @param stage        The primary stage of the application to show the file chooser.
-     * @param view         The SignatureViewInterface instance for updating the view.
-     * @param fileConsumer The BiConsumer that processes the selected file and updates the view.
-     */
-    public ImportTextObserver(Stage stage, SignatureViewInterface view,
-        BiConsumer<File, SignatureViewInterface> fileConsumer) {
-      this.stage = stage;
-      this.view = view;
-      this.fileConsumer = fileConsumer;
-    }
-
-    @Override
-    public void handle(ActionEvent event) {
-      uk.msci.project.rsa.DisplayUtility.handleFileImport(stage, "*.txt",
-          file -> fileConsumer.accept(file, view));
+      viewOps.setTextInput("");
+      viewOps.setTextFileNameLabel(file.getName());
+      viewOps.setTextInputVisibility(false);
+      viewOps.setTextFileCheckmarkImage();
+      viewOps.setTextInputHBoxVisibility(true);
     }
   }
 
