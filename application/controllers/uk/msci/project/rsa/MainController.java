@@ -18,7 +18,8 @@ public class MainController {
   private Stage primaryStage;
   private MainMenuView mainMenuView;
   private GenController genController;
-  private SignatureController signatureController;
+  private SignatureVerificationController SignatureVerificationController;
+  private SignatureCreationController SignatureCreationController;
 
   /**
    * Constructs a MainController with the primary stage of the application. This constructor
@@ -54,12 +55,23 @@ public class MainController {
   }
 
   /**
-   * Gets the signature controller used manage and operate signature related functionalities
+   * Gets the verification controller used to manage and operate signature verification related
+   * functionalities
    *
-   * @return The signature controller.
+   * @return The verification controller.
    */
-  public SignatureController getSignatureController() {
-    return signatureController;
+  public SignatureVerificationController getSignatureVerificationController() {
+    return SignatureVerificationController;
+  }
+
+  /**
+   * Gets the signature generation controller used to manage and operate signature generation related
+   * functionalities
+   *
+   * @return The signature generation controller.
+   */
+  public SignatureCreationController getSignatureCreationController() {
+    return SignatureCreationController;
   }
 
   /**
@@ -76,25 +88,28 @@ public class MainController {
   }
 
   /**
-   * Observes "Sign Document" button click. Instantiates the SignatureController and displays the
-   * document signing view.
+   * Observes "Sign Document" button click. Instantiates the SignatureCreationController and displays
+   * the document signing view.
    */
   class SignDocumentObserver implements EventHandler<ActionEvent> {
 
     @Override
     public void handle(ActionEvent event) {
-      signatureController = new SignatureController(MainController.this);
-      signatureController.showSignView(primaryStage);
+      SignatureCreationController = new SignatureCreationController(MainController.this);
+      SignatureCreationController.showSignView(primaryStage);
     }
   }
 
-
+  /**
+   * Observes "verify signature" button click. Instantiates the SignatureVerificationController and displays
+   * the signature verification view.
+   */
   class verifySignatureObserver implements EventHandler<ActionEvent> {
 
     @Override
     public void handle(ActionEvent event) {
-      signatureController = new SignatureController(MainController.this);
-      signatureController.showVerifyView(primaryStage);
+      SignatureVerificationController = new SignatureVerificationController(MainController.this);
+      SignatureVerificationController.showVerifyView(primaryStage);
     }
   }
 
