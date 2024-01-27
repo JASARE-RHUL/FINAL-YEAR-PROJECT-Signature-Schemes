@@ -1,0 +1,72 @@
+package uk.msci.project.rsa;
+
+/**
+ * This interface defines operations for updating independent components from the sign/verify views
+ * that behave identically. Implementing classes are expected to provide concrete behavior for these
+ * operations, allowing for uniform manipulation of view components across different types of views
+ * that share the same update logic.
+ */
+public interface ViewUpdate {
+
+  /**
+   * Sets the name of the key.
+   *
+   * @param keyName The name of the key to set.
+   */
+  void setKeyName(String keyName);
+
+  /**
+   * Updates the checkmark image, typically to indicate a successful operation.
+   */
+  void updateCheckmarkImage();
+
+  /**
+   * Sets the visibility of the checkmark.
+   *
+   * @param visible {@code true} to make the checkmark visible; {@code false} to hide it.
+   */
+  void setCheckmarkVisibility(boolean visible);
+
+  /**
+   * Sets the visibility of the key in the user interface.
+   *
+   * @param visible {@code true} if the key should be visible; {@code false} if it should be
+   *                hidden.
+   */
+  void setKeyVisibility(boolean visible);
+
+  /**
+   * Sets the text in a text input field.
+   *
+   * @param text The text to set in the input field.
+   */
+  void setTextInput(String text);
+
+  /**
+   * Sets the label that displays the name of the file.
+   *
+   * @param fileName The name of the file to display.
+   */
+  void setTextFileNameLabel(String fileName);
+
+  /**
+   * Sets the visibility of a text input field.
+   *
+   * @param visible {@code true} if the text input should be visible; {@code false} if it should be
+   *                hidden.
+   */
+  void setTextInputVisibility(boolean visible);
+
+  /**
+   * Updates the image next to the text file input to indicate a status, typically a checkmark to
+   * indicate success.
+   */
+  void setTextFileCheckmarkImage();
+
+  /**
+   * Sets the visibility of the horizontal box (HBox) that contains the text input elements.
+   *
+   * @param visible {@code true} to make the HBox visible; {@code false} to hide it.
+   */
+  void setTextInputHBoxVisibility(boolean visible);
+}
