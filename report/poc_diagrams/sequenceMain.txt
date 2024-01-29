@@ -1,0 +1,102 @@
+@startuml
+
+participant "Signer" as S
+participant "System" as Sys
+participant "Verifier" as V
+participant "File System" as FS
+
+note over S: Key Generation and Benchmarking
+S -> Sys: Input Key Size(s), e Options, and number of trials
+activate Sys
+
+alt Valid Key Sizes and e Options
+    Sys -> Sys: Generate Batch Key Pairs
+    Sys -> Sys: Benchmark Key Generation
+    alt Key Generation and Benchmark Successful
+        Sys --> S: Notify Key Generation and Benchmark Success
+        opt Save to File
+            S -> Sys: Request to Save Keys to File
+            Sys -> FS: Export Key Pair Batches
+        end opt
+    else Key Generation or Benchmark Error
+        Sys --> S: Display Key Generation or Benchmark Error
+    end alt
+else Invalid Key Sizes or e Options
+    Sys --> S: Display Invalid Key Sizes or e Options Error
+end alt
+deactivate Sys
+
+note over S: Signature Creation Benchmarking
+S -> Sys: Input Message Batch, Number of Messages, and Private Key Batch
+S -> Sys: Select Signature Parameter Choice (Standard/Provably Secure)
+S -> Sys: Select Signature Scheme
+activate Sys
+
+alt Valid Inputs and Parameters
+    Sys -> Sys: Create Batch Signatures with Selected Parameters
+    Sys -> Sys: Benchmark Signature Creation
+    alt Signature Creation Benchmark Successful
+        Sys --> S: Notify Signature Creation Benchmark Success
+        Sys --> S: Display Benchmarking Results
+        opt Save Benchmarking Results to File
+            S -> Sys: Save Benchmarking Results to File
+            Sys -> FS: Save Benchmarking Results Batch
+        end opt
+        alt Signature Scheme is ISO/IEC 9796-2
+            Sys --> S: Offer Saving Messages Batch
+            opt Save Messages Batch to File
+                S -> Sys: Save Messages Batch to File
+                Sys -> FS: Export Messages Batch
+            end opt
+        end alt
+        opt Save Signatures to File
+            S -> Sys: Save Computed Signature Batch to File
+            Sys -> FS: Save Signatures Batch
+        end opt
+        opt Save Signature batch to File
+            S -> Sys: Save Computed Signature Batch to File
+            Sys -> FS: Save Signature Batch
+        end opt
+    else Signature Creation or Benchmark Error
+        Sys --> S: Display Signature Creation or Benchmark Error
+    end alt
+else Invalid Inputs or Parameters
+    Sys --> S: Display Invalid Input or Parameter Error
+end alt
+deactivate Sys
+
+note over V: Signature Verification Benchmarking
+V -> Sys: Input Message Batch, Signature Batch, and Public Key Batch
+V -> Sys: Select Verification Scheme
+activate Sys
+
+alt Valid Inputs for Verification
+    Sys -> Sys: Verify Signature Batch
+    Sys -> Sys: Benchmark Signature Verification
+    alt Verification Benchmark Successful
+        Sys --> V: Notify Verification Benchmark Success
+        Sys --> V: Display Benchmarking Results
+        opt Save Benchmarking Results to File
+            S -> Sys: Save Benchmarking Results to File
+            Sys -> FS: Save Benchmarking Results Batch
+        end opt
+        alt Verification Scheme is ISO/IEC 9796-2
+            Sys --> V: Offer Saving Recovered Messages Batch
+            opt Save Recovered Messages Batch to File
+                V -> Sys: Save Recovered Messages Batch to File
+                Sys -> FS: Export Recovered Messages Batch
+            end opt
+        end alt
+        opt Save Verification Results to File
+            V -> Sys: Save Verification Results to File
+            Sys -> FS: Export Verification Results
+        end opt
+    else Verification or Benchmark Error
+        Sys --> V: Display Verification or Benchmark Error
+    end alt
+else Invalid Inputs for Verification
+    Sys --> V: Display Invalid Input Error
+end alt
+deactivate Sys
+
+@enduml

@@ -104,83 +104,108 @@ After evaluating these options, I decided to use Java for the project. The Java 
 
 
 
-\chapter{Appendix B Software Development of Proof of Concept program}
+\chapter{Appendix B Software Development}
 
 
 
 \section{Appendix B.1 Requirements and Analysis}
-The overall goal of the system is to offer a fundamental implementation of the PKCS signature scheme from which a user can interact with, via a user interface to perform relevant actions. The program will also include the other considered schemes, to be integrated once the implementation for the PKCS scheme has been established.
-The core functionalities encompass key generation, signature creation, and signature verification.
-The program will form the foundation for the eventual delivery of the benchmarking program used to examine the discussed provable security overhead.
+The overall goal of the system is to provide a benchmarking tool designed to quantify the performance impact of implementing larger, provably secure parameters in the full suite of deterministic RSA signature schemes (albeit with a main focus on the PKCS standard), as opposed to the standard parameters commonly used. This program will be equipped with functionalities that allow users to tailor where relevant the various parameters to their specific requirements before starting any benchmarking activities. Benchmarking activities will span the full digital signature workflow from key generation and signature creation, to signature verification.
 
 \subsection{Description of Actors}
 \begin{table}[H]
     \centering
-    \caption{Description of Actors for the POC Digital Signature Program}
+    \caption{Description of Actors}
     \label{tab:actors_description}
     \begin{tabular}{|l|p{10cm}|}
     \hline
     \textbf{Actor / Role Name} & \textbf{Role Description and Objective} \\
     \hline
-    User/Signer & Individual who wishes to digitally sign a piece of content. The signer generates key pairs, can input content, and create a digital signature using their private key. Their main goal is to ensure that the content they're signing is authenticated and its integrity is maintained, proving that it hasn't been tampered with. \\
+    User/Signer & Individual who wishes to benchmark the signing process. Key Generation: \begin{itemize}
+\item A potential signer:
+\begin{itemize}
+\item selects the number of primes, and choice of e to meet their specific needs (e.g., provably secure or standard parameters); 
+\item inputs the number of trials that the benchmarking of the key generation process should run for;
+\item initiates the process by generating pairwise batches of corresponding public and private keys; (i.e, the pairwise batches generated in the last trial) 
+\end{itemize} 
+\end{itemize} 
+Signature Creation: \begin{itemize}
+\item A signer:
+
+\begin{itemize}
+\item Inputs a set of messages corresponding to their desired number of trials for the benchmarking of the signature creation process;
+\item selects the desired signature scheme and determines the parameter type (provably secure or standard);
+\item Launches the benchmarking process after configuration.
+\end{itemize}  
+\end{itemize} 
+Their primary objective is to ascertain insights into the performance of the chosen scheme(s) in terms of signature generation\\
     \hline
-    Verifier & Entity that needs to validate the authenticity and integrity of a digitally signed piece of content. The verifier inputs signed content, a corresponding public key, and attempts to verify a specified digital signature. Their primary objective is to ascertain that the content hasn't been altered post-signing and to confirm the identity of the signer. \\
+    Verifier & Entity that wishes to benchmark the verification process. The verifier inputs a signed message batch, a corresponding public key, and initiates the benchmarking process relating to the verification of a specified batch of digital signatures. Their primary objective is to ascertain insights into the performance of the signature verification process for the chosen signature scheme(s). \\
     \hline
     \end{tabular}
 \end{table}
-
+%and suitable bound for the selection of e (used to generate the key pair)
 
 \subsection{User Stories}
 \textbf{Essential Requirements}
 \begin{enumerate}
-\item Potential signer should be able to generate and retrieve a public-private key pair having provided a key size.
+\item Potential signer should be able to generate and retrieve batches of corresponding public and private keys (in-order, one-to-one matches) having provided a key size(s).
 \begin{itemize}
-\item User should be presented with a text box to input the key size.
+\item User should be presented with a text box to input multiple key sizes corresponding to their desired number of key pair batches.
 \item The system should handle any exceptions or errors during key generation, displaying to the user of any issues.
 \item The system should notify the signer once the key generation process is successful.
-\item Once the key is generated the user should have the option to save it to a file.
+\item Once the key pair batches are generated the user should have the option to save them to a file.
 \end{itemize}
-\item Having provided a message and private key, the signer should be able to retrieve the resulting computed digital signature.
+\item Potential signer should be able specify a choice for the generation of e in generation of each key pair as "small" (\( e < N^{1/4} \)) in addition to a key size.
+\item Potential signer should be able to generate each key pair having not specified a bound for the generation of e in eaach ( e.g., default case) in addition to a key size.
+\item Potential signer should be able to benchmark the key generation process having provided an input corresponding to the number trials for the benchmarking run (in addition to key size and optionally a bound on e).
 \begin{itemize}
-\item The signer should be presented with a text box to input the message intended for signing.
+\item Once the benchmarking of the key generation process is complete the signer should be able to view benchmarking results.
+\item Once the benchmarking of the key generation process is complete the signer should have the option to save benchmarking results to a file.
+\end{itemize}
+\item Having provided a batch of messages, a related number that identifies the number of messages in the batch and a private key batch, the signer should be able to view and/or retrieve results related to the benchmarking of the signature creation process in addition to the resulting batch of computed digital signatures.
+\begin{itemize}
+\item The signer should be presented with a text box to input the message batch intended for the benchmarking of the signature creation process.
+\item The signer should be presented with a text box to input the number of messages intended for the benchmarking of the signature creation process.
 \item The signer should be able to specify and input the private key using file selection via a browse option.
-\item The system should handle any exceptions or errors during signature generation, displaying to the signer of any issues.
-\item The system should notify the signer once the signing process is successful.
-\item Once the signature is generated the signer should have the option to copy the signature to the clipboard or save it to a file.
+\item The system should handle any exceptions or errors during benchmarking of the signature creation process, displaying to the signer of any issues.
+\item The system should notify the signer once benchmarking for the signature creation process is successful.
+\item Once the benchmarking of the signature creation process is complete the signer should have the option to save the batch of signatures to a file.
+\item Once the benchmarking of the signature creation process is complete the signer should be able to view benchmarking results.
+\item Once the benchmarking of the signature creation process is complete the signer should have the option to save benchmarking results to a file.
 \end{itemize}
-\item Having provided a message, its corresponding digital signature, and a public key, the verifier should be able to verify the authenticity of the signature.
+\item The signer should be able specify a choice in whether to use provably secure or standard parameters in instantiation of the signature scheme(s) used for the benchmarking of the signature creation process.
+\item Having provided a batch of messages, its corresponding batch of digital signatures, and a public key batch, the verifier should be able to view and/or retrieve results related to the benchmarking of the signature verification process.
 \begin{itemize}
-\item The verifier should be presented with a text box or file browse option to input the message corresponding to the signature intended for verifying.
-\item The verifier should be presented with a file browse option to input the signature intended for verifying.
-\item The system should handle any exceptions or errors during verification process, displaying to the verifier of any issues.
-\item The system should notify the verifier once the verification process is successful.
+\item The verifier should be presented with a text box or file browse option to input the message batch corresponding to the batch of signature intended for the benchmarking of the signature verification process.
+\item The verifier should be presented with a file browse option to input the batch of signatures intended for the benchmarking of the signature verification process.
+\item The system should handle any exceptions or errors during benchmarking of the signature verification process, displaying to the verifier of any issues.
+\item Once the benchmarking of the signature verification process is complete the signer should have the option to save the signature verification results to a file.
+\item Once the benchmarking of the signature verification process is complete the signer should be able to view benchmarking results.
+\item Once the benchmarking of the signature verification process is complete the signer should have the option to save benchmarking results to a file.
 \end{itemize}
-\item The signer should be able to sign messages using the PKCS\#1 v1.5 Signature Scheme.
-\item The verifier should be able to verify messages using the PKCS\#1 v1.5 Signature Scheme.
-\item The signer should be able to sign messages using the ANSI X9.31 rDSA Signature Scheme.
-\item The verifier should be able to verify messages using the ANSI X9.31 rDSA Signature Scheme.
-\item The signer should be able to sign messages with partial or full recovery using the ISO/IEC 9796-2:2010 Signature Scheme 1.
-\item The verifier should be able to verify messages with partial or full recovery using the ISO/IEC 9796-2:2010 Signature Scheme 1.
+\item The signer should be able to benchmark the signature creation process when PKCS\#1 v1.5 is the selected Signature Scheme.
+\item The verifier should be able to benchmark the signature verification process when PKCS\#1 v1.5 is the selected Signature Scheme.
+\item The signer should be able to benchmark the signature creation process when ANSI X9.31 rDSA is the selected Signature Scheme.
+\item The verifier should be able to benchmark the signature verification process when ANSI X9.31 rDSA is the selected Signature Scheme.
+\item The signer should be able to benchmark the signature creation process when ISO/IEC 9796-2:2010 Signature Scheme 1 (with partial or full recovery) is the selected Signature Scheme.
+\item The verifier should be able to benchmark the signature verification process when ISO/IEC 9796-2:2010 Signature Scheme 1 (with partial or full recovery) is the selected Signature Scheme.
 \end{enumerate}
 
 \textbf{Non Essential Requirements}
 \begin{enumerate}
-\item[] Performance
-\begin{enumerate}
-\item[7.] User shoulder be able view a measurement of time taken for each of the signature related operations i.e., Key generation, Signature creation and verification.
-\item[] Non Functional
-\begin{itemize}
-\item[8.] The program should generate keys within a reasonable timeframe.
-\item[9.] The program should create signatures within a reasonable timeframe.
-\item[10.] The program should verify signatures within a reasonable timeframe.
-\end{itemize}
-\end{enumerate}
+\item User should be presented with a live view of any benchmarking process via a progress bar that increases from 0 to 100\%.
+\item User should be able to use the program to generate keys, create signatures or verify signatures in a non-benchmarking mode e.g., a singular messages or signatures can signed or verified respectively rather than batches without a requirement to initiate benchmarking.
+\item The signer should be able to benchmark the signature creation process when an (all incorporative) all option is the selected as the choice for Signature Scheme with the program performing benchmarking using all of the considered signature schemes in one sequential and continuous run.
+\item The verifier should be able to benchmark the signature verification process when an (all incorporative) all option is the selected as the choice for Signature Scheme with the program performing benchmarking using all of the considered signature schemes in one sequential and continuous run.
+\item User should be able to benchmark both the signature creation and signature verification processes in one automated and continuous run.
+\item User should have a choice in the selection of the hash function used in the (benchmarking of the) signature creation/verification processes.
+\item System should produce and present an automated visual representation of the results for benchmarking runs via graphs.
 \end{enumerate}
 
 \subsection{UML Use Case}
 \begin{figure}[H]
     \centering
-    \includegraphics[scale=0.48]{poc_pictures/POC_USE-CASE.png}
+    \includegraphics[scale=0.38]{poc_pictures/MAIN_USE-CASE.png}
     \caption{UML Use Case Diagram}
     \label{fig:uc}
 \end{figure}
@@ -192,25 +217,42 @@ The program will form the foundation for the eventual delivery of the benchmarki
 \noindent\textbf{Flow of Events:}
 \begin{enumerate}
     \item User selects "Generate Key" from the main menu options panel.
-    \item User is presented with an input box labeled "Input Key Size".
-    \item User inputs desired key size into the box.
-    \item System processes the request and generates the public-private key pair.
-    \item System displays a notification informing the user that the key generation process was successful.
-    \item User is presented with options "Export to file" and "Copy to clipboard" for the signature.
-    \item User selects desired option to either save the keys to a file or copy them to clipboard.
+    \item User is presented with an input box prompting for the number of keys desired to be generated.
+    \item User inputs desired number of keys into the box.
+    \item System processes the request and updates the screen with the corresponding of number input boxes displayed vertically down the screen.
+    \item System updates the screen with a checkbox labelled small e adjacent to each dynamically generated input box for each key.
+    \item User inputs desired key sizes into each of the dynamically generated input boxes, additionally selecting the adjacent "small e" checkbox next to each input box where applicable.
+    \item User is presented with an input box labelled enter number of trials for benchmarking run.
+    \item User inputs desired number of trials into the box.
+    \item System processes the request and completes the benchmarking run for the key generation process.
+      \item System displays benchmarking results and notification informing the user that benchmarking process is complete.
+      \item User is presented with options ”Export to file” for the most recently benchmarked private key and public key batches.
+        \item User is presented with options ”Export to file” for benchmarking results.
+        \item User selects desired options for exporting.
 \end{enumerate}
 
 \noindent\textbf{Alternative flows:}
 \begin{enumerate}
-    \item[3a.] User inputs an invalid key size.
+    \item[3a.] User inputs an invalid number of keys.
     \begin{enumerate}
-        \item[3a1.] System warns user about the invalid input and prompts them to enter a valid key size again.
+        \item[3a1.] System warns user about the invalid input and prompts them to enter a valid number of keys.
     \end{enumerate}
-    \item[5a.] System encounters an error during key generation.
+        \item[4a.] System encounters an error during process of displaying the dynamically generated input boxes.
     \begin{enumerate}
-        \item[5a1.] System displays an error message and prompts the user to try again.
+        \item[4a1.] System displays an error message and prompts the user to try again.
     \end{enumerate}
-     
+    \item[6a.] User inputs an invalid key size into one of the dynamically generated input boxes.
+    \begin{enumerate}
+        \item[6a1.] System warns user about the invalid input and prompts them to enter a valid key size .
+    \end{enumerate}
+     \item[8a.] User inputs an invalid number of trials.
+    \begin{enumerate}
+        \item[8a1.] System warns user about the invalid input and prompts them to enter a valid number of trials.
+    \end{enumerate}
+        \item[9a.] System encounters an error during benchmarking of the key generation creation process.
+    \begin{enumerate}
+        \item[9a1.] System displays an error message and resets screen back to initial view.
+    \end{enumerate}  
 \end{enumerate}
 
 
@@ -220,28 +262,38 @@ The program will form the foundation for the eventual delivery of the benchmarki
 \noindent\textbf{Flow of Events:}
 \begin{enumerate}
     \item User selects "Sign message" from the main menu options panel.
-    \item User is presented with text boxes labeled "Input Private Key" and "Input Message".
-    \item User inputs their private key and the message they wish to sign.
-    \item User selects the desired signature scheme from options like "PKCS\#1 v1.5 Signature", "ANSI X9.31 rDSA", etc.
-    \item System processes the input and computes the digital signature.
-    \item System displays a notification informing the signer that the signing process was successful.
-    \item User is presented with options "Export to file" and "Copy to clipboard".
-    \item User selects desired option to either save the keys to a file or copy them to clipboard.
+    \item User is presented with text boxes labeled "Input Private Key batch", "Input Message batch" and "Input no. of message".
+    \item User provides all required inputs.
+    \item User selects the desired signature scheme(s) to be used for benchmarking run from options ("PKCS\#1 v1.5 Signature", "ANSI X9.31 rDSA", ISO\slash IEC 9796-2 scheme 1).
+        \item User selects the desired choice parameters to instantiate the chosen signature scheme(s) for benchmarking run from options ("standard parameters", "provably secure parameters").
+  \item System processes the request and completes the benchmarking run for the signature creation process.
+      \item System displays benchmarking results and notification informing the user that benchmarking process is complete.
+      \item User is presented with options ”Export to file” for the resulting batch of computed signatures.
+       \item User is presented with options ”Export to file” for benchmarking results.
+       \item User selects desired options for exporting.
 \end{enumerate}
 
 \noindent\textbf{Alternative flows:}
 \begin{enumerate}
-    \item[3a.] User inputs an invalid or mismatched private key.
+    \item[3a.] User inputs an invalid or mismatched private key batch.
     \begin{enumerate}
-        \item[3a1.] System warns user about the invalid input and prompts them to enter a valid key.
+        \item[3a1.] System warns user about the invalid input and prompts them to enter a valid private key batch.
     \end{enumerate}
-    \item[5a.] System encounters an error during signature creation.
+     \item[3b.] User inputs an invalid or mismatched message batch.
     \begin{enumerate}
-        \item[5a1.] System displays an error message and prompts the user to try again.
+        \item[3b1.] System warns user about the invalid input and prompts them to enter a valid message batch.
     \end{enumerate}
-    \item[7a.]  User selected an ISO\slash IEC 9796-2 scheme in step 4.
+     \item[3c.] User inputs an invalid number of messages.
     \begin{enumerate}
-        \item[7a1.] User is presented with options "Export to file" and "Copy to clipboard" for the computed signature and additionally if applicable. a computed non recoverable portion of their initially submitted message.
+        \item[3c1.] System warns user about the invalid input and prompts them to enter a valid number of messages.
+    \end{enumerate}
+    \item[6a.] System encounters an error during benchmarking of the signature creation process.
+    \begin{enumerate}
+        \item[6a1.] System displays an error message and prompts the user to try again.
+    \end{enumerate}
+    \item[8a.]  User selected ISO\slash IEC 9796-2 scheme 1 in step 4.
+    \begin{enumerate}
+        \item[8a1.] User is presented with options "Export to file" for the computed batch of signatures and additionally if applicable a computed batch of non recoverable messages portions.
     \end{enumerate}
 \end{enumerate}
 
@@ -250,106 +302,115 @@ The program will form the foundation for the eventual delivery of the benchmarki
 \noindent\textbf{Flow of Events:}
 \begin{enumerate}
     \item User selects "Verify Signature" from the main menu options panel.
-    \item User selects the desired signature scheme from options like "PKCS\#1 v1.5 Signature", "ANSI X9.31 rDSA", etc..
-    \item User is presented with options to input the message, its corresponding signature, and the public key
+    \item User is presented with text boxes labeled "Input public Key batch", "Input Message batch" and "input signature batch".
     \item User provides all required inputs.
-    \item System processes the information and verifies the authenticity of the signature.
-    \item System displays a notification with the result, either confirming the authenticity or notifying of a mismatch.
+       \item User selects the desired signature scheme(s) to be used for benchmarking run from options ("PKCS\#1 v1.5 Signature", "ANSI X9.31 rDSA", ISO\slash IEC 9796-2 scheme 1).
+         \item System processes the request and completes the benchmarking run for the signature verification process.
+      \item System displays benchmarking results and notification informing the user that benchmarking process is complete.
+      \item User is presented with options ”Export to file” for the results of signature verification for each and every message.
+       \item User is presented with options ”Export to file” for benchmarking results.
+       \item User selects desired options for exporting.
 \end{enumerate}
 
 \noindent\textbf{Alternative flows:}
 \begin{enumerate}
- \item[3a.]  User selected the ISO\slash IEC 9796-2 scheme 1 with full message recovery option scheme in step 2.
+    \item[3a.] User inputs mismatched or incorrect information.
     \begin{enumerate}
-        \item[3a1.] System greys out box requiring message input so that user cannot input a message.
-    \end{enumerate}
-  \item[3b.]  User selected the ISO\slash IEC 9796-2 scheme 1 with partial message recovery option scheme in step 2.
-    \begin{enumerate}
-        \item[3b1.] System changes the displayed label for message input to non-recoverable message portion.
-    \end{enumerate}
-    \item[4a.] User inputs mismatched or incorrect information.
-    \begin{enumerate}
-        \item[4a1.] System warns user about the incorrect input and suggests rechecking the inputs.
+        \item[3a1.] System warns user about the incorrect input and suggests rechecking the inputs.
     \end{enumerate}
     \item[5a.] System encounters an error during verification.
     \begin{enumerate}
         \item[5a1.] System displays an error message and prompts the user to try again.
     \end{enumerate}
-    \item[6a.]  User selected an ISO\slash IEC 9796-2 scheme in step 2.
+    \item[7a.]  User selected an ISO\slash IEC 9796-2 scheme in step 2.
     \begin{enumerate}
-        \item[6a1.] User is presented with options "Export to file" and "Copy to clipboard" for the computed signature and additionally if applicable a recovered portion of a message submitted some time in the past to the signature generation process.
+        \item[7a1.] The results of signature verification for each and every message in file offered for export, contains text corresponding to recovered portion of message if corresponding signature on message verified correctly.
     \end{enumerate}
 \end{enumerate}
 
 \subsection{Acceptance Tests}
 
-\textbf{1. Key Pair Generation:}
+
+\textbf{1. Benchmarking Key Pair Generation:}
 \begin{enumerate}
-\item Open the application and locate the key generation section.
-\item Input a valid key size into the provided text box and submit.
-\item If key size is invalid no key is issued and the user is informed to try again. 
-\item Observe that no exceptions or errors are displayed during the key generation process.
-\item If there are errors during key generation the user is informed to try again.
-\item Confirm that a notification is presented to the user upon successful key generation.
-\item Check if there is an option to save the generated key pair to a file and perform a successful save.
+\item Launch the benchmarking application and select "Generate Key" from the main menu.
+\item Ensure the application presents an input box for entering the desired number of key pairs for generation.
+\item Verify that after inputting the desired number of key pairs, the application dynamically displays corresponding input boxes for each key pair, along with a checkbox labeled 'small e' adjacent to each input box.
+\item Check the functionality for the user to input desired key sizes into each dynamically generated input box and the option to select the 'small e' checkbox where applicable.
+\item Confirm that the application presents an input box for entering the number of trials for the benchmarking run.
+\item Test the process of inputting the desired number of trials and verify that the system processes the request correctly.
+\item Inspect the system's ability to complete the benchmarking run for the key generation process without errors or exceptions.
+\item Ensure the application displays benchmarking results along with a notification confirming the completion of the benchmarking process.
+\item Verify the availability and functionality of the options to export both the most recently benchmarked private and public key batches, as well as the benchmarking results to a file.
 \end{enumerate}
 
-\textbf{2. Digital Signature Generation:}
+
+\textbf{2. Benchmarking Signature Generation:}
 \begin{enumerate}
 \item Locate the signature generation section in the application.
-\item Input a test message into the provided text box.
-\item Use the browse option to provide a valid private key file.
-\item If empty message or invalid file is provided, the user is informed to try again. 
-\item Ensure no errors or exceptions are displayed during the signing process.
-\item Confirm that a notification is presented to the signer upon successful signature generation.
-\item Check for options to either copy the signature to clipboard or save it to a file and verify both functionalities.
+\item Use the browse option to provide a message batch.
+\item Use the browse option to provide a valid private key batch.
+\item If empty message batch or an invalid private key batch is provided, the user is informed to try again. 
+\item selects a choice of parameters from options ("standard parameters", "provably secure parameters").
+\item Ensure no errors or exceptions are displayed during the benchmarking of the signature creation process.
+\item Check that the application notifies the user upon successful completion of the benchmarking process.
+\item Verify options to export both the generated signatures and benchmarking results to a file.
 \end{enumerate}
 
-\textbf{3. Digital Signature Verification:}
+\textbf{3. Benchmarking Digital Signature Verification:}
 \begin{enumerate}
 \item Locate the signature verification section in the application.
-\item Use the text box or file browse option to input the original test message.
-\item Use the browse option to provide the generated signature file.
-\item If empty message or invalid file is provided, the user is informed to try again. 
-\item Ensure no errors or exceptions are displayed during the verification process.
-\item Confirm that a notification is presented to the verifier upon successful verification.
+\item Use the browse option to provide a message batch.
+\item Use the browse option to provide a valid public key batch.
+\item If empty message batch or an invalid public key batch is provided, the user is informed to try again.  
+\item Ensure no errors or exceptions are displayed during the benchmarking of the signature verification process.
+\item Check that the application notifies the user upon successful completion of the benchmarking process.
+\item Verify options to export both the generated signature verification results and benchmarking results to a file.
 \end{enumerate}
 
-\textbf{4. Signature and Verification with PKCS\#1 v1.5:}
+
+
+\textbf{4. Benchmarking Signature and Verification with PKCS#1 v1.5:}
 \begin{enumerate}
-\item Set the application to use the PKCS\#1 v1.5 Signature Scheme.
-\item Sign a test message and verify its signature using the previous steps. Ensure both processes succeed.
+\item Select the PKCS#1 v1.5 Signature Scheme for benchmarking within the application.
+\item Conduct benchmarking of both the signature generation and verification processes with corresponding test batches using the previous steps. Ensure both processes succeed.
+\item Verify the functionality to export the benchmarking results for both signature generation and verification processes to a file.
+\item Verify the functionality to export the results for the actual verification of signatures to a file.
 \end{enumerate}
 
-\textbf{5. Signature and Verification with ANSI X9.31 rDSA:}
+
+\textbf{5. Benchmarking Signature and Verification with ANSI X9.31 rDSA:}
 \begin{enumerate}
-\item Set the application to use the ANSI X9.31 rDSA Signature Scheme.
-\item Sign a test message and verify its signature using the previous steps. Ensure both processes succeed.
+\item Select the ANSI X9.31 rDSA Signature Scheme for benchmarking within the application.
+\item Conduct benchmarking of both the signature generation and verification processes with corresponding test batches using the previous steps. Ensure both processes succeed.
+\item Verify the functionality to export the benchmarking results for both signature generation and verification processes to a file.
+\item Verify the functionality to export the results for the actual verification of signatures to a file.
 \end{enumerate}
 
-\textbf{6. Signature Generation with ISO/IEC 9796-2:2010 Scheme 1:}
+
+\textbf{6. Benchmarking Signature Generation with ISO/IEC 9796-2:2010 Scheme 1:}
 \begin{enumerate}
 \item Set the application to use the ISO/IEC 9796-2:2010 Signature Scheme 1.
 \item Locate the signature generation section in the application.
-\item Input a test message into the provided text box. 
-\item Use the browse option to provide a valid private key file.
-\item If empty message or invalid file is provided, the user is informed to try again. 
-\item Ensure no errors or exceptions are displayed during the signing process.
-\item Confirm that a notification is presented to the signer upon successful signature generation.
-\item Check and verify separate options (copying to clipboard and saving to a file) for the signature.
-\item Check and verify separate options (copying to clipboard and saving to a file) for non message portion if if user submitted a sufficiently short message relative to modulus (if message is too short there is no non recoverable portion).
+\item Use the browse option to provide a message batch.
+\item Use the browse option to provide a valid private key batch.
+\item If empty message batch or an invalid private key batch is provided, the user is informed to try again. 
+\item selects a choice of parameters from options ("standard parameters", "provably secure parameters").
+\item Ensure no errors or exceptions are displayed during the benchmarking of the signature creation process.
+\item Check that the application notifies the user upon successful completion of the benchmarking process.
+\item Verify options to export both the generated signatures and benchmarking results to a file.
+\item Verify options to export a batch of messages to a file (e.g., as a message recovery mode, non recoverable portion of messages is transmitted along with signature).
 \end{enumerate}
 
-\textbf{6. Signature Verification with ISO/IEC 9796-2:2010 Scheme 1}
+\textbf{7. Benchmarking Signature Verification with ISO/IEC 9796-2:2010 Scheme 1:}
 \begin{enumerate}
-\item Set the application to use a variant of ISO/IEC 9796-2:2010 Signature Scheme 1.
-\item Locate the signature verification section in the application.
-\item Use the browse option to provide the generated signature file.
-\item Use the text box or file browse option to input the original test message if user did received a non recoverable message from previous signature generation process
-\item Ensure no errors or exceptions are displayed during the verification process.
-\item Confirm that a notification is presented to the verifier upon successful verification.
-\item Check and verify separate options (copying to clipboard and saving to a file) for  recoverable message portion if user submitted a legitimate non recoverable message portion to the verification process in step 4.
+\item Select the ISO/IEC 9796-2:2010 Scheme 1 for benchmarking within the application.
+\item Conduct benchmarking of both the signature verification process with corresponding test batches using the previous steps. Ensure both processes succeed.
+\item Verify the functionality to export the benchmarking results for the signature verification process to a file.
+\item Verify the functionality to export the results for the actual verification of signatures to a file.
+\item Check that results for the actual verification of signatures additionally contain recovered message portions.
 \end{enumerate}
+
 
 \section{Appendix B.2 Design}
 \subsection{Program packages}
@@ -685,7 +746,7 @@ Bug-003 Not selecting signature causes application crash & Verify-005 &
 \end{longtable}
 
 
-\chapter{Appendix B Diary}
+\chapter{Appendix C Diary}
 
 \textbf{Diary Entry: Week of 18th - 24th September 2023}
 
