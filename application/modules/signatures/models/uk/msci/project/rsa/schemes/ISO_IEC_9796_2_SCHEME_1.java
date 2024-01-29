@@ -38,10 +38,6 @@ public class ISO_IEC_9796_2_SCHEME_1 extends SigScheme {
    */
   final byte PADR = (byte) 0xBC;
 
-  /**
-   * Size of the hash used in the encoding process, set to 32 bytes (SHA-256) by default.
-   */
-  int hashSize = 32;
 
   /**
    * Indicator of the current mode of recovery
@@ -70,7 +66,6 @@ public class ISO_IEC_9796_2_SCHEME_1 extends SigScheme {
    */
   public ISO_IEC_9796_2_SCHEME_1(Key key, boolean isProvablySecureParams) {
     super(key, isProvablySecureParams);
-    this.hashSize = isProvablySecureParams ? (emLen + 1) / 2 : md.getDigestLength();
   }
 
   /**
@@ -111,11 +106,9 @@ public class ISO_IEC_9796_2_SCHEME_1 extends SigScheme {
     delta -= messageLength;
     System.arraycopy(M, 0, EM, delta, messageLength);
 
-    // Hash message as normal for standard case, else apply the MGF1 to the result of
-    // initial hash to generate large hash output (1/2 length of modulus)
-    byte[] hashedM =
-        isProvablySecureParams ? new MGF1(this.md).generateMask(md.digest(M), this.hashSize)
-            : md.digest(M);
+    // Hash message as normal for standard case, else apply the MGF1 as means for computing hash
+    // to generate large hash output (1/2 length of modulus)
+    byte[] hashedM = computeHashWithOptionalMasking(M);
     System.arraycopy(hashedM, 0, EM, hashStart, hashSize);
 
     // Pad with Bs if m_r (m1) is shorter than the available space

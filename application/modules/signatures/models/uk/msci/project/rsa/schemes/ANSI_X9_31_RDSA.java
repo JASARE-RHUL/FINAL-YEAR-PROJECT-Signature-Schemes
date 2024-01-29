@@ -66,9 +66,7 @@ public class ANSI_X9_31_RDSA extends SigScheme {
   protected byte[] encodeMessage(byte[] M) {
     byte[] EM = new byte[emLen];
     //  int availableSpace = ((emBits - 48 - 8) + 7) / 8;
-    this.md.update(M);
-    byte[] mHash = this.md.digest();
-    byte[] digestInfo = createDigestInfo(mHash);
+    byte[] digestInfo = createDigestInfo(M);
     int tLen = digestInfo.length;
     int hashStart = emLen - tLen;
     System.arraycopy(digestInfo, 0, EM, hashStart, tLen);
@@ -89,22 +87,22 @@ public class ANSI_X9_31_RDSA extends SigScheme {
 
 
   /**
-   * Creates a DigestInfo structure manually as per the ANSI X9.31 rDSA standard by appending the
-   * hash to the corresponding hash ID. Optionally, applies mask generation function (MGF1) in the
-   * case that scheme is instantiated with the flag for provably secure parameters set, to generate
-   * a large output (half the length of the modulus).
+   * Creates a DigestInfo structure manually as per the ANSI X9.31 rDSA standard by appending the *
+   * hash to the corresponding hash ID. This method applies a mask generation function (MGF1) to the
+   * hash if the scheme is instantiated with the flag for provably secure parameters set, generating
+   * a larger output (half the length of the modulus).
    *
-   * @param hash The hash of the message to be included in the DigestInfo.
-   * @return A byte array representing the DigestInfo structure.
+   * @param message The message to be included in the DigestInfo, represented as a byte array.
+   * @return A byte array representing the DigestInfo structure, including the hash algorithm ID and
+   * the computed hash (masked or standard) of the message.
    */
-  public byte[] createDigestInfo(byte[] hash) {
-    byte[] digestInfo = new byte[hash.length + this.hashID.length];
-    System.arraycopy(hash, 0, digestInfo, 0, hash.length);
+  public byte[] createDigestInfo(byte[] message) {
+    byte[] mHash = computeHashWithOptionalMasking(message);
+    byte[] digestInfo = new byte[this.hashSize + this.hashID.length];
+    System.arraycopy(mHash, 0, digestInfo, 0, mHash.length);
     // Copy the hash ID into the digestInfo array, immediately after the hash.
-    System.arraycopy(this.hashID, 0, digestInfo, hash.length, this.hashID.length);
-
-    return isProvablySecureParams ? new MGF1(this.md).generateMask(digestInfo, (emLen + 1) / 2)
-        : digestInfo;
+    System.arraycopy(this.hashID, 0, digestInfo, this.hashSize, this.hashID.length);
+    return digestInfo;
   }
 
 

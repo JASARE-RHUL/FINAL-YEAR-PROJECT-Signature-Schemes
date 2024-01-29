@@ -76,6 +76,11 @@ public abstract class SigScheme implements SigSchemeInterface {
   boolean isProvablySecureParams;
 
   /**
+   * Size of the hash used in the encoding process, set to 32 bytes (SHA-256) by default.
+   */
+  int hashSize = 32;
+
+  /**
    * Constructs a Signature scheme instance with the specified RSA key. This constructor initialises
    * the RSA key components (modulus and exponent), calculates the encoded message length, and sets
    * up the SHA-256 message digest as the default hashing algorithm.
@@ -101,6 +106,7 @@ public abstract class SigScheme implements SigSchemeInterface {
   public SigScheme(Key key, boolean isProvablySecureParams) {
     initialise(key);
     this.isProvablySecureParams = isProvablySecureParams;
+    this.hashSize = isProvablySecureParams ? (emLen + 1) / 2 : md.getDigestLength();
   }
 
   /**
@@ -280,6 +286,31 @@ public abstract class SigScheme implements SigSchemeInterface {
       throws NoSuchAlgorithmException, InvalidDigestException {
     this.md = DigestFactory.getMessageDigest(digestType);
     this.hashID = hashIDmap.get(digestType);
+  }
+
+  /**
+   * Computes the hash of the given message using the current message digest algorithm. This method
+   * updates the message digest with the given message and then completes the hash computation.
+   *
+   * @param message The message to be hashed, represented as a byte array.
+   * @return A byte array representing the hash of the message.
+   */
+  public byte[] computeHash(byte[] message) {
+    this.md.update(message);
+    return md.digest();
+  }
+
+  /**
+   * Computes the hash of the given message with an optional security enhancement. If the flag for
+   * provably secure parameters is set, this method applies a mask generation function (MGF1) to
+   * generate a masked hash. Otherwise, it performs a standard hash computation.
+   *
+   * @param message The message to be hashed, represented as a byte array.
+   * @return A byte array representing either the standard hash or the masked hash of the message.
+   */
+  public byte[] computeHashWithOptionalMasking(byte[] message) {
+    return isProvablySecureParams ? new MGF1(this.md).generateMask(message, this.hashSize)
+        : computeHash(message);
   }
 
 
