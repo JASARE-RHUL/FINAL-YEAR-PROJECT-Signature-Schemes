@@ -164,10 +164,24 @@ This week was centered around preparing for the development of the more comprehe
 benchmarking program. I started with a supervisor meeting, receiving positive feedback on my interim
 submission and noting that I could simplify the directory structure of my codebase, specific
 requirements for the benchmarking program. My focus then shifted to researching and conceptualising
-the implementation of MGF1 (Mask Generation Function 1) to meet the requirements in instantiating the
-signatures with provably secure parameters for a large hash output. I updated the requirements
+the implementation of MGF1 (Mask Generation Function 1) to meet the requirements in instantiating
+the signatures with provably secure parameters for a large hash output. I updated the requirements
 section of my report, redefining it for the more comprehensive benchmarking program and revising
 user stories to encompass its expanded functionality. The week culminated in drafting a new UML use
 case diagram and beginning to overhaul the design section to align with these new requirements.
 Looking ahead, I plan to update other design diagrams and start adapting the lower level
 implementation of the signature schemes for instantiation provably secure parameters.
+
+## Diary Entry - Week of 22nd January - 28th January 2024
+
+This week, I focused on enhancing the key generation process and refining the signature schemes in
+my project. I implemented the Mask Generation Function 1 (MGF1) and modified the key generation to
+support provably secure parameters, particularly enabling a smaller 'e' value. I then refactored the
+hash function integration within the signature schemes, adding support for SHA-512 and improving the
+design for future extensibility and updated the RSASSA_PKCS1_v1_5 scheme to allow instantiation with
+these new parameters. By the end of the week, all signature schemes were adapted to be instantiated
+with provably secure parameters. Additionally, I restructured the SignatureController. The refactor
+involved creating a new interface for common view update operations and dividing the controller into
+an abstract parent class for shared functionalities and distinct child classes for specific tasks in
+signature creation and verification. This reorganisation aimed to enhance functionality and
+maintenance, delineating shared and specific tasks for signature creation and verification.
