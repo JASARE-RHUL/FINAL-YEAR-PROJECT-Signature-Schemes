@@ -285,6 +285,7 @@ public abstract class SigScheme implements SigSchemeInterface {
   public void setDigest(DigestType digestType)
       throws NoSuchAlgorithmException, InvalidDigestException {
     this.md = DigestFactory.getMessageDigest(digestType);
+    this.hashSize = isProvablySecureParams ? (emLen + 1) / 2 : md.getDigestLength();
     this.hashID = hashIDmap.get(digestType);
   }
 
