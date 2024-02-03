@@ -106,5 +106,11 @@ public class BenchmarkingUtilityTest {
     assertEquals(expectedVariance, actualVariance, "The variance should be calculated correctly.");
   }
 
+  @Test
+  void testGetMin() {
+    long actualMin = BenchmarkingUtility.getMin(exampleTimes);
+    assertEquals(100L, actualMin, "The minimum value should be found correctly.");
+  }
+
 
 }

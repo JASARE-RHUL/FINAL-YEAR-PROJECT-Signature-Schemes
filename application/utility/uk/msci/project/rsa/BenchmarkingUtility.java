@@ -161,6 +161,15 @@ public class BenchmarkingUtility {
     }
     return temp / times.size();
   }
+  /**
+   * Finds the minimum time in the provided list.
+   *
+   * @param times the list of times to find the minimum from.
+   * @return the minimum time value.
+   */
+  public static long getMin(ArrayList<Long> times) {
+    return Collections.min(times);
+  }
 
 
 
