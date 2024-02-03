@@ -46,6 +46,18 @@ public class BenchmarkingUtility {
     computationTimes.set(lastIndex, endTime - startTime);
   }
 
+  /**
+   * Retrieves the last recorded computation time.
+   *
+   * @return the duration of the last computation in nanoseconds, or 0 if no computations have been
+   * recorded.
+   */
+  public long getLastComputationTime() {
+    if (!computationTimes.isEmpty()) {
+      return computationTimes.get(computationTimes.size() - 1);
+    }
+    return 0;
+  }
 
 
 

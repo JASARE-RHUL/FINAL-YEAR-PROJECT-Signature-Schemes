@@ -41,5 +41,19 @@ public class BenchmarkingUtilityTest {
     assertTrue(duration > 0, "Computation time should be greater than zero after stopping timer.");
   }
 
+  @Test
+  void testGetLastComputationTime() {
+    benchmarkingUtility.startTimer();
+    try {
+      Thread.sleep(10); // Simulate a delay
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
+    benchmarkingUtility.stopTimer();
+    long lastTime = benchmarkingUtility.getLastComputationTime();
+    assertTrue(lastTime > 0, "The last computation time should be greater than zero.");
+  }
+
+
 
 }
