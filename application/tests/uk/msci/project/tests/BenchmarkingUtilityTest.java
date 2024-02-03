@@ -112,5 +112,11 @@ public class BenchmarkingUtilityTest {
     assertEquals(100L, actualMin, "The minimum value should be found correctly.");
   }
 
+  @Test
+  void testGetMax() {
+    long actualMax = BenchmarkingUtility.getMax(exampleTimes);
+    assertEquals(500L, actualMax, "The maximum value should be found correctly.");
+  }
+
 
 }

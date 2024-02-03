@@ -171,6 +171,16 @@ public class BenchmarkingUtility {
     return Collections.min(times);
   }
 
+  /**
+   * Finds the maximum time in the provided list.
+   *
+   * @param times the list of times to find the maximum from.
+   * @return the maximum time value.
+   */
+  public static long getMax(ArrayList<Long> times) {
+    return Collections.max(times);
+  }
+
 
 
 
