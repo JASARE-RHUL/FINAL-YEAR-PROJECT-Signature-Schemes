@@ -2,6 +2,7 @@ package uk.msci.project.rsa;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import org.apache.commons.math3.distribution.TDistribution;
 
 /**
  * This utility class provides methods to perform benchmarking by recording computation times and
@@ -179,6 +180,27 @@ public class BenchmarkingUtility {
    */
   public static long getMax(ArrayList<Long> times) {
     return Collections.max(times);
+  }
+
+  /**
+   * Calculates the confidence interval for the mean of the given times.
+   *
+   * @param times           The list of times.
+   * @param confidenceLevel The confidence level (e.g., 0.95 for 95% confidence).
+   * @return An array containing the lower and upper bounds of the confidence interval.
+   */
+  public double[] calculateConfidenceInterval(ArrayList<Long> times, double confidenceLevel) {
+    double mean = calculateMean(times);
+    double standardDeviation = calculateStandardDeviation(times);
+    int n = times.size();
+
+
+    TDistribution tDistribution = new TDistribution(n - 1);
+    double criticalValue = tDistribution.inverseCumulativeProbability(1.0 - (1 - confidenceLevel) / 2);
+
+
+    double marginOfError = criticalValue * standardDeviation / Math.sqrt(n);
+    return new double[]{mean - marginOfError, mean + marginOfError};
   }
 
 

@@ -118,5 +118,22 @@ public class BenchmarkingUtilityTest {
     assertEquals(500L, actualMax, "The maximum value should be found correctly.");
   }
 
+  @Test
+  public void testConfidenceIntervalSmallSample() {
+    BenchmarkingUtility benchmarkingUtility = new BenchmarkingUtility();
+    ArrayList<Long> times = new ArrayList<>();
+
+    times.add(100L);
+    times.add(200L);
+    times.add(150L);
+
+    double confidenceLevel = 0.95;
+    double[] confidenceInterval = benchmarkingUtility.calculateConfidenceInterval(times, confidenceLevel);
+
+    assertTrue(confidenceInterval[0] < confidenceInterval[1]);
+  }
+
+
+
 
 }
