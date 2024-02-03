@@ -1,5 +1,6 @@
 package uk.msci.project.tests;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -52,6 +53,14 @@ public class BenchmarkingUtilityTest {
     benchmarkingUtility.stopTimer();
     long lastTime = benchmarkingUtility.getLastComputationTime();
     assertTrue(lastTime > 0, "The last computation time should be greater than zero.");
+  }
+
+  @Test
+  void testGetComputationTimes() {
+    benchmarkingUtility.startTimer();
+    benchmarkingUtility.stopTimer();
+    assertEquals(1, benchmarkingUtility.getComputationTimes().size(),
+        "There should be one computation time recorded.");
   }
 
 
