@@ -190,5 +190,24 @@ public class GenModel {
     FileHandle.exportToFile("batchPublicKey.rsa", publicKeyBatch.toString());
   }
 
+  /**
+   * Retrieves the list of all individual key generation times.
+   *
+   * @return a list containing lists of long values, each representing individual key generation times per trial
+   */
+  public List<List<Long>> getAllIndividualKeyTimes() {
+    return allIndividualKeyTimes;
+  }
+
+  /**
+   * Retrieves the list of total batch times for key generation.
+   *
+   * @return a list of long values, each representing the total batch time for key generation
+   */
+  public List<Long> getAllBatchTimes() {
+    return allBatchTimes;
+  }
+
+
 
 }
