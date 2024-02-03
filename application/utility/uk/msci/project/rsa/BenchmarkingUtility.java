@@ -100,5 +100,20 @@ public class BenchmarkingUtility {
     }
   }
 
+  /**
+   * Calculates the range (max - min) of the provided times.
+   *
+   * @param times the list of times to calculate the range for.
+   * @return the range value.
+   */
+  public static long calculateRange(ArrayList<Long> times) {
+    if (times.isEmpty()) {
+      return 0;
+    }
+    long min = Collections.min(times);
+    long max = Collections.max(times);
+    return max - min;
+  }
+
 
 }

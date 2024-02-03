@@ -77,6 +77,13 @@ public class BenchmarkingUtilityTest {
     assertEquals(expectedMedian, actualMedian, "The median should be calculated correctly.");
   }
 
+  @Test
+  void testCalculateRange() {
+    long actualRange = BenchmarkingUtility.calculateRange(exampleTimes);
+    long expectedRange = 400L;
+    assertEquals(expectedRange, actualRange, "The range should be calculated correctly.");
+  }
+
 
 
 }
