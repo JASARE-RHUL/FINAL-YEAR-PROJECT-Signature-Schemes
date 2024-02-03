@@ -115,5 +115,24 @@ public class BenchmarkingUtility {
     return max - min;
   }
 
+  /**
+   * Calculates the given percentile of the provided times.
+   *
+   * @param times      the list of times to calculate the percentile for.
+   * @param percentile the percentile to calculate (e.g., 25 for the 25th percentile).
+   * @return the value at the given percentile.
+   */
+  public static double calculatePercentile(ArrayList<Long> times, double percentile) {
+    if (times.isEmpty()) {
+      return 0;
+    }
+    ArrayList<Long> sortedTimes = new ArrayList<>(times);
+    Collections.sort(sortedTimes);
+    int index = (int) Math.ceil(percentile / 100.0 * sortedTimes.size()) - 1;
+    return sortedTimes.get(Math.max(index, 0));
+  }
+
+
+
 
 }
