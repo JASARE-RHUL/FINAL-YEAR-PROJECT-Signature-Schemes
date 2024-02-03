@@ -59,6 +59,25 @@ public class BenchmarkingUtility {
     return 0;
   }
 
+  // The following methods all include generalised forms to take an ArrayList<Long> as input.
+  // This allows the methods to be reusable for different sets of time data.
+
+  /**
+   * Calculates the arithmetic mean of the provided times.
+   *
+   * @param times the list of times to calculate the mean for.
+   * @return the mean value.
+   */
+  public static double calculateMean(ArrayList<Long> times) {
+    if (times.isEmpty()) {
+      return 0;
+    }
+    long sum = 0;
+    for (Long time : times) {
+      sum += time;
+    }
+    return sum / (double) times.size();
+  }
 
 
 }

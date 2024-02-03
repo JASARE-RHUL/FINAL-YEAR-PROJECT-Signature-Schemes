@@ -63,6 +63,13 @@ public class BenchmarkingUtilityTest {
         "There should be one computation time recorded.");
   }
 
+  @Test
+  void testCalculateMean() {
+    double actualMean = BenchmarkingUtility.calculateMean(exampleTimes);
+    double expectedMean = 300.0;
+    assertEquals(expectedMean, actualMean, "The mean should be calculated correctly.");
+  }
+
 
 
 }
