@@ -36,4 +36,17 @@ public class BenchmarkingUtility {
     return computationTimes;
   }
 
+  /**
+   * Stops the timer for the last computation and records its duration.
+   */
+  public void stopTimer() {
+    int lastIndex = computationTimes.size() - 1;
+    long startTime = computationTimes.get(lastIndex);
+    long endTime = System.nanoTime();
+    computationTimes.set(lastIndex, endTime - startTime);
+  }
+
+
+
+
 }

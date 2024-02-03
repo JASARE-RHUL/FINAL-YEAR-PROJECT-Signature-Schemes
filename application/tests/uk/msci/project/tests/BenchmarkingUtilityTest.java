@@ -1,6 +1,7 @@
 package uk.msci.project.tests;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -9,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import uk.msci.project.rsa.BenchmarkingUtility;
 
 public class BenchmarkingUtilityTest {
+
   private BenchmarkingUtility benchmarkingUtility;
   private ArrayList<Long> exampleTimes;
 
@@ -24,5 +26,20 @@ public class BenchmarkingUtilityTest {
     assertFalse(benchmarkingUtility.getComputationTimes().isEmpty(),
         "Computation times list should not be empty after starting timer.");
   }
+
+  @Test
+  void testStopTimer() {
+    benchmarkingUtility.startTimer();
+    try {
+      Thread.sleep(10); // Simulate a delay
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
+    benchmarkingUtility.stopTimer();
+    long duration = benchmarkingUtility.getComputationTimes()
+        .get(benchmarkingUtility.getComputationTimes().size() - 1);
+    assertTrue(duration > 0, "Computation time should be greater than zero after stopping timer.");
+  }
+
 
 }
