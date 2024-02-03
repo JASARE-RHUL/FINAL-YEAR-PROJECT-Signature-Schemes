@@ -167,5 +167,28 @@ public class GenModel {
     }
   }
 
+  /**
+   * Exports the batch of generated public and private keys to separate files.
+   *
+   * @param keyParams  a list of key parameters (keySizes and small e option) used to generate the keys
+   * @throws IOException if an I/O error occurs
+   */
+  public void exportKeyBatch(List<Pair<int[], Boolean>> keyParams) throws IOException {
+    StringBuilder publicKeyBatch = new StringBuilder();
+    StringBuilder privateKeyBatch = new StringBuilder();
+
+    for (Pair<int[], Boolean> keyParam : keyParams) {
+      int[] intArray = keyParam.getKey();
+      setKeyParameters(intArray.length, intArray);
+      setGen(keyParam.getValue());
+      generateKey();
+
+      publicKeyBatch.append(generatedKeyPair.getPublicKey().getKeyValue()).append("\n");
+      privateKeyBatch.append(generatedKeyPair.getPrivateKey().getKeyValue()).append("\n");
+    }
+    FileHandle.exportToFile("batchKey.rsa", privateKeyBatch.toString());
+    FileHandle.exportToFile("batchPublicKey.rsa", publicKeyBatch.toString());
+  }
+
 
 }
