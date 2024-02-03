@@ -70,6 +70,13 @@ public class BenchmarkingUtilityTest {
     assertEquals(expectedMean, actualMean, "The mean should be calculated correctly.");
   }
 
+  @Test
+  void testCalculateMedian() {
+    double actualMedian = BenchmarkingUtility.calculateMedian(exampleTimes);
+    double expectedMedian = 300.0;
+    assertEquals(expectedMedian, actualMedian, "The median should be calculated correctly.");
+  }
+
 
 
 }

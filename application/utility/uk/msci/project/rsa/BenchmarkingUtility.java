@@ -1,6 +1,7 @@
 package uk.msci.project.rsa;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 /**
  * This utility class provides methods to perform benchmarking by recording computation times and
@@ -77,6 +78,26 @@ public class BenchmarkingUtility {
       sum += time;
     }
     return sum / (double) times.size();
+  }
+
+  /**
+   * Calculates the median of the provided times.
+   *
+   * @param times the list of times to calculate the median for.
+   * @return the median value.
+   */
+  public static double calculateMedian(ArrayList<Long> times) {
+    if (times.isEmpty()) {
+      return 0;
+    }
+    ArrayList<Long> sortedTimes = new ArrayList<>(times);
+    Collections.sort(sortedTimes);
+    int middle = sortedTimes.size() / 2;
+    if (sortedTimes.size() % 2 == 0) {
+      return (sortedTimes.get(middle - 1) + sortedTimes.get(middle)) / 2.0;
+    } else {
+      return sortedTimes.get(middle);
+    }
   }
 
 
