@@ -132,6 +132,21 @@ public class BenchmarkingUtility {
     return sortedTimes.get(Math.max(index, 0));
   }
 
+  /**
+   * Calculates the standard deviation of the provided times.
+   *
+   * @param times the list of times to calculate the standard deviation for.
+   * @return the standard deviation value.
+   */
+  public static double calculateStandardDeviation(ArrayList<Long> times) {
+    double mean = calculateMean(times);
+    double temp = 0;
+    for (long time : times) {
+      temp += (time - mean) * (time - mean);
+    }
+    return Math.sqrt(temp / times.size());
+  }
+
 
 
 

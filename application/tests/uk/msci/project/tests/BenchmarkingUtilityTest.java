@@ -92,6 +92,16 @@ public class BenchmarkingUtilityTest {
     assertEquals(400.0, actual75th, "The 75th percentile should be calculated correctly.");
   }
 
+  @Test
+  void testCalculateStandardDeviation() {
+    double actualStdDev = BenchmarkingUtility.calculateStandardDeviation(exampleTimes);
+    double expectedStdDev = Math.sqrt(20000.0);
+    assertEquals(expectedStdDev, actualStdDev, "The standard deviation should be calculated correctly.");
+  }
+
+
+
+
 
 
 }
