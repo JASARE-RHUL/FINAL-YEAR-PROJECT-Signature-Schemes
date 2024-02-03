@@ -147,6 +147,21 @@ public class BenchmarkingUtility {
     return Math.sqrt(temp / times.size());
   }
 
+  /**
+   * Calculates the variance of the provided times.
+   *
+   * @param times the list of times to calculate the variance for.
+   * @return the variance value.
+   */
+  public static double calculateVariance(ArrayList<Long> times) {
+    double mean = calculateMean(times);
+    double temp = 0;
+    for (long time : times) {
+      temp += (time - mean) * (time - mean);
+    }
+    return temp / times.size();
+  }
+
 
 
 

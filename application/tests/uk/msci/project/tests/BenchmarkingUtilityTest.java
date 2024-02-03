@@ -99,9 +99,12 @@ public class BenchmarkingUtilityTest {
     assertEquals(expectedStdDev, actualStdDev, "The standard deviation should be calculated correctly.");
   }
 
-
-
-
+  @Test
+  void testCalculateVariance() {
+    double actualVariance = BenchmarkingUtility.calculateVariance(exampleTimes);
+    double expectedVariance = 20000.0;
+    assertEquals(expectedVariance, actualVariance, "The variance should be calculated correctly.");
+  }
 
 
 }
