@@ -2,6 +2,7 @@ package uk.msci.project.rsa;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.distribution.TDistribution;
 
 /**
@@ -194,10 +195,16 @@ public class BenchmarkingUtility {
     double standardDeviation = calculateStandardDeviation(times);
     int n = times.size();
 
-
-    TDistribution tDistribution = new TDistribution(n - 1);
-    double criticalValue = tDistribution.inverseCumulativeProbability(1.0 - (1 - confidenceLevel) / 2);
-
+    double criticalValue;
+    if (n > 30) {
+      // Use the normal distribution for large sample sizes
+      NormalDistribution normalDistribution = new NormalDistribution();
+      criticalValue = normalDistribution.inverseCumulativeProbability(1.0 - (1 - confidenceLevel) / 2);
+    } else {
+      // Use the t-distribution for small sample sizes
+      TDistribution tDistribution = new TDistribution(n - 1);
+      criticalValue = tDistribution.inverseCumulativeProbability(1.0 - (1 - confidenceLevel) / 2);
+    }
 
     double marginOfError = criticalValue * standardDeviation / Math.sqrt(n);
     return new double[]{mean - marginOfError, mean + marginOfError};

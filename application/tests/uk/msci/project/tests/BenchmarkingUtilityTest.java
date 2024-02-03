@@ -133,6 +133,20 @@ public class BenchmarkingUtilityTest {
     assertTrue(confidenceInterval[0] < confidenceInterval[1]);
   }
 
+  @Test
+  public void testConfidenceIntervalLargeSample() {
+    BenchmarkingUtility benchmarkingUtility = new BenchmarkingUtility();
+    ArrayList<Long> times = new ArrayList<>();
+    // Add sample data (large sample size, e.g., > 30)
+    for (int i = 0; i < 50; i++) {
+      times.add(100L + i);
+    }
+    double confidenceLevel = 0.95;
+    double[] confidenceInterval = benchmarkingUtility.calculateConfidenceInterval(times, confidenceLevel);
+
+    assertTrue(confidenceInterval[0] < confidenceInterval[1]);
+  }
+
 
 
 
