@@ -41,11 +41,8 @@ public class GenModel {
   /**
    * Stores all individual key generation times from each trial.
    */
-  private List<List<Long>> allIndividualKeyTimes = new ArrayList<>();
-  /**
-   * Stores the total time taken for each batch of key generations from each trial.
-   */
-  private List<Long> allBatchTimes = new ArrayList<>();
+  private List<List<Long>> allIndividualKeyTimesPerTrial = new ArrayList<>();
+
 
 
   /**
@@ -141,7 +138,7 @@ public class GenModel {
       Consumer<Double> progressUpdater) throws InterruptedException {
     try (ExecutorService executor = Executors.newFixedThreadPool(
         Runtime.getRuntime().availableProcessors())) {
-      List<Future<TrialResult>> futures = new ArrayList<>();
+      List<Future<List<Long>>> futures = new ArrayList<>();
 
       // Submit tasks to the executor service
       for (int i = 0; i < numTrials; i++) {
@@ -154,9 +151,8 @@ public class GenModel {
       // Collect results from the futures
       for (int i = 0; i < futures.size(); i++) {
         try {
-          TrialResult result = futures.get(i).get();
-          allIndividualKeyTimes.add(result.getIndividualKeyTimes());
-          allBatchTimes.add(result.getBatchTime());
+          List<Long> result = futures.get(i).get();
+          allIndividualKeyTimesPerTrial.add(result);
           progressUpdater.accept((i + 1) / (double) numTrials);
         } catch (ExecutionException e) {
           e.printStackTrace();
@@ -195,18 +191,10 @@ public class GenModel {
    *
    * @return a list containing lists of long values, each representing individual key generation times per trial
    */
-  public List<List<Long>> getAllIndividualKeyTimes() {
-    return allIndividualKeyTimes;
+  public List<List<Long>> getAllIndividualKeyTimesPerTrial() {
+    return allIndividualKeyTimesPerTrial;
   }
 
-  /**
-   * Retrieves the list of total batch times for key generation.
-   *
-   * @return a list of long values, each representing the total batch time for key generation
-   */
-  public List<Long> getAllBatchTimes() {
-    return allBatchTimes;
-  }
 
 
 

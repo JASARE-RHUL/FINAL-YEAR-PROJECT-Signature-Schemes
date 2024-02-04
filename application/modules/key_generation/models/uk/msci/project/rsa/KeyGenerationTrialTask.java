@@ -14,7 +14,7 @@ import javafx.util.Pair;
  * This class allows for concurrent execution of multiple key generation
  * trials when used in a multi-threaded environment.
  */
-public class KeyGenerationTrialTask implements Callable<TrialResult> {
+public class KeyGenerationTrialTask implements Callable<List<Long>> {
 
   /**
    * The key parameters for the trial. Each pair in the list contains an
@@ -23,10 +23,6 @@ public class KeyGenerationTrialTask implements Callable<TrialResult> {
    */
   private final List<Pair<int[], Boolean>> keyParams;
 
-  /**
-   * Utility for benchmarking the total time taken to generate a batch of keys.
-   */
-  private final BenchmarkingUtility batchBenchmarkingUtil;
 
   /**
    * Utility for benchmarking the time taken for individual key generations.
@@ -40,21 +36,13 @@ public class KeyGenerationTrialTask implements Callable<TrialResult> {
    */
   public KeyGenerationTrialTask(List<Pair<int[], Boolean>> keyParams) {
     this.keyParams = new ArrayList<>(keyParams);
-    this.batchBenchmarkingUtil = new BenchmarkingUtility();
     this.singleKeyBenchmarkingUtil = new BenchmarkingUtility();
   }
 
-  /**
-   * Executes the key generation trial, measuring and recording the time for
-   * each key generation and the total time for the batch.
-   *
-   * @return TrialResult containing individual key times and the total batch time.
-   */
-  @Override
-  public TrialResult call() {
-    List<Long> individualKeyTimes = new ArrayList<>();
-    batchBenchmarkingUtil.startTimer();
 
+  @Override
+  public List<Long> call() {
+    List<Long> individualKeyTimes = new ArrayList<>();
     for (Pair<int[], Boolean> keyParam : keyParams) {
       int[] intArray = keyParam.getKey();
       boolean isSmallE = keyParam.getValue();
@@ -66,10 +54,6 @@ public class KeyGenerationTrialTask implements Callable<TrialResult> {
 
       individualKeyTimes.add(singleKeyBenchmarkingUtil.getLastComputationTime());
     }
-
-    batchBenchmarkingUtil.stopTimer();
-    long batchTime = batchBenchmarkingUtil.getLastComputationTime();
-
-    return new TrialResult(individualKeyTimes, batchTime);
+    return individualKeyTimes;
   }
 }
