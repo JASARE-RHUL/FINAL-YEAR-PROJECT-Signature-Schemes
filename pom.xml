@@ -190,9 +190,15 @@
       <scope>test</scope>
     </dependency>
     <dependency>
+      <groupId>org.controlsfx</groupId>
+      <artifactId>controlsfx</artifactId>
+      <version>11.2.0</version> <!-- Make sure to use the correct version that matches your JavaFX version -->
+    </dependency>
+    <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-math3</artifactId>
       <version>3.6.1</version>
     </dependency>
+
   </dependencies>
 </project>

@@ -4,9 +4,16 @@ import java.io.File;
 import java.util.function.Consumer;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.Dialog;
+import javafx.scene.control.Label;
+import javafx.scene.control.ProgressBar;
+import javafx.scene.effect.GaussianBlur;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
+import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 /**
@@ -84,5 +91,39 @@ public class DisplayUtility {
   protected static void showInfoAlert(String title, String content) {
     showAlert(AlertType.INFORMATION, title, content);
   }
+
+  /**
+   * Shows a progress dialog indicating the progress of an ongoing benchmarking activity.
+   *
+   * @param primaryStage The primary stage of the application.
+   * @param activity     The name of the activity for which progress is being shown.
+   * @return Dialog<Void> representing the progress dialog.
+   */
+  protected static Dialog<Void> showProgressDialog(Stage primaryStage, String activity) {
+    Dialog<Void> progressDialog = new Dialog<>();
+    progressDialog.setTitle("Benchmarking Progress (" + activity + " )");
+    progressDialog.initModality(Modality.APPLICATION_MODAL);
+    progressDialog.initOwner(primaryStage);
+
+    ProgressBar progressBar = new ProgressBar();
+    progressBar.setId("progressBar");
+    progressBar.setPrefWidth(300);
+
+    Label progressLabel = new Label("0%");
+    progressLabel.setId("progressLabel");
+
+    VBox dialogContent = new VBox(10, new Label("Processing..."), progressBar, progressLabel);
+    progressDialog.getDialogPane().setContent(dialogContent);
+    progressDialog.getDialogPane().getButtonTypes().add(ButtonType.CANCEL);
+
+    primaryStage.getScene().getRoot().setEffect(new GaussianBlur());
+
+    progressDialog.setOnHidden(e -> primaryStage.getScene().getRoot().setEffect(null));
+    progressDialog.show();
+
+    return progressDialog;
+  }
+
+
 
 }
