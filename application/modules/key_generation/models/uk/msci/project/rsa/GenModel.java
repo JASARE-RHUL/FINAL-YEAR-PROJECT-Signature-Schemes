@@ -2,11 +2,19 @@ package uk.msci.project.rsa;
 
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.function.Consumer;
+import javafx.util.Pair;
 
 /**
  * This class is part of the Model component specific to the RSA key generation process. It
  * encapsulates the data and the logic required to keep track of a user initiated key generation
- * process
+ * process in standard and benchmarking modes.
  */
 public class GenModel {
 
@@ -29,6 +37,12 @@ public class GenModel {
    * The Key pair corresponding to the current Key Generation instance
    */
   private KeyPair generatedKeyPair;
+
+  /**
+   * Stores all individual key generation times from each trial.
+   */
+  private List<List<Long>> allIndividualKeyTimesPerTrial = new ArrayList<>();
+
 
 
   /**
@@ -89,7 +103,7 @@ public class GenModel {
   }
 
   /**
-   * Exports the generated RSA key pair to files.
+   * Exports the generated RSA key pair to respective files.
    *
    * @throws IOException           if there is an error during the export process.
    * @throws IllegalStateException if no key has been generated yet.
@@ -101,6 +115,87 @@ public class GenModel {
     generatedKeyPair.getPrivateKey().exportKey("key.rsa");
     generatedKeyPair.getPublicKey().exportKey("publicKey.rsa");
   }
+
+  /**
+   * Executes a multiple key generation trials in parallel, utilising a thread pool. Each trial
+   * involves generating a batch of keys based on the provided parameters for each. Progress of the
+   * batch operation is reported through the specified progressUpdater.
+   * <p>
+   * This method leverages multi-threading to improve performance. The method waits for all trials
+   * to complete before returning, ensuring that all results are collected.
+   *
+   * @param numTrials       The number of key generation trials to run.
+   * @param keyParams       A list of pairs, each pair containing key parameters and a flag
+   *                        indicating whether to use a smaller 'e' value in key generation. Each
+   *                        pair represents the parameters for one key generation trial.
+   * @param progressUpdater A Consumer<Double> instance that receives updates on the progress of the
+   *                        batch operation, expressed as a double between 0.0 (no progress) and 1.0
+   *                        (complete).
+   * @throws InterruptedException if the thread executing the method is interrupted while waiting
+   *                              for trial results.
+   */
+  public void batchGenerateKeys(int numTrials, List<Pair<int[], Boolean>> keyParams,
+      Consumer<Double> progressUpdater) throws InterruptedException {
+    try (ExecutorService executor = Executors.newFixedThreadPool(
+        Runtime.getRuntime().availableProcessors())) {
+      List<Future<List<Long>>> futures = new ArrayList<>();
+
+      // Submit tasks to the executor service
+      for (int i = 0; i < numTrials; i++) {
+        KeyGenerationTrialTask task = new KeyGenerationTrialTask(keyParams);
+        futures.add(executor.submit(task));
+      }
+
+      executor.shutdown();
+
+      // Collect results from the futures
+      for (int i = 0; i < futures.size(); i++) {
+        try {
+          List<Long> result = futures.get(i).get();
+          allIndividualKeyTimesPerTrial.add(result);
+          progressUpdater.accept((i + 1) / (double) numTrials);
+        } catch (ExecutionException e) {
+          e.printStackTrace();
+        }
+      }
+
+      executor.awaitTermination(Long.MAX_VALUE, java.util.concurrent.TimeUnit.NANOSECONDS);
+    }
+  }
+
+  /**
+   * Exports the batch of generated public and private keys to separate files.
+   *
+   * @param keyParams  a list of key parameters (keySizes and small e option) used to generate the keys
+   * @throws IOException if an I/O error occurs
+   */
+  public void exportKeyBatch(List<Pair<int[], Boolean>> keyParams) throws IOException {
+    StringBuilder publicKeyBatch = new StringBuilder();
+    StringBuilder privateKeyBatch = new StringBuilder();
+
+    for (Pair<int[], Boolean> keyParam : keyParams) {
+      int[] intArray = keyParam.getKey();
+      setKeyParameters(intArray.length, intArray);
+      setGen(keyParam.getValue());
+      generateKey();
+
+      publicKeyBatch.append(generatedKeyPair.getPublicKey().getKeyValue()).append("\n");
+      privateKeyBatch.append(generatedKeyPair.getPrivateKey().getKeyValue()).append("\n");
+    }
+    FileHandle.exportToFile("batchKey.rsa", privateKeyBatch.toString());
+    FileHandle.exportToFile("batchPublicKey.rsa", publicKeyBatch.toString());
+  }
+
+  /**
+   * Retrieves the list of all individual key generation times.
+   *
+   * @return a list containing lists of long values, each representing individual key generation times per trial
+   */
+  public List<List<Long>> getAllIndividualKeyTimesPerTrial() {
+    return allIndividualKeyTimesPerTrial;
+  }
+
+
 
 
 }
