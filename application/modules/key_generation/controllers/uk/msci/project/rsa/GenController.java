@@ -1,15 +1,23 @@
 package uk.msci.project.rsa;
 
+import static uk.msci.project.rsa.KeyGenUtil.convertStringToIntArray;
+
 import java.io.IOException;
+import java.util.List;
 import java.util.regex.Pattern;
+import javafx.application.Platform;
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.Dialog;
+import javafx.scene.control.Label;
+import javafx.scene.control.ProgressBar;
 import javafx.stage.Stage;
+import javafx.util.Pair;
 
 /**
  * Controller class for the key generation view in the digital signature application. It handles
@@ -31,6 +39,9 @@ public class GenController {
    * The main controller that orchestrates the flow between different views of the application.
    */
   private MainController mainController;
+
+  private int numTrials;
+
 
   /**
    * Constructs a GenController with a reference to the MainController.
@@ -64,8 +75,9 @@ public class GenController {
     }
   }
 
+
   /**
-   * Observer that observes the potential event of the generate key button being selected. I It
+   * Observer that observes the potential event of the generate key button being selected. It
    * validates the input and triggers key generation in the model.
    */
   class GenerateKeyObserver implements EventHandler<ActionEvent> {
@@ -82,22 +94,9 @@ public class GenController {
         genView.setFailurePopupVisible(true);
 
       } else {
-
-        String[] numberStrings = keyBitSizes.split("\\s*,\\s*");
-        int[] intArray = new int[numberStrings.length];
-        Alert alert = new Alert(AlertType.INFORMATION);
-        int k = numberStrings.length;
-        for (int i = 0; i < k; i++) {
-          // if number is too big to parse as Integer
-          // pass, use a bit size larger than the maximum bit size
-          // to cause the process to fail
-          try {
-            intArray[i] = Integer.parseInt(numberStrings[i]);
-          } catch (NumberFormatException e) {
-            intArray[i] = 8000;
-          }
-        }
-        genModel.setKeyParameters(k, intArray);
+        int[] intArray = convertStringToIntArray(keyBitSizes);
+        int k = intArray.length;
+        genModel.setKeyParameters(k, convertStringToIntArray(keyBitSizes));
         try {
           genModel.setGen(false);
         } catch (IllegalArgumentException e) {
@@ -168,6 +167,39 @@ public class GenController {
       genView = null;
     }
   }
+
+  /**
+   * Creates a background task for benchmarking key generation. This task generates keys based on
+   * provided parameters and updates the progress bar and label on the UI.
+   *
+   * @param numTrials     The number of trials for key generation.
+   * @param keyParams     The parameters for key generation, including bit sizes and the small e
+   *                      option.
+   * @param progressBar   The ProgressBar to update with progress information.
+   * @param progressLabel The Label to update with progress information.
+   * @return A Task to execute the benchmarking process in the background.
+   */
+  private Task<Void> createBenchmarkingTask(int numTrials, List<Pair<int[], Boolean>> keyParams,
+      ProgressBar progressBar, Label progressLabel) {
+    Task<Void> benchmarkingTask = new Task<>() {
+      @Override
+      protected Void call() throws Exception {
+        genModel.batchGenerateKeys(numTrials, keyParams, progress -> Platform.runLater(() -> {
+          progressBar.setProgress(progress);
+          progressLabel.setText(String.format("%.0f%%", progress * 100));
+        }));
+        return null;
+      }
+    };
+
+
+    benchmarkingTask.setOnSucceeded(e -> {
+      ;
+    });
+
+    return benchmarkingTask;
+  }
+
 
 
 }
