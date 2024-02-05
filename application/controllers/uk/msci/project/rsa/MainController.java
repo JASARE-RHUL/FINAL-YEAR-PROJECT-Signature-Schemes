@@ -65,8 +65,8 @@ public class MainController {
   }
 
   /**
-   * Gets the signature generation controller used to manage and operate signature generation related
-   * functionalities
+   * Gets the signature generation controller used to manage and operate signature generation
+   * related functionalities
    *
    * @return The signature generation controller.
    */
@@ -88,8 +88,8 @@ public class MainController {
   }
 
   /**
-   * Observes "Sign Document" button click. Instantiates the SignatureCreationController and displays
-   * the document signing view.
+   * Observes "Sign Document" button click. Instantiates the SignatureCreationController and
+   * displays the document signing view.
    */
   class SignDocumentObserver implements EventHandler<ActionEvent> {
 
@@ -101,8 +101,8 @@ public class MainController {
   }
 
   /**
-   * Observes "verify signature" button click. Instantiates the SignatureVerificationController and displays
-   * the signature verification view.
+   * Observes "verify signature" button click. Instantiates the SignatureVerificationController and
+   * displays the signature verification view.
    */
   class verifySignatureObserver implements EventHandler<ActionEvent> {
 
@@ -113,4 +113,12 @@ public class MainController {
     }
   }
 
+  /**
+   * Gets the primary stage of the application.
+   *
+   * @return The primary stage of the application.
+   */
+  public Stage getPrimaryStage() {
+    return primaryStage;
+  }
 }

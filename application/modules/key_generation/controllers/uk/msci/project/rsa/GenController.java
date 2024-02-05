@@ -1,15 +1,23 @@
 package uk.msci.project.rsa;
 
+import static uk.msci.project.rsa.KeyGenUtil.convertStringToIntArray;
+
 import java.io.IOException;
+import java.util.List;
 import java.util.regex.Pattern;
+import javafx.application.Platform;
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.Dialog;
+import javafx.scene.control.Label;
+import javafx.scene.control.ProgressBar;
 import javafx.stage.Stage;
+import javafx.util.Pair;
 
 /**
  * Controller class for the key generation view in the digital signature application. It handles
@@ -31,6 +39,9 @@ public class GenController {
    * The main controller that orchestrates the flow between different views of the application.
    */
   private MainController mainController;
+
+  private int numTrials;
+
 
   /**
    * Constructs a GenController with a reference to the MainController.
@@ -56,6 +67,7 @@ public class GenController {
       genView.addGenerateButtonObserver(new GenerateKeyObserver());
       genView.addBackToMainMenuObserver(new BackToMainMenuObserver());
       genView.addHelpObserver(new BackToMainMenuObserver());
+      genView.addNumKeysObserver(new NumKeysBtnObserver());
 
       primaryStage.setScene(new Scene(root));
 
@@ -64,8 +76,9 @@ public class GenController {
     }
   }
 
+
   /**
-   * Observer that observes the potential event of the generate key button being selected. I It
+   * Observer that observes the potential event of the generate key button being selected. It
    * validates the input and triggers key generation in the model.
    */
   class GenerateKeyObserver implements EventHandler<ActionEvent> {
@@ -82,22 +95,9 @@ public class GenController {
         genView.setFailurePopupVisible(true);
 
       } else {
-
-        String[] numberStrings = keyBitSizes.split("\\s*,\\s*");
-        int[] intArray = new int[numberStrings.length];
-        Alert alert = new Alert(AlertType.INFORMATION);
-        int k = numberStrings.length;
-        for (int i = 0; i < k; i++) {
-          // if number is too big to parse as Integer
-          // pass, use a bit size larger than the maximum bit size
-          // to cause the process to fail
-          try {
-            intArray[i] = Integer.parseInt(numberStrings[i]);
-          } catch (NumberFormatException e) {
-            intArray[i] = 8000;
-          }
-        }
-        genModel.setKeyParameters(k, intArray);
+        int[] intArray = convertStringToIntArray(keyBitSizes);
+        int k = intArray.length;
+        genModel.setKeyParameters(k, convertStringToIntArray(keyBitSizes));
         try {
           genModel.setGen(false);
         } catch (IllegalArgumentException e) {
@@ -156,6 +156,54 @@ public class GenController {
   }
 
   /**
+   * Observer that handles the event of generating a batch of keys based on user input. It processes
+   * the number of keys and their respective parameters, and initiates a benchmarking task to
+   * generate the keys and calculate statistics.
+   */
+  class NumKeysBtnObserver implements EventHandler<ActionEvent> {
+
+    @Override
+    public void handle(ActionEvent event) {
+      int numKeys = 0;
+      try {
+        numKeys = Integer.parseInt(genView.getNumKeys());
+      } catch (NumberFormatException e) {
+        uk.msci.project.rsa.DisplayUtility.showErrorAlert(
+            "Error: Invalid input. Please enter a valid number of keys.");
+        return;
+      }
+      // Show the dynamic fields dialog and check if it was completed successfully
+      boolean isFieldsDialogCompleted = genView.showDynamicFieldsDialog(numKeys,
+          mainController.getPrimaryStage());
+      if (isFieldsDialogCompleted) {
+        // Only proceed to show the trials dialog if the fields dialog was completed
+        if (genView.showTrialsDialog(mainController.getPrimaryStage())) {
+          numTrials = genView.getNumTrials();
+
+          // Show the progress dialog
+          Dialog<Void> progressDialog = uk.msci.project.rsa.DisplayUtility.showProgressDialog(
+              mainController.getPrimaryStage(), "Key Generation");
+          ProgressBar progressBar = (ProgressBar) progressDialog.getDialogPane()
+              .lookup("#progressBar");
+          Label progressLabel = (Label) progressDialog.getDialogPane().lookup("#progressLabel");
+
+          Task<Void> benchmarkingTask = createBenchmarkingTask(numTrials,
+              genView.getDynamicKeyData(),
+              progressBar, progressLabel);
+          new Thread(benchmarkingTask).start();
+
+          progressDialog.getDialogPane().lookupButton(ButtonType.CANCEL)
+              .addEventFilter(ActionEvent.ACTION, e -> {
+                if (benchmarkingTask.isRunning()) {
+                  benchmarkingTask.cancel();
+                }
+              });
+        }
+      }
+    }
+  }
+
+  /**
    * The observer for returning to the main menu. This class handles the action event triggered when
    * the user wishes to return to the main menu from the signature view.
    */
@@ -168,6 +216,39 @@ public class GenController {
       genView = null;
     }
   }
+
+  /**
+   * Creates a background task for benchmarking key generation. This task generates keys based on
+   * provided parameters and updates the progress bar and label on the UI.
+   *
+   * @param numTrials     The number of trials for key generation.
+   * @param keyParams     The parameters for key generation, including bit sizes and the small e
+   *                      option.
+   * @param progressBar   The ProgressBar to update with progress information.
+   * @param progressLabel The Label to update with progress information.
+   * @return A Task to execute the benchmarking process in the background.
+   */
+  private Task<Void> createBenchmarkingTask(int numTrials, List<Pair<int[], Boolean>> keyParams,
+      ProgressBar progressBar, Label progressLabel) {
+    Task<Void> benchmarkingTask = new Task<>() {
+      @Override
+      protected Void call() throws Exception {
+        genModel.batchGenerateKeys(numTrials, keyParams, progress -> Platform.runLater(() -> {
+          progressBar.setProgress(progress);
+          progressLabel.setText(String.format("%.0f%%", progress * 100));
+        }));
+        return null;
+      }
+    };
+
+
+    benchmarkingTask.setOnSucceeded(e -> {
+      ;
+    });
+
+    return benchmarkingTask;
+  }
+
 
 
 }
