@@ -67,6 +67,7 @@ public class GenController {
       genView.addGenerateButtonObserver(new GenerateKeyObserver());
       genView.addBackToMainMenuObserver(new BackToMainMenuObserver());
       genView.addHelpObserver(new BackToMainMenuObserver());
+      genView.addNumKeysObserver(new NumKeysBtnObserver());
 
       primaryStage.setScene(new Scene(root));
 
@@ -150,6 +151,54 @@ public class GenController {
             "The private key was successfully exported!");
       } catch (IOException e) {
         e.printStackTrace();
+      }
+    }
+  }
+
+  /**
+   * Observer that handles the event of generating a batch of keys based on user input. It processes
+   * the number of keys and their respective parameters, and initiates a benchmarking task to
+   * generate the keys and calculate statistics.
+   */
+  class NumKeysBtnObserver implements EventHandler<ActionEvent> {
+
+    @Override
+    public void handle(ActionEvent event) {
+      int numKeys = 0;
+      try {
+        numKeys = Integer.parseInt(genView.getNumKeys());
+      } catch (NumberFormatException e) {
+        uk.msci.project.rsa.DisplayUtility.showErrorAlert(
+            "Error: Invalid input. Please enter a valid number of keys.");
+        return;
+      }
+      // Show the dynamic fields dialog and check if it was completed successfully
+      boolean isFieldsDialogCompleted = genView.showDynamicFieldsDialog(numKeys,
+          mainController.getPrimaryStage());
+      if (isFieldsDialogCompleted) {
+        // Only proceed to show the trials dialog if the fields dialog was completed
+        if (genView.showTrialsDialog(mainController.getPrimaryStage())) {
+          numTrials = genView.getNumTrials();
+
+          // Show the progress dialog
+          Dialog<Void> progressDialog = uk.msci.project.rsa.DisplayUtility.showProgressDialog(
+              mainController.getPrimaryStage(), "Key Generation");
+          ProgressBar progressBar = (ProgressBar) progressDialog.getDialogPane()
+              .lookup("#progressBar");
+          Label progressLabel = (Label) progressDialog.getDialogPane().lookup("#progressLabel");
+
+          Task<Void> benchmarkingTask = createBenchmarkingTask(numTrials,
+              genView.getDynamicKeyData(),
+              progressBar, progressLabel);
+          new Thread(benchmarkingTask).start();
+
+          progressDialog.getDialogPane().lookupButton(ButtonType.CANCEL)
+              .addEventFilter(ActionEvent.ACTION, e -> {
+                if (benchmarkingTask.isRunning()) {
+                  benchmarkingTask.cancel();
+                }
+              });
+        }
       }
     }
   }
