@@ -14,7 +14,6 @@ import javafx.util.Pair;
 import uk.msci.project.rsa.DisplayUtility;
 
 
-
 /**
  * This class is part of the Model component specific to the RSA key generation module in the
  * application, handling the data and logic associated with RSA key generation. This includes
@@ -55,6 +54,11 @@ public class GenModel {
    * and a flag indicating whether to use a smaller 'e' value in key generation.
    */
   private List<Pair<int[], Boolean>> keyParams;
+
+  /**
+   * A batch of key pairs generated after a benchmarking session for later export
+   */
+  private List<KeyPair> generatedKeyPairs = new ArrayList<>();
 
 
   /**
@@ -197,27 +201,49 @@ public class GenModel {
 
 
   /**
-   * Exports the batch of generated public and private keys to separate files.
+   * Generates a batch of keys based on the previously set key parameters.
    *
-   * @param keyParams a list of key parameters (keySizes and small e option) used to generate the
-   *                  keys
-   * @throws IOException if an I/O error occurs
+   * @throws IllegalStateException if key parameters are not set.
    */
-  public void exportKeyBatch(List<Pair<int[], Boolean>> keyParams) throws IOException {
+  public void generateKeyBatch() {
+    if (this.keyParams != null) {
+      for (Pair<int[], Boolean> keyParam : this.keyParams) {
+        int[] intArray = keyParam.getKey();
+        setKeyParameters(intArray.length, intArray);
+        setGen(keyParam.getValue());
+        generateKey();
+        generatedKeyPairs.add(generatedKeyPair);
+      }
+    } else {
+      throw new IllegalStateException(
+          "Error. Key batch cannot be generated before a benchmarking session.");
+    }
+  }
+
+  /**
+   * Exports the public keys from the generated key pairs to a batch file.
+   *
+   * @throws IOException if there is an error during the export process.
+   */
+  public void exportPublicKeyBatch() throws IOException {
     StringBuilder publicKeyBatch = new StringBuilder();
+    for (KeyPair keyPair : generatedKeyPairs) {
+      publicKeyBatch.append(keyPair.getPublicKey().getKeyValue()).append("\n");
+    }
+    FileHandle.exportToFile("batchPublicKey.rsa", publicKeyBatch.toString());
+  }
+
+  /**
+   * Exports the private keys from the generated key pairs to a batch file.
+   *
+   * @throws IOException if there is an error during the export process.
+   */
+  public void exportPrivateKeyBatch() throws IOException {
     StringBuilder privateKeyBatch = new StringBuilder();
-
-    for (Pair<int[], Boolean> keyParam : keyParams) {
-      int[] intArray = keyParam.getKey();
-      setKeyParameters(intArray.length, intArray);
-      setGen(keyParam.getValue());
-      generateKey();
-
-      publicKeyBatch.append(generatedKeyPair.getPublicKey().getKeyValue()).append("\n");
-      privateKeyBatch.append(generatedKeyPair.getPrivateKey().getKeyValue()).append("\n");
+    for (KeyPair keyPair : generatedKeyPairs) {
+      privateKeyBatch.append(keyPair.getPrivateKey().getKeyValue()).append("\n");
     }
     FileHandle.exportToFile("batchKey.rsa", privateKeyBatch.toString());
-    FileHandle.exportToFile("batchPublicKey.rsa", publicKeyBatch.toString());
   }
 
 
@@ -230,4 +256,6 @@ public class GenModel {
   public List<Pair<int[], Boolean>> getKeyParams() {
     return keyParams;
   }
+
+
 }
