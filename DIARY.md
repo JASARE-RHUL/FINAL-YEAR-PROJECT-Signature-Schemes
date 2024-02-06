@@ -185,3 +185,24 @@ involved creating a new interface for common view update operations and dividing
 an abstract parent class for shared functionalities and distinct child classes for specific tasks in
 signature creation and verification. This reorganisation aimed to enhance functionality and
 maintenance, delineating shared and specific tasks for signature creation and verification.
+
+## Diary Entry - Week of 29th January - 4th February 2024
+This week started with a productive meeting on Monday with my supervisor, where we discussed using
+two or three primes for benchmarking and implementing provably secure parameters. I also received
+guidance on integrating the MGF1 function. I then adjusted the MGF1 function within signature
+schemes and got approval to use a third-party library for Keccak hashing.
+
+On Tuesday and Wednesday, I focused on integrating benchmarking features into the key generation
+module, adding a toggle switch for benchmarking mode and a user interface for inputting key
+generation parameters.
+
+By Thursday, I had created a benchmarking utility class to manage timing and computation of
+statistical averages, along with a loading bar for visual progress representation.
+
+On Friday, I designed a benchmarking results screen with tabulated layout and options for textual
+and visual representation, and improved efficiency through multi-core processing.
+
+Over the weekend, I structured the development and publication of benchmarking changes,
+incorporating them into the genModel, and finalizing the BenchmarkingUtility class. Sunday was
+dedicated to integrating these changes into the view assembly for key generation and finalizing
+updates to the genModel.
