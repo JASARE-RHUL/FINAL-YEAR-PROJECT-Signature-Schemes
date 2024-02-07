@@ -4,6 +4,7 @@ package uk.msci.project.rsa;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -152,34 +153,32 @@ public class GenModel {
    *                              for trial results.
    */
   public void batchGenerateKeys(int numTrials, List<Pair<int[], Boolean>> keyParams,
-      DoubleConsumer progressUpdater) throws InterruptedException, ExecutionException {
+      DoubleConsumer progressUpdater) throws InterruptedException {
     try (ExecutorService executor = Executors.newFixedThreadPool(
         Runtime.getRuntime().availableProcessors())) {
       this.keyParams = keyParams;
 
       for (int trial = 0; trial < numTrials; trial++) {
+        // Initialise CountDownLatch with the number of tasks to wait for
+        CountDownLatch latch = new CountDownLatch(keyParams.size());
         long startTrialTime = System.nanoTime();
-
-        List<Future<?>> futures = new ArrayList<>();
         for (Pair<int[], Boolean> keyParam : this.keyParams) {
-          futures.add(executor.submit(() -> {
-            int[] intArray = keyParam.getKey();
-            boolean isSmallE = keyParam.getValue();
-            GenRSA genRSA = new GenRSA(intArray.length, intArray, isSmallE);
-            genRSA.generateKeyPair();
-          }));
+          executor.submit(() -> {
+              int[] intArray = keyParam.getKey();
+              boolean isSmallE = keyParam.getValue();
+              GenRSA genRSA = new GenRSA(intArray.length, intArray, isSmallE);
+              genRSA.generateKeyPair();
+              latch.countDown(); // Decrement the count of the latch
+          });
         }
 
         // Wait for all tasks of this trial to complete
-        for (Future<?> future : futures) {
-          future.get(); // Blocks until the task is complete
-        }
+        latch.await(); // Blocks until the count reaches zero
 
         clockTimesPerTrial.add(System.nanoTime() - startTrialTime);
 
         progressUpdater.accept((double) (trial + 1) / numTrials);
       }
-
       executor.shutdown();
       if (!executor.awaitTermination(60, java.util.concurrent.TimeUnit.SECONDS)) {
         System.err.println("Executor did not terminate in the specified time.");
@@ -188,6 +187,7 @@ public class GenModel {
       }
     }
   }
+
 
 
   /**
