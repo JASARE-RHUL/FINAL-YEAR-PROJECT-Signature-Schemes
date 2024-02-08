@@ -1,6 +1,27 @@
 package uk.msci.project.rsa;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.function.Consumer;
+import java.util.function.DoubleConsumer;
 import java.util.zip.DataFormatException;
+import javafx.util.Pair;
 import uk.msci.project.rsa.exceptions.InvalidSignatureTypeException;
 
 /**
@@ -24,6 +45,39 @@ public class SignatureModel {
    */
   private SignatureType currentType;
 
+  /**
+   * A list that stores the clock times for each trial during batch signature generation. This is
+   * useful for benchmarking the performance of the signature creation process.
+   */
+  private List<Long> clockTimesPerTrial = new ArrayList<>();
+
+  /**
+   * A list to store the generated signatures from the benchmarking process. Each entry corresponds
+   * to a signature generated for a message in the batch.
+   */
+  private List<byte[]> signaturesFromBenchmark = new ArrayList<>();
+
+  /**
+   * A list to store the non-recoverable part of the messages from the signature generation process.
+   * This is relevant for signature schemes that involve message recovery.
+   */
+  private List<byte[]> nonRecoverableMessages = new ArrayList<>();
+
+  /**
+   * A batch of private keys used for generating signatures in a benchmarking session.
+   */
+  private List<PrivateKey> privKeyBatch = new ArrayList<PrivateKey>();
+
+  /**
+   * A batch of public keys corresponding to the private keys.
+   */
+  private List<PublicKey> publicKeyBatch = new ArrayList<PublicKey>();
+
+  /**
+   * The number of trials to run in the batchCreateSignatures method. This determines how many
+   * messages from the batch file are processed.
+   */
+  private int numTrials = 0;
 
   /**
    * Constructs a new {@code SignatureModel} without requiring an initial key representative of the
@@ -69,14 +123,6 @@ public class SignatureModel {
     return key;
   }
 
-  /**
-   * Returns the type of the current signature scheme.
-   *
-   * @return The current signature scheme type
-   */
-  public SignatureType getSigType() {
-    return currentType;
-  }
 
   /**
    * Instantiates a signature scheme based on the current key and signature type. Throws an
@@ -146,5 +192,144 @@ public class SignatureModel {
     return currentSignatureScheme.getRecoverableM();
   }
 
+  /**
+   * Sets the number of trials to be performed in the benchmarking of the signature creation
+   * process.
+   *
+   * @param numTrials The number of trials to be set.
+   */
+  public void setNumTrials(int numTrials) {
+    this.numTrials = numTrials;
+  }
+
+  /**
+   * Retrieves the number of trials set for the benchmarking of the signature creation process. This
+   * value indicates how many messages from the batch file will be processed.
+   *
+   * @return The number of trials currently set for signature generation.
+   */
+  public int getNumTrials() {
+    return numTrials;
+  }
+
+  /**
+   * Adds a new private key to the batch of private keys used for signature generation. The key is
+   * created from the provided string representation and then added to the batch.
+   *
+   * @param keyValue The string representation of the private key to be added to the batch.
+   */
+  public void addPrivKeyTobatch(String keyValue) {
+    privKeyBatch.add(new PrivateKey(keyValue));
+  }
+
+  /**
+   * Adds a new public key to the batch of public keys, corresponding to the private keys used for
+   * signature generation. The key is created from the provided string representation and then added
+   * to the batch.
+   *
+   * @param keyValue The string representation of the public key to be added to the batch.
+   */
+  public void addPublicKeyTobatch(String keyValue) {
+    publicKeyBatch.add(new PublicKey(keyValue));
+  }
+
+
+  /**
+   * Creates digital signatures in a batch process using multiple threads. The method reads messages
+   * from a file and signs each message using a batch of private keys. It records the time taken for
+   * each trial and stores generated signatures and non-recoverable message parts.
+   *
+   * @param batchMessageFile The file containing messages to be signed.
+   * @param progressUpdater  A consumer to update progress during the batch process.
+   * @throws Exception If an error occurs during the signing process or file reading.
+   */
+  public void batchCreateSignatures(File batchMessageFile, DoubleConsumer progressUpdater)
+      throws Exception {
+    try (ExecutorService executor = Executors.newFixedThreadPool(
+        Runtime.getRuntime().availableProcessors())) {
+
+
+      try (BufferedReader messageReader = new BufferedReader(new FileReader(batchMessageFile))) {
+        int i = 0;
+        String message;
+        while ((message = messageReader.readLine()) != null && i < this.numTrials) {
+          CountDownLatch latch = new CountDownLatch(privKeyBatch.size());
+          ConcurrentHashMap<PrivateKey, List<byte[]>> resultsMap = new ConcurrentHashMap<>();
+          long startTrialTime = System.nanoTime();
+          for (PrivateKey privateKey : privKeyBatch) {
+            String finalMessage = message;
+            executor.execute(() -> {
+              try {
+                SigScheme sigScheme = SignatureFactory.getSignatureScheme(currentType, privateKey);
+                byte[] signature = sigScheme.sign(finalMessage.getBytes());
+                byte[] nonRecoverableM = sigScheme.getNonRecoverableM();
+                resultsMap.put(privateKey, List.of(signature, nonRecoverableM));
+              } catch (DataFormatException | InvalidSignatureTypeException e) {
+                throw new RuntimeException(e);
+              } finally {
+                latch.countDown();
+              }
+            });
+          }
+
+          latch.await(); // Wait for all tasks of this trial to complete
+          clockTimesPerTrial.add(System.nanoTime() - startTrialTime); // Total trial time
+
+          // Add results in the order of privKeyBatch
+          for (PrivateKey key : privKeyBatch) {
+            List<byte[]> results = resultsMap.get(key);
+            if (results != null) {
+              signaturesFromBenchmark.add(results.get(0));
+              nonRecoverableMessages.add(results.get(1));
+            }
+          }
+
+
+          progressUpdater.accept((double) ++i / numTrials);
+        }
+      } finally {
+        executor.shutdown();
+        if (!executor.awaitTermination(60, java.util.concurrent.TimeUnit.SECONDS)) {
+          System.err.println("Executor did not terminate in the specified time.");
+          List<Runnable> droppedTasks = executor.shutdownNow();
+          System.err.println("Dropped " + droppedTasks.size() + " tasks.");
+        }
+      }
+    }
+  }
+
+
+  /**
+   * Retrieves the clock times recorded for each trial during the batch signature creation process.
+   * Each entry in the list represents the total time taken for a single trial.
+   *
+   * @return A list of long values, each representing the duration of a trial in nanoseconds.
+   */
+  public List<Long> getClockTimesPerTrial() {
+    return clockTimesPerTrial;
+  }
+
+  /**
+   * Retrieves the list of signatures generated during the benchmarking process. Each byte array in
+   * the list represents a single signature corresponding to a message.
+   *
+   * @return A list of byte arrays, where each array is a digital signature.
+   */
+  public List<byte[]> getSignaturesFromBenchmark() {
+    return signaturesFromBenchmark;
+  }
+
+  /**
+   * Retrieves the list of non-recoverable message parts generated during the signing process. These
+   * parts are generated in signature schemes that involve message recovery.
+   *
+   * @return A list of byte arrays, where each array is a non-recoverable part of a message.
+   */
+  public List<byte[]> getNonRecoverableMessages() {
+    return nonRecoverableMessages;
+  }
 
 }
+
+
+

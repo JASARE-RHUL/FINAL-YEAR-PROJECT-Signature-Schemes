@@ -7,10 +7,22 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static uk.msci.project.tests.PublicKeyTest.deleteFilesWithSuffix;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.lang.reflect.Field;
+import java.math.BigInteger;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import uk.msci.project.rsa.ANSI_X9_31_RDSA;
 import uk.msci.project.rsa.ByteArrayConverter;
 import uk.msci.project.rsa.GenModel;
@@ -31,9 +43,42 @@ public class SignatureModelTest {
 
   private SignatureModel signatureModel;
 
+  private File createTestFileWithMessages(int numMessages) throws IOException {
+    File file = new File(System.getProperty("user.dir"), "testMessages.txt");
+    try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
+      for (int i = 0; i < numMessages; i++) {
+        writer.write("Message " + i);
+        writer.newLine();
+      }
+    }
+    return file;
+  }
+
+
+  private void prepareSignatureTestData() {
+    List<byte[]> signatures = new ArrayList<>();
+    // Populate signatures list with some dummy data
+    signatures.add(new byte[]{1, 2, 3});
+    signatures.add(new byte[]{4, 5, 6});
+    signatureModel.getSignaturesFromBenchmark().addAll(signatures);
+  }
+
+  private void prepareNonRecoverableTestData() {
+    List<byte[]> nonRecoverableMessages = new ArrayList<>();
+    // Populate nonRecoverableMessages list with some dummy data
+    nonRecoverableMessages.add(new byte[]{7, 8, 9});
+    nonRecoverableMessages.add(new byte[]{}); // Example of an empty non-recoverable message
+    signatureModel.getNonRecoverableMessages().addAll(nonRecoverableMessages);
+  }
+
 
   @BeforeEach
   public void setup() {
+    String fileNamePrefix = "testMessages";
+    String fileExtension = "txt";
+    deleteFilesWithSuffix(fileNamePrefix, fileExtension);
+    deleteFilesWithSuffix("testNonRecoverableMessages", fileExtension);
+
     signatureModel = new SignatureModel();
 
   }
@@ -188,6 +233,7 @@ public class SignatureModelTest {
     assertTrue(currentSignatureSchemeVal instanceof ISO_IEC_9796_2_SCHEME_1);
 
   }
+
   @Test
   void testInstantiateSignatureNullKey()
       throws IllegalAccessException, NoSuchFieldException, InvalidSignatureTypeException {
@@ -197,6 +243,7 @@ public class SignatureModelTest {
         "Both key and signature type need to be set before instantiating a signature scheme");
 
   }
+
   @Test
   void testInstantiateSignatureNullType()
       throws IllegalAccessException, NoSuchFieldException, InvalidSignatureTypeException {
@@ -205,6 +252,7 @@ public class SignatureModelTest {
         () -> signatureModel.instantiateSignatureScheme(),
         "Both key and signature type need to be set before instantiating a signature scheme");
   }
+
   @Test
   void testInstantiateSignatureNull()
       throws IllegalAccessException, NoSuchFieldException, InvalidSignatureTypeException {
@@ -213,6 +261,34 @@ public class SignatureModelTest {
         "Both key and signature type need to be set before instantiating a signature scheme");
   }
 
+  @Test
+  public void testBatchCreateSignatures() throws Exception {
+    // Prepare test data and mock objects if needed
+    File testFile = createTestFileWithMessages(10); // 10 messages for example
+
+    // Execute the batchCreateSignatures method
+    signatureModel.addPrivKeyTobatch(
+        new GenRSA(2, new int[]{512, 512}).generateKeyPair().getPrivateKey().getKeyValue());
+    signatureModel.setNumTrials(10);
+    signatureModel.setSignatureType(SignatureType.ANSI_X9_31_RDSA);
+    signatureModel.batchCreateSignatures(testFile, progress -> {
+    });
+
+    // Assertions for signatures and non-recoverable messages
+    List<byte[]> signatures = signatureModel.getSignaturesFromBenchmark();
+    List<byte[]> nonRecoverableMessages = signatureModel.getNonRecoverableMessages();
+    assertEquals(10, signatures.size());
+    assertEquals(10, nonRecoverableMessages.size());
+
+    // Assertions for clockTimesPerTrial
+    List<Long> timesPerTrial = signatureModel.getClockTimesPerTrial();
+    assertEquals(10, timesPerTrial.size());
+
+    for (Long time : timesPerTrial) {
+      assertTrue(time > 0);
+    }
+
+  }
 
 }
 

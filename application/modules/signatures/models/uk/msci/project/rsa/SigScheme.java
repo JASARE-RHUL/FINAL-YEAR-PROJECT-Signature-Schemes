@@ -259,7 +259,7 @@ public abstract class SigScheme implements SigSchemeInterface {
    * @return signing process initialised non-recoverable portion of message
    */
   public byte[] getNonRecoverableM() {
-    return nonRecoverableM;
+    return nonRecoverableM == null ? new byte[]{} : nonRecoverableM;
   }
 
   /**
