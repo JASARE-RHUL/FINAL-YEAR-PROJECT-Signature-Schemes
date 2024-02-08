@@ -16,6 +16,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
+import org.controlsfx.control.ToggleSwitch;
 
 /**
  * The {@code SignView} class is responsible for managing the user interface related to the signing
@@ -116,16 +117,108 @@ public class SignView implements SignatureViewInterface {
   private StackPane notificationPane;
 
 
+  /**
+   * Button to trigger the export of the generated signature to a file.
+   */
   @FXML
   private Button exportSignatureButton;
+
+  /**
+   * Button to trigger copying the generated signature to the clipboard.
+   */
   @FXML
   private Button copySignatureButton;
+
+  /**
+   * Button to trigger the export of the non-recoverable message to a file.
+   */
   @FXML
   private Button exportNonRecoverableMessageButton;
+
+  /**
+   * Button to trigger copying the non-recoverable message to the clipboard.
+   */
   @FXML
   private Button copyNonRecoverableMessageButton;
+
+  /**
+   * Button to close the notification pane.
+   */
   @FXML
   private Button closeNotificationButton;
+
+  /**
+   * Toggle switch for enabling or disabling benchmarking mode.
+   */
+  @FXML
+  private ToggleSwitch benchmarkingModeToggle;
+
+  /**
+   * Label displaying the number of messages for benchmarking.
+   */
+  @FXML
+  private Label numMessageLabel;
+
+  /**
+   * TextField for entering the number of messages for benchmarking.
+   */
+  @FXML
+  private TextField numMessageField;
+
+  /**
+   * HBox containing components for entering message batch details.
+   */
+  @FXML
+  private HBox messageBatchHBox;
+
+  /**
+   * Label displaying text related to message batch.
+   */
+  @FXML
+  private Label messageBatchText;
+
+  /**
+   * TextField for entering details of the message batch.
+   */
+  @FXML
+  private TextField messageBatchField;
+
+  /**
+   * ImageView displaying a checkmark indicating successful message batch import.
+   */
+  @FXML
+  private ImageView checkmarkImageMessageBatch;
+
+  /**
+   * Button for importing text batch.
+   */
+  @FXML
+  private Button importTextBatchBtn;
+
+  /**
+   * Button for canceling text batch import.
+   */
+  @FXML
+  private Button cancelImportTextButton;
+
+  /**
+   * Button for importing key batch.
+   */
+  @FXML
+  private Button importKeyBatchButton;
+
+  /**
+   * Button for canceling key batch import.
+   */
+  @FXML
+  private Button cancelImportKeyButton;
+
+  /**
+   * Button for starting signature benchmarking.
+   */
+  @FXML
+  private Button SigBenchmarkButton;
+
 
   /**
    * Gets the image view showing a checkmark next to the text file, indicating a successful load.
@@ -319,6 +412,120 @@ public class SignView implements SignatureViewInterface {
     this.recoveryOptions.setVisible(visible);
   }
 
+
+  /**
+   * Sets the visibility of the benchmarking mode toggle switch and manages its properties.
+   *
+   * @param visible true to make the benchmarking mode toggle switch visible, false to hide it.
+   */
+  public void setBenchmarkingModeToggleVisibility(boolean visible) {
+    benchmarkingModeToggle.setVisible(visible);
+    benchmarkingModeToggle.setManaged(visible);
+  }
+
+  /**
+   * Sets the visibility of the numMessageLabel, numMessageField, and manages their properties.
+   *
+   * @param visible true to make the numMessageLabel and numMessageField visible, false to hide
+   *                them.
+   */
+  public void setNumMessageVisibility(boolean visible) {
+    numMessageLabel.setVisible(visible);
+    numMessageLabel.setManaged(visible);
+    numMessageField.setVisible(visible);
+    numMessageField.setManaged(visible);
+  }
+
+  /**
+   * Sets the visibility of the messageBatchHBox and manages its properties.
+   *
+   * @param visible true to make the messageBatchHBox visible, false to hide it.
+   */
+  public void setMessageBatchHBoxVisibility(boolean visible) {
+    messageBatchHBox.setVisible(visible);
+    messageBatchHBox.setManaged(visible);
+  }
+
+  /**
+   * Sets the visibility of the messageBatchText and manages its properties.
+   *
+   * @param visible true to make the messageBatchText visible, false to hide it.
+   */
+  public void setMessageBatchTextVisibility(boolean visible) {
+    messageBatchText.setVisible(visible);
+    messageBatchText.setManaged(visible);
+  }
+
+  /**
+   * Sets the visibility of the messageBatchField and manages its properties.
+   *
+   * @param visible true to make the messageBatchField visible, false to hide it.
+   */
+  public void setMessageBatchFieldVisibility(boolean visible) {
+    messageBatchField.setVisible(visible);
+    messageBatchField.setManaged(visible);
+  }
+
+  /**
+   * Sets the visibility of the checkmarkImageMessageBatch and manages its properties.
+   *
+   * @param visible true to make the checkmarkImageMessageBatch visible, false to hide it.
+   */
+  public void setCheckmarkImageMessageBatchVisibility(boolean visible) {
+    checkmarkImageMessageBatch.setVisible(visible);
+    checkmarkImageMessageBatch.setManaged(visible);
+  }
+
+  /**
+   * Sets the visibility of the importTextBatchBtn and manages its properties.
+   *
+   * @param visible true to make the importTextBatchBtn visible, false to hide it.
+   */
+  public void setImportTextBatchBtnVisibility(boolean visible) {
+    importTextBatchBtn.setVisible(visible);
+    importTextBatchBtn.setManaged(visible);
+  }
+
+  /**
+   * Sets the visibility of the cancelImportTextButton and manages its properties.
+   *
+   * @param visible true to make the cancelImportTextButton visible, false to hide it.
+   */
+  public void setCancelImportTextButtonVisibility(boolean visible) {
+    cancelImportTextButton.setVisible(visible);
+    cancelImportTextButton.setManaged(visible);
+  }
+
+  /**
+   * Sets the visibility of the importKeyBatchButton and manages its properties.
+   *
+   * @param visible true to make the importKeyBatchButton visible, false to hide it.
+   */
+  public void setImportKeyBatchButtonVisibility(boolean visible) {
+    importKeyBatchButton.setVisible(visible);
+    importKeyBatchButton.setManaged(visible);
+  }
+
+  /**
+   * Sets the visibility of the cancelImportKeyButton and manages its properties.
+   *
+   * @param visible true to make the cancelImportKeyButton visible, false to hide it.
+   */
+  public void setCancelImportKeyButtonVisibility(boolean visible) {
+    cancelImportKeyButton.setVisible(visible);
+    cancelImportKeyButton.setManaged(visible);
+  }
+
+  /**
+   * Sets the visibility of the SigBenchmarkButton and manages its properties.
+   *
+   * @param visible true to make the SigBenchmarkButton visible, false to hide it.
+   */
+  public void setSigBenchmarkButtonVisibility(boolean visible) {
+    SigBenchmarkButton.setVisible(visible);
+    SigBenchmarkButton.setManaged(visible);
+  }
+
   /**
    * Registers an observer for the event of importing text. The observer is triggered when the user
    * interacts with the import text button.
@@ -357,7 +564,7 @@ public class SignView implements SignatureViewInterface {
   }
 
   /**
-   * Registers an oberver for the import key button click action.
+   * Registers an observer for the import key button click action.
    *
    * @param observer The event handler to register.
    */
@@ -366,13 +573,68 @@ public class SignView implements SignatureViewInterface {
   }
 
   /**
-   * Registers an observer for the signature scheme dropdown value changes.
+   * Registers an observer for when the signature scheme dropdown value changes.
    *
    * @param observer The change listener to register.
    */
   public void addSignatureSchemeChangeObserver(ChangeListener<String> observer) {
     signatureSchemeDropdown.valueProperty().addListener(observer);
   }
+
+  /**
+   * Registers an observer for the importTextBatchBtn Button's action event.
+   *
+   * @param observer The event handler to be registered.
+   */
+  public void addImportTextBatchBtnObserver(EventHandler<ActionEvent> observer) {
+    importTextBatchBtn.setOnAction(observer);
+  }
+
+  /**
+   * Registers an observer for the cancelImportTextButton Button's action event.
+   *
+   * @param observer The event handler to be registered.
+   */
+  public void addCancelImportTextButtonObserver(EventHandler<ActionEvent> observer) {
+    cancelImportTextButton.setOnAction(observer);
+  }
+
+  /**
+   * Registers an observer for the importKeyBatchButton Button's action event.
+   *
+   * @param observer The event handler to be registered.
+   */
+  public void addImportKeyBatchButtonObserver(EventHandler<ActionEvent> observer) {
+    importKeyBatchButton.setOnAction(observer);
+  }
+
+  /**
+   * Registers an observer for the cancelImportKeyButton Button's action event.
+   *
+   * @param observer The event handler to be registered.
+   */
+  public void addCancelImportKeyButtonObserver(EventHandler<ActionEvent> observer) {
+    cancelImportKeyButton.setOnAction(observer);
+  }
+
+  /**
+   * Registers an observer for the SigBenchmarkButton Button's action event.
+   *
+   * @param observer The event handler to be registered.
+   */
+  public void addSigBenchmarkButtonObserver(EventHandler<ActionEvent> observer) {
+    SigBenchmarkButton.setOnAction(observer);
+  }
+
+  /**
+   * Registers an observer for when the benchmarking mode toggle switch value changes.
+   *
+   * @param observer The change listener to be registered.
+   */
+  public void addBenchmarkingModeToggleObserver(ChangeListener<Boolean> observer) {
+    benchmarkingModeToggle.selectedProperty().addListener(observer);
+  }
+
 
   /**
    * Registers an observer for the exportSignatureButton Button's action event.
