@@ -1,0 +1,4 @@
+.bold-label {
+  -fx-font-weight: bold;
+  -fx-font-size: 15px; /* Adjust font size as needed */
+}

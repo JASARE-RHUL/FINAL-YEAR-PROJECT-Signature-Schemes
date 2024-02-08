@@ -6,41 +6,64 @@
 <?import java.lang.String?>
 <?import javafx.scene.image.ImageView?>
 
-<AnchorPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="uk.msci.project.rsa.SignView" prefHeight="400.0" prefWidth="600.0" fx:id="root">
-  <VBox alignment="CENTER" spacing="10" AnchorPane.topAnchor="50" AnchorPane.bottomAnchor="50" AnchorPane.leftAnchor="50" AnchorPane.rightAnchor="50">
+<?import org.controlsfx.control.ToggleSwitch?>
+<AnchorPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="uk.msci.project.rsa.SignView" prefHeight="400.0" prefWidth="605.0" fx:id="root">
+  <VBox alignment="CENTER" spacing="25" AnchorPane.topAnchor="50" AnchorPane.bottomAnchor="50" AnchorPane.leftAnchor="50" AnchorPane.rightAnchor="50">
     <Label text="Signature Scheme POC - Sign" style="-fx-font-size: 24;"/>
     <!-- <Label text="[LOGO HERE]" />-->
     <Separator/>
+    <!-- ToggleSwitch for Benchmarking Mode -->
+    <HBox alignment="CENTER_LEFT" spacing="10">
+      <Label text="Benchmarking Mode:" styleClass="bold-label"/>
+      <ToggleSwitch fx:id="benchmarkingModeToggle" selected="true"/>
+    </HBox>
 
+    <Separator/>
     <!-- Text Area and Import Text Button -->
-    <HBox spacing="10" alignment="CENTER_LEFT">
+    <HBox spacing="10" alignment="CENTER">
       <VBox spacing="5">
-        <Label text="ENTER TEXT TO SIGN:" style="-fx-font-weight: bold;"/>
+        <HBox  spacing="20" managed="false" visible="false">
+          <Label text="ENTER TEXT TO SIGN:" styleClass="bold-label"/>
+          <Button fx:id="importTextButton" text="Import Text"/>
+        </HBox>
+        <HBox alignment="CENTER" spacing="10">
+          <Label fx:id="numMessageLabel" text="Number of Messages:" styleClass="bold-label"/>
+          <TextField fx:id="numMessageField" prefWidth="100"/>
+        </HBox>
+        <HBox alignment="CENTER" spacing="10" fx:id="messageBatchHBox">
+          <Label fx:id="messageBatchText" text="MESSAGE BATCH:" styleClass="bold-label"/>
+          <TextField fx:id="messageBatchField" prefWidth="200" text="Please Import a message batch" editable="false"/>
+          <ImageView fx:id="checkmarkImage" fitWidth="20" fitHeight="20" preserveRatio="true" visible="false"/>
+          <Button fx:id="importTextButton" text="Import Text" visible="false" managed="false"/>
+          <Button fx:id="importTextBatchBtn" text="Import Text"/>
+          <Button fx:id="cancelImportTextButton" text="Cancel Import" visible="false" managed="false"/>
+        </HBox>
 
-        <StackPane>
-          <TextArea fx:id="textInput" prefHeight="100" prefWidth="400" wrapText="true" visible="true"/>
-          <HBox fx:id="textInputHBox" alignment="CENTER_LEFT" spacing="5" visible="false">
-            <Label fx:id="textFileNameLabel" text="" />
+          <TextArea fx:id="textInput" prefHeight="200" prefWidth="400" wrapText="true" visible="false" managed="false"/>
+          <HBox fx:id="textInputHBox" alignment="CENTER_LEFT" spacing="5" visible="false" managed="false">
+            <Label fx:id="textFileNameLabel" text="" styleClass="bold-label" />
             <ImageView fx:id="textFileCheckmarkImage" fitWidth="20" fitHeight="20" preserveRatio="true" visible="true"/>
           </HBox>
-        </StackPane>
+
       </VBox>
-      <Button fx:id="importTextButton" text="Import Text..." />
+
     </HBox>
 
 
     <!-- Private Key Input and Import Button -->
-    <HBox alignment="CENTER_LEFT" spacing="10">
-      <Label text="PRIVATE KEY:" style="-fx-font-weight: bold;"/>
-      <TextField fx:id="keyField" prefWidth="200" text="Please Import a key" editable="false"/>
+    <HBox alignment="CENTER" spacing="10">
+      <Label text="PRIVATE KEY BATCH:" styleClass="bold-label"/>
+      <TextField fx:id="keyField" prefWidth="200" text="Please Import a private key batch" editable="false"/>
       <ImageView fx:id="checkmarkImage" fitWidth="20" fitHeight="20" preserveRatio="true" visible="false"/>
-      <Button fx:id="importKeyButton" text="Import Private Key" />
+      <Button fx:id="importKeyButton" text="Import Private Key" visible="false" managed="false"/>
+      <Button fx:id="importKeyBatchButton" text="Import Key Batch" visible="true" managed="true"/>
+      <Button fx:id="cancelImportKeyButton" text="Cancel Import" visible="false" managed="false"/>
     </HBox>
-    <Label text="(If no key loaded, prompt: [G] Generate Private Key)"/>
+
 
     <!-- Signature Scheme Dropdown -->
-    <HBox alignment="CENTER_LEFT" spacing="10">
-      <Label text="SIGNATURE SCHEME:" style="-fx-font-weight: bold;"/>
+    <HBox alignment="CENTER" spacing="10">
+      <Label text="SIGNATURE SCHEME:" styleClass="bold-label"/>
       <ComboBox fx:id="signatureSchemeDropdown" prefWidth="200">
         <items>
           <FXCollections fx:factory="observableArrayList">
@@ -54,7 +77,10 @@
     </HBox>
 
     <!-- Create Signature Button -->
-    <Button fx:id="createSignatureButton" text="Create Signature" maxWidth="Infinity" />
+    <Button fx:id="createSignatureButton" styleClass="bold-label" text="Create Signature"
+      maxWidth="200" managed="false" visible="false"/>
+    <Button fx:id="SigBenchmarkButton" styleClass="bold-label" text="Start Signature Benchmarking"
+      maxWidth="400" managed="true" visible="true"/>
 
     <Separator/>
 
