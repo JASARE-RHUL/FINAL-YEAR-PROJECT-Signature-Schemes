@@ -1,9 +1,9 @@
 package uk.msci.project.rsa;
 
 /**
- * Provides implementation of the {@code ViewUpdate} interface specific to the {@code SignView} class.
- * This class encapsulates the logic required to update the visual components of the sign view
- * as per the actions defined in the {@code ViewUpdate} interface.
+ * Provides implementation of the {@code ViewUpdate} interface specific to the {@code SignView}
+ * class. This class encapsulates the logic required to update the visual components of the sign
+ * view as per the actions defined in the {@code ViewUpdate} interface.
  */
 public class SignViewUpdateOperations implements ViewUpdate {
 
@@ -29,6 +29,16 @@ public class SignViewUpdateOperations implements ViewUpdate {
   }
 
   /**
+   * Sets the name of the message batch in the sign view.
+   *
+   * @param name The name of the message batch to be displayed.
+   */
+  @Override
+  public void setMessageBatchName(String name) {
+    signView.setMessageBatch(name);
+  }
+
+  /**
    * Updates the checkmark image in the sign view, typically to indicate a successful operation.
    */
   @Override
@@ -46,10 +56,22 @@ public class SignViewUpdateOperations implements ViewUpdate {
     signView.setCheckmarkImageVisibility(visible);
   }
 
+
+  /**
+   * Sets the visibility of the message batch field in the sign view.
+   *
+   * @param visible {@code true} to make the message batch field visible, {@code false} to hide it.
+   */
+  @Override
+  public void setBatchMessageVisibility(boolean visible) {
+    signView.setMessageBatchFieldVisibility(visible);
+  }
+
   /**
    * Sets the visibility of the key display area in the sign view.
    *
-   * @param visible {@code true} if the key display should be visible, {@code false} if it should be hidden.
+   * @param visible {@code true} if the key display should be visible, {@code false} if it should be
+   *                hidden.
    */
   @Override
   public void setKeyVisibility(boolean visible) {
@@ -96,6 +118,15 @@ public class SignViewUpdateOperations implements ViewUpdate {
   }
 
   /**
+   * Sets the visibility of the text file checkmark in the sign view.
+   *
+   * @param visible {@code true} to make the text file checkmark visible, {@code false} otherwise.
+   */
+  public void setTextFileCheckmarkVisibility(boolean visible) {
+    signView.setTextFieldCheckmarkImageVisibility(visible);
+  }
+
+  /**
    * Sets the visibility of the container holding the text input elements within the sign view.
    *
    * @param visible {@code true} to make the container visible, {@code false} to hide it.
@@ -103,5 +134,15 @@ public class SignViewUpdateOperations implements ViewUpdate {
   @Override
   public void setTextInputHBoxVisibility(boolean visible) {
     signView.setTextInputHBoxVisibility(visible);
+  }
+
+  /**
+   * Retrieves the sign view associated with these operations.
+   *
+   * @return The associated {@code SignView}.
+   */
+  @Override
+  public SignView getView() {
+    return signView;
   }
 }

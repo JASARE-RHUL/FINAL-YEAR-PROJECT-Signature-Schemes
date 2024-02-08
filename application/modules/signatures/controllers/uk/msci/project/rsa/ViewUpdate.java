@@ -15,6 +15,14 @@ public interface ViewUpdate {
    */
   void setKeyName(String keyName);
 
+
+  /**
+   * Sets the name of the message batch in the view.
+   *
+   * @param keyName The name of the message batch to be displayed.
+   */
+  void setMessageBatchName(String keyName);
+
   /**
    * Updates the checkmark image, typically to indicate a successful operation.
    */
@@ -28,12 +36,26 @@ public interface ViewUpdate {
   void setCheckmarkVisibility(boolean visible);
 
   /**
+   * Sets the visibility of the text file checkmark in the view.
+   *
+   * @param visible {@code true} to make the text file checkmark visible, {@code false} otherwise.
+   */
+  void setTextFileCheckmarkVisibility(boolean visible);
+
+  /**
    * Sets the visibility of the key in the user interface.
    *
    * @param visible {@code true} if the key should be visible; {@code false} if it should be
    *                hidden.
    */
   void setKeyVisibility(boolean visible);
+
+  /**
+   * Sets the visibility of the message batch section in the view.
+   *
+   * @param visible {@code true} if the message batch should be visible, {@code false} otherwise.
+   */
+  void setBatchMessageVisibility(boolean visible);
 
   /**
    * Sets the text in a text input field.
@@ -69,4 +91,11 @@ public interface ViewUpdate {
    * @param visible {@code true} to make the HBox visible; {@code false} to hide it.
    */
   void setTextInputHBoxVisibility(boolean visible);
+
+  /**
+   * Retrieves the view interface associated with this update.
+   *
+   * @return The associated view interface.
+   */
+  SignatureViewInterface getView();
 }

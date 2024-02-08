@@ -9,8 +9,11 @@ import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.control.Toggle;
+import javafx.scene.control.ToggleGroup;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
@@ -219,6 +222,33 @@ public class SignView implements SignatureViewInterface {
   @FXML
   private Button SigBenchmarkButton;
 
+  /**
+   * Toggle group for selecting the parameter type for signature schemes.
+   */
+  @FXML
+  private ToggleGroup parameterChoiceToggleGroup;
+
+  /**
+   * Radio button for selecting standard parameters.
+   */
+  @FXML
+  private RadioButton standardParametersRadio;
+
+  /**
+   * Radio button for selecting provably secure parameters.
+   */
+  @FXML
+  private RadioButton provablySecureParametersRadio;
+
+  /**
+   * Initialises the SignView, setting up the toggle group for parameter choice.
+   */
+  public void initialize() {
+    parameterChoiceToggleGroup = new ToggleGroup();
+    standardParametersRadio.setToggleGroup(parameterChoiceToggleGroup);
+    provablySecureParametersRadio.setToggleGroup(parameterChoiceToggleGroup);
+  }
+
 
   /**
    * Gets the image view showing a checkmark next to the text file, indicating a successful load.
@@ -241,6 +271,10 @@ public class SignView implements SignatureViewInterface {
 
     // Preserve the image's aspect ratio
     this.textFileCheckmarkImage.setPreserveRatio(true);
+  }
+
+  public void setTextFieldCheckmarkImageVisibility(boolean visible) {
+    this.textFileCheckmarkImage.setVisible(visible);
   }
 
   /**
@@ -437,6 +471,33 @@ public class SignView implements SignatureViewInterface {
   }
 
   /**
+   * Retrieves the text from the numMessageField TextField, which specifies the number of messages
+   * for benchmarking.
+   *
+   * @return The text from the numMessageField.
+   */
+  public String getNumMessageField() {
+    return numMessageField.getText();
+  }
+
+  /**
+   * Sets whether the numMessageField TextField is editable.
+   *
+   * @param editable true to make the field editable, false otherwise.
+   */
+  public void setNumMessageFieldEditable(boolean editable) {
+    numMessageField.setEditable(editable);
+  }
+
+  /**
+   * Clears the text from the numMessageField TextField and makes it editable.
+   */
+  public void clearNumMessageField() {
+    numMessageField.clear();
+    numMessageField.setEditable(true);
+  }
+
+  /**
    * Sets the visibility of the messageBatchHBox and manages its properties.
    *
    * @param visible true to make the messageBatchHBox visible, false to hide it.
@@ -464,6 +525,10 @@ public class SignView implements SignatureViewInterface {
   public void setMessageBatchFieldVisibility(boolean visible) {
     messageBatchField.setVisible(visible);
     messageBatchField.setManaged(visible);
+  }
+
+  public void setMessageBatch(String text) {
+    messageBatchField.setText(text);
   }
 
   /**
@@ -572,6 +637,7 @@ public class SignView implements SignatureViewInterface {
     importKeyButton.setOnAction(observer);
   }
 
+
   /**
    * Registers an observer for when the signature scheme dropdown value changes.
    *
@@ -580,6 +646,11 @@ public class SignView implements SignatureViewInterface {
   public void addSignatureSchemeChangeObserver(ChangeListener<String> observer) {
     signatureSchemeDropdown.valueProperty().addListener(observer);
   }
+
+  public void addParameterChoiceChangeObserver(ChangeListener<Toggle> observer) {
+    parameterChoiceToggleGroup.selectedToggleProperty().addListener(observer);
+  }
+
 
   /**
    * Registers an observer for the importTextBatchBtn Button's action event.
@@ -592,6 +663,7 @@ public class SignView implements SignatureViewInterface {
 
   /**
    * Registers an observer for the cancelImportTextButton Button's action event.
+   * This observer is called when the user clicks the button to cancel the import of a text batch.
    *
    * @param observer The event handler to be registered.
    */
@@ -601,6 +673,7 @@ public class SignView implements SignatureViewInterface {
 
   /**
    * Registers an observer for the importKeyBatchButton Button's action event.
+   * This observer is invoked when the user clicks the button to import a batch of keys.
    *
    * @param observer The event handler to be registered.
    */

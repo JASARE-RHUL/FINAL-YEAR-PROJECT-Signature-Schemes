@@ -157,9 +157,9 @@ public class SignatureModelTest {
   public void testGetSignatureSchemeRSASSA_PKCS1_v1_5() throws InvalidSignatureTypeException {
     KeyPair keyPair = new GenRSA(2, new int[]{512, 512}).generateKeyPair();
     SigScheme resultPriv = SignatureFactory.getSignatureScheme(SignatureType.RSASSA_PKCS1_v1_5,
-        keyPair.getPrivateKey());
+        keyPair.getPrivateKey(), false);
     SigScheme resultPub = SignatureFactory.getSignatureScheme(SignatureType.RSASSA_PKCS1_v1_5,
-        keyPair.getPrivateKey());
+        keyPair.getPrivateKey(), false);
     assertTrue(resultPriv instanceof RSASSA_PKCS1_v1_5);
     assertTrue(resultPub instanceof RSASSA_PKCS1_v1_5);
   }
@@ -168,9 +168,9 @@ public class SignatureModelTest {
   public void testGetSignatureSchemeANSI_X9_31_RDSA() throws InvalidSignatureTypeException {
     KeyPair keyPair = new GenRSA(2, new int[]{512, 512}).generateKeyPair();
     SigScheme resultPriv = SignatureFactory.getSignatureScheme(SignatureType.ANSI_X9_31_RDSA,
-        keyPair.getPrivateKey());
+        keyPair.getPrivateKey(), false);
     SigScheme resultPub = SignatureFactory.getSignatureScheme(SignatureType.ANSI_X9_31_RDSA,
-        keyPair.getPrivateKey());
+        keyPair.getPrivateKey(), false);
     assertTrue(resultPriv instanceof ANSI_X9_31_RDSA);
     assertTrue(resultPub instanceof ANSI_X9_31_RDSA);
   }
@@ -180,9 +180,9 @@ public class SignatureModelTest {
     KeyPair keyPair = new GenRSA(2, new int[]{512, 512}).generateKeyPair();
     SigScheme resultPriv = SignatureFactory.getSignatureScheme(
         SignatureType.ISO_IEC_9796_2_SCHEME_1,
-        keyPair.getPrivateKey());
+        keyPair.getPrivateKey(), false);
     SigScheme resultPub = SignatureFactory.getSignatureScheme(SignatureType.ISO_IEC_9796_2_SCHEME_1,
-        keyPair.getPrivateKey());
+        keyPair.getPrivateKey(), false);
     assertTrue(resultPriv instanceof ISO_IEC_9796_2_SCHEME_1);
     assertTrue(resultPub instanceof ISO_IEC_9796_2_SCHEME_1);
   }
@@ -191,7 +191,7 @@ public class SignatureModelTest {
   public void testGetSignatureSchemeWithInvalidType() throws InvalidSignatureTypeException {
     KeyPair keyPair = new GenRSA(2, new int[]{512, 512}).generateKeyPair();
     assertThrows(NullPointerException.class,
-        () -> SignatureFactory.getSignatureScheme(null, keyPair.getPublicKey()),
+        () -> SignatureFactory.getSignatureScheme(null, keyPair.getPublicKey(), false),
         "Should thrown NullPointerException when signature type is invalid ");
   }
 
@@ -267,7 +267,7 @@ public class SignatureModelTest {
     File testFile = createTestFileWithMessages(10); // 10 messages for example
 
     // Execute the batchCreateSignatures method
-    signatureModel.addPrivKeyTobatch(
+    signatureModel.addPrivKeyToBatch(
         new GenRSA(2, new int[]{512, 512}).generateKeyPair().getPrivateKey().getKeyValue());
     signatureModel.setNumTrials(10);
     signatureModel.setSignatureType(SignatureType.ANSI_X9_31_RDSA);
@@ -345,8 +345,6 @@ public class SignatureModelTest {
       assertEquals(signatureModel.getNonRecoverableMessages().size(), count);
     }
   }
-
-
 
 
 }

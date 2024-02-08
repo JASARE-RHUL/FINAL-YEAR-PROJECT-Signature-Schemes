@@ -138,14 +138,14 @@ public class SignatureVerificationController extends SignatureBaseController {
     @Override
     public void handle(ActionEvent event) {
       if ((verifyView.getTextInput().equals("") && message == null)) {
-        if ((signatureModel.getSigType() != SignatureType.ISO_IEC_9796_2_SCHEME_1)) {
+        if ((signatureModel.getSignatureType() != SignatureType.ISO_IEC_9796_2_SCHEME_1)) {
           uk.msci.project.rsa.DisplayUtility.showErrorAlert(
               "You must provide an input for all required fields. Please try again.");
           return;
         }
       }
       if (signatureModel.getKey() == null
-          || signatureModel.getSigType() == null
+          || signatureModel.getSignatureType() == null
           || (verifyView.getSigText().equals("") && signature == null)) {
         uk.msci.project.rsa.DisplayUtility.showErrorAlert(
             "You must provide an input for all required fields. Please try again.");
