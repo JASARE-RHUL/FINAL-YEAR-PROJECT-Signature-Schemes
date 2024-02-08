@@ -1,13 +1,20 @@
 package uk.msci.project.rsa;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.regex.Pattern;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.scene.control.RadioButton;
+import javafx.scene.control.Toggle;
 import javafx.stage.Stage;
+import uk.msci.project.rsa.SignatureCreationController.CancelImportTextButtonObserver;
 
 
 /**
@@ -28,12 +35,14 @@ public abstract class SignatureBaseController {
   /**
    * The main controller that orchestrates the flow between different views of the application.
    */
-  private final MainController mainController;
+  final MainController mainController;
 
   /**
    * The message to be signed, stored as a byte array.
    */
   private byte[] message;
+
+  File messageBatchFile;
 
 
   /**
@@ -220,7 +229,7 @@ public abstract class SignatureBaseController {
 
 
   /**
-   * The observer for changes in signature scheme selection. This class reacts to changes in the
+   * The observer for changes in signature scheme selection. This class reacts to change in the
    * selected signature scheme and updates the model accordingly. It is responsible for ensuring
    * that the signature model is aware of the currently selected signature scheme, allowing for
    * correct processing of signatures.
@@ -247,6 +256,32 @@ public abstract class SignatureBaseController {
         case "PKCS#1 v1.5":
         default:
           signatureModel.setSignatureType(SignatureType.RSASSA_PKCS1_v1_5);
+      }
+    }
+  }
+
+  /**
+   * The observer for changes in parameter choice (standard vs. provably secure). This class reacts
+   * to change in the selected parameter option and updates the model accordingly.
+   */
+  class ParameterChoiceChangeObserver implements ChangeListener<Toggle> {
+
+    @Override
+    public void changed(ObservableValue<? extends Toggle> observable, Toggle oldValue,
+        Toggle newValue) {
+      if (newValue != null) {
+        RadioButton selectedRadioButton = (RadioButton) newValue;
+        String radioButtonText = selectedRadioButton.getText();
+        switch (radioButtonText) {
+          case "Provably Secure Parameters":
+            signatureModel.setProvablySecure(true);
+            break;
+          case "Standard Parameters":
+          default:
+            signatureModel.setProvablySecure(false);
+            break;
+
+        }
       }
     }
   }
@@ -282,4 +317,48 @@ public abstract class SignatureBaseController {
     }
 
   }
+
+
+  /**
+   * Handles the file selected by the user for a batch of keys. It validates the keys and updates
+   * the model and view accordingly. It expects the key file to contain a line separated text of
+   * comma delimited positive integers and updates the view based on the result of the key
+   * validation.
+   *
+   * @param file    The file selected by the user containing a batch of keys.
+   * @param viewOps The {@code ViewUpdate} operations that will update the view.
+   */
+  public void handleKeyBatch(File file, ViewUpdate viewOps) {
+    try (BufferedReader keyReader = new BufferedReader(new FileReader(file))) {
+      String keyContent;
+      while ((keyContent = keyReader.readLine()) != null) {
+        if (!(Pattern.compile("^\\s*\\d+\\s*(,\\s*\\d+\\s*)*$").matcher(keyContent)
+            .matches())) {
+          uk.msci.project.rsa.DisplayUtility.showErrorAlert(
+              "Invalid key batch. Please make sure the file contains a contiguous sequence of new line separated and valid keys.");
+        } else {
+          if (this instanceof SignatureCreationController) {
+            signatureModel.addPrivKeyToBatch(keyContent);
+          } else {
+            signatureModel.addPublicKeyToBatch(keyContent);
+          }
+          viewOps.setKeyName(file.getName());
+          viewOps.updateCheckmarkImage();
+          viewOps.setCheckmarkVisibility(true);
+          viewOps.setKeyVisibility(true);
+          if (viewOps.getView() instanceof SignView) {
+            ((SignView) viewOps.getView()).setImportKeyBatchButtonVisibility(false);
+            ((SignView) viewOps.getView()).setCancelImportKeyButtonVisibility(true);
+          }
+        }
+      }
+
+
+    } catch (Exception e) {
+      uk.msci.project.rsa.DisplayUtility.showErrorAlert(
+          "Invalid key batch. Please make sure the file contains new line separated list of valid keys.");
+    }
+  }
+
+
 }

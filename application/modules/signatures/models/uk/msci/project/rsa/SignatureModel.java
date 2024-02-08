@@ -46,6 +46,11 @@ public class SignatureModel {
   private SignatureType currentType;
 
   /**
+   * Indicator of whether the current signature scheme operates in provably secure mode.
+   */
+  private boolean isProvablySecure;
+
+  /**
    * A list that stores the clock times for each trial during batch signature generation. This is
    * useful for benchmarking the performance of the signature creation process.
    */
@@ -123,6 +128,20 @@ public class SignatureModel {
     return key;
   }
 
+  /**
+   * Clears all private keys from the private key batch.
+   */
+  public void clearPrivateKeyBatch() {
+    privKeyBatch.clear();
+  }
+
+  /**
+   * Clears all public keys from the public key batch.
+   */
+  public void clearPublicKeyBatch() {
+    publicKeyBatch.clear();
+  }
+
 
   /**
    * Instantiates a signature scheme based on the current key and signature type. Throws an
@@ -133,7 +152,8 @@ public class SignatureModel {
    */
   public void instantiateSignatureScheme() throws InvalidSignatureTypeException {
     if (key != null && currentType != null) {
-      currentSignatureScheme = SignatureFactory.getSignatureScheme(currentType, key);
+      currentSignatureScheme = SignatureFactory.getSignatureScheme(currentType, key,
+          isProvablySecure);
     } else {
       throw new IllegalStateException(
           "Both key and signature type need to be set before instantiating a signature scheme");
@@ -218,7 +238,7 @@ public class SignatureModel {
    *
    * @param keyValue The string representation of the private key to be added to the batch.
    */
-  public void addPrivKeyTobatch(String keyValue) {
+  public void addPrivKeyToBatch(String keyValue) {
     privKeyBatch.add(new PrivateKey(keyValue));
   }
 
@@ -229,8 +249,26 @@ public class SignatureModel {
    *
    * @param keyValue The string representation of the public key to be added to the batch.
    */
-  public void addPublicKeyTobatch(String keyValue) {
+  public void addPublicKeyToBatch(String keyValue) {
     publicKeyBatch.add(new PublicKey(keyValue));
+  }
+
+  /**
+   * Retrieves the number of public keys in the public key batch.
+   *
+   * @return The size of the public key batch.
+   */
+  public int getPublicKeyBatchLength() {
+    return publicKeyBatch.size();
+  }
+
+  /**
+   * Retrieves the number of private keys in the private key batch.
+   *
+   * @return The size of the private key batch.
+   */
+  public int getPrivateKeyBatchLength() {
+    return privKeyBatch.size();
   }
 
 
@@ -248,7 +286,6 @@ public class SignatureModel {
     try (ExecutorService executor = Executors.newFixedThreadPool(
         Runtime.getRuntime().availableProcessors())) {
 
-
       try (BufferedReader messageReader = new BufferedReader(new FileReader(batchMessageFile))) {
         int i = 0;
         String message;
@@ -260,7 +297,8 @@ public class SignatureModel {
             String finalMessage = message;
             executor.execute(() -> {
               try {
-                SigScheme sigScheme = SignatureFactory.getSignatureScheme(currentType, privateKey);
+                SigScheme sigScheme = SignatureFactory.getSignatureScheme(currentType, privateKey,
+                    isProvablySecure);
                 byte[] signature = sigScheme.sign(finalMessage.getBytes());
                 byte[] nonRecoverableM = sigScheme.getNonRecoverableM();
                 resultsMap.put(privateKey, List.of(signature, nonRecoverableM));
@@ -295,6 +333,7 @@ public class SignatureModel {
       }
     }
   }
+
   /**
    * Exports the batch of signatures generated during the benchmarking process to a file. Each
    * signature is converted to a string representation and written as a separate line in the file.
@@ -366,6 +405,25 @@ public class SignatureModel {
    */
   public List<byte[]> getNonRecoverableMessages() {
     return nonRecoverableMessages;
+  }
+
+  /**
+   * Indicates whether the signature scheme operates in provably secure mode.
+   *
+   * @return {@code true} if the signature scheme is operating in provably secure mode, {@code
+   * false} otherwise.
+   */
+  public boolean getProvablySecure() {
+    return isProvablySecure;
+  }
+
+  /**
+   * Sets whether the signature scheme should operate in provably secure mode.
+   *
+   * @param isProvablySecure A boolean flag to enable or disable provably secure mode.
+   */
+  public void setProvablySecure(boolean isProvablySecure) {
+    this.isProvablySecure = isProvablySecure;
   }
 
 }

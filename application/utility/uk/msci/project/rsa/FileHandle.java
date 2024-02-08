@@ -55,20 +55,23 @@ public class FileHandle {
    */
   public static void exportToFile(String fileName, String content) throws IOException {
     File keyFile = new File(System.getProperty("user.dir"), fileName);
-
-    int count = 0;
-    while (keyFile.exists()) {
-      count++;
-      // Construct a new file name with a number suffix
-      String newFileName = fileName.replaceFirst("^(.*?)(\\.[^.]*)?$", "$1_" + count + "$2");
-      keyFile = new File(System.getProperty("user.dir"), newFileName);
-    }
+    keyFile = createUniqueFile(fileName);
 
     try (FileOutputStream fos = new FileOutputStream(keyFile);
         OutputStreamWriter osw = new OutputStreamWriter(fos, StandardCharsets.UTF_8);
         BufferedWriter bw = new BufferedWriter(osw)) {
       bw.write(content);
     }
+  }
+  static File createUniqueFile(String fileName) {
+    File file = new File(System.getProperty("user.dir"), fileName);
+    int count = 0;
+    while (file.exists()) {
+      count++;
+      String newFileName = fileName.replaceFirst("^(.*?)(\\.[^.]*)?$", "$1_" + count + "$2");
+      file = new File(System.getProperty("user.dir"), newFileName);
+    }
+    return file;
   }
 
 }
