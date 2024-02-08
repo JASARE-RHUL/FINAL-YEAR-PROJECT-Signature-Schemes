@@ -317,6 +317,37 @@ public class SignatureModelTest {
     }
   }
 
+  @Test
+  public void testExportNonRecoverableBatch() throws IOException {
+    // Prepare test data
+    String testFileName = "testNonRecoverableMessages.txt";
+    prepareNonRecoverableTestData();
+
+    // Execute the method to be tested
+    signatureModel.exportNonRecoverableBatch(testFileName);
+
+    // Read the created file and assert its content
+    File outputFile = new File(System.getProperty("user.dir"), testFileName);
+    assertTrue(outputFile.exists());
+
+    try (BufferedReader reader = new BufferedReader(new FileReader(outputFile))) {
+      String line;
+      int count = 0;
+      while ((line = reader.readLine()) != null) {
+        byte[] nonRecoverableMessage = signatureModel.getNonRecoverableMessages().get(count);
+        if (nonRecoverableMessage != null && nonRecoverableMessage.length > 0) {
+          assertEquals("1 " + new String(nonRecoverableMessage), line);
+        } else {
+          assertEquals("0", line);
+        }
+        count++;
+      }
+      assertEquals(signatureModel.getNonRecoverableMessages().size(), count);
+    }
+  }
+
+
+
 
 }
 

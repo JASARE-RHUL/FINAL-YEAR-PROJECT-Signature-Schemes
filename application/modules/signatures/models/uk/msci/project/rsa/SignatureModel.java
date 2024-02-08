@@ -312,6 +312,30 @@ public class SignatureModel {
     }
   }
 
+  /**
+   * Exports the batch of non-recoverable message parts to a file. Each entry consists of a flag (1
+   * or 0) indicating whether a non-recoverable message part follows, and then the message part
+   * itself if present. Each entry is written on a new line.
+   *
+   * @param fileName The name of the file to which the non-recoverable message parts will be
+   *                 exported.
+   * @throws IOException If there is an error in creating the file or writing to it.
+   */
+  public void exportNonRecoverableBatch(String fileName) throws IOException {
+    File nonRecoverableBatch = FileHandle.createUniqueFile(fileName);
+    try (BufferedWriter nonRecoverableWriter = new BufferedWriter(
+        new FileWriter(nonRecoverableBatch))) {
+      for (byte[] nonRecoverableMessage : nonRecoverableMessages) {
+        if (nonRecoverableMessage.length > 0) {
+          nonRecoverableWriter.write("1 ");  // Flag indicating a non-recoverable message follows
+          nonRecoverableWriter.write(new String(nonRecoverableMessage));
+        } else {
+          nonRecoverableWriter.write("0");  // Flag indicating no non-recoverable message
+        }
+        nonRecoverableWriter.newLine();
+      }
+    }
+  }
 
 
   /**
