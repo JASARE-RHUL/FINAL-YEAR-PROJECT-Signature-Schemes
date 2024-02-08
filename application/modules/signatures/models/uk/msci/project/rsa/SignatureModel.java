@@ -283,8 +283,6 @@ public class SignatureModel {
               nonRecoverableMessages.add(results.get(1));
             }
           }
-
-
           progressUpdater.accept((double) ++i / numTrials);
         }
       } finally {
@@ -297,6 +295,23 @@ public class SignatureModel {
       }
     }
   }
+  /**
+   * Exports the batch of signatures generated during the benchmarking process to a file. Each
+   * signature is converted to a string representation and written as a separate line in the file.
+   *
+   * @param signatureFileName The name of the file to which the signatures will be exported.
+   * @throws IOException If there is an error in creating the file or writing to it.
+   */
+  public void exportSignatureBatch(String signatureFileName) throws IOException {
+    File signatureFile = FileHandle.createUniqueFile(signatureFileName);
+    try (BufferedWriter signatureWriter = new BufferedWriter(new FileWriter(signatureFile))) {
+      for (byte[] signature : signaturesFromBenchmark) {
+        signatureWriter.write(new BigInteger(1, signature).toString());
+        signatureWriter.newLine();
+      }
+    }
+  }
+
 
 
   /**

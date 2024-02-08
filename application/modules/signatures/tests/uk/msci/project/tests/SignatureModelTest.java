@@ -290,5 +290,33 @@ public class SignatureModelTest {
 
   }
 
+
+  @Test
+  public void testExportSignatureBatch() throws IOException {
+    // Prepare test data
+    String testFileName = "testSignatures.txt";
+    prepareSignatureTestData();
+
+    // Execute the method to be tested
+    signatureModel.exportSignatureBatch("testSignatures.txt");
+
+    // Read the created file and assert its content
+    File outputFile = new File(System.getProperty("user.dir"), testFileName);
+    assertTrue(outputFile.exists());
+
+    try (BufferedReader reader = new BufferedReader(new FileReader(outputFile))) {
+      String line;
+      int count = 0;
+      while ((line = reader.readLine()) != null) {
+        assertEquals(
+            new BigInteger(1, signatureModel.getSignaturesFromBenchmark().get(count)).toString(),
+            line);
+        count++;
+      }
+      assertEquals(signatureModel.getSignaturesFromBenchmark().size(), count);
+    }
+  }
+
+
 }
 
