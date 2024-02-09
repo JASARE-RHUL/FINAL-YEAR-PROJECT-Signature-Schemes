@@ -113,6 +113,7 @@ public class SignatureCreationController extends SignatureBaseController {
     signView.addSignatureSchemeChangeObserver(new SignatureSchemeChangeObserver());
     signView.addParameterChoiceChangeObserver(new ParameterChoiceChangeObserver());
     signView.addSigBenchmarkButtonObserver(new SignatureBenchmarkObserver());
+    signView.addBackToMainMenuObserver(new BackToMainMenuObserver(signView));
   }
 
   /**
@@ -197,6 +198,7 @@ public class SignatureCreationController extends SignatureBaseController {
       ProgressBar progressBar = (ProgressBar) progressDialog.getDialogPane()
           .lookup("#progressBar");
       Label progressLabel = (Label) progressDialog.getDialogPane().lookup("#progressLabel");
+      
       Task<Void> benchmarkingTask = createBenchmarkingTask(messageBatchFile,
           progressBar, progressLabel);
       new Thread(benchmarkingTask).start();
@@ -208,17 +210,17 @@ public class SignatureCreationController extends SignatureBaseController {
             }
           });
 
-      // Assuming handleBenchmarkingCompletion is a method that handles the task's completion
       benchmarkingTask.setOnSucceeded(e -> {
-        ;
+        progressDialog.close();
+        handleBenchmarkingCompletion(); // Handle completion
       });
 
       benchmarkingTask.setOnFailed(e -> {
         progressDialog.close();
         uk.msci.project.rsa.DisplayUtility.showErrorAlert(
-            "Benchmarking could not complete. Please try again.");
-      });
+            "Error: Benchmarking failed. Please try again.");
 
+      });
 
     }
 
@@ -248,6 +250,21 @@ public class SignatureCreationController extends SignatureBaseController {
     };
 
   }
+
+  /**
+   * Handles the completion of the benchmarking task for signature creation. This method is called when
+   * the benchmarking task successfully completes. It initialises and sets up the ResultsController
+   * with the appropriate context (SignatureCreationContext) and displays the results view with the
+   * gathered benchmarking data.
+   */
+  private void handleBenchmarkingCompletion() {
+    ResultsController resultsController = new ResultsController(mainController);
+    BenchmarkingContext context = new SignatureCreationContext(signatureModel);
+    resultsController.setContext(context);
+    resultsController.showResultsView(mainController.getPrimaryStage(),
+        signatureModel.getClockTimesPerTrial());
+  }
+
 
   /**
    * Processes a file containing a batch of messages for signature creation. Validates the file's

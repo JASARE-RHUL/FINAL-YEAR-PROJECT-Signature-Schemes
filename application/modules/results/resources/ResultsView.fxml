@@ -61,6 +61,7 @@
       <Button fx:id="exportPublicKeyBatchBtn" text="Export Public Key Batch" visible="false"  managed="false" />
       <Button fx:id="exportSignatureBatchBtn" text="Export Signature Batch" visible="false"  managed="false" />
       <Button fx:id="exportNonRecoverableMessageBatchBtn" text="Export Non-recoverable Message Batch" visible="false"  managed="false" />
+      <Button fx:id="exportRecoverableMessageBatchBtn" text="Export Recoverable Message Batch" visible="false"  managed="false" />
       <Button fx:id="exportVerificationResultsBtn" text="Export Verification Results" visible="false"  managed="false" />
     </HBox>
 
