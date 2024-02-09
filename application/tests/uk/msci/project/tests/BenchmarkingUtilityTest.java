@@ -45,10 +45,10 @@ public class BenchmarkingUtilityTest {
 
   @Test
   void testCalculatePercentile() {
-    double actual25th = BenchmarkingUtility.calculatePercentile(exampleTimes, 25);
-    double actual75th = BenchmarkingUtility.calculatePercentile(exampleTimes, 75);
-    assertEquals(200.0, actual25th, "The 25th percentile should be calculated correctly.");
-    assertEquals(400.0, actual75th, "The 75th percentile should be calculated correctly.");
+    double actual25th = BenchmarkingUtility.calculatePercentile(exampleTimes, 0.25);
+    double actual75th = BenchmarkingUtility.calculatePercentile(exampleTimes, 0.75);
+    assertEquals(150.0, actual25th, "The 25th percentile should be calculated correctly.");
+    assertEquals(450.0, actual75th, "The 75th percentile should be calculated correctly.");
   }
 
   @Test

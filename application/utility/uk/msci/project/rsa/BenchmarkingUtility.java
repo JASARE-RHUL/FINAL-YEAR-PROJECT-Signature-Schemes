@@ -1,10 +1,12 @@
 package uk.msci.project.rsa;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.distribution.TDistribution;
+import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 
 
 /**
@@ -70,13 +72,12 @@ public class BenchmarkingUtility {
    * @return the value at the given percentile.
    */
   public static double calculatePercentile(List<Long> times, double percentile) {
-    if (times.isEmpty()) {
-      return 0;
+    DescriptiveStatistics stats = new DescriptiveStatistics();
+    for (long time : times) {
+      stats.addValue(time);
     }
-    List<Long> sortedTimes = new ArrayList<>(times);
-    Collections.sort(sortedTimes);
-    int index = (int) Math.ceil(percentile / 100.0 * sortedTimes.size()) - 1;
-    return sortedTimes.get(Math.max(index, 0));
+    // Multiply by 100 because getPercentile expects a value between 0 and 100
+    return stats.getPercentile(percentile * 100);
   }
 
   /**
