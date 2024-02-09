@@ -91,6 +91,9 @@
                 <source>application/modules/signatures/views</source>
                 <source>application/modules/signatures/controllers</source>
                 <source>application/modules/signatures/utility</source>
+                <source>application/modules/results/models</source>
+                <source>application/modules/results/views</source>
+                <source>application/modules/results/controllers</source>
                 <!-- Add other source directories as needed -->
               </sources>
             </configuration>
@@ -106,7 +109,7 @@
                 <source>application/tests</source>
                 <source>application/modules/key_generation/tests</source>
                 <source>application/modules/signatures/tests</source>
-                <!-- Add other test directories as needed -->
+                <source>application/modules/results/tests</source>
               </sources>
             </configuration>
           </execution>
@@ -199,6 +202,12 @@
       <artifactId>commons-math3</artifactId>
       <version>3.6.1</version>
     </dependency>
+    <dependency>
+      <groupId>org.bouncycastle</groupId>
+      <artifactId>bcprov-jdk15on</artifactId>
+      <version>1.68</version>
+    </dependency>
+
 
   </dependencies>
 </project>
