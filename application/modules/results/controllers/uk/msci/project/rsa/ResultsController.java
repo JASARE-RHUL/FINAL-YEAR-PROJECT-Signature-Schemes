@@ -95,6 +95,16 @@ public class ResultsController {
         currentContext.showExportPublicKeyBatchButton());
     resultsView.setExportPublicKeyBatchBtnManaged(
         currentContext.showExportPublicKeyBatchButton());
+    resultsView.setExportSignatureBatchBtnVisible(currentContext.showExportSignatureBatchButton());
+    resultsView.setExportSignatureBatchBtnManaged(currentContext.showExportSignatureBatchButton());
+    resultsView.setExportNonRecoverableMessageBatchBtVisible(
+        currentContext.showNonRecoverableBatchButton());
+    resultsView.setExportNonRecoverableMessageBatchBtnManaged(
+        currentContext.showNonRecoverableBatchButton());
+    resultsView.setExportRecoverableMessageBatchBtVisible(
+        currentContext.showRecoverableBatchButton());
+    resultsView.setExportRecoverableMessageBatchBtnManaged(
+        currentContext.showRecoverableBatchButton());
     resultsView.setResultsLabel(currentContext.getResultsLabel());
 
   }
@@ -206,6 +216,8 @@ public class ResultsController {
     public void handle(ActionEvent event) {
       try {
         currentContext.exportSignatureBatch();
+        uk.msci.project.rsa.DisplayUtility.showInfoAlert("Export",
+            "The signature batch was successfully exported!");
       } catch (IOException e) {
         e.printStackTrace();
       }
@@ -222,6 +234,8 @@ public class ResultsController {
     public void handle(ActionEvent event) {
       try {
         currentContext.exportNonRecoverableMessages();
+        uk.msci.project.rsa.DisplayUtility.showInfoAlert("Export",
+            "The non-recoverable message batch was successfully exported!");
       } catch (IOException e) {
         e.printStackTrace();
       }
@@ -237,6 +251,8 @@ public class ResultsController {
     @Override
     public void handle(ActionEvent event) {
       currentContext.exportRecoverableMessages();
+      uk.msci.project.rsa.DisplayUtility.showInfoAlert("Export",
+          "The recovered message batch was successfully exported!");
     }
   }
 

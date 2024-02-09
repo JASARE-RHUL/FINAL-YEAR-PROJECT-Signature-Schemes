@@ -1,6 +1,7 @@
 package uk.msci.project.rsa;
 
 import java.io.IOException;
+import java.util.List;
 
 /**
  * This class is a specialised context for the benchmarking of signature creation operations. It
@@ -44,7 +45,19 @@ public class SignatureCreationContext extends BenchmarkingContext {
    * @return true if there are non-recoverable messages to export, false otherwise.
    */
   public boolean showNonRecoverableBatchButton() {
-    return !signatureModel.getNonRecoverableMessages().isEmpty();
+    List<byte[]> nonRecoverableMessages = signatureModel.getNonRecoverableMessages();
+    if (nonRecoverableMessages != null && !nonRecoverableMessages.isEmpty()) {
+      // Check each byte array in the list
+      for (byte[] message : nonRecoverableMessages) {
+        // If any byte array is not empty, return true
+        if (message.length > 0) {
+          return true;
+        }
+      }
+    }
+    // All byte arrays are empty or the list itself is empty/null
+    return false;
+
   }
 
   /**

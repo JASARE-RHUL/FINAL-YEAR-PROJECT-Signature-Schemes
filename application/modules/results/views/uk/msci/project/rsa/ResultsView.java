@@ -78,7 +78,7 @@ public class ResultsView implements Initializable {
    * Button to export a batch of recoverable messages.
    */
   @FXML
-  private Button exportRecoverableMessageBatchBtn;
+  private Button exportRecoverableMessageBatchBtn = new Button();
 
   /**
    * Button to export a batch of non-recoverable messages.
