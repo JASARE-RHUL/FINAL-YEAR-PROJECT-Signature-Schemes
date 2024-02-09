@@ -40,6 +40,9 @@ public class GenController {
    */
   private MainController mainController;
 
+  /**
+   * The number of trials a tracked benchmarking session should last for
+   */
   private int numTrials;
 
 
@@ -198,10 +201,37 @@ public class GenController {
                   benchmarkingTask.cancel();
                 }
               });
+
+          benchmarkingTask.setOnSucceeded(e -> {
+            progressDialog.close();
+            handleBenchmarkingCompletion(); // Handle completion
+          });
+
+          benchmarkingTask.setOnFailed(e -> {
+            progressDialog.close();
+            uk.msci.project.rsa.DisplayUtility.showErrorAlert(
+                "Error: Benchmarking failed. Please try again.");
+
+          });
         }
       }
     }
   }
+
+  /**
+   * Handles the completion of the benchmarking task for key generation. This method is called when
+   * the benchmarking task successfully completes. It initialises and sets up the ResultsController
+   * with the appropriate context (KeyGenerationContext) and displays the results view with the
+   * gathered benchmarking data.
+   */
+  private void handleBenchmarkingCompletion() {
+    ResultsController resultsController = new ResultsController(mainController);
+    BenchmarkingContext context = new KeyGenerationContext(genModel);
+    resultsController.setContext(context);
+    resultsController.showResultsView(mainController.getPrimaryStage(),
+        genModel.getClockTimesPerTrial());
+  }
+
 
   /**
    * The observer for returning to the main menu. This class handles the action event triggered when
@@ -230,7 +260,7 @@ public class GenController {
    */
   private Task<Void> createBenchmarkingTask(int numTrials, List<Pair<int[], Boolean>> keyParams,
       ProgressBar progressBar, Label progressLabel) {
-    Task<Void> benchmarkingTask = new Task<>() {
+    return new Task<>() {
       @Override
       protected Void call() throws Exception {
         genModel.batchGenerateKeys(numTrials, keyParams, progress -> Platform.runLater(() -> {
@@ -241,14 +271,7 @@ public class GenController {
       }
     };
 
-
-    benchmarkingTask.setOnSucceeded(e -> {
-      ;
-    });
-
-    return benchmarkingTask;
   }
-
 
 
 }
