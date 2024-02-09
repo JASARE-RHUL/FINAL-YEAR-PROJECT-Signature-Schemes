@@ -269,5 +269,26 @@ public class ResultsModel {
     writer.write(statisticName + "," + value + "\n");
   }
 
+  /**
+   * Exports benchmarking results (for all individual trials) to a CSV file.
+   *
+   * @param fileName The name of the file to which results are to be exported.
+   * @throws IOException If an I/O error occurs.
+   */
+  public void exportResultsToCSV(String fileName) throws IOException {
+    File resultsFile = FileHandle.createUniqueFile(fileName);
+    try (BufferedWriter writer = new BufferedWriter(new FileWriter(resultsFile))) {
+      // Write the header lines
+      writeStatisticLine(writer, "Number of Trials", String.valueOf(numTrials));
+      writeStatisticLine(writer, "Overall Time", String.valueOf(overallData));
+      writer.newLine();
 
+      // Write each result
+      for (int i = 0; i < results.size(); i++) {
+        String line = (i + 1) + "," + results.get(i) / 1E6; // Convert nanoseconds to milliseconds
+        writer.write(line);
+        writer.newLine();
+      }
+    }
+  }
 }
