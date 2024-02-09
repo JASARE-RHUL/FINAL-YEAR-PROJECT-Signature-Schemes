@@ -69,26 +69,51 @@ public class ResultsController {
       resultsView = loader.getController();
       resultsModel = new ResultsModel(results);
       resultsModel.calculateStatistics();
-      resultsView.setExportPrivateKeyBatchBtnVisible(
-          currentContext.showExportPrivateKeyBatchButton());
-      resultsView.setExportPrivateKeyBatchBtnManaged(
-          currentContext.showExportPrivateKeyBatchButton());
-      resultsView.setExportPublicKeyBatchBtnVisible(
-          currentContext.showExportPublicKeyBatchButton());
-      resultsView.setExportPublicKeyBatchBtnManaged(
-          currentContext.showExportPublicKeyBatchButton());
-      resultsView.setResultsLabel(currentContext.getResultsLabel());
+
+      displayCurrentContextButtons();
+
       setStatsResultsView();
-      resultsView.addBackToMainMenuObserver(new BackToMainMenuObserver());
-      resultsView.addExportBenchmarkingResultsObserver(new ExportBenchmarkingResultsObserver());
-      resultsView.addExportPrivateKeyBatchObserver(new ExportPrivateKeyBatchObserver());
-      resultsView.addExportPublicKeyBatchObserver(new ExportPublicKeyBatchObserver());
+      setupObservers();
 
       primaryStage.setScene(new Scene(root));
 
     } catch (IOException e) {
       e.printStackTrace();
     }
+  }
+
+  /**
+   * Configures the visibility and management of buttons in the results view based on the current
+   * benchmarking context.
+   */
+  public void displayCurrentContextButtons() {
+    resultsView.setExportPrivateKeyBatchBtnVisible(
+        currentContext.showExportPrivateKeyBatchButton());
+    resultsView.setExportPrivateKeyBatchBtnManaged(
+        currentContext.showExportPrivateKeyBatchButton());
+    resultsView.setExportPublicKeyBatchBtnVisible(
+        currentContext.showExportPublicKeyBatchButton());
+    resultsView.setExportPublicKeyBatchBtnManaged(
+        currentContext.showExportPublicKeyBatchButton());
+    resultsView.setResultsLabel(currentContext.getResultsLabel());
+
+  }
+
+  /**
+   * Sets up event observers for various actions in the results view, like exporting results and
+   * navigating back to the main menu.
+   */
+  public void setupObservers() {
+    resultsView.addBackToMainMenuObserver(new BackToMainMenuObserver());
+    resultsView.addExportBenchmarkingResultsObserver(new ExportBenchmarkingResultsObserver());
+    resultsView.addExportPrivateKeyBatchObserver(new ExportPrivateKeyBatchObserver());
+    resultsView.addExportPublicKeyBatchObserver(new ExportPublicKeyBatchObserver());
+    resultsView.addExportSignatureBatchObserver(new ExportSignatureBatchObserver());
+    resultsView.addExportNonRecoverableMessageBatchObserver(
+        new ExportNonRecoverableMessageBatchObserver());
+    resultsView.addExportRecoverableMessageBatchObserver(
+        new ExportRecoverableMessageBatchObserver());
+
   }
 
   /**
@@ -154,8 +179,8 @@ public class ResultsController {
   }
 
   /**
-   * Observer for handling the export of a public key batch. Triggers upon user action to export
-   * the public key batch.
+   * Observer for handling the export of a public key batch. Triggers upon user action to export the
+   * public key batch.
    */
   class ExportPublicKeyBatchObserver implements EventHandler<ActionEvent> {
 
@@ -171,6 +196,50 @@ public class ResultsController {
     }
   }
 
+  /**
+   * Observer for handling the export of a signature batch. Triggers upon user action to export the
+   * signature batch.
+   */
+  class ExportSignatureBatchObserver implements EventHandler<ActionEvent> {
+
+    @Override
+    public void handle(ActionEvent event) {
+      try {
+        currentContext.exportSignatureBatch();
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+    }
+  }
+
+  /**
+   * Observer for handling the export of a non-Recoverable Message batch. Triggers upon user action
+   * to export the non-Recoverable batch.
+   */
+  class ExportNonRecoverableMessageBatchObserver implements EventHandler<ActionEvent> {
+
+    @Override
+    public void handle(ActionEvent event) {
+      try {
+        currentContext.exportNonRecoverableMessages();
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+    }
+  }
+
+  /**
+   * Observer for handling the export of a recoverable Message batch. Triggers upon user action to
+   * export the recoverable batch.
+   */
+  class ExportRecoverableMessageBatchObserver implements EventHandler<ActionEvent> {
+
+    @Override
+    public void handle(ActionEvent event) {
+      currentContext.exportRecoverableMessages();
+    }
+  }
+
 
   /**
    * The observer for returning to the main menu. This class handles the action event triggered when
@@ -181,7 +250,7 @@ public class ResultsController {
     @Override
     public void handle(ActionEvent event) {
       mainController.showMainMenuView();
-      currentContext  = null;
+      currentContext = null;
       resultsModel = null;
       resultsView = null;
     }
