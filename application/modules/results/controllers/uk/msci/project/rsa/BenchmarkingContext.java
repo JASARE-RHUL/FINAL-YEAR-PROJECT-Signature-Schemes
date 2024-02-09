@@ -4,9 +4,10 @@ import java.io.IOException;
 
 /**
  * This abstract class that provides a framework for specialised functionality within the results
- * module related to signature operations that have been benchmarked. It offers methods for exporting
- * results and other relevant data, as well as for controlling the display of UI elements in a
- * generalised results view, tailored to the specific signature operation that was benchmarked.
+ * module related to signature operations that have been benchmarked. It offers methods for
+ * exporting results and other relevant data, as well as for controlling the display of UI elements
+ * in a generalised results view, tailored to the specific signature operation that was
+ * benchmarked.
  */
 public abstract class BenchmarkingContext {
 
@@ -33,10 +34,17 @@ public abstract class BenchmarkingContext {
   public void exportSignatureBatch() { /* Default empty implementation */ }
 
   /**
+   * Exports the batch of recoverable messages generated during the benchmarking process. The method
+   * is to be overridden in subclasses to handle operation-specific export logic.
+   */
+  public void exportRecoverableMessages() { /* Default empty implementation */ }
+
+  /**
    * Exports the batch of non-recoverable messages generated during the benchmarking process. The
    * method is to be overridden in subclasses to handle operation-specific export logic.
    */
-  public void exportRecoverableMessages() { /* Default empty implementation */ }
+  public void exportNonRecoverableMessages()
+      throws IOException { /* Default empty implementation */ }
 
   /**
    * Exports the results of the signature verification process conducted during benchmarking. The
@@ -49,7 +57,7 @@ public abstract class BenchmarkingContext {
    * Determines if the UI button for exporting the public key batch should be shown. Subclasses can
    * override this method to provide operation-specific display logic.
    *
-   * @return false by default, indicating the button is not typically shown.
+   * @return false by default
    */
   public boolean showExportPublicKeyBatchButton() {
     return false;
@@ -59,7 +67,7 @@ public abstract class BenchmarkingContext {
    * Determines if the UI button for exporting the private key batch should be shown. Subclasses can
    * override this method to provide operation-specific display logic.
    *
-   * @return false by default, indicating the button is not typically shown.
+   * @return false by default
    */
   public boolean showExportPrivateKeyBatchButton() {
     return false;
@@ -69,7 +77,7 @@ public abstract class BenchmarkingContext {
    * Determines if the UI button for exporting the signature batch should be shown. Subclasses can
    * override this method to provide operation-specific display logic.
    *
-   * @return false by default, indicating the button is not typically shown.
+   * @return false by default
    */
   public boolean showExportSignatureBatchButton() {
     return false;
@@ -79,7 +87,7 @@ public abstract class BenchmarkingContext {
    * Determines if the UI button for exporting verification results should be shown. Subclasses can
    * override this method to provide operation-specific display logic.
    *
-   * @return false by default, indicating the button is not typically shown.
+   * @return false by default
    */
   public boolean showExportVerificationResultsButton() {
     return false;
@@ -92,4 +100,26 @@ public abstract class BenchmarkingContext {
    * @return A string representing the specific label for the benchmarking context.
    */
   public abstract String getResultsLabel();
+
+  /**
+   * Determines if the UI button for exporting the non-recoverable portions of messages generated
+   * from signature creation should be shown. Subclasses can override this method to provide
+   * operation-specific display logic.
+   *
+   * @return false by default
+   */
+  public boolean showNonRecoverableBatchButton() {
+    return false;
+  }
+
+  /**
+   * Determines if the UI button for exporting the portions of messages recovered during signature
+   * verification should be shown. Subclasses can override this method to provide operation-specific
+   * display logic.
+   *
+   * @return false by default
+   */
+  public boolean showRecoverableBatchButton() {
+    return false;
+  }
 }

@@ -75,10 +75,16 @@ public class ResultsView implements Initializable {
   private Button exportSignatureBatchBtn;
 
   /**
-   * Button to export a batch of non-recoverable messages.
+   * Button to export a batch of recoverable messages.
    */
   @FXML
   private Button exportRecoverableMessageBatchBtn;
+
+  /**
+   * Button to export a batch of non-recoverable messages.
+   */
+  @FXML
+  private Button exportNonRecoverableMessageBatchBtn;
 
   /**
    * Button to export the results of signature verification.
@@ -107,7 +113,8 @@ public class ResultsView implements Initializable {
   StatisticData confidenceInterval = new StatisticData("Confidence Interval:", "XXXX.XX ms");
 
   /**
-   * StatisticData object representing the 25th percentile of time measurements in the benchmarking process.
+   * StatisticData object representing the 25th percentile of time measurements in the benchmarking
+   * process.
    */
   StatisticData percentile25Data = new StatisticData("25th Percentile:", "XXXX.XX ms");
 
@@ -117,7 +124,8 @@ public class ResultsView implements Initializable {
   StatisticData medianData = new StatisticData("Median:", "XXXX.XX ms");
 
   /**
-   * StatisticData object representing the 75th percentile of time measurements in the benchmarking process.
+   * StatisticData object representing the 75th percentile of time measurements in the benchmarking
+   * process.
    */
   StatisticData percentile75Data = new StatisticData("75th Percentile:", "XXXX.XX ms");
 
@@ -127,12 +135,14 @@ public class ResultsView implements Initializable {
   StatisticData rangeData = new StatisticData("Range:", "XXXX.XX ms");
 
   /**
-   * StatisticData object representing the standard deviation of time measurements in the benchmarking process.
+   * StatisticData object representing the standard deviation of time measurements in the
+   * benchmarking process.
    */
   StatisticData stdDeviationData = new StatisticData("Standard Deviation:", "XXXX.XX ms");
 
   /**
-   * StatisticData object representing the variance of time measurements in the benchmarking process.
+   * StatisticData object representing the variance of time measurements in the benchmarking
+   * process.
    */
   StatisticData varianceData = new StatisticData("Variance:", "XXXX.XX ms");
 
@@ -184,13 +194,22 @@ public class ResultsView implements Initializable {
   }
 
   /**
+   * Registers an observer for the event of exporting recoverable message batch.
+   *
+   * @param observer the event handler to be invoked on export recoverable message batch action.
+   */
+  public void addExportRecoverableMessageBatchObserver(EventHandler<ActionEvent> observer) {
+    exportRecoverableMessageBatchBtn.setOnAction(observer);
+  }
+
+  /**
    * Registers an observer for the event of exporting non-recoverable message batch.
    *
    * @param observer the event handler to be invoked on export non-recoverable message batch
    *                 action.
    */
-  public void addExportRecoverableMessageBatchObserver(EventHandler<ActionEvent> observer) {
-    exportRecoverableMessageBatchBtn.setOnAction(observer);
+  public void addExportNonRecoverableMessageBatchObserver(EventHandler<ActionEvent> observer) {
+    exportNonRecoverableMessageBatchBtn.setOnAction(observer);
   }
 
   /**
@@ -222,21 +241,39 @@ public class ResultsView implements Initializable {
   }
 
   /**
-   * Adjusts the management state of the export private key batch button.
+   * Adjusts the management state of the recoverable Message Batch Button.
    *
    * @param managed The management state to set.
    */
-  public void setExportPrivateKeyBatchBtnManaged(boolean managed) {
-    exportPrivateKeyBatchBtn.setManaged(managed);
+  public void setExportRecoverableMessageBatchBtnManaged(boolean managed) {
+    exportRecoverableMessageBatchBtn.setManaged(managed);
   }
 
   /**
-   * Adjusts the visibility of the export private key batch button.
+   * Adjusts the visibility of the recoverable Message Batch Button.
    *
    * @param visible The visibility state to set.
    */
-  public void setExportPrivateKeyBatchBtnVisible(boolean visible) {
-    exportPrivateKeyBatchBtn.setVisible(visible);
+  public void setExportRecoverableMessageBatchBtVisible(boolean visible) {
+    exportRecoverableMessageBatchBtn.setVisible(visible);
+  }
+
+  /**
+   * Adjusts the management state of the non-Recoverable Message Batch Button.
+   *
+   * @param managed The management state to set.
+   */
+  public void setExportNonRecoverableMessageBatchBtnManaged(boolean managed) {
+    exportNonRecoverableMessageBatchBtn.setManaged(managed);
+  }
+
+  /**
+   * Adjusts the visibility of the non-Recoverable Message Batch Button.
+   *
+   * @param visible The visibility state to set.
+   */
+  public void setExportNonRecoverableMessageBatchBtVisible(boolean visible) {
+    exportNonRecoverableMessageBatchBtn.setVisible(visible);
   }
 
   /**
@@ -303,6 +340,24 @@ public class ResultsView implements Initializable {
    */
   public void setExportVerificationResultsBtnVisible(boolean visible) {
     exportVerificationResultsBtn.setVisible(visible);
+  }
+
+  /**
+   * Adjusts the management state of the export private key batch button.
+   *
+   * @param managed The management state to set.
+   */
+  public void setExportPrivateKeyBatchBtnManaged(boolean managed) {
+    exportPrivateKeyBatchBtn.setManaged(managed);
+  }
+
+  /**
+   * Adjusts the visibility of the export private key batch button.
+   *
+   * @param visible The visibility state to set.
+   */
+  public void setExportPrivateKeyBatchBtnVisible(boolean visible) {
+    exportPrivateKeyBatchBtn.setVisible(visible);
   }
 
 

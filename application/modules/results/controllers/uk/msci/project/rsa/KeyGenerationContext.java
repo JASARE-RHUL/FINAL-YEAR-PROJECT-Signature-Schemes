@@ -3,7 +3,7 @@ package uk.msci.project.rsa;
 import java.io.IOException;
 
 /**
- * KeyGenerationContext is a specialised context for the benchmarking of key generation operations.
+ * This class is a specialised context for the benchmarking of key generation operations.
  * It extends BenchmarkingContext to provide functionality specific to key generation, such as
  * exporting generated public and private key batches on generalised results view.
  */
@@ -67,28 +67,6 @@ public class KeyGenerationContext extends BenchmarkingContext {
   @Override
   public boolean showExportPrivateKeyBatchButton() {
     return true;
-  }
-
-  /**
-   * Indicates whether the export signature batch button should be shown. Always returns false for
-   * KeyGenerationContext as it's not applicable.
-   *
-   * @return false, indicating the button should not be shown.
-   */
-  @Override
-  public boolean showExportSignatureBatchButton() {
-    return false;
-  }
-
-  /**
-   * Indicates whether the export verification results button should be shown. Always returns false
-   * for KeyGenerationContext as it's not applicable.
-   *
-   * @return false, indicating the button should not be shown.
-   */
-  @Override
-  public boolean showExportVerificationResultsButton() {
-    return false;
   }
 
   /**
