@@ -1,5 +1,9 @@
 package uk.msci.project.rsa;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -224,5 +228,46 @@ public class ResultsModel {
   public double getMaxTimeData() {
     return maxTimeData;
   }
+  /**
+   * Exports statistical data to a CSV file.
+   *
+   * @param fileName The name of the file to which the statistics are to be exported.
+   * @throws IOException If there is an issue in file writing.
+   */
+  public void exportStatisticsToCSV(String fileName) throws IOException {
+    File statsFile = FileHandle.createUniqueFile(fileName);
+
+    try (BufferedWriter statsWriter = new BufferedWriter(new FileWriter(statsFile))) {
+      // Writing the headers
+      statsWriter.write("Statistic,Value\n");
+
+      // Writing each statistic
+      writeStatisticLine(statsWriter, "Number of Trials", String.valueOf(numTrials));
+      writeStatisticLine(statsWriter, "Overall Time", String.format("%.2f ms", overallData));
+      writeStatisticLine(statsWriter, "Mean", String.format("%.2f ms", meanData));
+      writeStatisticLine(statsWriter, "Confidence Interval", String.format("%.2f ms - %.2f ms", confidenceInterval[0], confidenceInterval[1]));
+      writeStatisticLine(statsWriter, "25th Percentile", String.format("%.2f ms", percentile25Data));
+      writeStatisticLine(statsWriter, "Median", String.format("%.2f ms", medianData));
+      writeStatisticLine(statsWriter, "75th Percentile", String.format("%.2f ms", percentile75Data));
+      writeStatisticLine(statsWriter, "Range", String.format("%.2f ms", rangeData));
+      writeStatisticLine(statsWriter, "Standard Deviation", String.format("%.2f ms", stdDeviationData));
+      writeStatisticLine(statsWriter, "Variance", String.format("%.2f ms", varianceData));
+      writeStatisticLine(statsWriter, "Minimum Time", String.format("%.2f ms", minTimeData));
+      writeStatisticLine(statsWriter, "Maximum Time", String.format("%.2f ms", maxTimeData));
+    }
+  }
+
+  /**
+   * Writes a line of statistic and its value to the BufferedWriter.
+   *
+   * @param writer The BufferedWriter to write to.
+   * @param statisticName The name of the statistic.
+   * @param value The value of the statistic.
+   * @throws IOException If there is an issue in writing to the file.
+   */
+  private void writeStatisticLine(BufferedWriter writer, String statisticName, String value) throws IOException {
+    writer.write(statisticName + "," + value + "\n");
+  }
+
 
 }
