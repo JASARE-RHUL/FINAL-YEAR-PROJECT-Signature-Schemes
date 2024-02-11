@@ -1,13 +1,21 @@
 package uk.msci.project.rsa;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.math.BigInteger;
+import javafx.application.Platform;
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.Dialog;
+import javafx.scene.control.Label;
+import javafx.scene.control.ProgressBar;
 import javafx.stage.Stage;
 
 
@@ -35,6 +43,8 @@ public class SignatureVerificationController extends SignatureBaseController {
    */
   private String signature;
 
+  private int numSignatures;
+
 
   /**
    * Constructs a SignatureCreationController with a reference to the MainController to be used in
@@ -59,8 +69,7 @@ public class SignatureVerificationController extends SignatureBaseController {
       verifyView = loader.getController();
       signatureModel = new SignatureModel();
 
-      // Set up observers for SignView
-      setupVerifyObservers(primaryStage);
+      setupVerificationObserversBenchmarking(primaryStage);
 
       primaryStage.setScene(new Scene(root));
     } catch (IOException e) {
@@ -87,6 +96,29 @@ public class SignatureVerificationController extends SignatureBaseController {
         new ImportObserver(primaryStage, null, this::handleSig, "*.rsa"));
     verifyView.addVerifyBtnObserver(new VerifyBtnObserver());
     verifyView.addCloseNotificationObserver(new BackToMainMenuObserver(verifyView));
+  }
+
+  /**
+   * Sets up benchmarking mode specific observers for the verification view controls.
+   *
+   * @param primaryStage The stage that observers will use for file dialogs.
+   */
+  private void setupVerificationObserversBenchmarking(Stage primaryStage) {
+    verifyView.addImportTextBatchBtnObserver(
+        new ImportObserver(primaryStage, new VerifyViewUpdateOperations(verifyView),
+            this::handleMessageBatch, "*.txt"));
+    verifyView.addImportKeyBatchButtonObserver(
+        new ImportObserver(primaryStage, new VerifyViewUpdateOperations(verifyView),
+            this::handleKeyBatch, "*.rsa"));
+    verifyView.addCancelImportKeyButtonObserver(
+        new CancelImportKeyButtonObserver(new VerifyViewUpdateOperations(verifyView)));
+    verifyView.addImportSigBatchButtonObserver(
+        new ImportObserver(primaryStage, new VerifyViewUpdateOperations(verifyView),
+            this::handleSignatureBatch, "*.rsa"));
+    verifyView.addSignatureSchemeChangeObserver(new SignatureSchemeChangeObserver());
+    verifyView.addParameterChoiceChangeObserver(new ParameterChoiceChangeObserver());
+    verifyView.addVerificationBenchmarkButtonObserver(new VerificationBenchmarkButtonObserver());
+    verifyView.addBackToMainMenuObserver(new BackToMainMenuObserver(verifyView));
   }
 
   /**
@@ -188,6 +220,191 @@ public class SignatureVerificationController extends SignatureBaseController {
         e.printStackTrace();
 
       }
+    }
+  }
+
+  /**
+   * Observer for initiating the signature verification benchmark. Handles the event triggered for
+   * starting the benchmarking process, sets up the task, and shows the progress on the UI.
+   */
+  class VerificationBenchmarkButtonObserver implements EventHandler<ActionEvent> {
+
+    @Override
+    public void handle(ActionEvent event) {
+      if (signatureModel.getNumTrials() * signatureModel.getPublicKeyBatchLength()
+          != numSignatures) {
+        uk.msci.project.rsa.DisplayUtility.showErrorAlert(
+            "The numbers of messages and signatures do not match. Please ensure they match for a valid set of verification pairings.");
+        return;
+      }
+      if ((signatureModel.getNumTrials() == 0)
+          || signatureModel.getPublicKeyBatchLength() == 0
+          || verifyView.getSelectedSignatureScheme() == null || numSignatures == 0) {
+        uk.msci.project.rsa.DisplayUtility.showErrorAlert(
+            "You must provide an input for all fields. Please try again.");
+        return;
+      }
+
+      // Show the progress dialog
+      Dialog<Void> progressDialog = uk.msci.project.rsa.DisplayUtility.showProgressDialog(
+          mainController.getPrimaryStage(), "Signature Generation");
+      ProgressBar progressBar = (ProgressBar) progressDialog.getDialogPane()
+          .lookup("#progressBar");
+      Label progressLabel = (Label) progressDialog.getDialogPane().lookup("#progressLabel");
+
+      Task<Void> benchmarkingTask = createBenchmarkingTask(messageBatchFile, signatureBatchFile,
+          progressBar, progressLabel);
+      new Thread(benchmarkingTask).start();
+
+      progressDialog.getDialogPane().lookupButton(ButtonType.CANCEL)
+          .addEventFilter(ActionEvent.ACTION, e -> {
+            if (benchmarkingTask.isRunning()) {
+              benchmarkingTask.cancel();
+            }
+          });
+
+      benchmarkingTask.setOnSucceeded(e -> {
+        progressDialog.close();
+        handleBenchmarkingCompletion(); // Handle completion
+
+      });
+
+      benchmarkingTask.setOnFailed(e -> {
+        progressDialog.close();
+        uk.msci.project.rsa.DisplayUtility.showErrorAlert(
+            "Error: Benchmarking failed. Please try again.");
+
+      });
+
+    }
+  }
+
+  /**
+   * Creates a benchmarking task for signature generation. This task is responsible for processing a
+   * batch of messages, generating signatures, and updating the UI with progress.
+   *
+   * @param messageFile   The file containing the messages to be signed.
+   * @param progressBar   UI component to display progress.
+   * @param progressLabel UI component to display progress text.
+   * @return The task to be executed for benchmarking.
+   */
+
+  private Task<Void> createBenchmarkingTask(File messageFile, File batchSignatureFile,
+      ProgressBar progressBar,
+      Label progressLabel) {
+    return new Task<>() {
+      @Override
+      protected Void call() throws Exception {
+        signatureModel.batchVerifySignatures(messageFile, batchSignatureFile,
+            progress -> Platform.runLater(() -> {
+              progressBar.setProgress(progress);
+              progressLabel.setText(String.format("%.0f%%", progress * 100));
+            }));
+        return null;
+      }
+    };
+
+  }
+
+  /**
+   * Handles the completion of the benchmarking task for signature verification. This method is
+   * called when the benchmarking task successfully completes. It initialises and sets up the
+   * ResultsController with the appropriate context (SignatureVerificationContext) and displays the
+   * results view with the gathered benchmarking data.
+   */
+  private void handleBenchmarkingCompletion() {
+    ResultsController resultsController = new ResultsController(mainController);
+    BenchmarkingContext context = new SignatureVerificationContext(signatureModel);
+    resultsController.setContext(context);
+    resultsController.showResultsView(mainController.getPrimaryStage(),
+        signatureModel.getClockTimesPerTrial());
+  }
+
+  /**
+   * Observer for canceling the import of a text batch. Handles the event when the user decides to
+   * cancel the import of a batch of messages by replacing the cancel button with the original
+   * import button and resetting corresponding text field that display the name of the file.
+   */
+  class CancelImportTextButtonObserver implements EventHandler<ActionEvent> {
+
+    private ViewUpdate viewOps;
+
+    public CancelImportTextButtonObserver(ViewUpdate viewOps) {
+      this.viewOps = viewOps;
+    }
+
+    @Override
+    public void handle(ActionEvent event) {
+      viewOps.setTextFileCheckmarkVisibility(false);
+      viewOps.setMessageBatchName("Please Import a message batch");
+      messageBatchFile = null;
+      verifyView.setImportTextBatchBtnVisibility(true);
+      verifyView.setCancelImportTextButtonVisibility(false);
+    }
+  }
+
+  /**
+   * Observer for canceling the import of a signature batch. Handles the event when the user decides
+   * to cancel the import of a batch of signatures.
+   */
+  class CancelImportSigButtonObserver implements EventHandler<ActionEvent> {
+
+
+    @Override
+    public void handle(ActionEvent event) {
+      verifyView.setSigFileCheckmarkImageVisibility(false);
+      verifyView.setSignatureBatch("Please Import a signature batch");
+      messageBatchFile = null;
+      verifyView.setImportSigBatchBtnVisibility(true);
+      verifyView.setCancelImportSigBatchButtonVisibility(false);
+    }
+  }
+
+  /**
+   * Processes a file containing a batch of messages for signature verification. Validates the
+   * file's content and updates the model and UI accordingly. Ensures the file format is correct
+   * (Ensures the file format is correct i.e., no empty lines apart from the end of the file).
+   *
+   * @param file    The file containing messages to be signed.
+   * @param viewOps Operations to update the view based on file processing.
+   */
+  public void handleMessageBatch(File file, ViewUpdate viewOps) {
+    int numTrials = checkFileForNonEmptyLines(file, "message");
+    if (numTrials > 0) {
+      messageBatchFile = file;
+      signatureModel.setNumTrials(numTrials);
+      viewOps.setMessageBatchName(file.getName());
+      viewOps.setTextFileCheckmarkImage();
+      viewOps.setTextFileCheckmarkVisibility(true);
+      viewOps.setBatchMessageVisibility(true);
+      viewOps.setImportTextBatchBtnVisibility(false);
+      viewOps.setCancelImportTextButtonVisibility(true);
+      verifyView.addCancelImportTextButtonObserver(
+          new CancelImportTextButtonObserver(new VerifyViewUpdateOperations(verifyView)));
+    }
+  }
+
+
+  /**
+   * Processes a file containing a batch of signatures for signature verification. Validates the
+   * file's content and updates the model and UI accordingly. Ensures the file format is correct
+   * (Ensures the file format is correct i.e., no empty lines apart from the end of the file).
+   *
+   * @param file    The file containing messages to be signed.
+   * @param viewOps Operations to update the view based on file processing.
+   */
+  public void handleSignatureBatch(File file, ViewUpdate viewOps) {
+    numSignatures = checkFileForNonEmptyLines(file, "signature");
+    if (numSignatures > 0) {
+      signatureBatchFile = file;
+      verifyView.setSignatureBatch(file.getName());
+      verifyView.setSigFileCheckmarkImage();
+      verifyView.setSigFileCheckmarkImageVisibility(true);
+      verifyView.setSignatureBatchFieldVisibility(true);
+      verifyView.setImportSigBatchBtnVisibility(false);
+      verifyView.setCancelImportSigBatchButtonVisibility(true);
+      verifyView.addCancelImportSigBatchButtonObserver(
+          new CancelImportSigButtonObserver());
     }
   }
 
