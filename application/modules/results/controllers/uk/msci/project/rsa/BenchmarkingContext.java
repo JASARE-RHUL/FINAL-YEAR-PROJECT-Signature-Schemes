@@ -51,7 +51,7 @@ public abstract class BenchmarkingContext {
    * Exports the results of the signature verification process conducted during benchmarking. The
    * method is to be overridden in subclasses to handle operation-specific export logic.
    */
-  public void exportVerificationResults() { /* Default empty implementation */ }
+  public void exportVerificationResults() throws IOException { /* Default empty implementation */ }
 
 
   /**

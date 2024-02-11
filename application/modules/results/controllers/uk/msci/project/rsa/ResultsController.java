@@ -179,7 +179,11 @@ public class ResultsController {
 
     @Override
     public void handle(ActionEvent event) {
-      currentContext.exportVerificationResults();
+      try {
+        currentContext.exportVerificationResults();
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
       uk.msci.project.rsa.DisplayUtility.showInfoAlert("Export",
           "Verification Results were successfully exported!");
     }
