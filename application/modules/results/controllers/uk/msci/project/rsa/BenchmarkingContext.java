@@ -1,6 +1,7 @@
 package uk.msci.project.rsa;
 
 import java.io.IOException;
+import java.util.List;
 
 /**
  * This abstract class that provides a framework for specialised functionality within the results
@@ -37,7 +38,7 @@ public abstract class BenchmarkingContext {
    * Exports the batch of recoverable messages generated during the benchmarking process. The method
    * is to be overridden in subclasses to handle operation-specific export logic.
    */
-  public void exportRecoverableMessages() { /* Default empty implementation */ }
+  public void exportRecoverableMessages() throws IOException { /* Default empty implementation */ }
 
   /**
    * Exports the batch of non-recoverable messages generated during the benchmarking process. The
@@ -110,6 +111,28 @@ public abstract class BenchmarkingContext {
    */
   public boolean showNonRecoverableBatchButton() {
     return false;
+  }
+
+
+  /**
+   * Checks if a list of byte arrays contains any non-empty arrays.
+   *
+   * @param list The list of byte arrays to check.
+   * @return true if at least one byte array in the list is not empty, false otherwise.
+   */
+  public boolean checkForEmptyLists(List<byte[]> list) {
+    if (list != null && !list.isEmpty()) {
+      // Check each byte array in the list
+      for (byte[] elem : list) {
+        // If any byte array is not empty, return true
+        if (elem.length > 0) {
+          return true;
+        }
+      }
+    }
+    // All byte arrays are empty or the list itself is empty/null
+    return false;
+
   }
 
   /**

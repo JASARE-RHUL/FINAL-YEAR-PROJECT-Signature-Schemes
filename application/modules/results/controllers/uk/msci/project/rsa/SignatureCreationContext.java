@@ -24,6 +24,11 @@ public class SignatureCreationContext extends BenchmarkingContext {
     this.signatureModel = signatureModel;
   }
 
+  /**
+   * Exports the batch of signatures generated during signature creation.
+   *
+   * @throws IOException If an I/O error occurs during file writing.
+   */
   @Override
   public void exportSignatureBatch() throws IOException {
     signatureModel.exportSignatureBatch("signatureBatch.rsa");
@@ -45,19 +50,7 @@ public class SignatureCreationContext extends BenchmarkingContext {
    * @return true if there are non-recoverable messages to export, false otherwise.
    */
   public boolean showNonRecoverableBatchButton() {
-    List<byte[]> nonRecoverableMessages = signatureModel.getNonRecoverableMessages();
-    if (nonRecoverableMessages != null && !nonRecoverableMessages.isEmpty()) {
-      // Check each byte array in the list
-      for (byte[] message : nonRecoverableMessages) {
-        // If any byte array is not empty, return true
-        if (message.length > 0) {
-          return true;
-        }
-      }
-    }
-    // All byte arrays are empty or the list itself is empty/null
-    return false;
-
+    return checkForEmptyLists(signatureModel.getNonRecoverableMessages());
   }
 
   /**
