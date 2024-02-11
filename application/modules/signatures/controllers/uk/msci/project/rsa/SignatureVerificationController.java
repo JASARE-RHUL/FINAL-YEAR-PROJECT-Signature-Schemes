@@ -70,8 +70,10 @@ public class SignatureVerificationController extends SignatureBaseController {
       signatureModel = new SignatureModel();
 
       setupVerificationObserversBenchmarking(primaryStage);
+      Scene scene = new Scene(root);
+      scene.getStylesheets().add("/SignatureView.css");
+      primaryStage.setScene(scene);
 
-      primaryStage.setScene(new Scene(root));
     } catch (IOException e) {
       e.printStackTrace();
     }

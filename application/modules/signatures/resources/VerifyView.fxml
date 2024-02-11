@@ -30,25 +30,26 @@
     </HBox>
     <Separator/>
     <!-- Text Area and Import Text Button -->
-    <HBox spacing="10" alignment="CENTER_LEFT">
-      <VBox spacing="5" managed="false" visible="false">
-        <HBox spacing="10" alignment="CENTER_LEFT">
-          <Label text="ENTER TEXT TO VERIFY:" style="-fx-font-weight: bold;"/>
-          <Button fx:id="importTextButton" text="Import Text..."/>
-        </HBox>
+    <HBox spacing="10" alignment="CENTER">
 
-        <TextArea fx:id="textInput" prefHeight="100" prefWidth="400" wrapText="true"
-          visible="true"/>
-        <HBox alignment="CENTER_LEFT" spacing="5" visible="false" fx:id="textInputHBox">
-          <Label fx:id="textFileNameLabel" text=""/>
-          <ImageView fx:id="textFileCheckmarkImage" fitWidth="20" fitHeight="20"
-            preserveRatio="true"/>
-        </HBox>
-      </VBox>
       <VBox spacing="27">
+        <VBox spacing="5" managed="false" visible="false">
+          <HBox spacing="10" alignment="CENTER_LEFT">
+            <Label text="Enter text to verify:" styleClass="bold-label"/>
+            <Button fx:id="importTextButton" text="Import Text..."/>
+          </HBox>
+
+          <TextArea fx:id="textInput" prefHeight="100" prefWidth="400" wrapText="true"
+            visible="true"/>
+          <HBox alignment="CENTER_LEFT" spacing="5" visible="false" fx:id="textInputHBox">
+            <Label fx:id="textFileNameLabel" text=""/>
+            <ImageView fx:id="textFileCheckmarkImage" fitWidth="20" fitHeight="20"
+              preserveRatio="true"/>
+          </HBox>
+        </VBox>
         <VBox spacing="5" alignment="CENTER">
           <HBox spacing="10" fx:id="messageBatchHBox">
-            <Label fx:id="messageBatchText" text="MESSAGE BATCH:" styleClass="bold-label"/>
+            <Label fx:id="messageBatchText" text="Message Batch:" styleClass="bold-label"/>
             <TextField fx:id="messageBatchField" prefWidth="200"
               text="Please Import a message batch"
               editable="false"/>
@@ -64,7 +65,7 @@
 
         <!-- Public Key Input and Import Button -->
         <HBox alignment="CENTER_LEFT" spacing="10">
-          <Label text="PUBLIC KEY BATCH:" styleClass="bold-label"/>
+          <Label text="Public Key Batch:" styleClass="bold-label"/>
           <TextField fx:id="keyField" prefWidth="200" text="Please Import a public key batch"
             editable="false"/>
           <ImageView fx:id="checkmarkImage" fitWidth="20" fitHeight="20" preserveRatio="true"
@@ -82,7 +83,7 @@
         <HBox spacing="10" alignment="CENTER_LEFT" managed="false" visible="false" fx:id="signatureBatchHBox">
           <VBox spacing="5">
             <HBox spacing="10" alignment="CENTER_LEFT">
-              <Label text="ENTER SIGNATURE:" style="-fx-font-weight: bold;"/>
+              <Label text="Signature:" styleClass="bold-label"/>
               <Button fx:id="importSigButton" text="Import Signature..."/>
             </HBox>
             <TextArea fx:id="signatureText" prefHeight="100" prefWidth="400" wrapText="true"
@@ -96,7 +97,7 @@
           </VBox>
         </HBox>
         <HBox alignment="CENTER_LEFT" spacing="10">
-          <Label fx:id="signatureBatchText" text="SIGNATURE BATCH:" styleClass="bold-label"/>
+          <Label fx:id="signatureBatchText" text="Signature Batch:" styleClass="bold-label"/>
           <TextField fx:id="signatureField" prefWidth="200" text="Please Import a signature batch"
             editable="false"/>
           <ImageView fx:id="sigFileCheckmarkImage" fitWidth="20" fitHeight="20" preserveRatio="true"
@@ -107,7 +108,7 @@
         </HBox>
         <!-- Signature Scheme Dropdown -->
         <HBox spacing="10">
-          <Label text="SIGNATURE SCHEME:" style="-fx-font-weight: bold;"/>
+          <Label text="Signature Scheme:" styleClass="bold-label""/>
           <ComboBox fx:id="signatureSchemeDropdown" prefWidth="200">
             <items>
               <FXCollections fx:factory="observableArrayList">
