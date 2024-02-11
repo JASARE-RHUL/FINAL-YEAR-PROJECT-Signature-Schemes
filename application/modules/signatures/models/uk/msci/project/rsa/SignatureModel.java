@@ -519,7 +519,7 @@ public class SignatureModel {
    */
   public void exportVerificationResultsToCSV() throws IOException {
 
-    File file = FileHandle.createUniqueFile("verif.csv");
+    File file = FileHandle.createUniqueFile("verificationResults.csv");
 
     try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
       // Write header
