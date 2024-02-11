@@ -69,6 +69,25 @@ public class SignatureModel {
   private List<byte[]> nonRecoverableMessages = new ArrayList<>();
 
   /**
+   * Stores the recoverable parts of messages from the verification process. This list is relevant
+   * for signature schemes that involve message recovery.
+   */
+  private List<byte[]> recoverableMessages = new ArrayList<>();
+
+  /**
+   * Stores the original messages that were signed during the verification process. Each entry in
+   * this list corresponds to a signed message from a verification trial.
+   */
+  private List<byte[]> signedMessages = new ArrayList<>();
+
+  /**
+   * Stores the results of the verification process. Each boolean value in this list represents the
+   * outcome of a verification trial.
+   */
+  private List<Boolean> verificationResults = new ArrayList<>();
+
+
+  /**
    * A batch of private keys used for generating signatures in a benchmarking session.
    */
   private List<PrivateKey> privKeyBatch = new ArrayList<PrivateKey>();
@@ -376,6 +395,121 @@ public class SignatureModel {
     }
   }
 
+  /**
+   * Performs batch verification of signatures using multiple public keys. This method reads
+   * messages and their corresponding signatures from files, and verifies each signature against the
+   * message using the public keys in the batch. It updates the progress of verification and stores
+   * the results, including any recoverable message parts.
+   *
+   * @param batchMessageFile   The file containing messages to be verified.
+   * @param batchSignatureFile The file containing signatures corresponding to the messages.
+   * @param progressUpdater    A consumer to update progress during the batch process.
+   * @throws Exception If an error occurs during the verification process or file reading.
+   */
+  public void batchVerifySignatures(File batchMessageFile, File batchSignatureFile,
+      DoubleConsumer progressUpdater) throws Exception {
+    // Create an executor service with a fixed thread pool size based on available processors
+    try (ExecutorService executor = Executors.newFixedThreadPool(
+        Runtime.getRuntime().availableProcessors())) {
+
+      // Open readers for both message and signature files
+      try (BufferedReader signatureReader = new BufferedReader(new FileReader(batchSignatureFile));
+          BufferedReader messageReader = new BufferedReader(new FileReader(batchMessageFile))) {
+
+        String messageLine;
+        int i = 0;
+        // Read each line from the message file and ensure we don't exceed the set number of trials
+        while ((messageLine = messageReader.readLine()) != null && i < this.numTrials) {
+          // CountDownLatch to wait for all threads in a single trial
+          CountDownLatch latch = new CountDownLatch(publicKeyBatch.size());
+          // ConcurrentHashMap to store results from different threads
+          ConcurrentHashMap<PublicKey, Pair<Boolean, List<byte[]>>> resultsMap = new ConcurrentHashMap<>();
+          // Record the start time of the trial
+          long startTrialTime = System.nanoTime();
+
+          // Iterate through each public key in the batch
+          for (PublicKey publicKey : publicKeyBatch) {
+            // Read a new signature line for each public key
+            String signatureLine = signatureReader.readLine();
+            if (signatureLine == null) {
+              break; // Break if there are no more signatures
+            }
+            String finalSignatureLine = signatureLine;
+            final String[] finalMessageLine = {messageLine};
+
+            // Execute signature verification in a separate thread
+            executor.execute(() -> {
+              try {
+                // Convert the signature line to a byte array
+                byte[] signatureBytes = new BigInteger(finalSignatureLine).toByteArray();
+                // Create a signature scheme instance
+                SigScheme sigScheme = SignatureFactory.getSignatureScheme(currentType, publicKey,
+                    isProvablySecure);
+
+                // Handle message recovery for ISO_IEC_9796_2_SCHEME_1
+                if (currentType == SignatureType.ISO_IEC_9796_2_SCHEME_1) {
+                  String[] nonRecoverableParts = finalMessageLine[0].split(" ", 2);
+                  byte[] nonRecoverableMessage = null;
+                  boolean verificationResult;
+
+                  // Verify signature and recover message if applicable
+                  if (nonRecoverableParts[0].equals("1")) {
+                    nonRecoverableMessage = nonRecoverableParts[1].getBytes();
+                    verificationResult = sigScheme.verify(nonRecoverableMessage, signatureBytes);
+                  } else {
+                    verificationResult = sigScheme.verify(null, signatureBytes);
+                  }
+                  byte[] recoveredM =
+                      verificationResult ? sigScheme.getRecoverableM() : new byte[]{};
+                  resultsMap.put(publicKey, new Pair<>(verificationResult,
+                      List.of(nonRecoverableParts[1].getBytes(), signatureBytes, recoveredM)));
+                } else {
+                  // Verify signature for schemes without message recovery
+                  boolean verificationResult = sigScheme.verify(finalMessageLine[0].getBytes(),
+                      signatureBytes);
+                  resultsMap.put(publicKey, new Pair<>(verificationResult,
+                      List.of(finalMessageLine[0].getBytes(), signatureBytes)));
+                }
+              } catch (DataFormatException | InvalidSignatureTypeException e) {
+                throw new RuntimeException(e);
+              } finally {
+                // Count down the latch after each task completion
+                latch.countDown();
+              }
+            });
+          }
+
+          latch.await(); // Wait for all tasks of this trial to complete
+          clockTimesPerTrial.add(System.nanoTime() - startTrialTime); // Calculate total trial time
+
+          // Process and store results for each key
+          for (PublicKey key : publicKeyBatch) {
+            Pair<Boolean, List<byte[]>> results = resultsMap.get(key);
+            if (results != null) {
+              verificationResults.add(results.getKey());
+              signedMessages.add(results.getValue().get(0)); // Store original message
+              signaturesFromBenchmark.add(results.getValue().get(1)); // Store signature
+              recoverableMessages.add(results.getValue().size() > 2 ? results.getValue().get(2)
+                  : null); // Store recovered message if any
+            }
+          }
+          progressUpdater.accept((double) ++i / numTrials); // Update progress after each trial
+        }
+      } catch (Exception e) {
+        e.printStackTrace();
+      } finally {
+        // Shutdown executor and handle termination
+        executor.shutdown();
+        if (!executor.awaitTermination(60, java.util.concurrent.TimeUnit.SECONDS)) {
+          System.err.println("Executor did not terminate in the specified time.");
+          List<Runnable> droppedTasks = executor.shutdownNow();
+          System.err.println("Dropped " + droppedTasks.size() + " tasks.");
+        }
+      }
+    }
+  }
+
+
 
   /**
    * Retrieves the clock times recorded for each trial during the batch signature creation process.
@@ -408,6 +542,17 @@ public class SignatureModel {
   }
 
   /**
+   * Retrieves the list of recoverable message parts generated during the verification process.
+   * These parts are recovered in signature schemes that support message recovery.
+   *
+   * @return A list of byte arrays, where each array is a recoverable part of a message.
+   */
+  public List<byte[]> getRecoverableMessages() {
+    return recoverableMessages;
+  }
+
+
+  /**
    * Indicates whether the signature scheme operates in provably secure mode.
    *
    * @return {@code true} if the signature scheme is operating in provably secure mode, {@code
@@ -427,6 +572,3 @@ public class SignatureModel {
   }
 
 }
-
-
-
