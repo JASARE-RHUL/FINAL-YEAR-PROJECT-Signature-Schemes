@@ -145,4 +145,58 @@ public class SignViewUpdateOperations implements ViewUpdate {
   public SignView getView() {
     return signView;
   }
+
+  /**
+   * Controls the visibility of the button used to cancel the import of a key batch in the sign
+   * view.
+   *
+   * @param visible {@code true} to show the cancel import key button, {@code false} to hide it.
+   */
+  @Override
+  public void setCancelImportKeyButtonVisibility(boolean visible) {
+    signView.setCancelImportKeyButtonVisibility(visible);
+  }
+
+
+  /**
+   * Controls the visibility of the button used to import a batch of keys in the sign view.
+   *
+   * @param visible {@code true} to show the import key batch button, {@code false} to hide it.
+   */
+  @Override
+  public void setImportKeyBatchButtonVisibility(boolean visible) {
+    signView.setImportKeyBatchButtonVisibility(visible);
+
+  }
+
+  /**
+   * Sets a fixed, default text for the key area in the verification view, usually used to prompt
+   * the user.
+   */
+  @Override
+  public void setFixedKeyName() {
+    signView.setKey("Please Import a private key batch");
+  }
+
+  /**
+   * Controls the visibility of the button used to import a batch of text messages in the
+   * sign view.
+   *
+   * @param visible {@code true} to show the import text batch button, {@code false} to hide it.
+   */
+  @Override
+  public void setImportTextBatchBtnVisibility(boolean visible) {
+    signView.setImportTextBatchBtnVisibility(visible);
+  }
+
+  /**
+   * Controls the visibility of the button used to cancel the import of a text message batch in the
+   * sign view.
+   *
+   * @param visible {@code true} to show the cancel import text button, {@code false} to hide it.
+   */
+  @Override
+  public void setCancelImportTextButtonVisibility(boolean visible) {
+    signView.setCancelImportTextButtonVisibility(visible);
+  }
 }

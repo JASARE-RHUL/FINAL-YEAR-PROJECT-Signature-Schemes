@@ -98,4 +98,38 @@ public interface ViewUpdate {
    * @return The associated view interface.
    */
   SignatureViewInterface getView();
+
+
+  /**
+   * Sets the visibility of the button to cancel the import of a key.
+   *
+   * @param visible {@code true} to make the cancel import key button visible, {@code false} otherwise.
+   */
+  void setCancelImportKeyButtonVisibility(boolean visible);
+
+  /**
+   * Sets the visibility of the button to import a batch of keys.
+   *
+   * @param visible {@code true} to make the import key batch button visible, {@code false} otherwise.
+   */
+  void setImportKeyBatchButtonVisibility(boolean visible);
+
+  /**
+   * Sets a fixed name for the key display area in the user interface.
+   */
+  void setFixedKeyName();
+
+  /**
+   * Sets the visibility of the button to import a batch of text messages.
+   *
+   * @param visible {@code true} to make the import text batch button visible, {@code false} otherwise.
+   */
+  void setImportTextBatchBtnVisibility(boolean visible);
+
+  /**
+   * Sets the visibility of the button to cancel the import of a text message batch.
+   *
+   * @param visible {@code true} to make the cancel import text button visible, {@code false} otherwise.
+   */
+  void setCancelImportTextButtonVisibility(boolean visible);
 }
