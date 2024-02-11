@@ -101,10 +101,10 @@ public class ResultsController {
         currentContext.showNonRecoverableBatchButton());
     resultsView.setExportNonRecoverableMessageBatchBtnManaged(
         currentContext.showNonRecoverableBatchButton());
-    resultsView.setExportRecoverableMessageBatchBtVisible(
-        currentContext.showRecoverableBatchButton());
-    resultsView.setExportRecoverableMessageBatchBtnManaged(
-        currentContext.showRecoverableBatchButton());
+    resultsView.setExportVerificationResultsBtnVisible(
+        currentContext.showExportVerificationResultsButton());
+    resultsView.setExportVerificationResultsBtnManaged(
+        currentContext.showExportVerificationResultsButton());
     resultsView.setResultsLabel(currentContext.getResultsLabel());
 
   }
@@ -121,8 +121,8 @@ public class ResultsController {
     resultsView.addExportSignatureBatchObserver(new ExportSignatureBatchObserver());
     resultsView.addExportNonRecoverableMessageBatchObserver(
         new ExportNonRecoverableMessageBatchObserver());
-    resultsView.addExportRecoverableMessageBatchObserver(
-        new ExportRecoverableMessageBatchObserver());
+    resultsView.addExportVerificationResultsObserver(
+        new ExportVerificationResultsObserver());
 
   }
 
@@ -167,6 +167,21 @@ public class ResultsController {
       } catch (IOException e) {
         e.printStackTrace();
       }
+    }
+  }
+
+  /**
+   * Observer for handling the export of verification results containing all related data such keys,
+   * signed messages, a boolean indicator of the results for each verification etc. Triggers upon
+   * user action to export results to a CSV file.
+   */
+  class ExportVerificationResultsObserver implements EventHandler<ActionEvent> {
+
+    @Override
+    public void handle(ActionEvent event) {
+      currentContext.exportVerificationResults();
+      uk.msci.project.rsa.DisplayUtility.showInfoAlert("Export",
+          "Verification Results were successfully exported!");
     }
   }
 
@@ -242,19 +257,19 @@ public class ResultsController {
     }
   }
 
-  /**
-   * Observer for handling the export of a recoverable Message batch. Triggers upon user action to
-   * export the recoverable batch.
-   */
-  class ExportRecoverableMessageBatchObserver implements EventHandler<ActionEvent> {
-
-    @Override
-    public void handle(ActionEvent event) {
-      currentContext.exportRecoverableMessages();
-      uk.msci.project.rsa.DisplayUtility.showInfoAlert("Export",
-          "The recovered message batch was successfully exported!");
-    }
-  }
+//  /**
+//   * Observer for handling the export of a recoverable Message batch. Triggers upon user action to
+//   * export the recoverable batch.
+//   */
+//  class ExportRecoverableMessageBatchObserver implements EventHandler<ActionEvent> {
+//
+//    @Override
+//    public void handle(ActionEvent event) {
+//      currentContext.exportRecoverableMessages();
+//      uk.msci.project.rsa.DisplayUtility.showInfoAlert("Export",
+//          "The recovered message batch was successfully exported!");
+//    }
+//  }
 
 
   /**
