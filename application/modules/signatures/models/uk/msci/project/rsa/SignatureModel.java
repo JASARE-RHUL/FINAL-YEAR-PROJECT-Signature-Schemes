@@ -510,6 +510,39 @@ public class SignatureModel {
   }
 
 
+  /**
+   * Exports verification results to a CSV file. Each line in the file will contain the index of the
+   * key used for verification, the signed message, the signature, and the recoverable message (if
+   * any).
+   *
+   * @throws IOException If there is an error in writing to the file.
+   */
+  public void exportVerificationResultsToCSV() throws IOException {
+
+    File file = FileHandle.createUniqueFile("verif.csv");
+
+    try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
+      // Write header
+      writer.write("KeyIndex, Verification Result, Signed Message, Signature, Recovered Message\n");
+
+      // Write each line of data
+      for (int i = 0; i < verificationResults.size(); i++) {
+        int keyIndex = (i % publicKeyBatch.size()) + 1; // Cycle through key indexes
+        boolean verificationResult = verificationResults.get(i);
+        String signedMessage = new String(signedMessages.get(i)); // Assuming UTF-8 encoding
+        String signature = new BigInteger(1, signaturesFromBenchmark.get(i)).toString();
+        String recoverableMessage =
+            recoverableMessages.get(i) != null && recoverableMessages.get(i).length > 0 ?
+                new String(recoverableMessages.get(i)) : "";
+
+        writer.write(keyIndex + ", " +
+            verificationResult + ", " +
+            signedMessage + ", " +
+            signature + ", " +
+            recoverableMessage + "\n");
+      }
+    }
+  }
 
   /**
    * Retrieves the clock times recorded for each trial during the batch signature creation process.
