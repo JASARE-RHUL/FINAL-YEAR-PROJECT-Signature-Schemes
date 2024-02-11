@@ -35,6 +35,7 @@ public class VerifyViewUpdateOperations implements ViewUpdate {
    */
   @Override
   public void setMessageBatchName(String name) {
+    verifyView.setMessageBatch(name);
 
   }
 
@@ -63,7 +64,7 @@ public class VerifyViewUpdateOperations implements ViewUpdate {
    */
   @Override
   public void setTextFileCheckmarkVisibility(boolean visible) {
-
+    verifyView.setTextFieldCheckmarkImageVisibility(visible);
   }
 
   /**
@@ -145,4 +146,54 @@ public class VerifyViewUpdateOperations implements ViewUpdate {
   public VerifyView getView() {
     return verifyView;
   }
+
+  /**
+   * Controls the visibility of the button used to cancel the import of a key batch in the verification view.
+   *
+   * @param visible {@code true} to show the cancel import key button, {@code false} to hide it.
+   */
+  @Override
+  public void setCancelImportKeyButtonVisibility(boolean visible) {
+    verifyView.setCancelImportKeyButtonVisibility(visible);
+  }
+
+  /**
+   * Controls the visibility of the button used to import a batch of keys in the verification view.
+   *
+   * @param visible {@code true} to show the import key batch button, {@code false} to hide it.
+   */
+  @Override
+  public void setImportKeyBatchButtonVisibility(boolean visible) {
+    verifyView.setImportKeyBatchButtonVisibility(visible);
+  }
+
+  /**
+   * Sets a fixed, default text for the key area in the verification view, usually used to prompt the user.
+   */
+  @Override
+  public void setFixedKeyName() {
+    verifyView.setKey("Please Import a public key batch");
+  }
+
+  /**
+   * Controls the visibility of the button used to import a batch of text messages in the verification view.
+   *
+   * @param visible {@code true} to show the import text batch button, {@code false} to hide it.
+   */
+  @Override
+  public void setImportTextBatchBtnVisibility(boolean visible) {
+    verifyView.setImportTextBatchBtnVisibility(visible);
+  }
+
+  /**
+   * Controls the visibility of the button used to cancel the import of a text message batch in the verification view.
+   *
+   * @param visible {@code true} to show the cancel import text button, {@code false} to hide it.
+   */
+  @Override
+  public void setCancelImportTextButtonVisibility(boolean visible) {
+    verifyView.setCancelImportTextButtonVisibility(visible);
+  }
+
+
 }

@@ -3,8 +3,10 @@ package uk.msci.project.rsa;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
 import java.util.regex.Pattern;
 import javafx.beans.value.ChangeListener;
@@ -42,7 +44,15 @@ public abstract class SignatureBaseController {
    */
   private byte[] message;
 
+  /**
+   * Represents the file containing a batch of messages for signature processing.
+   */
   File messageBatchFile;
+
+  /**
+   * Represents the file containing a batch of signatures for signature verification.
+   */
+  File signatureBatchFile;
 
 
   /**
@@ -318,6 +328,29 @@ public abstract class SignatureBaseController {
 
   }
 
+  /**
+   * Observer for canceling the import of a key batch. Handles the event when the user decides to
+   * cancel the import of a batch of keys.
+   */
+  class CancelImportKeyButtonObserver implements EventHandler<ActionEvent> {
+
+    private ViewUpdate viewOps;
+
+    public CancelImportKeyButtonObserver(ViewUpdate viewOps) {
+      this.viewOps = viewOps;
+    }
+
+    @Override
+    public void handle(ActionEvent event) {
+      viewOps.setCheckmarkVisibility(false);
+      viewOps.setKeyName("Please Import a private key batch");
+      signatureModel.clearPrivateKeyBatch();
+      signatureModel.clearPublicKeyBatch();
+      viewOps.setCancelImportKeyButtonVisibility(false);
+      viewOps.setImportKeyBatchButtonVisibility(true);
+
+    }
+  }
 
   /**
    * Handles the file selected by the user for a batch of keys. It validates the keys and updates
@@ -328,7 +361,7 @@ public abstract class SignatureBaseController {
    * @param file    The file selected by the user containing a batch of keys.
    * @param viewOps The {@code ViewUpdate} operations that will update the view.
    */
-  public void handleKeyBatch(File file, ViewUpdate viewOps) {
+  public boolean handleKeyBatch(File file, ViewUpdate viewOps) {
     try (BufferedReader keyReader = new BufferedReader(new FileReader(file))) {
       String keyContent;
       while ((keyContent = keyReader.readLine()) != null) {
@@ -336,6 +369,7 @@ public abstract class SignatureBaseController {
             .matches())) {
           uk.msci.project.rsa.DisplayUtility.showErrorAlert(
               "Invalid key batch. Please make sure the file contains a contiguous sequence of new line separated and valid keys.");
+          return false;
         } else {
           if (this instanceof SignatureCreationController) {
             signatureModel.addPrivKeyToBatch(keyContent);
@@ -346,18 +380,56 @@ public abstract class SignatureBaseController {
           viewOps.updateCheckmarkImage();
           viewOps.setCheckmarkVisibility(true);
           viewOps.setKeyVisibility(true);
-          if (viewOps.getView() instanceof SignView) {
-            ((SignView) viewOps.getView()).setImportKeyBatchButtonVisibility(false);
-            ((SignView) viewOps.getView()).setCancelImportKeyButtonVisibility(true);
-          }
         }
       }
 
-
     } catch (Exception e) {
       uk.msci.project.rsa.DisplayUtility.showErrorAlert(
-          "Invalid key batch. Please make sure the file contains new line separated list of valid keys.");
+          "Invalid key batch. Please make sure the file contains new line separated contiguous sequence of valid keys.");
+      return false;
     }
+    return true;
+  }
+
+  /**
+   * Checks a file for non-empty lines and counts the number of valid lines. This method is used to
+   * validate message or signature batch files to ensure they meet the expected format.
+   *
+   * @param file     The file to be checked.
+   * @param artefact A string describing the artefact being checked (e.g., "message", "signature").
+   * @return The number of non-empty lines if the file is valid, otherwise 0.
+   */
+  public int checkFileForNonEmptyLines(File file, String artefact) {
+    boolean encounteredNonEmptyLine = false;
+    boolean isValidFile = true;
+    int numMessages = 0;
+
+    try (BufferedReader messageReader = new BufferedReader(new FileReader(file))) {
+      String messageString;
+      while ((messageString = messageReader.readLine()) != null) {
+        if (!messageString.isEmpty()) {
+          encounteredNonEmptyLine = true;
+          numMessages++;
+        } else if (encounteredNonEmptyLine) {
+          // Encountered an empty line after a non-empty line
+          uk.msci.project.rsa.DisplayUtility.showErrorAlert(
+              "Invalid " + artefact + " batch. Please make sure the file contains no empty lines.");
+          isValidFile = false;
+          break;
+        }
+      }
+    } catch (IOException e) {
+      uk.msci.project.rsa.DisplayUtility.showErrorAlert("Error reading file: " + e.getMessage());
+      isValidFile = false;
+    }
+
+    if (!isValidFile) {
+      uk.msci.project.rsa.DisplayUtility.showErrorAlert(
+          "Invalid " + artefact
+              + " batch. Please make sure the file contains a contiguous sequence of new line separated messages that matches the number entered in the the above field.");
+    }
+
+    return isValidFile ? numMessages : 0;
   }
 
 

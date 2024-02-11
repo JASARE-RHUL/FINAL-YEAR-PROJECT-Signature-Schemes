@@ -6,6 +6,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.List;
+import java.util.regex.Pattern;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
@@ -19,6 +20,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 import javafx.stage.Stage;
 import javafx.util.Pair;
+import uk.msci.project.rsa.SignatureVerificationController.CancelImportTextButtonObserver;
 
 
 /**
@@ -101,6 +103,11 @@ public class SignatureCreationController extends SignatureBaseController {
     signView.addCloseNotificationObserver(new BackToMainMenuObserver(signView));
   }
 
+  /**
+   * Sets up benchmarking mode specific observers for the SignView controls.
+   *
+   * @param primaryStage The stage that observers will use for file dialogs.
+   */
   private void setupSignObserversBenchmarking(Stage primaryStage) {
     signView.addImportTextBatchBtnObserver(
         new ImportObserver(primaryStage, new SignViewUpdateOperations(signView),
@@ -198,7 +205,7 @@ public class SignatureCreationController extends SignatureBaseController {
       ProgressBar progressBar = (ProgressBar) progressDialog.getDialogPane()
           .lookup("#progressBar");
       Label progressLabel = (Label) progressDialog.getDialogPane().lookup("#progressLabel");
-      
+
       Task<Void> benchmarkingTask = createBenchmarkingTask(messageBatchFile,
           progressBar, progressLabel);
       new Thread(benchmarkingTask).start();
@@ -252,10 +259,10 @@ public class SignatureCreationController extends SignatureBaseController {
   }
 
   /**
-   * Handles the completion of the benchmarking task for signature creation. This method is called when
-   * the benchmarking task successfully completes. It initialises and sets up the ResultsController
-   * with the appropriate context (SignatureCreationContext) and displays the results view with the
-   * gathered benchmarking data.
+   * Handles the completion of the benchmarking task for signature creation. This method is called
+   * when the benchmarking task successfully completes. It initialises and sets up the
+   * ResultsController with the appropriate context (SignatureCreationContext) and displays the
+   * results view with the gathered benchmarking data.
    */
   private void handleBenchmarkingCompletion() {
     ResultsController resultsController = new ResultsController(mainController);
@@ -268,59 +275,69 @@ public class SignatureCreationController extends SignatureBaseController {
 
   /**
    * Processes a file containing a batch of messages for signature creation. Validates the file's
-   * content and updates the model and UI accordingly. Ensures the file format is correct and
-   * contains the expected number of messages.
+   * content and updates the model and UI accordingly. Ensures the file format is correct (Ensures
+   * the file format is correct i.e., no empty lines apart from the end of the file) and contains
+   * the expected number of messages.
    *
    * @param file    The file containing messages to be signed.
    * @param viewOps Operations to update the view based on file processing.
    */
   public void handleMessageBatch(File file, ViewUpdate viewOps) {
-    int numMessages = 0;
-    boolean encounteredNonEmptyLine = false;
+    int numMessages = checkFileForNonEmptyLines(file, "message");
+    try {
+      if (numMessages > 0) {
+        this.messageBatchFile = file;
 
-    try (BufferedReader messageReader = new BufferedReader(new FileReader(file))) {
-      String messageString;
-      while ((messageString = messageReader.readLine()) != null) {
-        if (!messageString.isEmpty()) {
-          encounteredNonEmptyLine = true;
-          numMessages++;
-        } else if (encounteredNonEmptyLine) {
+        if (numMessages != Integer.parseInt(signView.getNumMessageField())) {
           uk.msci.project.rsa.DisplayUtility.showErrorAlert(
-              "Invalid message batch. Please make sure the file contains no empty lines.");
+              "Message batch could not be imported. Please ensure the number "
+                  + "of messages contained in the file matches the number of messages "
+                  + "entered in the above field");
+          return;
+        } else {
+          signatureModel.setNumTrials(numMessages);
+          viewOps.setMessageBatchName(file.getName());
+          viewOps.setTextFileCheckmarkImage();
+          viewOps.setTextFileCheckmarkVisibility(true);
+          viewOps.setBatchMessageVisibility(true);
+          signView.setNumMessageFieldEditable(false);
+          viewOps.setImportTextBatchBtnVisibility(false);
+          viewOps.setCancelImportTextButtonVisibility(true);
+          signView.addCancelImportTextButtonObserver(
+              new CancelImportTextButtonObserver(new SignViewUpdateOperations(signView)));
         }
       }
-      this.messageBatchFile = file;
-      if (numMessages != Integer.parseInt(signView.getNumMessageField())) {
-        uk.msci.project.rsa.DisplayUtility.showErrorAlert(
-            "Message batch could not be imported. Please ensure the number "
-                + "of messages contained in the file matches the number of messages "
-                + "entered in the above field");
-        return;
-      } else {
-        signatureModel.setNumTrials(numMessages);
-        viewOps.setMessageBatchName(file.getName());
-        viewOps.setTextFileCheckmarkImage();
-        viewOps.setTextFileCheckmarkVisibility(true);
-        viewOps.setBatchMessageVisibility(true);
-        signView.setNumMessageFieldEditable(false);
-        signView.setImportTextBatchBtnVisibility(false);
-        signView.setCancelImportTextButtonVisibility(true);
-        signView.addCancelImportTextButtonObserver(
-            new CancelImportTextButtonObserver(new SignViewUpdateOperations(signView)));
-      }
-
-    } catch (Exception e) {
+    } catch (NumberFormatException e) {
       uk.msci.project.rsa.DisplayUtility.showErrorAlert(
-          "Invalid message batch. Please make sure the file contains a contiguous sequence of new line separated messages that matches the number entered in the the above field.");
-
+          "Message batch could not be imported. Please ensure the number "
+              + "of messages contained in the file matches the number of messages "
+              + "entered in the above field");
     }
-
-
   }
 
+
   /**
-   * Observer for canceling the import of a text batch. Handles the event triggered when the user
-   * decides to cancel the import of a batch of messages.
+   * Handles the file selected by the user for a batch of keys. It validates the keys and updates
+   * the model and view accordingly. It expects the key file to contain a line separated text of
+   * comma delimited positive integers and updates the view based on the result of the key
+   * validation.
+   *
+   * @param file    The file selected by the user containing a batch of keys.
+   * @param viewOps The {@code ViewUpdate} operations that will update the view.
+   */
+  public boolean handleKeyBatch(File file, ViewUpdate viewOps) {
+    if (super.handleKeyBatch(file, viewOps)) {
+      signView.setImportKeyBatchButtonVisibility(false);
+      signView.setCancelImportKeyButtonVisibility(true);
+    }
+    return true;
+  }
+
+
+  /**
+   * Observer for canceling the import of a text batch. Handles the event when the user decides to
+   * cancel the import of a batch of messages by replacing the cancel button with the original
+   * import button and resetting corresponding text field that display the name of the file.
    */
   class CancelImportTextButtonObserver implements EventHandler<ActionEvent> {
 
@@ -337,33 +354,8 @@ public class SignatureCreationController extends SignatureBaseController {
       signView.clearNumMessageField();
       signatureModel.setNumTrials(0);
       messageBatchFile = null;
-      signView.setImportTextBatchBtnVisibility(true);
-      signView.setCancelImportTextButtonVisibility(false);
-    }
-  }
-
-  /**
-   * Observer for canceling the import of a key batch. Handles the event when the user decides to
-   * cancel the import of a batch of keys.
-   */
-  class CancelImportKeyButtonObserver implements EventHandler<ActionEvent> {
-
-    private ViewUpdate viewOps;
-
-    public CancelImportKeyButtonObserver(ViewUpdate viewOps) {
-      this.viewOps = viewOps;
-    }
-
-    @Override
-    public void handle(ActionEvent event) {
-      viewOps.setCheckmarkVisibility(false);
-      ;
-      viewOps.setKeyName("Please Import a private key batch");
-      signatureModel.clearPrivateKeyBatch();
-      signatureModel.clearPublicKeyBatch();
-      signView.setCancelImportKeyButtonVisibility(false);
-      signView.setImportKeyBatchButtonVisibility(true);
-
+      viewOps.setImportTextBatchBtnVisibility(true);
+      viewOps.setCancelImportTextButtonVisibility(false);
     }
   }
 
