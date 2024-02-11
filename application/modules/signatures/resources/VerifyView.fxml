@@ -6,6 +6,7 @@
 
 <?import javafx.scene.image.ImageView?>
 <?import java.lang.String?>
+<?import org.controlsfx.control.ToggleSwitch?>
 <AnchorPane xmlns:fx="http://javafx.com/fxml" fx:controller="uk.msci.project.rsa.VerifyView"
   prefHeight="400.0" prefWidth="600.0" fx:id="root">
   <VBox alignment="CENTER" spacing="20" AnchorPane.topAnchor="50" AnchorPane.bottomAnchor="50"
@@ -22,75 +23,117 @@
 
     <Separator/>
 
+    <!-- ToggleSwitch for Benchmarking Mode -->
+    <HBox alignment="CENTER_LEFT" spacing="10">
+      <Label text="Benchmarking Mode:" styleClass="bold-label"/>
+      <ToggleSwitch fx:id="benchmarkingModeToggle" selected="true"/>
+    </HBox>
+    <Separator/>
     <!-- Text Area and Import Text Button -->
     <HBox spacing="10" alignment="CENTER_LEFT">
-      <VBox spacing="5">
+      <VBox spacing="5" managed="false" visible="false">
         <HBox spacing="10" alignment="CENTER_LEFT">
           <Label text="ENTER TEXT TO VERIFY:" style="-fx-font-weight: bold;"/>
           <Button fx:id="importTextButton" text="Import Text..."/>
         </HBox>
 
-        <StackPane>
-          <TextArea fx:id="textInput" prefHeight="100" prefWidth="400" wrapText="true"
-            visible="true"/>
-          <HBox alignment="CENTER_LEFT" spacing="5" visible="false" fx:id="textInputHBox">
-            <Label fx:id="textFileNameLabel" text=""/>
-            <ImageView fx:id="textFileCheckmarkImage" fitWidth="20" fitHeight="20"
-              preserveRatio="true"/>
-          </HBox>
-        </StackPane>
+        <TextArea fx:id="textInput" prefHeight="100" prefWidth="400" wrapText="true"
+          visible="true"/>
+        <HBox alignment="CENTER_LEFT" spacing="5" visible="false" fx:id="textInputHBox">
+          <Label fx:id="textFileNameLabel" text=""/>
+          <ImageView fx:id="textFileCheckmarkImage" fitWidth="20" fitHeight="20"
+            preserveRatio="true"/>
+        </HBox>
       </VBox>
+      <VBox spacing="27">
+        <VBox spacing="5" alignment="CENTER">
+          <HBox spacing="10" fx:id="messageBatchHBox">
+            <Label fx:id="messageBatchText" text="MESSAGE BATCH:" styleClass="bold-label"/>
+            <TextField fx:id="messageBatchField" prefWidth="200"
+              text="Please Import a message batch"
+              editable="false"/>
+            <ImageView fx:id="textFileCheckmarkImage" fitWidth="20" fitHeight="20"
+              preserveRatio="true"
+              visible="false"/>
+            <Button fx:id="importTextButton" text="Import Text" visible="false" managed="false"/>
+            <Button fx:id="importTextBatchBtn" text="Import Text"/>
+            <Button fx:id="cancelImportTextButton" text="Cancel Import" visible="false"
+              managed="false"/>
+          </HBox>
+        </VBox>
 
-    </HBox>
-
-
-    <!-- Public Key Input and Import Button -->
-    <HBox alignment="CENTER_LEFT" spacing="10">
-      <Label text="PUBLIC KEY:" style="-fx-font-weight: bold;"/>
-      <TextField fx:id="keyField" prefWidth="200" text="Please Import a key" editable="false"/>
-      <ImageView fx:id="checkmarkImage" fitWidth="20" fitHeight="20" preserveRatio="true"
-        visible="false"/>
-      <Button fx:id="importKeyButton" text="Import Public Key"/>
-    </HBox>
-    <!-- <Label text="(If no key loaded, prompt: [G] Generate Private Key)"/>-->
-
-    <!-- Signature -->
-
-    <HBox spacing="10" alignment="CENTER_LEFT">
-      <VBox spacing="5">
-        <HBox spacing="10" alignment="CENTER_LEFT">
-          <Label text="ENTER SIGNATURE:" style="-fx-font-weight: bold;"/>
-          <Button fx:id="importSigButton" text="Import Signature..."/>
+        <!-- Public Key Input and Import Button -->
+        <HBox alignment="CENTER_LEFT" spacing="10">
+          <Label text="PUBLIC KEY BATCH:" styleClass="bold-label"/>
+          <TextField fx:id="keyField" prefWidth="200" text="Please Import a public key batch"
+            editable="false"/>
+          <ImageView fx:id="checkmarkImage" fitWidth="20" fitHeight="20" preserveRatio="true"
+            visible="false"/>
+          <Button fx:id="importKeyButton" text="Import Private Key" visible="false"
+            managed="false"/>
+          <Button fx:id="importKeyBatchButton" text="Import Key Batch" visible="true"
+            managed="true"/>
+          <Button fx:id="cancelImportKeyButton" text="Cancel Import" visible="false"
+            managed="false"/>
         </HBox>
 
-        <StackPane>
-          <TextArea fx:id="signatureText" prefHeight="100" prefWidth="400" wrapText="true"
-            visible="true"/>
-          <HBox alignment="CENTER_LEFT" spacing="5" visible="false" fx:id="sigFileHBox">
-            <Label fx:id="sigFileNameLabel"/>
-            <ImageView fx:id="sigFileCheckmarkImage" fitWidth="20" fitHeight="20"
-              preserveRatio="true"/>
-          </HBox>
-        </StackPane>
+        <!-- Signature -->
+
+        <HBox spacing="10" alignment="CENTER_LEFT" managed="false" visible="false" fx:id="signatureBatchHBox">
+          <VBox spacing="5">
+            <HBox spacing="10" alignment="CENTER_LEFT">
+              <Label text="ENTER SIGNATURE:" style="-fx-font-weight: bold;"/>
+              <Button fx:id="importSigButton" text="Import Signature..."/>
+            </HBox>
+            <TextArea fx:id="signatureText" prefHeight="100" prefWidth="400" wrapText="true"
+              visible="true"/>
+            <HBox alignment="CENTER_LEFT" spacing="5" visible="false" fx:id="sigFileHBox">
+              <Label fx:id="sigFileNameLabel"/>
+              <ImageView fx:id="sigFileCheckmarkImage" fitWidth="20" fitHeight="20"
+                preserveRatio="true"/>
+            </HBox>
+
+          </VBox>
+        </HBox>
+        <HBox alignment="CENTER_LEFT" spacing="10">
+          <Label fx:id="signatureBatchText" text="SIGNATURE BATCH:" styleClass="bold-label"/>
+          <TextField fx:id="signatureField" prefWidth="200" text="Please Import a signature batch"
+            editable="false"/>
+          <ImageView fx:id="sigFileCheckmarkImage" fitWidth="20" fitHeight="20" preserveRatio="true"
+            visible="false"/>
+          <Button fx:id="importSigBatchButton" text="Import Signature Batch"/>
+          <Button fx:id="cancelImportSigBatchButton" text="Cancel Import" visible="false"
+            managed="false"/>
+        </HBox>
+        <!-- Signature Scheme Dropdown -->
+        <HBox spacing="10">
+          <Label text="SIGNATURE SCHEME:" style="-fx-font-weight: bold;"/>
+          <ComboBox fx:id="signatureSchemeDropdown" prefWidth="200">
+            <items>
+              <FXCollections fx:factory="observableArrayList">
+                <String fx:value="PKCS#1 v1.5"/>
+                <String fx:value="ANSI X9.31 rDSA"/>
+                <String fx:value="ISO\IEC 9796-2 Scheme 1"/>
+              </FXCollections>
+            </items>
+          </ComboBox>
+        </HBox>
+
+        <!-- Parameter Choice Radio Buttons -->
+        <HBox spacing="10">
+          <Label text="Parameter Choice:" styleClass="bold-label"/>
+          <RadioButton fx:id="standardParametersRadio" text="Standard Parameters" selected="true"/>
+          <RadioButton fx:id="provablySecureParametersRadio" text="Provably Secure Parameters"/>
+        </HBox>
       </VBox>
-
     </HBox>
 
-    <!-- Signature Scheme Dropdown -->
-    <HBox spacing="10">
-      <Label text="SIGNATURE SCHEME:" style="-fx-font-weight: bold;"/>
-      <ComboBox fx:id="signatureSchemeDropdown" prefWidth="200">
-        <items>
-          <FXCollections fx:factory="observableArrayList">
-            <String fx:value="PKCS#1 v1.5"/>
-            <String fx:value="ANSI X9.31 rDSA"/>
-            <String fx:value="ISO\IEC 9796-2 Scheme 1"/>
-          </FXCollections>
-        </items>
-      </ComboBox>
-    </HBox>
 
-    <Button text="Verify Signature" fx:id="verifyBtn" maxWidth="Infinity"/>
+    <Button text="Verify Signature" fx:id="verifyBtn" maxWidth="400" managed="false"
+      visible="false"/>
+    <Button fx:id="verificationBenchmarkButton" styleClass="bold-label"
+      text="Start Verification Benchmarking"
+      maxWidth="400" managed="true" visible="true"/>
 
     <Separator/>
 
@@ -119,7 +162,7 @@
           <Button fx:id="copyRecoverableMessageButton" text="Copy Recovered Message to clipboard"/>
         </HBox>
       </VBox>
-      <Button fx:id="closeNotificationButton" text="Close"  alignment="CENTER"/>
+      <Button fx:id="closeNotificationButton" text="Close" alignment="CENTER"/>
     </VBox>
   </StackPane>
 
