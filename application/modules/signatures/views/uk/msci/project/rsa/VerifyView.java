@@ -8,14 +8,18 @@ import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.control.Toggle;
+import javafx.scene.control.ToggleGroup;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import org.controlsfx.control.ToggleSwitch;
 
 /**
  * The {@code VerifyView} class is responsible for managing the user interface related to the
@@ -107,6 +111,100 @@ public class VerifyView implements SignatureViewInterface {
   private Button closeNotificationButton;
 
   /**
+   * HBox containing components for entering message batch details.
+   */
+  @FXML
+  private HBox messageBatchHBox;
+
+  /**
+   * Label displaying text related to message batch.
+   */
+  @FXML
+  private Label messageBatchText;
+
+  /**
+   * TextField for entering details of the message batch.
+   */
+  @FXML
+  private TextField messageBatchField;
+
+  /**
+   * Button for importing text batch.
+   */
+  @FXML
+  private Button importTextBatchBtn;
+
+  /**
+   * Button for canceling text batch import.
+   */
+  @FXML
+  private Button cancelImportTextButton;
+
+  @FXML
+  private Label signatureBatchText;
+
+  @FXML
+  private TextField signatureField;
+
+  /**
+   * Button for importing key batch.
+   */
+  @FXML
+  private Button importKeyBatchButton;
+
+  /**
+   * Button for canceling key batch import.
+   */
+  @FXML
+  private Button cancelImportKeyButton;
+
+  /**
+   * Toggle group for selecting the parameter type for signature schemes.
+   */
+  @FXML
+  private ToggleGroup parameterChoiceToggleGroup;
+
+  /**
+   * Radio button for selecting standard parameters.
+   */
+  @FXML
+  private RadioButton standardParametersRadio;
+
+  /**
+   * Radio button for selecting provably secure parameters.
+   */
+  @FXML
+  private RadioButton provablySecureParametersRadio;
+
+  @FXML
+  private Button verificationBenchmarkButton;
+
+  @FXML
+  private Button importSigBatchButton;
+
+  @FXML
+  private Button cancelImportSigBatchButton;
+
+  /**
+   * Toggle switch for enabling or disabling benchmarking mode.
+   */
+  @FXML
+  private ToggleSwitch benchmarkingModeToggle;
+
+  @FXML
+  private HBox signatureBatchHBox;
+
+  /**
+   * Initialises the Verification view, setting up the toggle group for parameter choice.
+   */
+  public void initialize() {
+    parameterChoiceToggleGroup = new ToggleGroup();
+    standardParametersRadio.setToggleGroup(parameterChoiceToggleGroup);
+    provablySecureParametersRadio.setToggleGroup(parameterChoiceToggleGroup);
+  }
+
+
+  /**
    * Gets the image view showing a checkmark next to the text file, indicating a successful load.
    *
    * @return ImageView for the text file checkmark.
@@ -127,6 +225,10 @@ public class VerifyView implements SignatureViewInterface {
 
     // Preserve the image's aspect ratio
     this.textFileCheckmarkImage.setPreserveRatio(true);
+  }
+
+  public void setTextFieldCheckmarkImageVisibility(boolean visible) {
+    this.textFileCheckmarkImage.setVisible(visible);
   }
 
   /**
@@ -371,6 +473,7 @@ public class VerifyView implements SignatureViewInterface {
     this.sigFileNameLabel.setText(fileName);
   }
 
+
   public String getImportTextButtonLabel() {
     return this.importTextButton.getText();
   }
@@ -424,6 +527,149 @@ public class VerifyView implements SignatureViewInterface {
     return notificationPane;
   }
 
+  /**
+   * Sets the visibility of the messageBatchHBox and manages its properties.
+   *
+   * @param visible true to make the messageBatchHBox visible, false to hide it.
+   */
+  public void setMessageBatchHBoxVisibility(boolean visible) {
+    messageBatchHBox.setVisible(visible);
+    messageBatchHBox.setManaged(visible);
+  }
+
+  /**
+   * Sets the visibility of the messageBatchText and manages its properties.
+   *
+   * @param visible true to make the messageBatchText visible, false to hide it.
+   */
+  public void setMessageBatchTextVisibility(boolean visible) {
+    messageBatchText.setVisible(visible);
+    messageBatchText.setManaged(visible);
+  }
+
+  /**
+   * Sets the visibility of the messageBatchField and manages its properties.
+   *
+   * @param visible true to make the messageBatchField visible, false to hide it.
+   */
+  public void setMessageBatchFieldVisibility(boolean visible) {
+    messageBatchField.setVisible(visible);
+    messageBatchField.setManaged(visible);
+  }
+
+  public void setMessageBatch(String text) {
+    messageBatchField.setText(text);
+  }
+
+  /**
+   * Sets the visibility of the importTextBatchBtn and manages its properties.
+   *
+   * @param visible true to make the importTextBatchBtn visible, false to hide it.
+   */
+  public void setImportTextBatchBtnVisibility(boolean visible) {
+    importTextBatchBtn.setVisible(visible);
+    importTextBatchBtn.setManaged(visible);
+  }
+
+  /**
+   * Sets the visibility of the cancelImportTextButton and manages its properties.
+   *
+   * @param visible true to make the cancelImportTextButton visible, false to hide it.
+   */
+  public void setCancelImportTextButtonVisibility(boolean visible) {
+    cancelImportTextButton.setVisible(visible);
+    cancelImportTextButton.setManaged(visible);
+  }
+
+  /**
+   * Sets the visibility of the importKeyBatchButton and manages its properties.
+   *
+   * @param visible true to make the importKeyBatchButton visible, false to hide it.
+   */
+  public void setImportKeyBatchButtonVisibility(boolean visible) {
+    importKeyBatchButton.setVisible(visible);
+    importKeyBatchButton.setManaged(visible);
+  }
+
+  /**
+   * Sets the visibility of the cancelImportKeyButton and manages its properties.
+   *
+   * @param visible true to make the cancelImportKeyButton visible, false to hide it.
+   */
+  public void setCancelImportKeyButtonVisibility(boolean visible) {
+    cancelImportKeyButton.setVisible(visible);
+    cancelImportKeyButton.setManaged(visible);
+  }
+
+  /**
+   * Sets the visibility of the importSigBatchButton and manages its properties.
+   *
+   * @param visible true to make the importSigBatchButton visible, false to hide it.
+   */
+  public void setImportSigBatchBtnVisibility(boolean visible) {
+    importSigBatchButton.setVisible(visible);
+    importSigBatchButton.setManaged(visible);
+  }
+
+  /**
+   * Sets the visibility of the CancelImportSigBatchButton and manages its properties.
+   *
+   * @param visible true to make the CancelImportSigBatchButton visible, false to hide it.
+   */
+  public void setCancelImportSigBatchButtonVisibility(boolean visible) {
+    cancelImportSigBatchButton.setVisible(visible);
+    cancelImportSigBatchButton.setManaged(visible);
+  }
+
+  /**
+   * Sets the visibility of the SigBenchmarkButton and manages its properties.
+   *
+   * @param visible true to make the SigBenchmarkButton visible, false to hide it.
+   */
+  public void setVerificationBenchmarkButtonVisibility(boolean visible) {
+    verificationBenchmarkButton.setVisible(visible);
+    verificationBenchmarkButton.setManaged(visible);
+  }
+
+  public void setVerificationButtonVisibility(boolean visible) {
+    verifyBtn.setVisible(visible);
+    verifyBtn.setManaged(visible);
+  }
+
+  /**
+   * Sets the visibility of the signatureBatchHBox and manages its properties.
+   *
+   * @param visible true to make the signatureBatchHBox visible, false to hide it.
+   */
+  public void setSignatureBatchHBoxVisibility(boolean visible) {
+    signatureBatchHBox.setVisible(visible);
+    signatureBatchHBox.setManaged(visible);
+  }
+
+  /**
+   * Sets the visibility of the messageBatchText and manages its properties.
+   *
+   * @param visible true to make the messageBatchText visible, false to hide it.
+   */
+  public void setSignatureBatchTextVisibility(boolean visible) {
+    signatureBatchText.setVisible(visible);
+    signatureBatchText.setManaged(visible);
+  }
+
+  /**
+   * Sets the visibility of the messageBatchField and manages its properties.
+   *
+   * @param visible true to make the messageBatchField visible, false to hide it.
+   */
+  public void setSignatureBatchFieldVisibility(boolean visible) {
+    signatureField.setVisible(visible);
+    signatureField.setManaged(visible);
+  }
+
+  public void setSignatureBatch(String text) {
+    signatureField.setText(text);
+  }
+
 
   /**
    * Registers an observer for the import text button click action.
@@ -462,7 +708,7 @@ public class VerifyView implements SignatureViewInterface {
   }
 
   /**
-   * Registers an oberver for the import key button click action.
+   * Registers an observer for the import key button click action.
    *
    * @param observer The event handler to register.
    */
@@ -516,6 +762,88 @@ public class VerifyView implements SignatureViewInterface {
   void addImportSigButtonObserver(EventHandler<ActionEvent> observer) {
     importSigButton.setOnAction(observer);
   }
+
+
+  /**
+   * Registers an observer for the importTextBatchBtn Button's action event.
+   *
+   * @param observer The event handler to be registered.
+   */
+  public void addImportTextBatchBtnObserver(EventHandler<ActionEvent> observer) {
+    importTextBatchBtn.setOnAction(observer);
+  }
+
+  /**
+   * Registers an observer for the cancelImportTextButton Button's action event. This observer is
+   * called when the user clicks the button to cancel the import of a text batch.
+   *
+   * @param observer The event handler to be registered.
+   */
+  public void addCancelImportTextButtonObserver(EventHandler<ActionEvent> observer) {
+    cancelImportTextButton.setOnAction(observer);
+  }
+
+  /**
+   * Registers an observer for the importKeyBatchButton Button's action event. This observer is
+   * invoked when the user clicks the button to import a batch of keys.
+   *
+   * @param observer The event handler to be registered.
+   */
+  public void addImportKeyBatchButtonObserver(EventHandler<ActionEvent> observer) {
+    importKeyBatchButton.setOnAction(observer);
+  }
+
+  /**
+   * Registers an observer for the cancelImportKeyButton Button's action event.
+   *
+   * @param observer The event handler to be registered.
+   */
+  public void addCancelImportKeyButtonObserver(EventHandler<ActionEvent> observer) {
+    cancelImportKeyButton.setOnAction(observer);
+  }
+
+  /**
+   * Registers an observer for the importSigBatchButton Button's action event. This observer is
+   * invoked when the user clicks the button to import a batch of signatures.
+   *
+   * @param observer The event handler to be registered.
+   */
+  public void addImportSigBatchButtonObserver(EventHandler<ActionEvent> observer) {
+    importSigBatchButton.setOnAction(observer);
+  }
+
+  /**
+   * Registers an observer for the cancelImportSigBatchButton Button's action event.
+   *
+   * @param observer The event handler to be registered.
+   */
+  public void addCancelImportSigBatchButtonObserver(EventHandler<ActionEvent> observer) {
+    cancelImportSigBatchButton.setOnAction(observer);
+  }
+
+  /**
+   * Registers an observer for the verification benchmarking Button's action event.
+   *
+   * @param observer The event handler to be registered.
+   */
+  public void addVerificationBenchmarkButtonObserver(EventHandler<ActionEvent> observer) {
+    verificationBenchmarkButton.setOnAction(observer);
+  }
+
+  /**
+   * Registers an observer for when the benchmarking mode toggle switch value changes.
+   *
+   * @param observer The change listener to be registered.
+   */
+  public void addBenchmarkingModeToggleObserver(ChangeListener<Boolean> observer) {
+    benchmarkingModeToggle.selectedProperty().addListener(observer);
+  }
+
+  public void addParameterChoiceChangeObserver(ChangeListener<Toggle> observer) {
+    parameterChoiceToggleGroup.selectedToggleProperty().addListener(observer);
+  }
+
+
 
   /**
    * Shows the notification pane, disabling interaction with other UI components to focus user
