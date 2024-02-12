@@ -187,6 +187,7 @@ signature creation and verification. This reorganisation aimed to enhance functi
 maintenance, delineating shared and specific tasks for signature creation and verification.
 
 ## Diary Entry - Week of 29th January - 4th February 2024
+
 This week started with a productive meeting on Monday with my supervisor, where we discussed using
 two or three primes for benchmarking and implementing provably secure parameters. I also received
 guidance on integrating the MGF1 function. I then adjusted the MGF1 function within signature
@@ -206,3 +207,32 @@ Over the weekend, I structured the development and publication of benchmarking c
 incorporating them into the genModel, and finalizing the BenchmarkingUtility class. Sunday was
 dedicated to integrating these changes into the view assembly for key generation and finalizing
 updates to the genModel.
+
+## Diary Entry - Week of 5th February - 11th February 2024
+
+This week, my efforts concentrated on integrating benchmarking functionalities across the project,
+focusing on both key generation and signature modules. I started by implementing a
+createBenchmarkingTask method in the key generation controller for background processing and
+observing user input for initiating benchmarking tasks. This was followed by resolving timing errors
+due to concurrent task overlaps and refining the public/private key batch export process.
+
+Midweek, I enhanced memory efficiency in key generation benchmarking using replacing futures with
+CountDownLatch (to track the completion of all tasks within a trial) and began developing a results
+module to calculate and display statistical metrics from benchmarking activities. In the signature
+module, I integrated benchmarking features for signature creation, involving a parallelised method
+for batch-signing messages and revamping the UI for batch operations. I also incorporated observer
+methods in the Signature Creation controller for handling batch files.
+
+By Friday, I had implemented a structured results module, designed to handle benchmarking results
+effectively. This included a ResultsModel for calculating statistical metrics, a view for displaying
+results, and a controller linking benchmarking activities to the results view through a
+BenchmarkingContext helper class that is extended by each benchmarking activity (e.g., class
+SignatureCreationContext extends BenchmarkingContext) and passed at point of construction to the
+results controller, to enable it to display tailored options on the results view.
+
+The week concluded with a focus on the signature verification module, implementing a parallelised
+batch verification method and updating the UI to support batch operations. I set plans to conduct
+integration tests, refine software design specifications for the application's transition to a
+benchmarking focus, and alter the signing and verifying processes to allow user-selected hash
+functions.
+
