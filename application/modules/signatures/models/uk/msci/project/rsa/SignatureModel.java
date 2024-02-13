@@ -418,6 +418,7 @@ public class SignatureModel {
     }
   }
 
+
   /**
    * Performs batch verification of signatures using multiple public keys. This method reads
    * messages and their corresponding signatures from files, and verifies each signature against the
@@ -427,27 +428,6 @@ public class SignatureModel {
    * @param batchMessageFile   The file containing messages to be verified.
    * @param batchSignatureFile The file containing signatures corresponding to the messages.
    * @param progressUpdater    A consumer to update progress during the batch process.
-   * @throws Exception If an error occurs during the verification process or file reading.
-   */
-  /**
-   * Performs batch verification of signatures using multiple public keys. This method reads
-   * messages and their corresponding signatures from files, and verifies each signature against the
-   * message using the public keys in the batch. It updates the progress of verification and stores
-   * the results, including any recoverable message parts.
-   *
-   * @param batchMessageFile   The file containing messages to be verified.
-   * @param batchSignatureFile The file containing signatures corresponding to the messages.
-   * @param progressUpdater    A consumer to update progress during the batch process.
-   * @throws Exception If an error occurs during the verification process or file reading.
-   */
-  /**
-   * Verifies digital signatures in batch mode for a set of messages using multiple public keys.
-   * This method is designed to benchmark the performance of signature verification across different
-   * keys.
-   *
-   * @param batchMessageFile   The file containing messages to be verified.
-   * @param batchSignatureFile The file containing signatures corresponding to the messages.
-   * @param progressUpdater    A consumer to update the progress of the verification process.
    * @throws Exception If an error occurs during the verification process or file reading.
    */
   public void batchVerifySignatures(File batchMessageFile, File batchSignatureFile,
