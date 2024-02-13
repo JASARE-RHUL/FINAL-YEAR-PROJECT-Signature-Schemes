@@ -15,11 +15,13 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.function.Consumer;
 import java.util.function.DoubleConsumer;
+import java.util.stream.Collectors;
 import java.util.zip.DataFormatException;
 import javafx.util.Pair;
 import uk.msci.project.rsa.exceptions.InvalidSignatureTypeException;
@@ -302,53 +304,78 @@ public class SignatureModel {
    */
   public void batchCreateSignatures(File batchMessageFile, DoubleConsumer progressUpdater)
       throws Exception {
+    // Set up an executor service for parallel processing, using available processors.
     try (ExecutorService executor = Executors.newFixedThreadPool(
         Runtime.getRuntime().availableProcessors())) {
 
+      // Initialise lists to store times and results (signatures and non-recoverable parts) for each key.
+      List<List<Long>> timesPerKey = new ArrayList<>();
+      List<List<byte[]>> signaturesPerKey = new ArrayList<>();
+      List<List<byte[]>> nonRecoverableMessagesPerKey = new ArrayList<>();
+      for (int k = 0; k < privKeyBatch.size(); k++) {
+        timesPerKey.add(new ArrayList<>());
+        signaturesPerKey.add(new ArrayList<>());
+        nonRecoverableMessagesPerKey.add(new ArrayList<>());
+      }
+
+      // Read messages from the file and process each message for all keys in the batch.
       try (BufferedReader messageReader = new BufferedReader(new FileReader(batchMessageFile))) {
-        int i = 0;
+        int messageCounter = 0;
         String message;
-        while ((message = messageReader.readLine()) != null && i < this.numTrials) {
-          CountDownLatch latch = new CountDownLatch(privKeyBatch.size());
-          ConcurrentHashMap<PrivateKey, List<byte[]>> resultsMap = new ConcurrentHashMap<>();
-          long startTrialTime = System.nanoTime();
-          for (PrivateKey privateKey : privKeyBatch) {
+        while ((message = messageReader.readLine()) != null && messageCounter < this.numTrials) {
+          // List to hold future results of asynchronous tasks.
+          List<Future<List<byte[]>>> futures = new ArrayList<>();
+          for (int keyIndex = 0; keyIndex < privKeyBatch.size(); keyIndex++) {
+            PrivateKey privateKey = privKeyBatch.get(keyIndex);
             String finalMessage = message;
-            executor.execute(() -> {
-              try {
-                SigScheme sigScheme = SignatureFactory.getSignatureScheme(currentType, privateKey,
-                    isProvablySecure);
-                byte[] signature = sigScheme.sign(finalMessage.getBytes());
-                byte[] nonRecoverableM = sigScheme.getNonRecoverableM();
-                resultsMap.put(privateKey, List.of(signature, nonRecoverableM));
-              } catch (DataFormatException | InvalidSignatureTypeException e) {
-                throw new RuntimeException(e);
-              } finally {
-                latch.countDown();
-              }
+
+            // Submit a task for each key to sign the message asynchronously.
+            Future<List<byte[]>> future = executor.submit(() -> {
+              SigScheme sigScheme = SignatureFactory.getSignatureScheme(currentType, privateKey,
+                  isProvablySecure);
+              byte[] signature = sigScheme.sign(finalMessage.getBytes());
+              byte[] nonRecoverableM = sigScheme.getNonRecoverableM();
+              return List.of(signature, nonRecoverableM);
             });
+            futures.add(future);
           }
 
-          latch.await(); // Wait for all tasks of this trial to complete
-          clockTimesPerTrial.add(System.nanoTime() - startTrialTime); // Total trial time
-
-          // Add results in the order of privKeyBatch
-          for (PrivateKey key : privKeyBatch) {
-            List<byte[]> results = resultsMap.get(key);
-            if (results != null) {
-              signaturesFromBenchmark.add(results.get(0));
-              nonRecoverableMessages.add(results.get(1));
+          // Collect results after all tasks are submitted.
+          for (int keyIndex = 0; keyIndex < futures.size(); keyIndex++) {
+            long startTime = System.nanoTime();
+            try {
+              List<byte[]> result = futures.get(keyIndex).get();
+              long endTime = System.nanoTime() - startTime;
+              synchronized (timesPerKey.get(keyIndex)) {
+                timesPerKey.get(keyIndex).add(endTime);
+                signaturesPerKey.get(keyIndex).add(result.get(0));
+                nonRecoverableMessagesPerKey.get(keyIndex).add(result.get(1));
+              }
+            } catch (ExecutionException | InterruptedException e) {
+              throw new RuntimeException(e.getCause());
             }
           }
-          progressUpdater.accept((double) ++i / numTrials);
+
+          // Update progress after each message is processed.
+          progressUpdater.accept((double) ++messageCounter / this.numTrials);
         }
-      } finally {
-        executor.shutdown();
-        if (!executor.awaitTermination(60, java.util.concurrent.TimeUnit.SECONDS)) {
-          System.err.println("Executor did not terminate in the specified time.");
-          List<Runnable> droppedTasks = executor.shutdownNow();
-          System.err.println("Dropped " + droppedTasks.size() + " tasks.");
+      }
+
+      // Combine results from all keys into final lists for signatures and non-recoverable messages.
+      for (int msgIndex = 0; msgIndex < this.numTrials; msgIndex++) {
+        for (int keyIndex = 0; keyIndex < privKeyBatch.size(); keyIndex++) {
+          signaturesFromBenchmark.add(signaturesPerKey.get(keyIndex).get(msgIndex));
+          nonRecoverableMessages.add(nonRecoverableMessagesPerKey.get(keyIndex).get(msgIndex));
         }
+      }
+      clockTimesPerTrial = timesPerKey.stream().flatMap(List::stream).collect(Collectors.toList());
+
+      // Shut down the executor service and handle termination.
+      executor.shutdown();
+      if (!executor.awaitTermination(60, java.util.concurrent.TimeUnit.SECONDS)) {
+        System.err.println("Executor did not terminate in the specified time.");
+        List<Runnable> droppedTasks = executor.shutdownNow();
+        System.err.println("Dropped " + droppedTasks.size() + " tasks.");
       }
     }
   }
