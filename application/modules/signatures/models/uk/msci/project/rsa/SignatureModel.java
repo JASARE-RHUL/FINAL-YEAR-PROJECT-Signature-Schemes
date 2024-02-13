@@ -567,28 +567,41 @@ public class SignatureModel {
    * @throws IOException If there is an error in writing to the file.
    */
   public void exportVerificationResultsToCSV() throws IOException {
-
     File file = FileHandle.createUniqueFile("verificationResults.csv");
 
     try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
       // Write header
-      writer.write("KeyIndex, Verification Result, Signed Message, Signature, Recovered Message\n");
+      writer.write(
+          "KeyIndex, Verification Result, Original Message, Signature, Recovered Message\n");
 
-      // Write each line of data
-      for (int i = 0; i < verificationResults.size(); i++) {
-        int keyIndex = (i % publicKeyBatch.size()) + 1; // Cycle through key indexes
-        boolean verificationResult = verificationResults.get(i);
-        String signedMessage = new String(signedMessages.get(i)); // Assuming UTF-8 encoding
-        String signature = new BigInteger(1, signaturesFromBenchmark.get(i)).toString();
-        String recoverableMessage =
-            recoverableMessages.get(i) != null && recoverableMessages.get(i).length > 0 ?
-                new String(recoverableMessages.get(i)) : "";
+      int numKeys = publicKeyBatch.size();
+      int numMessagesPerKey = verificationResults.size() / numKeys;
 
-        writer.write(keyIndex + ", " +
-            verificationResult + ", " +
-            signedMessage + ", " +
-            signature + ", " +
-            recoverableMessage + "\n");
+      for (int keyIndex = 0; keyIndex < numKeys; keyIndex++) {
+        // Read original messages for each key
+        try (BufferedReader reader = new BufferedReader(new FileReader(messageFile))) {
+          String originalMessage;
+          int messageCounter = 0;
+
+          while ((originalMessage = reader.readLine()) != null
+              && messageCounter < numMessagesPerKey) {
+            boolean verificationResult = verificationResults.get(messageCounter);
+
+            String signature = new BigInteger(1,
+                signaturesFromBenchmark.get(messageCounter)).toString();
+            String recoverableMessage =
+                recoverableMessages.get(messageCounter) != null
+                    && recoverableMessages.get(messageCounter).length > 0 ?
+                    new String(recoverableMessages.get(messageCounter)) : "";
+
+            writer.write((keyIndex + 1) + ", " +
+                verificationResult + ", " +
+                "\"" + originalMessage + "\", " + // Enclose in quotes to handle commas
+                signature + ", " + recoverableMessage + "\n");
+
+            messageCounter++;
+          }
+        }
       }
     }
   }
