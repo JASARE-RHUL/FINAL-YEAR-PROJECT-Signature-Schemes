@@ -9,6 +9,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.function.DoubleConsumer;
 import javafx.util.Pair;
@@ -154,31 +155,57 @@ public class GenModel {
    */
   public void batchGenerateKeys(int numTrials, List<Pair<int[], Boolean>> keyParams,
       DoubleConsumer progressUpdater) throws InterruptedException {
+    // Set up an executor service for parallel processing.
     try (ExecutorService executor = Executors.newFixedThreadPool(
         Runtime.getRuntime().availableProcessors())) {
       this.keyParams = keyParams;
 
+      // Initialise lists to store the time taken for each key generation task.
+      List<List<Long>> timesPerKey = new ArrayList<>();
+      for (int k = 0; k < keyParams.size(); k++) {
+        timesPerKey.add(new ArrayList<>());
+      }
+
       for (int trial = 0; trial < numTrials; trial++) {
-        // Initialise CountDownLatch with the number of tasks to wait for
-        CountDownLatch latch = new CountDownLatch(keyParams.size());
-        long startTrialTime = System.nanoTime();
-        for (Pair<int[], Boolean> keyParam : this.keyParams) {
-          executor.submit(() -> {
-              int[] intArray = keyParam.getKey();
-              boolean isSmallE = keyParam.getValue();
-              GenRSA genRSA = new GenRSA(intArray.length, intArray, isSmallE);
-              genRSA.generateKeyPair();
-              latch.countDown(); // Decrement the count of the latch
+        // List to hold future objects for asynchronous task execution.
+        List<Future<?>> futures = new ArrayList<>();
+        for (int keyIndex = 0; keyIndex < keyParams.size(); keyIndex++) {
+          Pair<int[], Boolean> keyParam = keyParams.get(keyIndex);
+
+          // Submit a new key generation task to the executor service.
+          Future<?> future = executor.submit(() -> {
+            int[] intArray = keyParam.getKey();
+            boolean isSmallE = keyParam.getValue();
+            new GenRSA(intArray.length, intArray, isSmallE).generateKeyPair();
           });
+
+          futures.add(future);
         }
 
-        // Wait for all tasks of this trial to complete
-        latch.await(); // Blocks until the count reaches zero
+        // Collect and measure the time taken for each key generation task after submission.
+        for (int keyIndex = 0; keyIndex < futures.size(); keyIndex++) {
+          long startTime = System.nanoTime();
+          try {
+            futures.get(keyIndex).get(); // Wait for the key generation task to complete.
+          } catch (ExecutionException e) {
+            throw new RuntimeException(e.getCause());
+          }
+          long endTime = System.nanoTime() - startTime;
+          synchronized (timesPerKey.get(keyIndex)) {
+            timesPerKey.get(keyIndex).add(endTime);
+          }
+        }
 
-        clockTimesPerTrial.add(System.nanoTime() - startTrialTime);
-
+        // Update the progress of the batch process after each trial.
         progressUpdater.accept((double) (trial + 1) / numTrials);
       }
+
+      // Aggregate times from all trials and keys into a single list.
+      for (List<Long> keyTime : timesPerKey) {
+        clockTimesPerTrial.addAll(keyTime);
+      }
+
+      // Shutdown the executor service and handle termination.
       executor.shutdown();
       if (!executor.awaitTermination(60, java.util.concurrent.TimeUnit.SECONDS)) {
         System.err.println("Executor did not terminate in the specified time.");
@@ -187,7 +214,6 @@ public class GenModel {
       }
     }
   }
-
 
 
   /**
