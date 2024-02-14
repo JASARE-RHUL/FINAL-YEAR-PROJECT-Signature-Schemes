@@ -15,7 +15,7 @@ public class DigestFactory {
   /**
    * Indicates whether the current hash function is fixed-size or not.
    */
-  private static boolean isFixedHash;
+  private static boolean isFixedHash = true;
 
   /**
    * Creates and returns a MessageDigest instance corresponding to the specified DigestType.
