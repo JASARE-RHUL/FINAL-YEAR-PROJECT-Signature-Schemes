@@ -42,14 +42,18 @@ public class ANSI_X9_31_RDSA extends SigScheme {
   }
 
   /**
-   * Initialises hash IDs for supported hash functions (SHA-256 and SHA-512) according to the ANSI
-   * X9.31 standard.
+   * Initialises hash IDs for supported hash functions according to the Iso/Iec 10118
    */
   public void initialiseHash() {
-    // hash IDs for supported hash functions according to the ANSI Specification
     this.hashID = new byte[]{(byte) 0x34, (byte) 0xCC};
+    byte[] sha512HashID = new byte[]{(byte) 0x35, (byte) 0xCC};
     hashIDmap.put(DigestType.SHA_256, this.hashID);
-    hashIDmap.put(DigestType.SHA_512, new byte[]{(byte) 0x35, (byte) 0xCC});
+    hashIDmap.put(DigestType.SHA_512, sha512HashID);
+    byte[] shakeHashID = new byte[]{(byte) 0x3D, (byte) 0xCC};
+    hashIDmap.put(DigestType.SHAKE_128, shakeHashID);
+    hashIDmap.put(DigestType.SHAKE_256, shakeHashID);
+    hashIDmap.put(DigestType.MGF_1_SHA_256, this.hashID);
+    hashIDmap.put(DigestType.MGF_1_SHA_512, sha512HashID);
   }
 
 
@@ -87,10 +91,8 @@ public class ANSI_X9_31_RDSA extends SigScheme {
 
 
   /**
-   * Creates a DigestInfo structure manually as per the ANSI X9.31 rDSA standard by appending the *
-   * hash to the corresponding hash ID. This method applies a mask generation function (MGF1) to the
-   * hash if the scheme is instantiated with the flag for provably secure parameters set, generating
-   * a larger output (half the length of the modulus).
+   * Creates a DigestInfo structure manually as per the ANSI X9.31 rDSA standard by appending the
+   * hash to the corresponding hash ID.
    *
    * @param message The message to be included in the DigestInfo, represented as a byte array.
    * @return A byte array representing the DigestInfo structure, including the hash algorithm ID and
