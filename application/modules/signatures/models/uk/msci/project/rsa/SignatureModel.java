@@ -41,6 +41,16 @@ public class SignatureModel {
   private SignatureType currentType;
 
   /**
+   * The type of hash function used in the signature scheme.
+   */
+  private DigestType currentHashType;
+
+  /**
+   * The size of the hash output in bytes.
+   */
+  private int hashSize;
+
+  /**
    * Indicator of whether the current signature scheme operates in provably secure mode.
    */
   private boolean isProvablySecure;
@@ -69,11 +79,6 @@ public class SignatureModel {
    */
   private List<byte[]> recoverableMessages = new ArrayList<>();
 
-  /**
-   * Stores the original messages that were signed during the verification process. Each entry in
-   * this list corresponds to a signed message from a verification trial.
-   */
-  private List<byte[]> signedMessages = new ArrayList<>();
 
   /**
    * Stores the results of the verification process. Each boolean value in this list represents the
@@ -93,11 +98,14 @@ public class SignatureModel {
   private List<PublicKey> publicKeyBatch = new ArrayList<PublicKey>();
 
   /**
-   * The number of trials to run in the batchCreateSignatures method. This determines how many
+   * The number of trials to run in the benchmarking/batch methods. This determines how many
    * messages from the batch file are processed.
    */
   private int numTrials = 0;
 
+  /**
+   * The message file to be processed during benchmarking.
+   */
   private File messageFile;
 
   /**
@@ -125,6 +133,49 @@ public class SignatureModel {
   public SignatureType getSignatureType() {
     return currentType;
   }
+
+  /**
+   * Sets the type of hash function to be used.
+   *
+   * @param hashType The type of hash function to be set.
+   */
+  public void setHashType(DigestType hashType) {
+    this.currentHashType = hashType;
+  }
+
+  /**
+   * Retrieves the type of hash function currently set in the model.
+   *
+   * @return The current hash function type.
+   */
+  public DigestType getHashType() {
+    return currentHashType;
+  }
+
+  /**
+   * Sets the size of the hash output in bytes.
+   *
+   * @param hashSize The size of the hash output in bytes to be set.
+   * @throws IllegalArgumentException if the hash size is negative.
+   */
+  public void setHashSize(int hashSize) {
+    if (hashSize < 0) {
+      throw new IllegalArgumentException(
+          "Hash size must be a non-negative integer");
+    }
+    this.hashSize = hashSize;
+  }
+
+
+  /**
+   * Retrieves the size of the hash output in bits.
+   *
+   * @return The size of the hash output in bits.
+   */
+  public int getHashSize() {
+    return hashSize;
+  }
+
 
   /**
    * Sets the key to be used in the signature scheme.
