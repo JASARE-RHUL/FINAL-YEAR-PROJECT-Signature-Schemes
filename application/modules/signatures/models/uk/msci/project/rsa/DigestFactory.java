@@ -13,11 +13,6 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 public class DigestFactory {
 
   /**
-   * Indicates whether the current hash function is fixed-size or not.
-   */
-  private static boolean isFixedHash = true;
-
-  /**
    * Creates and returns a MessageDigest instance corresponding to the specified DigestType.
    *
    * @param digestType The type of the digest to be created, defined by the DigestType enum.
@@ -31,28 +26,24 @@ public class DigestFactory {
       throws NoSuchAlgorithmException, NoSuchProviderException {
     switch (digestType) {
       case SHA_256 -> {
-        isFixedHash = true;
+
         return MessageDigest.getInstance("SHA-256");
       }
       case MGF_1_SHA_256 -> {
-        isFixedHash = false;
+
         return MessageDigest.getInstance("SHA-256");
       }
       case SHA_512 -> {
-        isFixedHash = true;
         return MessageDigest.getInstance("SHA-512");
       }
       case MGF_1_SHA_512 -> {
-        isFixedHash = false;
         return MessageDigest.getInstance("SHA-512");
       }
       case SHAKE_128 -> {
-        isFixedHash = false;
         Security.addProvider(new BouncyCastleProvider());
         return MessageDigest.getInstance("SHAKE128", BouncyCastleProvider.PROVIDER_NAME);
       }
       case SHAKE_256 -> {
-        isFixedHash = false;
         Security.addProvider(new BouncyCastleProvider());
         return MessageDigest.getInstance("SHAKE256", BouncyCastleProvider.PROVIDER_NAME);
       }
@@ -60,12 +51,4 @@ public class DigestFactory {
     }
   }
 
-  /**
-   * Returns a boolean indicating whether the current hash function is fixed-size or not.
-   *
-   * @return true if the current hash function is fixed-size, false otherwise.
-   */
-  public static boolean isIsFixedHash() {
-    return isFixedHash;
-  }
 }

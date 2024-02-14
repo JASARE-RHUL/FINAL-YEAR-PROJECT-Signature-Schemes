@@ -159,7 +159,7 @@ public abstract class SigScheme implements SigSchemeInterface {
    *                               function.
    */
   public void setHashSize(int hashSize) {
-    if (DigestFactory.isIsFixedHash()) {
+    if (currentHashType == DigestType.SHA_256 || currentHashType == DigestType.SHA_512) {
       if (hashSize == 0) {
         this.hashSize = md.getDigestLength();
       } else {
@@ -380,7 +380,7 @@ public abstract class SigScheme implements SigSchemeInterface {
    * @return A byte array representing the hash of the message.
    */
   public byte[] computeHashWithOptionalMasking(byte[] message) {
-    if (!DigestFactory.isIsFixedHash()) {
+    if (!(currentHashType == DigestType.SHA_256 || currentHashType == DigestType.SHA_512)) {
       if (currentHashType == DigestType.MGF_1_SHA_256
           || currentHashType == DigestType.MGF_1_SHA_512) {
         return new MGF1(this.md).generateMask(message, this.hashSize);
