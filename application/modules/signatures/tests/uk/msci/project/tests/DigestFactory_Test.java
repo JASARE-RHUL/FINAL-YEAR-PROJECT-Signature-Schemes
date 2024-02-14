@@ -1,5 +1,6 @@
 package uk.msci.project.tests;
 
+import static org.junit.Assert.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -330,6 +331,58 @@ public class DigestFactory_Test {
       iso_iec_9796_2_scheme_1.setHashSize(tooLargeSize);
     });
   }
+
+  @Test
+  public void testComputeHashWithOptionalMaskingForFixedHash() {
+    // Setting up a fixed-size hash function, e.g., SHA-256
+    rsassa_pkcs1_v1_5.setHashType(DigestType.SHA_256);
+
+    byte[] message = "Test Message".getBytes();
+    byte[] hash = rsassa_pkcs1_v1_5.computeHashWithOptionalMasking(message);
+
+    assertNotNull("Hash should not be null", hash);
+    assertEquals( 32, hash.length, "Hash length should match the fixed size"); // Assuming SHA-256
+  }
+
+  @Test
+  public void testComputeHashWithOptionalMaskingForShake() {
+    // Setting up a variable-length hash function, e.g., SHAKE-128
+    rsassa_pkcs1_v1_5.setHashType(DigestType.SHAKE_128);
+    rsassa_pkcs1_v1_5.setHashSize(64); // Example size for SHAKE-128
+
+    byte[] message = "Another Test Message".getBytes();
+    byte[] hash = rsassa_pkcs1_v1_5.computeHashWithOptionalMasking(message);
+
+    assertNotNull("Hash should not be null", hash);
+    assertEquals( 64, hash.length, "Hash length should match the specified size for SHAKE-128");
+  }
+
+  @Test
+  public void testComputeHashWithOptionalMaskingForMGF1() {
+    // Setting up MGF1 with an underlying hash function, e.g., SHA-256
+    rsassa_pkcs1_v1_5.setHashType(DigestType.MGF_1_SHA_256);
+    int expectedSize = 64; // Example size
+    rsassa_pkcs1_v1_5.setHashSize(expectedSize);
+
+    byte[] message = "MGF1 Message Test".getBytes();
+    byte[] hash = rsassa_pkcs1_v1_5.computeHashWithOptionalMasking(message);
+
+    assertNotNull("Hash should not be null", hash);
+    assertEquals( expectedSize, hash.length, "Hash length should match the specified size for MGF1");
+  }
+
+  @Test
+  public void testComputeHashWithOptionalMaskingInvalidHashSize() {
+    // Testing with an invalid hash size for a fixed-size hash function
+    rsassa_pkcs1_v1_5.setHashType(DigestType.SHA_256);
+
+    assertThrows(IllegalArgumentException.class, () -> {
+      rsassa_pkcs1_v1_5.setHashSize(128);
+    });
+
+
+  }
+
 
 
 

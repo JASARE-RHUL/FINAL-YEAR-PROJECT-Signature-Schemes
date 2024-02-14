@@ -1,6 +1,7 @@
 package uk.msci.project.rsa;
 
 import java.math.BigInteger;
+import java.security.DigestException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -162,7 +163,7 @@ public abstract class SigScheme implements SigSchemeInterface {
       if (hashSize == 0) {
         this.hashSize = md.getDigestLength();
       } else {
-        throw new IllegalStateException(
+        throw new IllegalArgumentException(
             "Custom hash size cannot be set for a fixed size Hash function");
       }
     } else if (isProvablySecureParams) {
@@ -196,9 +197,9 @@ public abstract class SigScheme implements SigSchemeInterface {
   public byte[] sign(byte[] M) throws DataFormatException {
     byte[] EM;
     try {
-     EM = encodeMessage(M);
+      EM = encodeMessage(M);
     } catch (Exception e) {
-     throw new DataFormatException("Custom hash size is is too large");
+      throw new DataFormatException("Custom hash size is is too large");
     }
     BigInteger m = OS2IP(EM);
 
@@ -243,8 +244,6 @@ public abstract class SigScheme implements SigSchemeInterface {
     } catch (DataFormatException | IllegalArgumentException e) {
       return false;
     }
-
-
 
     return Arrays.equals(EM, EMprime);
   }
@@ -348,17 +347,52 @@ public abstract class SigScheme implements SigSchemeInterface {
   }
 
   /**
-   * Computes the hash of the given message with an optional security enhancement. If the flag for
-   * provably secure parameters is set, this method applies a mask generation function (MGF1) to
-   * generate a masked hash. Otherwise, it performs a standard hash computation.
+   * Computes a SHAKE hash of the given message using the current message digest algorithm. SHAKE
+   * (Secure Hash Algorithm KEccak) is a cryptographic hash function that can produce a
+   * variable-length output, allowing flexibility in hash sizes, for example, SHAKE-128.
+   *
+   * <p>The resulting hash is generated from the provided message.</p>
    *
    * @param message The message to be hashed, represented as a byte array.
-   * @return A byte array representing either the standard hash or the masked hash of the message.
+   * @return A byte array representing the SHAKE hash of the message.
+   */
+  public byte[] computeShakeHash(byte[] message) {
+    this.md.update(message);
+    byte[] output = new byte[this.hashSize];
+    // Complete the hash computation with the specified output length
+    try {
+      this.md.digest(output, 0, this.hashSize);
+    } catch (DigestException e) {
+      e.printStackTrace();
+    }
+    return output;
+  }
+
+  /**
+   * Computes a hash of the given message. The resulting hash can have a variable length if the
+   * currently set hash function supports an extendable output, such as SHAKE-128 or MGF1 with a
+   * fixed underlying hash function like SHA-256.
+   *
+   * <p>If the hash function is not fixed-size and is set to MGF1 with SHA-256 or SHA-512, masking
+   * is applied to generate a hash of the specified size.</p>
+   *
+   * @param message The message to be hashed, represented as a byte array.
+   * @return A byte array representing the hash of the message.
    */
   public byte[] computeHashWithOptionalMasking(byte[] message) {
-    return isProvablySecureParams ? new MGF1(this.md).generateMask(message, this.hashSize)
-        : computeHash(message);
+    if (!DigestFactory.isIsFixedHash()) {
+      if (currentHashType == DigestType.MGF_1_SHA_256
+          || currentHashType == DigestType.MGF_1_SHA_512) {
+        return new MGF1(this.md).generateMask(message, this.hashSize);
+      } else {
+        return computeShakeHash(message);
+      }
+    } else {
+      return computeHash(message);
+    }
   }
+
+
 
   /**
    * Sets the type of hash function to be used by the signature scheme.
