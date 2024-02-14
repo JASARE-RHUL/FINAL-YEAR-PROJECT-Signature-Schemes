@@ -221,6 +221,8 @@ public class SignatureModel {
     if (key != null && currentType != null) {
       currentSignatureScheme = SignatureFactory.getSignatureScheme(currentType, key,
           isProvablySecure);
+      currentSignatureScheme.setHashType(currentHashType);
+      currentSignatureScheme.setHashSize(hashSize);
     } else {
       throw new IllegalStateException(
           "Both key and signature type need to be set before instantiating a signature scheme");
@@ -394,6 +396,8 @@ public class SignatureModel {
       Future<List<byte[]>> future = executor.submit(() -> {
         SigScheme sigScheme = SignatureFactory.getSignatureScheme(currentType, privateKey,
             isProvablySecure);
+        sigScheme.setHashType(currentHashType);
+        sigScheme.setHashSize(hashSize);
         byte[] signature = sigScheme.sign(message.getBytes());
         byte[] nonRecoverableM = sigScheme.getNonRecoverableM();
         return List.of(signature, nonRecoverableM);
@@ -624,6 +628,8 @@ public class SignatureModel {
       throws InvalidSignatureTypeException, DataFormatException {
     SigScheme sigScheme = SignatureFactory.getSignatureScheme(currentType, publicKey,
         isProvablySecure);
+    sigScheme.setHashType(currentHashType);
+    sigScheme.setHashSize(hashSize);
     boolean verificationResult;
     byte[] recoveredMessage = new byte[]{};
 
