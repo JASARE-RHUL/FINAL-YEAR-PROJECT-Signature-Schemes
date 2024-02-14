@@ -1,8 +1,10 @@
 package uk.msci.project.rsa;
 
 import java.math.BigInteger;
+import java.security.DigestException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -55,6 +57,9 @@ public abstract class SigScheme implements SigSchemeInterface {
    */
   byte[] hashID;
 
+  /**
+   * A mapping of DigestType to hash algorithm identifiers.
+   */
   Map<DigestType, byte[]> hashIDmap = new HashMap<DigestType, byte[]>();
 
   /**
@@ -79,6 +84,12 @@ public abstract class SigScheme implements SigSchemeInterface {
    * Size of the hash used in the encoding process, set to 32 bytes (SHA-256) by default.
    */
   int hashSize = 32;
+
+  /**
+   * The current hash type being used.
+   */
+  DigestType currentHashType;
+
 
   /**
    * Constructs a Signature scheme instance with the specified RSA key. This constructor initialises
@@ -135,6 +146,34 @@ public abstract class SigScheme implements SigSchemeInterface {
     }
   }
 
+  /**
+   * Sets the size of the hash used in the encoding process. If the hash function used is a
+   * fixed-size hash, this method ensures that the hash size remains constant. If the hash function
+   * supports variable-length output, the hash size is adjusted accordingly. If the flag for using
+   * provably secure parameters is set to true, the hash size is set to half of the encoded message
+   * length plus one byte. Otherwise, the hash size is set based on the specified value.
+   *
+   * @param hashSize The size of the hash in bytes. If set to 0, the method will use the digest
+   *                 length of the current hash function.
+   * @throws IllegalStateException If attempting to set a custom hash size for a fixed-size hash
+   *                               function.
+   */
+  public void setHashSize(int hashSize) {
+    if (DigestFactory.isIsFixedHash()) {
+      if (hashSize == 0) {
+        this.hashSize = md.getDigestLength();
+      } else {
+        throw new IllegalArgumentException(
+            "Custom hash size cannot be set for a fixed size Hash function");
+      }
+    } else if (isProvablySecureParams) {
+      this.hashSize = (emLen + 1) / 2;
+    } else {
+      this.hashSize = hashSize;
+    }
+
+  }
+
 
   /**
    * Encodes a message according to concrete signature scheme.
@@ -156,7 +195,12 @@ public abstract class SigScheme implements SigSchemeInterface {
    */
   @Override
   public byte[] sign(byte[] M) throws DataFormatException {
-    byte[] EM = encodeMessage(M);
+    byte[] EM;
+    try {
+      EM = encodeMessage(M);
+    } catch (Exception e) {
+      throw new DataFormatException("Custom hash size is is too large");
+    }
     BigInteger m = OS2IP(EM);
 
     BigInteger s = RSASP1(m);
@@ -193,13 +237,13 @@ public abstract class SigScheme implements SigSchemeInterface {
     BigInteger s = OS2IP(S);
     BigInteger m = RSAVP1(s);
     byte[] EM;
+    byte[] EMprime;
     try {
       EM = I2OSP(m);
-    } catch (IllegalArgumentException e) {
+      EMprime = encodeMessage(M);
+    } catch (DataFormatException | IllegalArgumentException e) {
       return false;
     }
-
-    byte[] EMprime = encodeMessage(M);
 
     return Arrays.equals(EM, EMprime);
   }
@@ -283,9 +327,10 @@ public abstract class SigScheme implements SigSchemeInterface {
    * @throws InvalidDigestException   If the specified digest type is not supported or invalid.
    */
   public void setDigest(DigestType digestType)
-      throws NoSuchAlgorithmException, InvalidDigestException {
+      throws NoSuchAlgorithmException, InvalidDigestException, NoSuchProviderException {
+    md.reset();
+    this.currentHashType = digestType;
     this.md = DigestFactory.getMessageDigest(digestType);
-    this.hashSize = isProvablySecureParams ? (emLen + 1) / 2 : md.getDigestLength();
     this.hashID = hashIDmap.get(digestType);
   }
 
@@ -302,16 +347,69 @@ public abstract class SigScheme implements SigSchemeInterface {
   }
 
   /**
-   * Computes the hash of the given message with an optional security enhancement. If the flag for
-   * provably secure parameters is set, this method applies a mask generation function (MGF1) to
-   * generate a masked hash. Otherwise, it performs a standard hash computation.
+   * Computes a SHAKE hash of the given message using the current message digest algorithm. SHAKE
+   * (Secure Hash Algorithm KEccak) is a cryptographic hash function that can produce a
+   * variable-length output, allowing flexibility in hash sizes, for example, SHAKE-128.
+   *
+   * <p>The resulting hash is generated from the provided message.</p>
    *
    * @param message The message to be hashed, represented as a byte array.
-   * @return A byte array representing either the standard hash or the masked hash of the message.
+   * @return A byte array representing the SHAKE hash of the message.
+   */
+  public byte[] computeShakeHash(byte[] message) {
+    this.md.update(message);
+    byte[] output = new byte[this.hashSize];
+    // Complete the hash computation with the specified output length
+    try {
+      this.md.digest(output, 0, this.hashSize);
+    } catch (DigestException e) {
+      e.printStackTrace();
+    }
+    return output;
+  }
+
+  /**
+   * Computes a hash of the given message. The resulting hash can have a variable length if the
+   * currently set hash function supports an extendable output, such as SHAKE-128 or MGF1 with a
+   * fixed underlying hash function like SHA-256.
+   *
+   * <p>If the hash function is not fixed-size and is set to MGF1 with SHA-256 or SHA-512, masking
+   * is applied to generate a hash of the specified size.</p>
+   *
+   * @param message The message to be hashed, represented as a byte array.
+   * @return A byte array representing the hash of the message.
    */
   public byte[] computeHashWithOptionalMasking(byte[] message) {
-    return isProvablySecureParams ? new MGF1(this.md).generateMask(message, this.hashSize)
-        : computeHash(message);
+    if (!DigestFactory.isIsFixedHash()) {
+      if (currentHashType == DigestType.MGF_1_SHA_256
+          || currentHashType == DigestType.MGF_1_SHA_512) {
+        return new MGF1(this.md).generateMask(message, this.hashSize);
+      } else {
+        return computeShakeHash(message);
+      }
+    } else {
+      return computeHash(message);
+    }
+  }
+
+
+
+  /**
+   * Sets the type of hash function to be used by the signature scheme.
+   *
+   * @param currentHashType The type of hash function to be set.
+   */
+  public void setHashType(DigestType currentHashType) {
+    this.currentHashType = currentHashType;
+  }
+
+  /**
+   * Returns the current type of hash function set in the signature scheme.
+   *
+   * @return The current type of hash function being used with in the signature scheme.
+   */
+  public DigestType getHashType() {
+    return currentHashType;
   }
 
 

@@ -1,12 +1,7 @@
 package uk.msci.project.rsa;
 
-import java.math.BigInteger;
-import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.zip.DataFormatException;
-import uk.msci.project.rsa.exceptions.InvalidDigestException;
 
 /**
  * This class implements the RSASSA-PKCS1-v1_5 signature scheme using RSA keys. It provides
@@ -61,6 +56,35 @@ public class RSASSA_PKCS1_v1_5 extends SigScheme {
         (byte) 0x48, (byte) 0x01, (byte) 0x65, (byte) 0x03,
         (byte) 0x04, (byte) 0x02, (byte) 0x03, (byte) 0x05,
         (byte) 0x00, (byte) 0x04, (byte) 0x40});
+    hashIDmap.put(DigestType.SHAKE_128, new byte[]{
+        (byte) 0x30, (byte) 0x31, (byte) 0x30, (byte) 0x0D,
+        (byte) 0x06, (byte) 0x09, (byte) 0x60, (byte) 0x86,
+        (byte) 0x48, (byte) 0x01, (byte) 0x65, (byte) 0x03,
+        (byte) 0x04, (byte) 0x02, (byte) 0x0B, (byte) 0x04,
+        (byte) 0x20});
+    hashIDmap.put(DigestType.SHAKE_256, new byte[]{
+        (byte) 0x30, (byte) 0x51, (byte) 0x30, (byte) 0x0D,
+        (byte) 0x06, (byte) 0x09, (byte) 0x60, (byte) 0x86,
+        (byte) 0x48, (byte) 0x01, (byte) 0x65, (byte) 0x03,
+        (byte) 0x04, (byte) 0x02, (byte) 0x0C, (byte) 0x04,
+        (byte) 0x40});
+    hashIDmap.put(DigestType.MGF_1_SHA_256, new byte[]{
+        (byte) 0x30, (byte) 0x18, (byte) 0x06, (byte) 0x08,
+        (byte) 0x2A, (byte) 0x86, (byte) 0x48, (byte) 0x86,
+        (byte) 0xF7, (byte) 0x0D, (byte) 0x01, (byte) 0x01,
+        (byte) 0x08, (byte) 0x30, (byte) 0x0B, (byte) 0x06,
+        (byte) 0x09, (byte) 0x60, (byte) 0x86, (byte) 0x48,
+        (byte) 0x01, (byte) 0x65, (byte) 0x03, (byte) 0x04,
+        (byte) 0x02, (byte) 0x01});
+    hashIDmap.put(DigestType.MGF_1_SHA_512, new byte[]{
+        (byte) 0x30, (byte) 0x18,
+        (byte) 0x06, (byte) 0x08, (byte) 0x2A, (byte) 0x86, (byte) 0x48, (byte) 0x86, (byte) 0xF7,
+        (byte) 0x0D, (byte) 0x01, (byte) 0x01, (byte) 0x08,
+        (byte) 0x30, (byte) 0x0B,
+        (byte) 0x06, (byte) 0x09, (byte) 0x60, (byte) 0x86, (byte) 0x48, (byte) 0x01, (byte) 0x65,
+        (byte) 0x03, (byte) 0x04, (byte) 0x02, (byte) 0x03
+    });
+
   }
 
 
@@ -101,11 +125,19 @@ public class RSASSA_PKCS1_v1_5 extends SigScheme {
     return EM;
   }
 
+  @Override
+  public void setHashSize(int hashSize) {
+    int availableSpace = emLen - 11;
+    if (hashSize < 0 || hashSize > availableSpace) {
+      throw new IllegalArgumentException(
+          "Custom hash size must a positive integer that allows the minimum bytes of padding to be incorporated");
+    }
+    super.setHashSize(hashSize);
+  }
+
   /**
    * Creates a DigestInfo structure manually as per the PKCS#1 standard by pre-pending the hash
-   * algorithm ID to the corresponding generated hash. This method applies a mask generation
-   * function (MGF1) to the hash if the scheme is instantiated with the flag for provably secure
-   * parameters set, generating a larger output (half the length of the modulus).
+   * algorithm ID to the corresponding generated hash.
    *
    * @param message The message to be included in the DigestInfo, represented as a byte array.
    * @return A byte array representing the DigestInfo structure, including the hash algorithm ID and

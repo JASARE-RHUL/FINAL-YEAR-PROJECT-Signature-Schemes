@@ -1,6 +1,7 @@
 package uk.msci.project.rsa;
 
 import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -42,14 +43,18 @@ public class ANSI_X9_31_RDSA extends SigScheme {
   }
 
   /**
-   * Initialises hash IDs for supported hash functions (SHA-256 and SHA-512) according to the ANSI
-   * X9.31 standard.
+   * Initialises hash IDs for supported hash functions according to the Iso/Iec 10118
    */
   public void initialiseHash() {
-    // hash IDs for supported hash functions according to the ANSI Specification
     this.hashID = new byte[]{(byte) 0x34, (byte) 0xCC};
+    byte[] sha512HashID = new byte[]{(byte) 0x35, (byte) 0xCC};
     hashIDmap.put(DigestType.SHA_256, this.hashID);
-    hashIDmap.put(DigestType.SHA_512, new byte[]{(byte) 0x35, (byte) 0xCC});
+    hashIDmap.put(DigestType.SHA_512, sha512HashID);
+    byte[] shakeHashID = new byte[]{(byte) 0x3D, (byte) 0xCC};
+    hashIDmap.put(DigestType.SHAKE_128, shakeHashID);
+    hashIDmap.put(DigestType.SHAKE_256, shakeHashID);
+    hashIDmap.put(DigestType.MGF_1_SHA_256, this.hashID);
+    hashIDmap.put(DigestType.MGF_1_SHA_512, sha512HashID);
   }
 
 
@@ -65,7 +70,7 @@ public class ANSI_X9_31_RDSA extends SigScheme {
 
   protected byte[] encodeMessage(byte[] M) {
     byte[] EM = new byte[emLen];
-    //  int availableSpace = ((emBits - 48 - 8) + 7) / 8;
+
     byte[] digestInfo = createDigestInfo(M);
     int tLen = digestInfo.length;
     int hashStart = emLen - tLen;
@@ -85,12 +90,31 @@ public class ANSI_X9_31_RDSA extends SigScheme {
     return EM;
   }
 
+  /**
+   * Sets the size of the hash used in the encoding process. If the hash function used is a
+   * fixed-size hash, this method ensures that the hash size remains constant. If the hash function
+   * supports variable-length output, the hash size is adjusted accordingly. If the flag for using
+   * provably secure parameters is set to true, the hash size is set to half of the encoded message
+   * length plus one byte. Otherwise, the hash size is set based on the specified value.
+   *
+   * @param hashSize The size of the hash in bytes. If set to 0, the method will use the digest
+   *                 length of the current hash function.
+   * @throws IllegalArgumentException If the specified hash size is negative or exceeds the
+   *                                  available space for padding in the encoded message.
+   */
+  @Override
+  public void setHashSize(int hashSize) {
+    int availableSpace = ((emBits - hashSize - 16 - 8) + 7) / 8;
+    if (hashSize < 0 || availableSpace < 0) {
+      throw new IllegalArgumentException(
+          "Custom hash size must a positive integer that allows the minimum bytes of padding to be incorporated");
+    }
+    super.setHashSize(hashSize);
+  }
 
   /**
-   * Creates a DigestInfo structure manually as per the ANSI X9.31 rDSA standard by appending the *
-   * hash to the corresponding hash ID. This method applies a mask generation function (MGF1) to the
-   * hash if the scheme is instantiated with the flag for provably secure parameters set, generating
-   * a larger output (half the length of the modulus).
+   * Creates a DigestInfo structure manually as per the ANSI X9.31 rDSA standard by appending the
+   * hash to the corresponding hash ID.
    *
    * @param message The message to be included in the DigestInfo, represented as a byte array.
    * @return A byte array representing the DigestInfo structure, including the hash algorithm ID and
