@@ -104,7 +104,7 @@ public class ANSI_X9_31_RDSA extends SigScheme {
    */
   @Override
   public void setHashSize(int hashSize) {
-    int availableSpace = ((emBits - hashSize - 16 - 8) + 7) / 8;
+    int availableSpace = ((emBits - (hashSize * 8) - 16 - 8) + 7) / 8;
     if (hashSize < 0 || availableSpace < 0) {
       throw new IllegalArgumentException(
           "Custom hash size must a positive integer that allows the minimum bytes of padding to be incorporated");
