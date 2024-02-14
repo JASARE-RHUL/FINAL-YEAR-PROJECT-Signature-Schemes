@@ -236,6 +236,28 @@ public class ISO_IEC_9796_2_SCHEME_1 extends SigScheme {
   }
 
   /**
+   * Sets the size of the hash used in the encoding process. If the hash function used is a
+   * fixed-size hash, this method ensures that the hash size remains constant. If the hash function
+   * supports variable-length output, the hash size is adjusted accordingly. If the flag for using
+   * provably secure parameters is set to true, the hash size is set to half of the encoded message
+   * length plus one byte. Otherwise, the hash size is set based on the specified value.
+   *
+   * @param hashSize The size of the hash in bytes. If set to 0, the method will use the digest
+   *                 length of the current hash function.
+   * @throws IllegalArgumentException If the specified hash size is negative or exceeds the
+   *                                  available space for padding in the encoded message.
+   */
+  @Override
+  public void setHashSize(int hashSize) {
+    int availableSpace = hashSize * 8 + 1 + 4 - emBits;
+    if (hashSize < 0 || availableSpace > 0) {
+      throw new IllegalArgumentException(
+          "Custom hash size must a positive integer that allows the minimum bytes of padding to be incorporated");
+    }
+    super.setHashSize(hashSize);
+  }
+
+  /**
    * Sets the message digest for this instance according to the specified DigestType. This method
    * uses the DigestFactory to obtain an instance of MessageDigest corresponding to the given type.
    *

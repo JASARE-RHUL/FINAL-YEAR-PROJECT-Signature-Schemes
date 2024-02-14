@@ -1,6 +1,7 @@
 package uk.msci.project.rsa;
 
 import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -69,7 +70,7 @@ public class ANSI_X9_31_RDSA extends SigScheme {
 
   protected byte[] encodeMessage(byte[] M) {
     byte[] EM = new byte[emLen];
-    //  int availableSpace = ((emBits - 48 - 8) + 7) / 8;
+
     byte[] digestInfo = createDigestInfo(M);
     int tLen = digestInfo.length;
     int hashStart = emLen - tLen;
@@ -89,6 +90,27 @@ public class ANSI_X9_31_RDSA extends SigScheme {
     return EM;
   }
 
+  /**
+   * Sets the size of the hash used in the encoding process. If the hash function used is a
+   * fixed-size hash, this method ensures that the hash size remains constant. If the hash function
+   * supports variable-length output, the hash size is adjusted accordingly. If the flag for using
+   * provably secure parameters is set to true, the hash size is set to half of the encoded message
+   * length plus one byte. Otherwise, the hash size is set based on the specified value.
+   *
+   * @param hashSize The size of the hash in bytes. If set to 0, the method will use the digest
+   *                 length of the current hash function.
+   * @throws IllegalArgumentException If the specified hash size is negative or exceeds the
+   *                                  available space for padding in the encoded message.
+   */
+  @Override
+  public void setHashSize(int hashSize) {
+    int availableSpace = ((emBits - hashSize - 16 - 8) + 7) / 8;
+    if (hashSize < 0 || availableSpace < 0) {
+      throw new IllegalArgumentException(
+          "Custom hash size must a positive integer that allows the minimum bytes of padding to be incorporated");
+    }
+    super.setHashSize(hashSize);
+  }
 
   /**
    * Creates a DigestInfo structure manually as per the ANSI X9.31 rDSA standard by appending the

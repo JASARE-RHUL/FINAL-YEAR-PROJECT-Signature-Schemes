@@ -89,6 +89,7 @@ public abstract class SigScheme implements SigSchemeInterface {
    */
   DigestType currentHashType;
 
+
   /**
    * Constructs a Signature scheme instance with the specified RSA key. This constructor initialises
    * the RSA key components (modulus and exponent), calculates the encoded message length, and sets
@@ -144,6 +145,34 @@ public abstract class SigScheme implements SigSchemeInterface {
     }
   }
 
+  /**
+   * Sets the size of the hash used in the encoding process. If the hash function used is a
+   * fixed-size hash, this method ensures that the hash size remains constant. If the hash function
+   * supports variable-length output, the hash size is adjusted accordingly. If the flag for using
+   * provably secure parameters is set to true, the hash size is set to half of the encoded message
+   * length plus one byte. Otherwise, the hash size is set based on the specified value.
+   *
+   * @param hashSize The size of the hash in bytes. If set to 0, the method will use the digest
+   *                 length of the current hash function.
+   * @throws IllegalStateException If attempting to set a custom hash size for a fixed-size hash
+   *                               function.
+   */
+  public void setHashSize(int hashSize) {
+    if (DigestFactory.isIsFixedHash()) {
+      if (hashSize == 0) {
+        this.hashSize = md.getDigestLength();
+      } else {
+        throw new IllegalStateException(
+            "Custom hash size cannot be set for a fixed size Hash function");
+      }
+    } else if (isProvablySecureParams) {
+      this.hashSize = (emLen + 1) / 2;
+    } else {
+      this.hashSize = hashSize;
+    }
+
+  }
+
 
   /**
    * Encodes a message according to concrete signature scheme.
@@ -165,7 +194,12 @@ public abstract class SigScheme implements SigSchemeInterface {
    */
   @Override
   public byte[] sign(byte[] M) throws DataFormatException {
-    byte[] EM = encodeMessage(M);
+    byte[] EM;
+    try {
+     EM = encodeMessage(M);
+    } catch (Exception e) {
+     throw new DataFormatException("Custom hash size is is too large");
+    }
     BigInteger m = OS2IP(EM);
 
     BigInteger s = RSASP1(m);
@@ -202,13 +236,15 @@ public abstract class SigScheme implements SigSchemeInterface {
     BigInteger s = OS2IP(S);
     BigInteger m = RSAVP1(s);
     byte[] EM;
+    byte[] EMprime;
     try {
       EM = I2OSP(m);
-    } catch (IllegalArgumentException e) {
+      EMprime = encodeMessage(M);
+    } catch (DataFormatException | IllegalArgumentException e) {
       return false;
     }
 
-    byte[] EMprime = encodeMessage(M);
+
 
     return Arrays.equals(EM, EMprime);
   }

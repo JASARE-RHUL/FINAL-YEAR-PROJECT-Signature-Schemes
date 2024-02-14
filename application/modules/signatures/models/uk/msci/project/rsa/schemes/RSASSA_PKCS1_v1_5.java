@@ -125,6 +125,16 @@ public class RSASSA_PKCS1_v1_5 extends SigScheme {
     return EM;
   }
 
+  @Override
+  public void setHashSize(int hashSize) {
+    int availableSpace = emLen - 11;
+    if (hashSize < 0 || hashSize > availableSpace) {
+      throw new IllegalArgumentException(
+          "Custom hash size must a positive integer that allows the minimum bytes of padding to be incorporated");
+    }
+    super.setHashSize(hashSize);
+  }
+
   /**
    * Creates a DigestInfo structure manually as per the PKCS#1 standard by pre-pending the hash
    * algorithm ID to the corresponding generated hash.
