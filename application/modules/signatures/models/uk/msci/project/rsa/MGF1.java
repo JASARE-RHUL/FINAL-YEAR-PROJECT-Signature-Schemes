@@ -37,7 +37,7 @@ public class MGF1 {
   public byte[] generateMask(byte[] mgfSeed, int maskLen) {
 
     int hLen = digest.getDigestLength();
-    if (!(maskLen >= 0 && hLen <= Integer.MAX_VALUE && maskLen > 1)) {
+    if (!(maskLen > 1)) {
       throw new IllegalArgumentException(
           "maskLen must be a valid positive integer");
     }
