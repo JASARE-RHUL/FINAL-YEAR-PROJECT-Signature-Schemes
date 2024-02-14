@@ -3,6 +3,7 @@ package uk.msci.project.rsa;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -55,6 +56,9 @@ public abstract class SigScheme implements SigSchemeInterface {
    */
   byte[] hashID;
 
+  /**
+   * A mapping of DigestType to hash algorithm identifiers.
+   */
   Map<DigestType, byte[]> hashIDmap = new HashMap<DigestType, byte[]>();
 
   /**
@@ -79,6 +83,11 @@ public abstract class SigScheme implements SigSchemeInterface {
    * Size of the hash used in the encoding process, set to 32 bytes (SHA-256) by default.
    */
   int hashSize = 32;
+
+  /**
+   * The current hash type being used.
+   */
+  DigestType currentHashType;
 
   /**
    * Constructs a Signature scheme instance with the specified RSA key. This constructor initialises
@@ -283,9 +292,10 @@ public abstract class SigScheme implements SigSchemeInterface {
    * @throws InvalidDigestException   If the specified digest type is not supported or invalid.
    */
   public void setDigest(DigestType digestType)
-      throws NoSuchAlgorithmException, InvalidDigestException {
+      throws NoSuchAlgorithmException, InvalidDigestException, NoSuchProviderException {
+    md.reset();
+    this.currentHashType = digestType;
     this.md = DigestFactory.getMessageDigest(digestType);
-    this.hashSize = isProvablySecureParams ? (emLen + 1) / 2 : md.getDigestLength();
     this.hashID = hashIDmap.get(digestType);
   }
 
@@ -312,6 +322,24 @@ public abstract class SigScheme implements SigSchemeInterface {
   public byte[] computeHashWithOptionalMasking(byte[] message) {
     return isProvablySecureParams ? new MGF1(this.md).generateMask(message, this.hashSize)
         : computeHash(message);
+  }
+
+  /**
+   * Sets the type of hash function to be used by the signature scheme.
+   *
+   * @param currentHashType The type of hash function to be set.
+   */
+  public void setHashType(DigestType currentHashType) {
+    this.currentHashType = currentHashType;
+  }
+
+  /**
+   * Returns the current type of hash function set in the signature scheme.
+   *
+   * @return The current type of hash function being used with in the signature scheme.
+   */
+  public DigestType getHashType() {
+    return currentHashType;
   }
 
 

@@ -4,6 +4,7 @@ import static java.lang.Math.max;
 
 import java.math.BigInteger;
 import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.util.Arrays;
 import java.util.zip.DataFormatException;
 import uk.msci.project.rsa.exceptions.InvalidDigestException;
@@ -245,9 +246,10 @@ public class ISO_IEC_9796_2_SCHEME_1 extends SigScheme {
    */
   @Override
   public void setDigest(DigestType digestType)
-      throws NoSuchAlgorithmException, InvalidDigestException {
+      throws NoSuchAlgorithmException, InvalidDigestException, NoSuchProviderException {
+    md.reset();
+    this.currentHashType = digestType;
     this.md = DigestFactory.getMessageDigest(digestType);
-    this.hashSize = isProvablySecureParams ? (emLen + 1) / 2 : md.getDigestLength();
   }
 
 }
