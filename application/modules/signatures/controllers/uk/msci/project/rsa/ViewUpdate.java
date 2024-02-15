@@ -132,4 +132,63 @@ public interface ViewUpdate {
    * @param visible {@code true} to make the cancel import text button visible, {@code false} otherwise.
    */
   void setCancelImportTextButtonVisibility(boolean visible);
+
+  /**
+   * Retrieves the name of the selected hash function in the view.
+   *
+   * @return The name of the selected hash function.
+   */
+  String getSelectedHashFunction();
+
+  /**
+   * Sets the selected hash function in the view.
+   *
+   * @param scheme The hash function to be selected.
+   */
+  void setSelectedHashFunction(String scheme);
+
+  /**
+   * Updates the hash function dropdown for custom or provably secure parameter selections in the view.
+   */
+  void updateHashFunctionDropdownForCustomOrProvablySecure();
+
+  /**
+   * Updates the hash function dropdown for standard parameter selections in the view.
+   */
+  void updateHashFunctionDropdownForStandard();
+
+  /**
+   * Retrieves the parameter choice (e.g., 'Standard', 'Provably Secure', 'Custom') selected in the view.
+   *
+   * @return The selected parameter choice.
+   */
+  String getParameterChoice();
+
+  /**
+   * Sets the visibility of the hash output size field in the view.
+   *
+   * @param visible {@code true} to make the field visible, {@code false} to hide it.
+   */
+  void setHashOutputSizeFieldVisibility(boolean visible);
+
+  /**
+   * Retrieves the hash output size entered in the view.
+   *
+   * @return The hash output size as a string.
+   */
+  String getHashOutputSize();
+
+  /**
+   * Resets the hash output size field to its default state in the view.
+   */
+  void resetHashField();
+
+  /**
+   * Retrieves the visibility state of the hash output size field in the view.
+   *
+   * @return {@code true} if the field is visible, {@code false} otherwise.
+   */
+  boolean getHashOutputSizeFieldVisibility();
+
+
 }
