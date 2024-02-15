@@ -259,21 +259,4 @@ public class ISO_IEC_9796_2_SCHEME_1 extends SigScheme {
     super.setDigest(digestType, customHashSize);
   }
 
-  /**
-   * Sets the message digest for this instance according to the specified DigestType. This method
-   * uses the DigestFactory to obtain an instance of MessageDigest corresponding to the given type.
-   *
-   * @param digestType The type of the digest to be used for generating or verifying signatures.
-   * @throws NoSuchAlgorithmException If the algorithm for the requested digest type is not
-   *                                  available.
-   * @throws InvalidDigestException   If the specified digest type is not supported or invalid.
-   */
-  @Override
-  public void setDigest(DigestType digestType)
-      throws NoSuchAlgorithmException, InvalidDigestException, NoSuchProviderException {
-    md.reset();
-    this.currentHashType = digestType;
-    this.md = DigestFactory.getMessageDigest(digestType);
-  }
-
 }
