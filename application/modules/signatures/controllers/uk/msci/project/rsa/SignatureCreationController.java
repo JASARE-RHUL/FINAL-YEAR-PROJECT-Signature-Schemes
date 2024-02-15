@@ -98,7 +98,8 @@ public class SignatureCreationController extends SignatureBaseController {
         new ImportObserver(primaryStage, new SignViewUpdateOperations(signView),
             this::handleKey, "*.rsa"));
     signView.addSignatureSchemeChangeObserver(new SignatureSchemeChangeObserver());
-    signView.addCreateSignatureObserver(new CreateSignatureObserver());
+    signView.addCreateSignatureObserver(
+        new CreateSignatureObserver(new SignViewUpdateOperations(signView)));
     signView.addBackToMainMenuObserver(new BackToMainMenuObserver(signView));
     signView.addCloseNotificationObserver(new BackToMainMenuObserver(signView));
   }
@@ -118,8 +119,12 @@ public class SignatureCreationController extends SignatureBaseController {
     signView.addCancelImportKeyButtonObserver(
         new CancelImportKeyButtonObserver(new SignViewUpdateOperations(signView)));
     signView.addSignatureSchemeChangeObserver(new SignatureSchemeChangeObserver());
-    signView.addParameterChoiceChangeObserver(new ParameterChoiceChangeObserver());
-    signView.addSigBenchmarkButtonObserver(new SignatureBenchmarkObserver());
+    signView.addParameterChoiceChangeObserver(
+        new ParameterChoiceChangeObserver(new SignViewUpdateOperations(signView)));
+    signView.addHashFunctionChangeObserver(
+        new HashFunctionChangeObserver(new SignViewUpdateOperations(signView)));
+    signView.addSigBenchmarkButtonObserver(
+        new SignatureBenchmarkObserver(new SignViewUpdateOperations(signView)));
     signView.addBackToMainMenuObserver(new BackToMainMenuObserver(signView));
   }
 
@@ -144,8 +149,15 @@ public class SignatureCreationController extends SignatureBaseController {
    */
   class CreateSignatureObserver implements EventHandler<ActionEvent> {
 
+    private ViewUpdate viewOps;
+
+    public CreateSignatureObserver(ViewUpdate viewOps) {
+      this.viewOps = viewOps;
+    }
+
     @Override
     public void handle(ActionEvent event) {
+      hashOutputSize = signView.getHashOutputSize();
       if ((signView.getTextInput().equals("") && message == null)
           || signatureModel.getKey() == null
           || signView.getSelectedSignatureScheme() == null) {
@@ -153,6 +165,13 @@ public class SignatureCreationController extends SignatureBaseController {
             "You must provide an input for all fields. Please try again.");
         return;
       }
+
+      if (!handleHashOutputSize(viewOps) && signView.getHashOutputSizeFieldVisibility()) {
+        return;
+      } else if (signView.getHashOutputSizeFieldVisibility()) {
+        signatureModel.setHashSize((Integer.parseInt(hashOutputSize) + 7) / 8);
+      }
+
       try {
         String textToSign = signView.getTextInput();
         if (!textToSign.equals("")) {
@@ -189,14 +208,27 @@ public class SignatureCreationController extends SignatureBaseController {
    */
   class SignatureBenchmarkObserver implements EventHandler<ActionEvent> {
 
+    private ViewUpdate viewOps;
+
+    public SignatureBenchmarkObserver(ViewUpdate viewOps) {
+      this.viewOps = viewOps;
+    }
+
     @Override
     public void handle(ActionEvent event) {
+      hashOutputSize = signView.getHashOutputSize();
+
       if ((signatureModel.getNumTrials() == 0)
           || signatureModel.getPrivateKeyBatchLength() == 0
           || signView.getSelectedSignatureScheme() == null) {
         uk.msci.project.rsa.DisplayUtility.showErrorAlert(
             "You must provide an input for all fields. Please try again.");
         return;
+      }
+      if (!handleHashOutputSize(viewOps) && signView.getHashOutputSizeFieldVisibility()) {
+        return;
+      } else if (signView.getHashOutputSizeFieldVisibility()) {
+        signatureModel.setHashSize((Integer.parseInt(hashOutputSize) + 7) / 8);
       }
 
       // Show the progress dialog
@@ -370,5 +402,6 @@ public class SignatureCreationController extends SignatureBaseController {
   public void setMessage(byte[] message) {
     this.message = message;
   }
+
 
 }
