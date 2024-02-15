@@ -160,7 +160,8 @@ public class SignatureCreationController extends SignatureBaseController {
       hashOutputSize = signView.getHashOutputSize();
       if ((signView.getTextInput().equals("") && message == null)
           || signatureModel.getKey() == null
-          || signView.getSelectedSignatureScheme() == null) {
+          || signView.getSelectedSignatureScheme() == null
+          || signView.getSelectedHashFunction() == null) {
         uk.msci.project.rsa.DisplayUtility.showErrorAlert(
             "You must provide an input for all fields. Please try again.");
         return;
@@ -220,7 +221,8 @@ public class SignatureCreationController extends SignatureBaseController {
 
       if ((signatureModel.getNumTrials() == 0)
           || signatureModel.getPrivateKeyBatchLength() == 0
-          || signView.getSelectedSignatureScheme() == null) {
+          || signView.getSelectedSignatureScheme() == null
+          || signView.getSelectedHashFunction() == null) {
         uk.msci.project.rsa.DisplayUtility.showErrorAlert(
             "You must provide an input for all fields. Please try again.");
         return;

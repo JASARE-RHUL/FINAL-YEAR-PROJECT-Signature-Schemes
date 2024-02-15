@@ -94,7 +94,8 @@ public class SignatureVerificationController extends SignatureBaseController {
     verifyView.addBackToMainMenuObserver(new BackToMainMenuObserver(verifyView));
     verifyView.addImportSigButtonObserver(
         new ImportObserver(primaryStage, null, this::handleSig, "*.rsa"));
-    verifyView.addVerifyBtnObserver(new VerifyBtnObserver(new VerifyViewUpdateOperations(verifyView)));
+    verifyView.addVerifyBtnObserver(
+        new VerifyBtnObserver(new VerifyViewUpdateOperations(verifyView)));
     verifyView.addCloseNotificationObserver(new BackToMainMenuObserver(verifyView));
   }
 
@@ -194,7 +195,8 @@ public class SignatureVerificationController extends SignatureBaseController {
       }
       if (signatureModel.getKey() == null
           || signatureModel.getSignatureType() == null
-          || (verifyView.getSigText().equals("") && signature == null)) {
+          || (verifyView.getSigText().equals("") && signature == null)
+          || verifyView.getSelectedHashFunction() == null) {
         uk.msci.project.rsa.DisplayUtility.showErrorAlert(
             "You must provide an input for all required fields. Please try again.");
         return;
@@ -262,7 +264,8 @@ public class SignatureVerificationController extends SignatureBaseController {
       }
       if ((signatureModel.getNumTrials() == 0)
           || signatureModel.getPublicKeyBatchLength() == 0
-          || verifyView.getSelectedSignatureScheme() == null || numSignatures == 0) {
+          || verifyView.getSelectedSignatureScheme() == null || numSignatures == 0
+          || verifyView.getSelectedHashFunction() == null) {
         uk.msci.project.rsa.DisplayUtility.showErrorAlert(
             "You must provide an input for all fields. Please try again.");
         return;
@@ -306,7 +309,6 @@ public class SignatureVerificationController extends SignatureBaseController {
 
     }
   }
-
 
 
   /**
