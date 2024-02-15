@@ -48,15 +48,18 @@
           </HBox>
         </VBox>
         <HBox spacing="10">
-          <Label fx:id="numMessageLabel" text="Number of Messages (trials):" styleClass="bold-label"/>
+          <Label fx:id="numMessageLabel" text="Number of Messages (trials):"
+            styleClass="bold-label"/>
           <TextField fx:id="numMessageField" prefWidth="100"/>
         </HBox>
         <VBox spacing="5" alignment="CENTER">
           <HBox spacing="10" fx:id="messageBatchHBox">
             <Label fx:id="messageBatchText" text="Message Batch:" styleClass="bold-label"/>
-            <TextField fx:id="messageBatchField" prefWidth="200" text="Please Import a message batch"
+            <TextField fx:id="messageBatchField" prefWidth="200"
+              text="Please Import a message batch"
               editable="false"/>
-            <ImageView fx:id="textFileCheckmarkImage" fitWidth="20" fitHeight="20" preserveRatio="true"
+            <ImageView fx:id="textFileCheckmarkImage" fitWidth="20" fitHeight="20"
+              preserveRatio="true"
               visible="false"/>
             <Button fx:id="importTextButton" text="Import Text" visible="false" managed="false"/>
             <Button fx:id="importTextBatchBtn" text="Import Text"/>
@@ -72,9 +75,12 @@
             editable="false"/>
           <ImageView fx:id="checkmarkImage" fitWidth="20" fitHeight="20" preserveRatio="true"
             visible="false"/>
-          <Button fx:id="importKeyButton" text="Import Private Key" visible="false" managed="false"/>
-          <Button fx:id="importKeyBatchButton" text="Import Key Batch" visible="true" managed="true"/>
-          <Button fx:id="cancelImportKeyButton" text="Cancel Import" visible="false" managed="false"/>
+          <Button fx:id="importKeyButton" text="Import Private Key" visible="false"
+            managed="false"/>
+          <Button fx:id="importKeyBatchButton" text="Import Key Batch" visible="true"
+            managed="true"/>
+          <Button fx:id="cancelImportKeyButton" text="Cancel Import" visible="false"
+            managed="false"/>
         </HBox>
 
 
@@ -94,9 +100,29 @@
 
         <!-- Parameter Choice Radio Buttons -->
         <HBox spacing="10">
-          <Label text="Parameter Choice:" styleClass="bold-label"/>
-          <RadioButton fx:id="standardParametersRadio" text="Standard Parameters" selected="true"/>
-          <RadioButton fx:id="provablySecureParametersRadio" text="Provably Secure Parameters"/>
+          <Label text="Hash Function Size:" styleClass="bold-label"/>
+          <RadioButton fx:id="standardParametersRadio" text="Standard" selected="true"/>
+          <RadioButton fx:id="provablySecureParametersRadio" text="Provably Secure"/>
+          <RadioButton fx:id="customParametersRadio" text="Custom"/>
+        </HBox>
+
+        <!-- Hash function Dropdown -->
+        <HBox spacing="10">
+          <Label text="Hash Function:" styleClass="bold-label"/>
+          <ComboBox fx:id="hashFunctionDropdown" prefWidth="200">
+            <items>
+              <FXCollections fx:factory="observableArrayList">
+                <String fx:value="SHA-256"/>
+                <String fx:value="SHA-512"/>
+                <String fx:value="SHA-256 with MGF1"/>
+                <String fx:value="SHA-512 with MGF1"/>
+                <String fx:value="SHAKE-128"/>
+                <String fx:value="SHAKE-256"/>
+              </FXCollections>
+            </items>
+          </ComboBox>
+          <TextField fx:id="hashOutputSizeField" promptText="Enter hash output size"
+            visible="false" managed="false" maxWidth="140"/>
         </HBox>
       </VBox>
     </HBox>

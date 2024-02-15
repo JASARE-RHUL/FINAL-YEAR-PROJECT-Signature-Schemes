@@ -2,6 +2,7 @@ package uk.msci.project.rsa;
 
 
 import javafx.beans.value.ChangeListener;
+import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -92,6 +93,12 @@ public class SignView implements SignatureViewInterface {
    */
   @FXML
   private ComboBox<String> signatureSchemeDropdown;
+
+  /**
+   * ComboBox to allow the selection of a hash function from predefined options.
+   */
+  @FXML
+  private ComboBox<String> hashFunctionDropdown;
 
   /**
    * Button to trigger the creation of a digital signature based on the provided text and selected
@@ -241,12 +248,39 @@ public class SignView implements SignatureViewInterface {
   private RadioButton provablySecureParametersRadio;
 
   /**
+   * Radio button for selecting provably secure parameters.
+   */
+  @FXML
+  private RadioButton customParametersRadio;
+
+  /**
+   * TextField for entering the hash output size. Initially hidden and managed based on the selected
+   * hash function.
+   */
+  @FXML
+  private TextField hashOutputSizeField;
+
+  /**
    * Initialises the SignView, setting up the toggle group for parameter choice.
    */
   public void initialize() {
+    updateHashFunctionDropdownForStandard();
     parameterChoiceToggleGroup = new ToggleGroup();
     standardParametersRadio.setToggleGroup(parameterChoiceToggleGroup);
     provablySecureParametersRadio.setToggleGroup(parameterChoiceToggleGroup);
+    customParametersRadio.setToggleGroup(parameterChoiceToggleGroup);
+
+  }
+
+  /**
+   * Retrieves the parameter choice selected by the user, which relates to the potential hash size
+   * chosen for the selected signature scheme.
+   *
+   * @return A String representing the parameter choice.
+   */
+  public String getParameterChoice() {
+    RadioButton selectedButton = (RadioButton) parameterChoiceToggleGroup.getSelectedToggle();
+    return selectedButton != null ? selectedButton.getText() : "";
   }
 
 
@@ -273,6 +307,10 @@ public class SignView implements SignatureViewInterface {
     this.textFileCheckmarkImage.setPreserveRatio(true);
   }
 
+  /**
+   * Sets the visibility of the image for the checkmark to indicate the status of the import of a
+   * message.
+   */
   public void setTextFieldCheckmarkImageVisibility(boolean visible) {
     this.textFileCheckmarkImage.setVisible(visible);
   }
@@ -318,10 +356,22 @@ public class SignView implements SignatureViewInterface {
     this.notificationPane.setVisible(visible);
   }
 
+
+  /**
+   * Retrieves the text from the textInput TextField which represents the message to be signed,
+   * entered or selected by the user.
+   *
+   * @return A String representing the key.
+   */
   public String getTextInput() {
     return textInput.getText();
   }
 
+  /**
+   * Sets the text of the TextField for providing a message to be signed.
+   *
+   * @param text A String representing the message to be set in the TextField.
+   */
   public void setTextInput(String text) {
     this.textInput.setText(text);
   }
@@ -375,7 +425,7 @@ public class SignView implements SignatureViewInterface {
   /**
    * Retrieves the currently selected signature scheme from the signatureSchemeDropdown ComboBox.
    *
-   * @return A String representing the selected signature scheme.
+   * @return string representing the selected signature scheme.
    */
   public String getSelectedSignatureScheme() {
     return signatureSchemeDropdown.getValue();
@@ -384,11 +434,31 @@ public class SignView implements SignatureViewInterface {
   /**
    * Sets the selected signature scheme in the signatureSchemeDropdown ComboBox.
    *
-   * @param scheme A String representing the signature scheme to be selected.
+   * @param scheme string representing the signature scheme to be selected.
    */
   public void setSelectedSignatureScheme(String scheme) {
     signatureSchemeDropdown.setValue(scheme);
   }
+
+  /**
+   * Retrieves the currently selected hash function from the hashFunctionDropdown ComboBox.
+   *
+   * @return string representing the selected hash function.
+   */
+  public String getSelectedHashFunction() {
+    return hashFunctionDropdown.getValue();
+  }
+
+
+  /**
+   * Sets the selected hash function from the hashFunctionDropdown ComboBox.
+   *
+   * @param hashFunction string representing the signature scheme to be selected.
+   */
+  public void setSelectedHashFunction(String hashFunction) {
+    hashFunctionDropdown.setValue(hashFunction);
+  }
+
 
   /**
    * Retrieves the text from the textFileNameLabel Label which displays the name of the imported
@@ -527,8 +597,54 @@ public class SignView implements SignatureViewInterface {
     messageBatchField.setManaged(visible);
   }
 
+  /**
+   * Sets the prompting text of the messageBatchField to urge the user to import a message batch
+   *
+   * @param text String representing the prompting text.
+   */
   public void setMessageBatch(String text) {
     messageBatchField.setText(text);
+  }
+
+  /**
+   * Sets the visibility of the hash output size field.
+   *
+   * @param visible true to make the field visible, false to hide it.
+   */
+  public void setHashOutputSizeFieldVisibility(boolean visible) {
+    if (visible) {
+      resetHashField();
+    }
+    hashOutputSizeField.setManaged(visible);
+    hashOutputSizeField.setVisible(visible);
+
+  }
+
+
+  /**
+   * Retrieves the visibility status of the hash output size field.
+   *
+   * @return true if the hash output size field is visible, false otherwise.
+   */
+  public boolean getHashOutputSizeFieldVisibility() {
+    return hashOutputSizeField.isVisible();
+
+  }
+
+  /**
+   * Resets the hash output size field to its initial state with prompt text.
+   */
+  public void resetHashField() {
+    hashOutputSizeField.setText("");
+  }
+
+  /**
+   * Retrieves the entered hash output size from the field.
+   *
+   * @return String representing the hash output size.
+   */
+  public String getHashOutputSize() {
+    return hashOutputSizeField.getText();
   }
 
   /**
@@ -592,6 +708,29 @@ public class SignView implements SignatureViewInterface {
   }
 
   /**
+   * Updates the hash function dropdown options for custom or provably secure parameter selections.
+   */
+  public void updateHashFunctionDropdownForCustomOrProvablySecure() {
+    hashFunctionDropdown.setItems(FXCollections.observableArrayList(
+        "SHA-256 with MGF1",
+        "SHA-512 with MGF1",
+        "SHAKE-128",
+        "SHAKE-256"
+    ));
+  }
+
+  /**
+   * Updates the hash function dropdown options for standard parameter selections.
+   */
+  public void updateHashFunctionDropdownForStandard() {
+    hashFunctionDropdown.setItems(FXCollections.observableArrayList(
+        "SHA-256",
+        "SHA-512"
+    ));
+  }
+
+
+  /**
    * Registers an observer for the event of importing text. The observer is triggered when the user
    * interacts with the import text button.
    *
@@ -647,6 +786,20 @@ public class SignView implements SignatureViewInterface {
     signatureSchemeDropdown.valueProperty().addListener(observer);
   }
 
+  /**
+   * Registers an observer for changes in the selected hash function from the hash function dropdown.
+   *
+   * @param observer The change listener to be registered.
+   */
+  public void addHashFunctionChangeObserver(ChangeListener<String> observer) {
+    hashFunctionDropdown.valueProperty().addListener(observer);
+  }
+
+  /**
+   * Registers an observer for changes in the parameter choice selection.
+   *
+   * @param observer The change listener to be registered.
+   */
   public void addParameterChoiceChangeObserver(ChangeListener<Toggle> observer) {
     parameterChoiceToggleGroup.selectedToggleProperty().addListener(observer);
   }
@@ -662,8 +815,8 @@ public class SignView implements SignatureViewInterface {
   }
 
   /**
-   * Registers an observer for the cancelImportTextButton Button's action event.
-   * This observer is called when the user clicks the button to cancel the import of a text batch.
+   * Registers an observer for the cancelImportTextButton Button's action event. This observer is
+   * called when the user clicks the button to cancel the import of a text batch.
    *
    * @param observer The event handler to be registered.
    */
@@ -672,8 +825,8 @@ public class SignView implements SignatureViewInterface {
   }
 
   /**
-   * Registers an observer for the importKeyBatchButton Button's action event.
-   * This observer is invoked when the user clicks the button to import a batch of keys.
+   * Registers an observer for the importKeyBatchButton Button's action event. This observer is
+   * invoked when the user clicks the button to import a batch of keys.
    *
    * @param observer The event handler to be registered.
    */
