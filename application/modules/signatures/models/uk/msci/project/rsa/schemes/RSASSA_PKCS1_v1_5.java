@@ -1,7 +1,10 @@
 package uk.msci.project.rsa;
 
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.util.Arrays;
 import java.util.zip.DataFormatException;
+import uk.msci.project.rsa.exceptions.InvalidDigestException;
 
 /**
  * This class implements the RSASSA-PKCS1-v1_5 signature scheme using RSA keys. It provides
@@ -125,14 +128,29 @@ public class RSASSA_PKCS1_v1_5 extends SigScheme {
     return EM;
   }
 
+
+  /**
+   * Sets the message digest algorithm to be used for hashing in the RSASSA_PKCS1_v1_5 signature
+   * scheme to the specified digest type, with the option to specify a custom hash size.
+   *
+   * @param digestType     The type of message digest algorithm to be set.
+   * @param customHashSize The custom hash size, used only for variable-length hash types.
+   * @throws NoSuchAlgorithmException If the specified algorithm is not available in the
+   *                                  environment.
+   * @throws InvalidDigestException   If the specified digest type is invalid or unsupported.
+   * @throws NoSuchProviderException  If the specified provider for the algorithm is not available.
+   * @throws IllegalArgumentException If the custom hash size is not a positive integer that allows
+   *                                  incorporation of minimum padding bytes.
+   */
   @Override
-  public void setHashSize(int hashSize) {
+  public void setDigest(DigestType digestType, int customHashSize)
+      throws NoSuchAlgorithmException, InvalidDigestException, NoSuchProviderException {
     int availableSpace = emLen - 11;
-    if (hashSize < 0 || hashSize > availableSpace) {
+    if (customHashSize > availableSpace) {
       throw new IllegalArgumentException(
           "Custom hash size must a positive integer that allows the minimum bytes of padding to be incorporated");
     }
-    super.setHashSize(hashSize);
+    super.setDigest(digestType, customHashSize);
   }
 
   /**

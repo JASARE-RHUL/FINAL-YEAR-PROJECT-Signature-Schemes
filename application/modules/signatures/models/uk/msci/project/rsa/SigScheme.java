@@ -90,6 +90,8 @@ public abstract class SigScheme implements SigSchemeInterface {
    */
   DigestType currentHashType;
 
+  private Integer pendingHashSize = null;
+
 
   /**
    * Constructs a Signature scheme instance with the specified RSA key. This constructor initialises
@@ -144,34 +146,6 @@ public abstract class SigScheme implements SigSchemeInterface {
       // be thrown if the algorithm isn't available.
       throw new RuntimeException("SHA-256 algorithm not available", e);
     }
-  }
-
-  /**
-   * Sets the size of the hash used in the encoding process. If the hash function used is a
-   * fixed-size hash, this method ensures that the hash size remains constant. If the hash function
-   * supports variable-length output, the hash size is adjusted accordingly. If the flag for using
-   * provably secure parameters is set to true, the hash size is set to half of the encoded message
-   * length plus one byte. Otherwise, the hash size is set based on the specified value.
-   *
-   * @param hashSize The size of the hash in bytes. If set to 0, the method will use the digest
-   *                 length of the current hash function.
-   * @throws IllegalStateException If attempting to set a custom hash size for a fixed-size hash
-   *                               function.
-   */
-  public void setHashSize(int hashSize) {
-    if (currentHashType == DigestType.SHA_256 || currentHashType == DigestType.SHA_512) {
-      if (hashSize == 0) {
-        this.hashSize = md.getDigestLength();
-      } else {
-        throw new IllegalArgumentException(
-            "Custom hash size cannot be set for a fixed size Hash function");
-      }
-    } else if (isProvablySecureParams) {
-      this.hashSize = (emLen + 1) / 2;
-    } else {
-      this.hashSize = hashSize;
-    }
-
   }
 
 
@@ -316,23 +290,58 @@ public abstract class SigScheme implements SigSchemeInterface {
     return recoverableM;
   }
 
+
   /**
-   * Sets the message digest for this instance according to the specified DigestType. This method
-   * uses the DigestFactory to obtain an instance of MessageDigest corresponding to the given type.
-   * It also updates the hashID to match the chosen digest type.
+   * Sets the message digest algorithm to be used for hashing in the signature scheme and
+   * automatically configures the hash size based on the type of hash and the "provably secure"
+   * flag
    *
-   * @param digestType The type of the digest to be used for generating or verifying signatures.
-   * @throws NoSuchAlgorithmException If the algorithm for the requested digest type is not
-   *                                  available.
-   * @throws InvalidDigestException   If the specified digest type is not supported or invalid.
+   * @param digestType The type of message digest algorithm to be set.
+   * @throws NoSuchAlgorithmException If the specified algorithm is not available in the
+   *                                  environment.
+   * @throws InvalidDigestException   If the specified digest type is invalid or unsupported.
+   * @throws NoSuchProviderException  If the specified provider for the algorithm is not available.
+   * @throws IllegalArgumentException If a custom hash size is not a positive integer.
    */
   public void setDigest(DigestType digestType)
+      throws NoSuchAlgorithmException, InvalidDigestException, NoSuchProviderException {
+    this.currentHashType = digestType;
+    setDigest(digestType, 0); // Default hash size for the given digest type
+  }
+
+  /**
+   * Sets the message digest algorithm to be used for hashing in the signature scheme to the
+   * specified digest type. It allows setting a custom hash size for variable-length hash types
+   * (like Hash functions with MGF or SHAKE types) when the "provably secure" flag is not set. For
+   * fixed-size hash types, the method ignores the custom hash size and uses the default size.
+   *
+   * @param digestType     The type of message digest algorithm to be set.
+   * @param customHashSize The custom hash size, used only for variable-length hash types.
+   * @throws NoSuchAlgorithmException If the specified algorithm is not available in the
+   *                                  environment.
+   * @throws InvalidDigestException   If the specified digest type is invalid or unsupported.
+   * @throws NoSuchProviderException  If the specified provider for the algorithm is not available.
+   * @throws IllegalArgumentException If a custom hash size is not a positive integer.
+   */
+  public void setDigest(DigestType digestType, int customHashSize)
       throws NoSuchAlgorithmException, InvalidDigestException, NoSuchProviderException {
     md.reset();
     this.currentHashType = digestType;
     this.md = DigestFactory.getMessageDigest(digestType);
     this.hashID = hashIDmap.get(digestType);
+
+    if (digestType == DigestType.SHA_256 || digestType == DigestType.SHA_512) {
+      this.hashSize = md.getDigestLength(); // Fixed size
+    } else if (isProvablySecureParams) {
+      this.hashSize = (emLen + 1) / 2; // Provably secure size
+    } else {
+      if (customHashSize <= 0) {
+        throw new IllegalArgumentException("Custom hash size must be a positive integer");
+      }
+      this.hashSize = customHashSize; // Custom size for variable-length hash types
+    }
   }
+
 
   /**
    * Computes the hash of the given message using the current message digest algorithm. This method
@@ -392,16 +401,6 @@ public abstract class SigScheme implements SigSchemeInterface {
     }
   }
 
-
-
-  /**
-   * Sets the type of hash function to be used by the signature scheme.
-   *
-   * @param currentHashType The type of hash function to be set.
-   */
-  public void setHashType(DigestType currentHashType) {
-    this.currentHashType = currentHashType;
-  }
 
   /**
    * Returns the current type of hash function set in the signature scheme.

@@ -236,25 +236,27 @@ public class ISO_IEC_9796_2_SCHEME_1 extends SigScheme {
   }
 
   /**
-   * Sets the size of the hash used in the encoding process. If the hash function used is a
-   * fixed-size hash, this method ensures that the hash size remains constant. If the hash function
-   * supports variable-length output, the hash size is adjusted accordingly. If the flag for using
-   * provably secure parameters is set to true, the hash size is set to half of the encoded message
-   * length plus one byte. Otherwise, the hash size is set based on the specified value.
+   * Sets the message digest algorithm to be used for hashing in the ISO_IEC_9796_2_SCHEME_1 signature
+   * scheme to the specified digest type, with the option to specify a custom hash size.
    *
-   * @param hashSize The size of the hash in bytes. If set to 0, the method will use the digest
-   *                 length of the current hash function.
-   * @throws IllegalArgumentException If the specified hash size is negative or exceeds the
-   *                                  available space for padding in the encoded message.
+   * @param digestType     The type of message digest algorithm to be set.
+   * @param customHashSize The custom hash size, used only for variable-length hash types.
+   * @throws NoSuchAlgorithmException If the specified algorithm is not available in the
+   *                                  environment.
+   * @throws InvalidDigestException   If the specified digest type is invalid or unsupported.
+   * @throws NoSuchProviderException  If the specified provider for the algorithm is not available.
+   * @throws IllegalArgumentException If the custom hash size is not a positive integer that allows
+   *                                  incorporation of minimum padding bytes.
    */
   @Override
-  public void setHashSize(int hashSize) {
-    int availableSpace = hashSize * 8 + 1 + 4 - emBits;
-    if (hashSize < 0 || availableSpace > 0) {
+  public void setDigest(DigestType digestType, int customHashSize)
+      throws NoSuchAlgorithmException, InvalidDigestException, NoSuchProviderException {
+    int availableSpace = customHashSize * 8 + 1 + 4 - emBits;
+    if (availableSpace > 0) {
       throw new IllegalArgumentException(
           "Custom hash size must a positive integer that allows the minimum bytes of padding to be incorporated");
     }
-    super.setHashSize(hashSize);
+    super.setDigest(digestType, customHashSize);
   }
 
   /**

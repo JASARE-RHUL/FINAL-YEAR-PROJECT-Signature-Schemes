@@ -18,6 +18,8 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.math.BigInteger;
 import java.nio.file.Path;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -36,6 +38,7 @@ import uk.msci.project.rsa.SigScheme;
 import uk.msci.project.rsa.SignatureFactory;
 import uk.msci.project.rsa.SignatureModel;
 import uk.msci.project.rsa.SignatureType;
+import uk.msci.project.rsa.exceptions.InvalidDigestException;
 import uk.msci.project.rsa.exceptions.InvalidSignatureTypeException;
 
 
@@ -197,7 +200,7 @@ public class SignatureModelTest {
 
   @Test
   void testInstantiateSignatureSchemeValidPKCS()
-      throws IllegalAccessException, NoSuchFieldException, InvalidSignatureTypeException {
+      throws IllegalAccessException, NoSuchFieldException, InvalidSignatureTypeException, NoSuchAlgorithmException, InvalidDigestException, NoSuchProviderException {
     signatureModel.setSignatureType(SignatureType.RSASSA_PKCS1_v1_5);
     signatureModel.setKey(new GenRSA(2, new int[]{512, 512}).generateKeyPair().getPrivateKey());
     signatureModel.instantiateSignatureScheme();
@@ -210,7 +213,7 @@ public class SignatureModelTest {
 
   @Test
   void testInstantiateSignatureSchemeValidANSI()
-      throws IllegalAccessException, NoSuchFieldException, InvalidSignatureTypeException {
+      throws IllegalAccessException, NoSuchFieldException, InvalidSignatureTypeException, NoSuchAlgorithmException, InvalidDigestException, NoSuchProviderException {
     signatureModel.setSignatureType(SignatureType.ANSI_X9_31_RDSA);
     signatureModel.setKey(new GenRSA(2, new int[]{512, 512}).generateKeyPair().getPrivateKey());
     signatureModel.instantiateSignatureScheme();
@@ -223,7 +226,7 @@ public class SignatureModelTest {
 
   @Test
   void testInstantiateSignatureSchemeValidISO()
-      throws IllegalAccessException, NoSuchFieldException, InvalidSignatureTypeException {
+      throws IllegalAccessException, NoSuchFieldException, InvalidSignatureTypeException, NoSuchAlgorithmException, InvalidDigestException, NoSuchProviderException {
     signatureModel.setSignatureType(SignatureType.ISO_IEC_9796_2_SCHEME_1);
     signatureModel.setKey(new GenRSA(2, new int[]{512, 512}).generateKeyPair().getPrivateKey());
     signatureModel.instantiateSignatureScheme();

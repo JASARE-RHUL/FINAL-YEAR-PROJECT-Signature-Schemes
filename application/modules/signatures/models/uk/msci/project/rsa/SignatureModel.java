@@ -7,6 +7,8 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.math.BigInteger;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -17,6 +19,7 @@ import java.util.function.DoubleConsumer;
 import java.util.stream.Collectors;
 import java.util.zip.DataFormatException;
 import javafx.util.Pair;
+import uk.msci.project.rsa.exceptions.InvalidDigestException;
 import uk.msci.project.rsa.exceptions.InvalidSignatureTypeException;
 
 /**
@@ -43,7 +46,7 @@ public class SignatureModel {
   /**
    * The type of hash function used in the signature scheme.
    */
-  private DigestType currentHashType;
+  private DigestType currentHashType = DigestType.SHA_256;
 
   /**
    * The size of the hash output in bytes.
@@ -217,12 +220,18 @@ public class SignatureModel {
    * @throws InvalidSignatureTypeException if the parameter passed SignatureType is not valid or
    *                                       supported.
    */
-  public void instantiateSignatureScheme() throws InvalidSignatureTypeException {
+  public void instantiateSignatureScheme()
+      throws InvalidSignatureTypeException, NoSuchAlgorithmException, InvalidDigestException, NoSuchProviderException {
     if (key != null && currentType != null) {
       currentSignatureScheme = SignatureFactory.getSignatureScheme(currentType, key,
           isProvablySecure);
-      currentSignatureScheme.setHashType(currentHashType);
-      currentSignatureScheme.setHashSize(hashSize);
+      try {
+        currentSignatureScheme.setDigest(currentHashType, hashSize);
+      } catch (IllegalArgumentException e) {
+        throw new IllegalArgumentException(
+            "Custom hash size must a positive integer that allows the minimum bytes of padding to be incorporated");
+      }
+
     } else {
       throw new IllegalStateException(
           "Both key and signature type need to be set before instantiating a signature scheme");
@@ -396,8 +405,7 @@ public class SignatureModel {
       Future<List<byte[]>> future = executor.submit(() -> {
         SigScheme sigScheme = SignatureFactory.getSignatureScheme(currentType, privateKey,
             isProvablySecure);
-        sigScheme.setHashType(currentHashType);
-        sigScheme.setHashSize(hashSize);
+        sigScheme.setDigest(currentHashType, hashSize);
         byte[] signature = sigScheme.sign(message.getBytes());
         byte[] nonRecoverableM = sigScheme.getNonRecoverableM();
         return List.of(signature, nonRecoverableM);
@@ -625,11 +633,10 @@ public class SignatureModel {
    */
   private Pair<Boolean, List<byte[]>> verifySignature(PublicKey publicKey, String messageLine,
       byte[] signatureBytes)
-      throws InvalidSignatureTypeException, DataFormatException {
+      throws InvalidSignatureTypeException, DataFormatException, NoSuchAlgorithmException, InvalidDigestException, NoSuchProviderException {
     SigScheme sigScheme = SignatureFactory.getSignatureScheme(currentType, publicKey,
         isProvablySecure);
-    sigScheme.setHashType(currentHashType);
-    sigScheme.setHashSize(hashSize);
+    sigScheme.setDigest(currentHashType, hashSize);
     boolean verificationResult;
     byte[] recoveredMessage = new byte[]{};
 

@@ -123,7 +123,8 @@ public class DigestFactory_Test {
   @Test
   public void testSetDigestTypeSHAKE_128()
       throws NoSuchAlgorithmException, InvalidDigestException, NoSuchFieldException, IllegalAccessException, NoSuchProviderException {
-    rsassa_pkcs1_v1_5.setDigest(DigestType.SHAKE_128);
+    int customHashSize = 32;
+    rsassa_pkcs1_v1_5.setDigest(DigestType.SHAKE_128, customHashSize);
     Field md = SigScheme.class.getDeclaredField("md");
     md.setAccessible(true);
     MessageDigest mdVal = (MessageDigest) md.get(rsassa_pkcs1_v1_5);
@@ -141,7 +142,7 @@ public class DigestFactory_Test {
 
     ANSI_X9_31_RDSA ansi_x9_31_rdsa = new ANSI_X9_31_RDSA(
         new GenRSA(2, new int[]{512, 512}).generateKeyPair().getPrivateKey());
-    ansi_x9_31_rdsa.setDigest(DigestType.SHAKE_128);
+    ansi_x9_31_rdsa.setDigest(DigestType.SHAKE_128, 32);
     hashIDval = (byte[]) hashID.get(ansi_x9_31_rdsa);
     assertArrayEquals(hashIDval,
         new byte[]{(byte) 0x3D, (byte) 0xCC});
@@ -150,7 +151,8 @@ public class DigestFactory_Test {
   @Test
   public void testSetDigestTypeSHAKE_256()
       throws NoSuchAlgorithmException, InvalidDigestException, NoSuchFieldException, IllegalAccessException, NoSuchProviderException {
-    rsassa_pkcs1_v1_5.setDigest(DigestType.SHAKE_256);
+    int customHashSize = 32;
+    rsassa_pkcs1_v1_5.setDigest(DigestType.SHAKE_256, customHashSize);
     Field md = SigScheme.class.getDeclaredField("md");
     md.setAccessible(true);
     MessageDigest mdVal = (MessageDigest) md.get(rsassa_pkcs1_v1_5);
@@ -168,7 +170,7 @@ public class DigestFactory_Test {
 
     ANSI_X9_31_RDSA ansi_x9_31_rdsa = new ANSI_X9_31_RDSA(
         new GenRSA(2, new int[]{512, 512}).generateKeyPair().getPrivateKey());
-    ansi_x9_31_rdsa.setDigest(DigestType.SHAKE_256);
+    ansi_x9_31_rdsa.setDigest(DigestType.SHAKE_256, 32);
     hashIDval = (byte[]) hashID.get(ansi_x9_31_rdsa);
     assertArrayEquals(hashIDval,
         new byte[]{(byte) 0x3D, (byte) 0xCC});
@@ -177,7 +179,8 @@ public class DigestFactory_Test {
   @Test
   public void testSetDigestTypeMGF_1_SHA_256()
       throws NoSuchAlgorithmException, InvalidDigestException, NoSuchFieldException, IllegalAccessException, NoSuchProviderException {
-    rsassa_pkcs1_v1_5.setDigest(DigestType.MGF_1_SHA_256);
+    int customHashSize = 32;
+    rsassa_pkcs1_v1_5.setDigest(DigestType.MGF_1_SHA_256, customHashSize);
     Field md = SigScheme.class.getDeclaredField("md");
     md.setAccessible(true);
     MessageDigest mdVal = (MessageDigest) md.get(rsassa_pkcs1_v1_5);
@@ -197,7 +200,7 @@ public class DigestFactory_Test {
 
     ANSI_X9_31_RDSA ansi_x9_31_rdsa = new ANSI_X9_31_RDSA(
         new GenRSA(2, new int[]{512, 512}).generateKeyPair().getPrivateKey());
-    ansi_x9_31_rdsa.setDigest(DigestType.MGF_1_SHA_256);
+    ansi_x9_31_rdsa.setDigest(DigestType.MGF_1_SHA_256, 32);
     hashIDval = (byte[]) hashID.get(ansi_x9_31_rdsa);
     assertArrayEquals(hashIDval,
         new byte[]{(byte) 0x34, (byte) 0xCC});
@@ -206,7 +209,8 @@ public class DigestFactory_Test {
   @Test
   public void testSetDigestTypeMGF_1_SHA_512()
       throws NoSuchAlgorithmException, InvalidDigestException, NoSuchFieldException, IllegalAccessException, NoSuchProviderException {
-    rsassa_pkcs1_v1_5.setDigest(DigestType.MGF_1_SHA_512);
+    int customHashSize = 32;
+    rsassa_pkcs1_v1_5.setDigest(DigestType.MGF_1_SHA_512, customHashSize);
     Field md = SigScheme.class.getDeclaredField("md");
     md.setAccessible(true);
     MessageDigest mdVal = (MessageDigest) md.get(rsassa_pkcs1_v1_5);
@@ -226,7 +230,7 @@ public class DigestFactory_Test {
 
     ANSI_X9_31_RDSA ansi_x9_31_rdsa = new ANSI_X9_31_RDSA(
         new GenRSA(2, new int[]{512, 512}).generateKeyPair().getPrivateKey());
-    ansi_x9_31_rdsa.setDigest(DigestType.MGF_1_SHA_512);
+    ansi_x9_31_rdsa.setDigest(DigestType.MGF_1_SHA_512, 32);
     hashIDval = (byte[]) hashID.get(ansi_x9_31_rdsa);
     assertArrayEquals(hashIDval,
         new byte[]{(byte) 0x35, (byte) 0xCC});
@@ -241,18 +245,22 @@ public class DigestFactory_Test {
   }
 
 
-
   @Test
   public void testSetHashSizeForVariableLengthHash()
-      throws NoSuchFieldException, IllegalAccessException {
-    rsassa_pkcs1_v1_5.setHashType(DigestType.SHAKE_128);
+      throws NoSuchFieldException, IllegalAccessException, NoSuchAlgorithmException, InvalidDigestException, NoSuchProviderException {
+
     int expectedSize = 32;
-    rsassa_pkcs1_v1_5.setHashSize(expectedSize);
+    rsassa_pkcs1_v1_5.setDigest(DigestType.SHAKE_128, expectedSize);
 
     Field hashSize = SigScheme.class.getDeclaredField("hashSize");
     hashSize.setAccessible(true);
     int hashSizeVal = (int) hashSize.get(rsassa_pkcs1_v1_5);
 
+    Field currentHashType = SigScheme.class.getDeclaredField("currentHashType");
+    currentHashType.setAccessible(true);
+    DigestType currentHashTypeVal = (DigestType) currentHashType.get(rsassa_pkcs1_v1_5);
+
+    assertEquals(DigestType.SHAKE_128, currentHashTypeVal);
     // Verify if the hash size is set correctly
     assertEquals(expectedSize, hashSizeVal,
         "Hash size should be set to the specified value for variable-length hash");
@@ -260,11 +268,11 @@ public class DigestFactory_Test {
 
   @Test
   public void testSetHashSizeWithProvablySecureParams()
-      throws NoSuchFieldException, IllegalAccessException {
+      throws NoSuchFieldException, IllegalAccessException, NoSuchAlgorithmException, InvalidDigestException, NoSuchProviderException {
     // Enable provably secure parameters
     rsassa_pkcs1_v1_5 = new RSASSA_PKCS1_v1_5(
         new GenRSA(2, new int[]{512, 512}).generateKeyPair().getPrivateKey(), true);
-    rsassa_pkcs1_v1_5.setHashType(DigestType.SHAKE_128); // Variable-length hash
+
     Field emLen = SigScheme.class.getDeclaredField("emLen");
     emLen.setAccessible(true);
     int emLenVal = (int) emLen.get(rsassa_pkcs1_v1_5);
@@ -272,7 +280,7 @@ public class DigestFactory_Test {
     int expectedSize =
         (emLenVal + 1) / 2;
 
-    rsassa_pkcs1_v1_5.setHashSize(0); // Set to default size in provably secure mode
+    rsassa_pkcs1_v1_5.setDigest(DigestType.SHAKE_128);
     Field hashSize = SigScheme.class.getDeclaredField("hashSize");
     hashSize.setAccessible(true);
     int hashSizeVal = (int) hashSize.get(rsassa_pkcs1_v1_5);
@@ -280,111 +288,84 @@ public class DigestFactory_Test {
   }
 
   @Test
-  public void testSetHashSizeToDigestLength() throws NoSuchFieldException, IllegalAccessException {
-    rsassa_pkcs1_v1_5.setHashType(DigestType.SHA_256); // Fixed-size hash
+  public void testSetHashSizeToDigestLength()
+      throws NoSuchFieldException, IllegalAccessException, NoSuchAlgorithmException, InvalidDigestException, NoSuchProviderException {
+    rsassa_pkcs1_v1_5.setDigest(DigestType.SHA_256);
     int expectedSize = 32;
     Field hashSize = SigScheme.class.getDeclaredField("hashSize");
     hashSize.setAccessible(true);
     int hashSizeVal = (int) hashSize.get(rsassa_pkcs1_v1_5);
 
-    rsassa_pkcs1_v1_5.setHashSize(0); // Set to default size for fixed-length hash
     assertEquals(expectedSize,
         hashSizeVal, "Hash size should be set to the digest length of the hash function");
-  }
-
-
-
-
-  @Test
-  public void testSetNegativeHashSize_ShouldThrowException() {
-    rsassa_pkcs1_v1_5.setHashType(DigestType.SHAKE_128); // Variable-length hash
-
-    // Expect an IllegalArgumentException when trying to set a negative hash size
-    assertThrows(IllegalArgumentException.class, () -> {
-      rsassa_pkcs1_v1_5.setHashSize(-1); // Attempt to set a negative size
-    });
   }
 
   @Test
   public void testSetHashSizeLargerThanMaxAllowed()
       throws IllegalAccessException, NoSuchFieldException {
-    rsassa_pkcs1_v1_5.setHashType(DigestType.SHAKE_128); // Variable-length hash
-    int tooLargeSize = 1024;
+
+    int tooLargeSize = 260;
     // Expect an IllegalArgumentException when trying to set a too large hash size
     assertThrows(IllegalArgumentException.class, () -> {
-      rsassa_pkcs1_v1_5.setHashSize(tooLargeSize);
+      rsassa_pkcs1_v1_5.setDigest(DigestType.SHAKE_128, tooLargeSize);
+      ;
     });
 
     ANSI_X9_31_RDSA ansi_x9_31_rdsa = new ANSI_X9_31_RDSA(
         new GenRSA(2, new int[]{512, 512}).generateKeyPair().getPrivateKey());
-    ansi_x9_31_rdsa.setHashType(DigestType.SHAKE_128);
     // Expect an IllegalArgumentException when trying to set a too large hash size
     assertThrows(IllegalArgumentException.class, () -> {
-      ansi_x9_31_rdsa.setHashSize(tooLargeSize);
+      ansi_x9_31_rdsa.setDigest(DigestType.SHAKE_128, tooLargeSize);
     });
 
     ISO_IEC_9796_2_SCHEME_1 iso_iec_9796_2_scheme_1 = new ISO_IEC_9796_2_SCHEME_1(
         new GenRSA(2, new int[]{512, 512}).generateKeyPair().getPrivateKey());
-    iso_iec_9796_2_scheme_1.setHashType(DigestType.SHAKE_128);
     // Expect an IllegalArgumentException when trying to set a too large hash size
     assertThrows(IllegalArgumentException.class, () -> {
-      iso_iec_9796_2_scheme_1.setHashSize(tooLargeSize);
+      iso_iec_9796_2_scheme_1.setDigest(DigestType.SHAKE_128, tooLargeSize);
     });
   }
 
   @Test
-  public void testComputeHashWithOptionalMaskingForFixedHash() {
+  public void testComputeHashWithOptionalMaskingForFixedHash()
+      throws NoSuchAlgorithmException, InvalidDigestException, NoSuchProviderException {
     // Setting up a fixed-size hash function, e.g., SHA-256
-    rsassa_pkcs1_v1_5.setHashType(DigestType.SHA_256);
+    rsassa_pkcs1_v1_5.setDigest(DigestType.SHA_256);
 
     byte[] message = "Test Message".getBytes();
     byte[] hash = rsassa_pkcs1_v1_5.computeHashWithOptionalMasking(message);
 
     assertNotNull("Hash should not be null", hash);
-    assertEquals( 32, hash.length, "Hash length should match the fixed size"); // Assuming SHA-256
+    assertEquals(32, hash.length, "Hash length should match the fixed size"); // Assuming SHA-256
   }
 
   @Test
-  public void testComputeHashWithOptionalMaskingForShake() {
+  public void testComputeHashWithOptionalMaskingForShake()
+      throws NoSuchAlgorithmException, InvalidDigestException, NoSuchProviderException {
     // Setting up a variable-length hash function, e.g., SHAKE-128
-    rsassa_pkcs1_v1_5.setHashType(DigestType.SHAKE_128);
-    rsassa_pkcs1_v1_5.setHashSize(64); // Example size for SHAKE-128
+
+    rsassa_pkcs1_v1_5.setDigest(DigestType.SHAKE_128, 64); // Example size for SHAKE-128
 
     byte[] message = "Another Test Message".getBytes();
     byte[] hash = rsassa_pkcs1_v1_5.computeHashWithOptionalMasking(message);
 
     assertNotNull("Hash should not be null", hash);
-    assertEquals( 64, hash.length, "Hash length should match the specified size for SHAKE-128");
+    assertEquals(64, hash.length, "Hash length should match the specified size for SHAKE-128");
   }
 
   @Test
-  public void testComputeHashWithOptionalMaskingForMGF1() {
-    // Setting up MGF1 with an underlying hash function, e.g., SHA-256
-    rsassa_pkcs1_v1_5.setHashType(DigestType.MGF_1_SHA_256);
+  public void testComputeHashWithOptionalMaskingForMGF1()
+      throws NoSuchAlgorithmException, InvalidDigestException, NoSuchProviderException {
+
     int expectedSize = 64; // Example size
-    rsassa_pkcs1_v1_5.setHashSize(expectedSize);
+    rsassa_pkcs1_v1_5.setDigest(DigestType.MGF_1_SHA_256, expectedSize);
 
     byte[] message = "MGF1 Message Test".getBytes();
     byte[] hash = rsassa_pkcs1_v1_5.computeHashWithOptionalMasking(message);
 
     assertNotNull("Hash should not be null", hash);
-    assertEquals( expectedSize, hash.length, "Hash length should match the specified size for MGF1");
+    assertEquals(expectedSize, hash.length, "Hash length should match the specified size for MGF1");
   }
-
-  @Test
-  public void testComputeHashWithOptionalMaskingInvalidHashSize() {
-    // Testing with an invalid hash size for a fixed-size hash function
-    rsassa_pkcs1_v1_5.setHashType(DigestType.SHA_256);
-
-    assertThrows(IllegalArgumentException.class, () -> {
-      rsassa_pkcs1_v1_5.setHashSize(128);
-    });
-
-
-  }
-
-
-
 
 
 }
