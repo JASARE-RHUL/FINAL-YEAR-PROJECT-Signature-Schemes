@@ -179,8 +179,8 @@ public class SignViewUpdateOperations implements ViewUpdate {
   }
 
   /**
-   * Controls the visibility of the button used to import a batch of text messages in the
-   * sign view.
+   * Controls the visibility of the button used to import a batch of text messages in the sign
+   * view.
    *
    * @param visible {@code true} to show the import text batch button, {@code false} to hide it.
    */
@@ -198,5 +198,92 @@ public class SignViewUpdateOperations implements ViewUpdate {
   @Override
   public void setCancelImportTextButtonVisibility(boolean visible) {
     signView.setCancelImportTextButtonVisibility(visible);
+  }
+
+  /**
+   * Retrieves the currently selected hash function in the sign view.
+   *
+   * @return The name of the selected hash function.
+   */
+  @Override
+  public String getSelectedHashFunction() {
+    return signView.getSelectedHashFunction();
+  }
+
+  /**
+   * Sets the selected hash function in the sign view.
+   *
+   * @param scheme The hash function to be selected.
+   */
+  @Override
+  public void setSelectedHashFunction(String scheme) {
+    signView.setSelectedHashFunction(scheme);
+  }
+
+  /**
+   * Updates the hash function dropdown for custom or provably secure parameter selections in the
+   * sign view.
+   */
+  @Override
+  public void updateHashFunctionDropdownForCustomOrProvablySecure() {
+    signView.updateHashFunctionDropdownForCustomOrProvablySecure();
+  }
+
+  /**
+   * Updates the hash function dropdown for standard parameter selections in the sign view.
+   */
+  @Override
+  public void updateHashFunctionDropdownForStandard() {
+    signView.updateHashFunctionDropdownForStandard();
+
+  }
+
+  /**
+   * Retrieves the parameter choice (e.g., 'Standard', 'Provably Secure', 'Custom') selected in the
+   * sign view.
+   *
+   * @return The selected parameter choice.
+   */
+  @Override
+  public String getParameterChoice() {
+    return signView.getParameterChoice();
+  }
+
+  /**
+   * Sets the visibility of the hash output size field in the sign view.
+   *
+   * @param visible {@code true} to make the field visible, {@code false} to hide it.
+   */
+  @Override
+  public void setHashOutputSizeFieldVisibility(boolean visible) {
+    signView.setHashOutputSizeFieldVisibility(visible);
+  }
+
+  /**
+   * Retrieves the hash output size entered into the sign view.
+   *
+   * @return The hash output size as a string.
+   */
+  @Override
+  public String getHashOutputSize() {
+    return signView.getHashOutputSize();
+  }
+
+  /**
+   * Resets the hash output size field to its default state in the sign view.
+   */
+  @Override
+  public void resetHashField() {
+    signView.resetHashField();
+  }
+
+  /**
+   * Retrieves the visibility state of the hash output size field in the sign view.
+   *
+   * @return {@code true} if the field is visible, {@code false} otherwise.
+   */
+  @Override
+  public boolean getHashOutputSizeFieldVisibility() {
+    return signView.getHashOutputSizeFieldVisibility();
   }
 }

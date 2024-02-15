@@ -54,6 +54,11 @@ public abstract class SignatureBaseController {
    */
   File signatureBatchFile;
 
+  /**
+   * raw user entered value for their desired hash output size.
+   */
+  String hashOutputSize;
+
 
   /**
    * Constructs a SignatureBaseController with a reference to the MainController to be used in the
@@ -271,24 +276,112 @@ public abstract class SignatureBaseController {
   }
 
   /**
-   * The observer for changes in parameter choice (standard vs. provably secure). This class reacts
-   * to change in the selected parameter option and updates the model accordingly.
+   * Observer for changes in hash function selection. Reacts to change in the selected hash function
+   * and updates the model accordingly. Ensures that the signature model is set with the correct
+   * hash function based on the user selection and trigger the view to display text field prompting
+   * the user to enter a hash output size when they select a variable length hash function in custom
+   * mode.
+   * <p>
+   * Otherwise, preset options are used in the case of the standard hash functions which are fixed
+   * or the provably secure mode for variable length hash functions which determines hash output
+   * half the length of the modulus.
+   */
+  class HashFunctionChangeObserver implements ChangeListener<String> {
+
+    private ViewUpdate viewOps;
+
+    public HashFunctionChangeObserver(ViewUpdate viewOps) {
+      this.viewOps = viewOps;
+    }
+
+    @Override
+    public void changed(ObservableValue<? extends String> observable, String oldValue,
+        String newValue) {
+      if (newValue == null) {
+        return;
+      }
+      switch (newValue) {
+        case "SHAKE-256":
+          signatureModel.setHashType(DigestType.SHAKE_256);
+          if (viewOps.getParameterChoice().equals("Provably Secure")) {
+            signatureModel.setProvablySecure(true);
+          } else {
+            viewOps.setHashOutputSizeFieldVisibility(true);
+          }
+          break;
+        case "SHAKE-128":
+          signatureModel.setHashType(DigestType.SHAKE_128);
+          if (viewOps.getParameterChoice().equals("Provably Secure")) {
+            signatureModel.setProvablySecure(true);
+          } else {
+            viewOps.setHashOutputSizeFieldVisibility(true);
+          }
+          break;
+        case "SHA-512 with MGF1":
+          signatureModel.setHashType(DigestType.MGF_1_SHA_512);
+          if (viewOps.getParameterChoice().equals("Provably Secure")) {
+            signatureModel.setProvablySecure(true);
+          } else {
+            viewOps.setHashOutputSizeFieldVisibility(true);
+          }
+          break;
+        case "SHA-256 with MGF1":
+          signatureModel.setHashType(DigestType.MGF_1_SHA_256);
+          if (viewOps.getParameterChoice().equals("Provably Secure")) {
+            signatureModel.setProvablySecure(true);
+          } else {
+            viewOps.setHashOutputSizeFieldVisibility(true);
+          }
+          break;
+        case "SHA-512":
+          signatureModel.setHashType(DigestType.SHA_512);
+          break;
+        case "SHA-256":
+        default:
+          signatureModel.setHashType(DigestType.SHA_256);
+          break;
+      }
+    }
+  }
+
+  /**
+   * The observer for changes in parameter choice (standard vs. provably secure vs. custom). This
+   * class reacts to change in the selected parameter option and updates the hash function drop down
+   * menu immediately below with corresponding option.
+   * <p>
+   * For example in standard reveals on fixed hash function types while provably secure and custom
+   * mode reveal variable length hash function types with the distinction being that customs lets
+   * the user choose the output size in an adjacent text box that displayed whereas provably secure
+   * sets the output size of the variable length hash function to half the length of the modulus for
+   * the submitted key.
    */
   class ParameterChoiceChangeObserver implements ChangeListener<Toggle> {
+
+    private ViewUpdate viewOps;
+
+    public ParameterChoiceChangeObserver(ViewUpdate viewOps) {
+      this.viewOps = viewOps;
+    }
 
     @Override
     public void changed(ObservableValue<? extends Toggle> observable, Toggle oldValue,
         Toggle newValue) {
+      viewOps.setSelectedHashFunction("");
       if (newValue != null) {
         RadioButton selectedRadioButton = (RadioButton) newValue;
         String radioButtonText = selectedRadioButton.getText();
         switch (radioButtonText) {
-          case "Provably Secure Parameters":
-            signatureModel.setProvablySecure(true);
+          case "Provably Secure":
+            viewOps.setHashOutputSizeFieldVisibility(false);
+            viewOps.updateHashFunctionDropdownForCustomOrProvablySecure();
             break;
-          case "Standard Parameters":
+          case "Custom":
+            viewOps.updateHashFunctionDropdownForCustomOrProvablySecure();
+            break;
+          case "Standard":
           default:
-            signatureModel.setProvablySecure(false);
+            viewOps.setHashOutputSizeFieldVisibility(false);
+            viewOps.updateHashFunctionDropdownForStandard();
             break;
 
         }
@@ -430,6 +523,32 @@ public abstract class SignatureBaseController {
     }
 
     return isValidFile ? numMessages : 0;
+  }
+
+  /**
+   * Validates the hash output size input by the user. Ensures that it is a non-negative integer and
+   * that it is provided when required based on the view's visibility settings.
+   *
+   * @param viewOps The {@code ViewUpdate} operations that will update the view.
+   * @return true if the hash output size is valid, false otherwise.
+   */
+  public boolean handleHashOutputSize(ViewUpdate viewOps) {
+    try {
+      if (Integer.parseInt(hashOutputSize) < 0 && viewOps.getHashOutputSizeFieldVisibility()) {
+        uk.msci.project.rsa.DisplayUtility.showErrorAlert(
+            "You must provide a non-negative integer for the hash output size. Please try again.");
+        return false;
+      }
+    } catch (NumberFormatException e) {
+      // Show an error alert if the input is not a valid integer
+      if (viewOps.getHashOutputSizeFieldVisibility()) {
+        uk.msci.project.rsa.DisplayUtility.showErrorAlert(
+            "You must provide a non-negative integer for the hash output size. Please try again.");
+      }
+      return false;
+
+    }
+    return true;
   }
 
 

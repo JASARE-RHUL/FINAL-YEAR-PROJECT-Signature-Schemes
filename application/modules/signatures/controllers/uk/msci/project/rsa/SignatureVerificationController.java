@@ -1,8 +1,6 @@
 package uk.msci.project.rsa;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.math.BigInteger;
 import javafx.application.Platform;
@@ -96,7 +94,7 @@ public class SignatureVerificationController extends SignatureBaseController {
     verifyView.addBackToMainMenuObserver(new BackToMainMenuObserver(verifyView));
     verifyView.addImportSigButtonObserver(
         new ImportObserver(primaryStage, null, this::handleSig, "*.rsa"));
-    verifyView.addVerifyBtnObserver(new VerifyBtnObserver());
+    verifyView.addVerifyBtnObserver(new VerifyBtnObserver(new VerifyViewUpdateOperations(verifyView)));
     verifyView.addCloseNotificationObserver(new BackToMainMenuObserver(verifyView));
   }
 
@@ -118,8 +116,12 @@ public class SignatureVerificationController extends SignatureBaseController {
         new ImportObserver(primaryStage, new VerifyViewUpdateOperations(verifyView),
             this::handleSignatureBatch, "*.rsa"));
     verifyView.addSignatureSchemeChangeObserver(new SignatureSchemeChangeObserver());
-    verifyView.addParameterChoiceChangeObserver(new ParameterChoiceChangeObserver());
-    verifyView.addVerificationBenchmarkButtonObserver(new VerificationBenchmarkButtonObserver());
+    verifyView.addParameterChoiceChangeObserver(
+        new ParameterChoiceChangeObserver(new VerifyViewUpdateOperations(verifyView)));
+    verifyView.addHashFunctionChangeObserver(
+        new HashFunctionChangeObserver(new VerifyViewUpdateOperations(verifyView)));
+    verifyView.addVerificationBenchmarkButtonObserver(
+        new VerificationBenchmarkButtonObserver(new VerifyViewUpdateOperations(verifyView)));
     verifyView.addBackToMainMenuObserver(new BackToMainMenuObserver(verifyView));
   }
 
@@ -169,14 +171,26 @@ public class SignatureVerificationController extends SignatureBaseController {
    */
   class VerifyBtnObserver implements EventHandler<ActionEvent> {
 
+    private ViewUpdate viewOps;
+
+    public VerifyBtnObserver(ViewUpdate viewOps) {
+      this.viewOps = viewOps;
+    }
+
     @Override
     public void handle(ActionEvent event) {
+      hashOutputSize = verifyView.getHashOutputSize();
       if ((verifyView.getTextInput().equals("") && message == null)) {
         if ((signatureModel.getSignatureType() != SignatureType.ISO_IEC_9796_2_SCHEME_1)) {
           uk.msci.project.rsa.DisplayUtility.showErrorAlert(
               "You must provide an input for all required fields. Please try again.");
           return;
         }
+      }
+      if (!handleHashOutputSize(viewOps) && verifyView.getHashOutputSizeFieldVisibility()) {
+        return;
+      } else if (verifyView.getHashOutputSizeFieldVisibility()) {
+        signatureModel.setHashSize((Integer.parseInt(hashOutputSize) + 7) / 8);
       }
       if (signatureModel.getKey() == null
           || signatureModel.getSignatureType() == null
@@ -231,8 +245,15 @@ public class SignatureVerificationController extends SignatureBaseController {
    */
   class VerificationBenchmarkButtonObserver implements EventHandler<ActionEvent> {
 
+    private ViewUpdate viewOps;
+
+    public VerificationBenchmarkButtonObserver(ViewUpdate viewOps) {
+      this.viewOps = viewOps;
+    }
+
     @Override
     public void handle(ActionEvent event) {
+      hashOutputSize = verifyView.getHashOutputSize();
       if (signatureModel.getNumTrials() * signatureModel.getPublicKeyBatchLength()
           != numSignatures) {
         uk.msci.project.rsa.DisplayUtility.showErrorAlert(
@@ -245,6 +266,11 @@ public class SignatureVerificationController extends SignatureBaseController {
         uk.msci.project.rsa.DisplayUtility.showErrorAlert(
             "You must provide an input for all fields. Please try again.");
         return;
+      }
+      if (!handleHashOutputSize(viewOps) && verifyView.getHashOutputSizeFieldVisibility()) {
+        return;
+      } else if (verifyView.getHashOutputSizeFieldVisibility()) {
+        signatureModel.setHashSize((Integer.parseInt(hashOutputSize) + 7) / 8);
       }
 
       // Show the progress dialog
@@ -280,6 +306,8 @@ public class SignatureVerificationController extends SignatureBaseController {
 
     }
   }
+
+
 
   /**
    * Creates a benchmarking task for signature generation. This task is responsible for processing a
@@ -384,6 +412,23 @@ public class SignatureVerificationController extends SignatureBaseController {
       verifyView.addCancelImportTextButtonObserver(
           new CancelImportTextButtonObserver(new VerifyViewUpdateOperations(verifyView)));
     }
+  }
+
+  /**
+   * Handles the file selected by the user for a batch of keys. It validates the keys and updates
+   * the model and view accordingly. It expects the key file to contain a line separated text of
+   * comma delimited positive integers and updates the view based on the result of the key
+   * validation.
+   *
+   * @param file    The file selected by the user containing a batch of keys.
+   * @param viewOps The {@code ViewUpdate} operations that will update the view.
+   */
+  public boolean handleKeyBatch(File file, ViewUpdate viewOps) {
+    if (super.handleKeyBatch(file, viewOps)) {
+      verifyView.setImportKeyBatchButtonVisibility(false);
+      verifyView.setCancelImportKeyButtonVisibility(true);
+    }
+    return true;
   }
 
 
