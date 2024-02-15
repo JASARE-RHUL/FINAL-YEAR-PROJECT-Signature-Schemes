@@ -1,6 +1,8 @@
 package uk.msci.project.rsa;
 
+import javafx.beans.InvalidationListener;
 import javafx.beans.value.ChangeListener;
+import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -20,6 +22,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import org.controlsfx.control.ToggleSwitch;
+import uk.msci.project.rsa.SignatureBaseController.SignatureSchemeChangeObserver;
 
 /**
  * The {@code VerifyView} class is responsible for managing the user interface related to the
@@ -87,6 +90,12 @@ public class VerifyView implements SignatureViewInterface {
   // ComboBox for selecting the signature scheme to use for verification
   @FXML
   private ComboBox<String> signatureSchemeDropdown;
+
+  /**
+   * ComboBox to allow the selection of a hash function from predefined options.
+   */
+  @FXML
+  private ComboBox<String> hashFunctionDropdown;
 
   // Button to initiate the verification of the signature
   @FXML
@@ -176,6 +185,12 @@ public class VerifyView implements SignatureViewInterface {
   @FXML
   private RadioButton provablySecureParametersRadio;
 
+  /**
+   * Radio button for selecting provably secure parameters.
+   */
+  @FXML
+  private RadioButton customParametersRadio;
+
   @FXML
   private Button verificationBenchmarkButton;
 
@@ -191,6 +206,13 @@ public class VerifyView implements SignatureViewInterface {
   @FXML
   private ToggleSwitch benchmarkingModeToggle;
 
+  /**
+   * TextField for entering the hash output size. Initially hidden and managed based on the selected
+   * hash function.
+   */
+  @FXML
+  private TextField hashOutputSizeField;
+
   @FXML
   private HBox signatureBatchHBox;
 
@@ -198,9 +220,22 @@ public class VerifyView implements SignatureViewInterface {
    * Initialises the Verification view, setting up the toggle group for parameter choice.
    */
   public void initialize() {
+    updateHashFunctionDropdownForStandard();
     parameterChoiceToggleGroup = new ToggleGroup();
     standardParametersRadio.setToggleGroup(parameterChoiceToggleGroup);
     provablySecureParametersRadio.setToggleGroup(parameterChoiceToggleGroup);
+    customParametersRadio.setToggleGroup(parameterChoiceToggleGroup);
+  }
+
+  /**
+   * Retrieves the parameter choice selected by the user, which relates to the potential hash size
+   * chosen for the selected signature scheme.
+   *
+   * @return A String representing the parameter choice.
+   */
+  public String getParameterChoice() {
+    RadioButton selectedButton = (RadioButton) parameterChoiceToggleGroup.getSelectedToggle();
+    return selectedButton != null ? selectedButton.getText() : "";
   }
 
 
@@ -227,6 +262,10 @@ public class VerifyView implements SignatureViewInterface {
     this.textFileCheckmarkImage.setPreserveRatio(true);
   }
 
+  /**
+   * Sets the visibility of the image for the checkmark to indicate the status of the import of a
+   * message.
+   */
   public void setTextFieldCheckmarkImageVisibility(boolean visible) {
     this.textFileCheckmarkImage.setVisible(visible);
   }
@@ -343,6 +382,12 @@ public class VerifyView implements SignatureViewInterface {
   }
 
 
+  /**
+   * Retrieves the text from the textInput TextField which represents the message to be signed,
+   * entered or selected by the user.
+   *
+   * @return A String representing the key.
+   */
   public String getTextInput() {
     return textInput.getText();
   }
@@ -441,6 +486,32 @@ public class VerifyView implements SignatureViewInterface {
     signatureSchemeDropdown.setValue(scheme);
   }
 
+  /**
+   * Retrieves the currently selected hash function from the hashFunctionDropdown ComboBox.
+   *
+   * @return string representing the selected hash function.
+   */
+  public String getSelectedHashFunction() {
+    return hashFunctionDropdown.getValue();
+  }
+
+
+  /**
+   * Sets the selected hash function from the hashFunctionDropdown ComboBox.
+   *
+   * @param hashFunction string representing the signature scheme to be selected.
+   */
+  public void setSelectedHashFunction(String hashFunction) {
+    hashFunctionDropdown.setValue(hashFunction);
+  }
+
+
+  /**
+   * Retrieves the text from the textFileNameLabel Label which displays the name of the imported
+   * text file.
+   *
+   * @return A String representing the file name.
+   */
   public String getTextFileNameLabel() {
     return textFileNameLabel.getText();
   }
@@ -557,9 +628,89 @@ public class VerifyView implements SignatureViewInterface {
     messageBatchField.setManaged(visible);
   }
 
+  /**
+   * Sets the prompting text of the messageBatchField to urge the user to import a message batch
+   *
+   * @param text String representing the prompting text.
+   */
   public void setMessageBatch(String text) {
     messageBatchField.setText(text);
   }
+
+  /**
+   * Sets the visibility of the hash output size field.
+   *
+   * @param visible true to make the field visible, false to hide it.
+   */
+  public void setHashOutputSizeFieldVisibility(boolean visible) {
+    if (visible) {
+      resetHashField();
+    }
+    hashOutputSizeField.setManaged(visible);
+    hashOutputSizeField.setVisible(visible);
+
+  }
+
+
+  /**
+   * Retrieves the visibility status of the hash output size field.
+   *
+   * @return true if the hash output size field is visible, false otherwise.
+   */
+  public boolean getHashOutputSizeFieldVisibility() {
+    return hashOutputSizeField.isVisible();
+
+  }
+
+  /**
+   * Resets the hash output size field to its initial state with prompt text.
+   */
+  public void resetHashField() {
+    hashOutputSizeField.setText("");
+  }
+
+  /**
+   * Retrieves the entered hash output size from the field.
+   *
+   * @return String representing the hash output size.
+   */
+  public String getHashOutputSize() {
+    return hashOutputSizeField.getText();
+  }
+
+  /**
+   * Updates the hash function dropdown options for custom or provably secure parameter selections.
+   */
+  public void updateHashFunctionDropdownForCustomOrProvablySecure() {
+    hashFunctionDropdown.setItems(FXCollections.observableArrayList(
+        "SHA-256 with MGF1",
+        "SHA-512 with MGF1",
+        "SHAKE-128",
+        "SHAKE-256"
+    ));
+  }
+
+  /**
+   * Updates the hash function dropdown options for standard parameter selections.
+   */
+  public void updateHashFunctionDropdownForStandard() {
+    hashFunctionDropdown.setItems(FXCollections.observableArrayList(
+        "SHA-256",
+        "SHA-512"
+    ));
+  }
+
+
+  /**
+   * Sets the visibility of the benchmarking mode toggle switch and manages its properties.
+   *
+   * @param visible true to make the benchmarking mode toggle switch visible, false to hide it.
+   */
+  public void setBenchmarkingModeToggleVisibility(boolean visible) {
+    benchmarkingModeToggle.setVisible(visible);
+    benchmarkingModeToggle.setManaged(visible);
+  }
+
 
   /**
    * Sets the visibility of the importTextBatchBtn and manages its properties.
@@ -717,7 +868,7 @@ public class VerifyView implements SignatureViewInterface {
   }
 
   /**
-   * Registers an observer for the signature scheme dropdown value changes.
+   * Registers an observer for when the signature scheme dropdown value changes.
    *
    * @param observer The change listener to register.
    */
@@ -839,10 +990,24 @@ public class VerifyView implements SignatureViewInterface {
     benchmarkingModeToggle.selectedProperty().addListener(observer);
   }
 
+  /**
+   * Registers an observer for changes in the parameter choice selection.
+   *
+   * @param observer The change listener to be registered.
+   */
   public void addParameterChoiceChangeObserver(ChangeListener<Toggle> observer) {
     parameterChoiceToggleGroup.selectedToggleProperty().addListener(observer);
   }
 
+  /**
+   * Registers an observer for changes in the selected hash function from the hash function
+   * dropdown.
+   *
+   * @param observer The change listener to be registered.
+   */
+  public void addHashFunctionChangeObserver(ChangeListener<String> observer) {
+    hashFunctionDropdown.valueProperty().addListener(observer);
+  }
 
 
   /**

@@ -108,7 +108,7 @@
         </HBox>
         <!-- Signature Scheme Dropdown -->
         <HBox spacing="10">
-          <Label text="Signature Scheme:" styleClass="bold-label""/>
+          <Label text="Signature Scheme:" styleClass="bold-label"/>
           <ComboBox fx:id="signatureSchemeDropdown" prefWidth="200">
             <items>
               <FXCollections fx:factory="observableArrayList">
@@ -122,9 +122,29 @@
 
         <!-- Parameter Choice Radio Buttons -->
         <HBox spacing="10">
-          <Label text="Parameter Choice:" styleClass="bold-label"/>
-          <RadioButton fx:id="standardParametersRadio" text="Standard Parameters" selected="true"/>
-          <RadioButton fx:id="provablySecureParametersRadio" text="Provably Secure Parameters"/>
+          <Label text="Hash Function Size:" styleClass="bold-label"/>
+          <RadioButton fx:id="standardParametersRadio" text="Standard" selected="true"/>
+          <RadioButton fx:id="provablySecureParametersRadio" text="Provably Secure"/>
+          <RadioButton fx:id="customParametersRadio" text="Custom"/>
+        </HBox>
+
+        <!-- Hash function Dropdown -->
+        <HBox spacing="10">
+          <Label text="Hash Function:" styleClass="bold-label"/>
+          <ComboBox fx:id="hashFunctionDropdown" prefWidth="200">
+            <items>
+              <FXCollections fx:factory="observableArrayList">
+                <String fx:value="SHA-256"/>
+                <String fx:value="SHA-512"/>
+                <String fx:value="SHA-256 with MGF1"/>
+                <String fx:value="SHA-512 with MGF1"/>
+                <String fx:value="SHAKE-128"/>
+                <String fx:value="SHAKE-256"/>
+              </FXCollections>
+            </items>
+          </ComboBox>
+          <TextField fx:id="hashOutputSizeField" promptText="Enter hash output size"
+            visible="false" managed="false" maxWidth="140"/>
         </HBox>
       </VBox>
     </HBox>
