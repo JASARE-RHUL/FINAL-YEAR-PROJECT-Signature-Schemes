@@ -195,5 +195,92 @@ public class VerifyViewUpdateOperations implements ViewUpdate {
     verifyView.setCancelImportTextButtonVisibility(visible);
   }
 
+  /**
+   * Retrieves the currently selected hash function in the verification view.
+   *
+   * @return The name of the selected hash function.
+   */
+  @Override
+  public String getSelectedHashFunction() {
+    return verifyView.getSelectedHashFunction();
+  }
+
+  /**
+   * Sets the selected hash function in the verification view.
+   *
+   * @param scheme The hash function to be selected.
+   */
+  @Override
+  public void setSelectedHashFunction(String scheme) {
+    verifyView.setSelectedHashFunction(scheme);
+  }
+
+  /**
+   * Updates the hash function dropdown for custom or provably secure parameter selections in the
+   * verification view.
+   */
+  @Override
+  public void updateHashFunctionDropdownForCustomOrProvablySecure() {
+    verifyView.updateHashFunctionDropdownForCustomOrProvablySecure();
+  }
+
+  /**
+   * Updates the hash function dropdown for standard parameter selections in the verification view.
+   */
+  @Override
+  public void updateHashFunctionDropdownForStandard() {
+    verifyView.updateHashFunctionDropdownForStandard();
+
+  }
+
+  /**
+   * Retrieves the parameter choice (e.g., 'Standard', 'Provably Secure', 'Custom') selected in the
+   * verification view.
+   *
+   * @return The selected parameter choice.
+   */
+  @Override
+  public String getParameterChoice() {
+    return verifyView.getParameterChoice();
+  }
+
+  /**
+   * Sets the visibility of the hash output size field in the verification view.
+   *
+   * @param visible {@code true} to make the field visible, {@code false} to hide it.
+   */
+  @Override
+  public void setHashOutputSizeFieldVisibility(boolean visible) {
+    verifyView.setHashOutputSizeFieldVisibility(visible);
+  }
+
+  /**
+   * Retrieves the hash output size entered into the verification view.
+   *
+   * @return The hash output size as a string.
+   */
+  @Override
+  public String getHashOutputSize() {
+    return verifyView.getHashOutputSize();
+  }
+
+  /**
+   * Resets the hash output size field to its default state in the verification view.
+   */
+  @Override
+  public void resetHashField() {
+    verifyView.resetHashField();
+  }
+
+  /**
+   * Retrieves the visibility state of the hash output size field in the verification view.
+   *
+   * @return {@code true} if the field is visible, {@code false} otherwise.
+   */
+  @Override
+  public boolean getHashOutputSizeFieldVisibility() {
+    return verifyView.getHashOutputSizeFieldVisibility();
+  }
+
 
 }
