@@ -301,7 +301,7 @@ public class SignatureModelTest {
     prepareSignatureTestData();
 
     // Execute the method to be tested
-    signatureModel.exportSignatureBatch("testSignatures.txt");
+    signatureModel.exportSignatureBatch("testSignatures.txt", 0);
 
     // Read the created file and assert its content
     File outputFile = new File(System.getProperty("user.dir"), testFileName);
@@ -327,7 +327,7 @@ public class SignatureModelTest {
     prepareNonRecoverableTestData();
 
     // Execute the method to be tested
-    signatureModel.exportNonRecoverableBatch(testFileName);
+    signatureModel.exportNonRecoverableBatch(testFileName, 0);
 
     // Read the created file and assert its content
     File outputFile = new File(System.getProperty("user.dir"), testFileName);
