@@ -4,16 +4,12 @@ package uk.msci.project.rsa;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Consumer;
 import java.util.function.DoubleConsumer;
 import javafx.util.Pair;
-import uk.msci.project.rsa.DisplayUtility;
 
 
 /**
@@ -136,73 +132,95 @@ public class GenModel {
 
 
   /**
-   * Executes a batch of key generation trials in parallel, utilising a thread pool. Each trial
-   * involves generating keys based on the provided parameters. Progress of the batch operation is
-   * reported through the specified progressUpdater.
-   * <p>
-   * This method leverages multi-threading to improve performance. The method waits for all trials
-   * to complete before returning, ensuring that all results are collected.
+   * Performs batch generation of RSA keys. This method allows for multiple trials of key generation
+   * using different key parameters specified in the 'keyParams' list. Each trial involves
+   * generating keys with the specified parameters and measuring the time taken for each generation.
+   * The method updates the progress of batch generation using the provided 'progressUpdater'
+   * consumer.
    *
-   * @param numTrials       The number of key generation trials to run.
-   * @param keyParams       A list of pairs, each pair containing key parameters and a flag
-   *                        indicating whether to use a smaller 'e' value in key generation. Each
-   *                        pair represents the parameters for one key generation trial.
-   * @param progressUpdater A DoubleConsumer instance that receives updates on the progress of the
-   *                        batch operation, expressed as a double between 0.0 (no progress) and 1.0
-   *                        (complete).
-   * @throws InterruptedException if the thread executing the method is interrupted while waiting
-   *                              for trial results.
+   * @param numTrials       The number of trials to be conducted for each set of key parameters.
+   * @param keyParams       A list of key parameters, where each item is a pair consisting of an
+   *                        array of integers representing key sizes and a boolean flag indicating
+   *                        whether to use a smaller 'e' value in key generation.
+   * @param progressUpdater A DoubleConsumer to report the progress of the batch generation
+   *                        process.
+   * @throws InterruptedException if the thread executing the batch generation is interrupted.
    */
   public void batchGenerateKeys(int numTrials, List<Pair<int[], Boolean>> keyParams,
+      DoubleConsumer progressUpdater) throws InterruptedException {
+    this.keyParams = keyParams;
+    int totalWork = numTrials * keyParams.size(); // Total units of work
+    final int[] completedWork = {0}; // To keep track of completed work
+
+    for (Pair<int[], Boolean> keyParam : this.keyParams) {
+      batchGenerateKeys(numTrials, keyParam, trialProgress -> {
+        // Calculate the progress within the current keyParam
+        double currentKeyParamProgress = trialProgress / numTrials;
+
+        // Calculate the overall progress including previous keyParams
+        double overallProgress =
+            ((double) completedWork[0] / totalWork) + (currentKeyParamProgress / keyParams.size());
+
+        progressUpdater.accept(overallProgress);
+      });
+      completedWork[0] += numTrials; // Update completed work after each keyParam
+    }
+
+  }
+
+  /**
+   * Generates a batch of RSA keys for a specific set of key parameters. This method is used within
+   * the 'batchGenerateKeys' method for each set of key parameters. It generates RSA keys in
+   * parallel using an ExecutorService and updates the progress of the current batch using the given
+   * 'progressUpdater' consumer.
+   *
+   * @param numTrials       The number of trials to be conducted with the given key parameters.
+   * @param keyParam        A pair of key parameters, consisting of an array of integers for key
+   *                        sizes and a boolean flag for using a smaller 'e' value.
+   * @param progressUpdater A DoubleConsumer to report the progress of the current batch
+   *                        generation.
+   * @throws InterruptedException if the thread executing the batch generation is interrupted.
+   */
+  public void batchGenerateKeys(int numTrials, Pair<int[], Boolean> keyParam,
       DoubleConsumer progressUpdater) throws InterruptedException {
     // Set up an executor service for parallel processing.
     try (ExecutorService executor = Executors.newFixedThreadPool(
         Runtime.getRuntime().availableProcessors())) {
-      this.keyParams = keyParams;
 
       // Initialise lists to store the time taken for each key generation task.
-      List<List<Long>> timesPerKey = new ArrayList<>();
-      for (int k = 0; k < keyParams.size(); k++) {
-        timesPerKey.add(new ArrayList<>());
-      }
-
+      List<Long> timesPerKey = new ArrayList<>();
+      List<Future<?>> futures = new ArrayList<>();
       for (int trial = 0; trial < numTrials; trial++) {
         // List to hold future objects for asynchronous task execution.
-        List<Future<?>> futures = new ArrayList<>();
-        for (int keyIndex = 0; keyIndex < keyParams.size(); keyIndex++) {
-          Pair<int[], Boolean> keyParam = keyParams.get(keyIndex);
 
-          // Submit a new key generation task to the executor service.
-          Future<?> future = executor.submit(() -> {
-            int[] intArray = keyParam.getKey();
-            boolean isSmallE = keyParam.getValue();
-            new GenRSA(intArray.length, intArray, isSmallE).generateKeyPair();
-          });
+        // Submit a new key generation task to the executor service.
+        Future<?> future = executor.submit(() -> {
+          int[] intArray = keyParam.getKey();
+          boolean isSmallE = keyParam.getValue();
+          new GenRSA(intArray.length, intArray, isSmallE).generateKeyPair();
+        });
 
-          futures.add(future);
-        }
+        futures.add(future);
 
         // Collect and measure the time taken for each key generation task after submission.
-        for (int keyIndex = 0; keyIndex < futures.size(); keyIndex++) {
+        for (Future<?> future1 : futures) {
           long startTime = System.nanoTime();
           try {
-            futures.get(keyIndex).get(); // Wait for the key generation task to complete.
+            future1.get(); // Wait for the key generation task to complete.
           } catch (ExecutionException e) {
             throw new RuntimeException(e.getCause());
           }
           long endTime = System.nanoTime() - startTime;
-          synchronized (timesPerKey.get(keyIndex)) {
-            timesPerKey.get(keyIndex).add(endTime);
-          }
+          timesPerKey.add(endTime);
         }
 
         // Update the progress of the batch process after each trial.
-        progressUpdater.accept((double) (trial + 1) / numTrials);
+        progressUpdater.accept((double) (trial + 1));
       }
 
       // Aggregate times from all trials and keys into a single list.
-      for (List<Long> keyTime : timesPerKey) {
-        clockTimesPerTrial.addAll(keyTime);
+      for (Long keyTime : timesPerKey) {
+        clockTimesPerTrial.add(keyTime);
       }
 
       // Shutdown the executor service and handle termination.
@@ -281,6 +299,22 @@ public class GenModel {
    */
   public List<Pair<int[], Boolean>> getKeyParams() {
     return keyParams;
+  }
+
+  public List<Integer> summedKeySizes(List<Pair<int[], Boolean>> pairs) {
+    List<Integer> summedArrays = new ArrayList<>();
+
+    for (Pair<int[], Boolean> pair : pairs) {
+
+      int[] array = pair.getKey();
+      int sum = 0;
+      for (int num : array) {
+        sum += num;
+      }
+      summedArrays.add(sum); // Add the sum as a single-element array
+
+    }
+    return summedArrays;
   }
 
 
