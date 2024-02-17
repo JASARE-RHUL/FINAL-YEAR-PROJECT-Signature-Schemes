@@ -684,11 +684,11 @@ public class SignatureModel {
 
     Future<Pair<Boolean, List<byte[]>>> future = submitVerificationTasks(executor,
         messageLine, signatureReader, key);
+
     collectVerificationResults(keyIndex, future, timesPerKey, verificationResultsPerKey,
         signaturesPerKey,
         recoveredMessagesPerKey);
     progressUpdater.accept((double) ++messageCounter / this.numTrials);
-    shutdownExecutorService(executor);
 
 
   }
@@ -711,10 +711,11 @@ public class SignatureModel {
       ExecutorService executor,
       String messageLine,
       BufferedReader signatureReader, PublicKey publicKey) throws IOException {
-
     String signatureLine = signatureReader.readLine();
     byte[] signatureBytes = new BigInteger(signatureLine).toByteArray();
-    return executor.submit(() -> verifySignature(publicKey, messageLine, signatureBytes));
+    return executor.submit(() -> {
+     return verifySignature(publicKey, messageLine, signatureBytes);
+    });
 
 
   }
