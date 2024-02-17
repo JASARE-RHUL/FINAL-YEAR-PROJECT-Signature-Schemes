@@ -3,7 +3,6 @@ package uk.msci.project.rsa;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -555,18 +554,16 @@ public class SignatureModel {
    * @param signatureFileName The name of the file to which the signatures will be exported.
    * @throws IOException If there is an error in creating the file or writing to it.
    */
-  public void exportSignatureBatch(String signatureFileName, int keyIndex) throws IOException {
-    File signatureFile = FileHandle.createUniqueFile(
-        signatureFileName.substring(0, signatureFileName.length() - 4) + "_"
-            + getPrivKeyLengths().get(keyIndex) + "bits" + signatureFileName.substring(
-            signatureFileName.length() - 4));
+  public void exportSignatureBatch(String signatureFileName) throws IOException {
+    File signatureFile = FileHandle.createUniqueFile(signatureFileName);
     try (BufferedWriter signatureWriter = new BufferedWriter(new FileWriter(signatureFile))) {
-      for (int i = keyIndex * numTrials; i < (keyIndex * numTrials) + numTrials; i++) {
-        signatureWriter.write(new BigInteger(1, signaturesFromBenchmark.get(i)).toString());
+      for (byte[] signature : signaturesFromBenchmark) {
+        signatureWriter.write(new BigInteger(1, signature).toString());
         signatureWriter.newLine();
       }
     }
   }
+
 
   /**
    * Exports the batch of non-recoverable message parts to a file. Each entry consists of a flag (1
