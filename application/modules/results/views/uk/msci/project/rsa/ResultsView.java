@@ -1,16 +1,20 @@
 package uk.msci.project.rsa;
 
+import com.jfoenix.controls.JFXTabPane;
 import java.net.URL;
 import java.util.ResourceBundle;
+import javafx.beans.value.ChangeListener;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.Tab;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 
 /**
@@ -93,6 +97,14 @@ public class ResultsView implements Initializable {
   private Button exportVerificationResultsBtn;
 
   /**
+   * The sideTabContainer field represents the JFXTabPane container for displaying side tabs
+   * corresponding to different keys that will trigger the displaying of their corresponding results.
+   */
+  @FXML
+  private JFXTabPane sideTabContainer;
+
+
+  /**
    * StatisticData object representing the number of trials in the benchmarking process.
    */
   StatisticData numTrials = new StatisticData("Number of trials:", "XXXX.XX ms");
@@ -155,6 +167,24 @@ public class ResultsView implements Initializable {
    * StatisticData object representing the maximum time measurement in the benchmarking process.
    */
   StatisticData maxTimeData = new StatisticData("Maximum Time:", "XXXX.XX ms");
+
+  /**
+   * Adds a key switch tab (for switching view of results) to the sideTabContainer.
+   *
+   * @param keyTab The tab to be added for key switching.
+   */
+  public void addKeySwitchTab(Tab keyTab){
+    sideTabContainer.getTabs().add(keyTab);
+  }
+
+  /**
+   * Adds an observer for the change in display of key results .
+   *
+   * @param listener The change listener to be added.
+   */
+  public void addKeyResultsChangeObserver(ChangeListener<Number> listener) {
+    sideTabContainer.getSelectionModel().selectedIndexProperty().addListener(listener);
+  }
 
 
   /**
@@ -517,6 +547,13 @@ public class ResultsView implements Initializable {
     tableView.setPrefHeight(tableHeight);
     tableView.setMinHeight(Region.USE_PREF_SIZE);
     tableView.setMaxHeight(Region.USE_PREF_SIZE);
+  }
+
+  /**
+   * Refreshes the results displayed in the table view.
+   */
+  public void refreshResults() {
+    tableView.refresh();
   }
 
   /**

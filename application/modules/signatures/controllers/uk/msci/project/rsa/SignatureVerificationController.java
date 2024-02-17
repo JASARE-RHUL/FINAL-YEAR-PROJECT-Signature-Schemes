@@ -349,7 +349,7 @@ public class SignatureVerificationController extends SignatureBaseController {
     BenchmarkingContext context = new SignatureVerificationContext(signatureModel);
     resultsController.setContext(context);
     resultsController.showResultsView(mainController.getPrimaryStage(),
-        signatureModel.getClockTimesPerTrial());
+        signatureModel.getClockTimesPerTrial(), signatureModel.getPublicKeyLengths());
   }
 
   /**
@@ -454,6 +454,9 @@ public class SignatureVerificationController extends SignatureBaseController {
       verifyView.setCancelImportSigBatchButtonVisibility(true);
       verifyView.addCancelImportSigBatchButtonObserver(
           new CancelImportSigButtonObserver());
+    } else {
+      uk.msci.project.rsa.DisplayUtility.showErrorAlert(
+          "Invalid signature batch. Please make sure the file is not empty.");
     }
   }
 
