@@ -18,6 +18,7 @@ import javafx.scene.control.ToggleGroup;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import org.controlsfx.control.ToggleSwitch;
@@ -39,7 +40,7 @@ public class SignView implements SignatureViewInterface {
    * The root pane of the signature view scene.
    */
   @FXML
-  private AnchorPane root;
+  private BorderPane root;
 
   /**
    * Horizontal Box containing the text input components.
