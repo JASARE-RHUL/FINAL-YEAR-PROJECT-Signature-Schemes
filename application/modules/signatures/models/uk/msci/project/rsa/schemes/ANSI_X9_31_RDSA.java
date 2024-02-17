@@ -15,6 +15,13 @@ import uk.msci.project.rsa.exceptions.InvalidDigestException;
  */
 public class ANSI_X9_31_RDSA extends SigScheme {
 
+  private static final byte[] SHA_256_HASH_ID = new byte[]{(byte) 0x34, (byte) 0xCC};
+
+  private static final byte[] SHA_512_HASH_ID = new byte[]{(byte) 0x35, (byte) 0xCC};
+
+  private static final byte[] SHAKE_HASH_ID = new byte[]{(byte) 0x3D, (byte) 0xCC};
+
+
   /**
    * Constructs an ANSI X9.31 instance with the specified RSA key. Initialises the modulus and
    * exponent from the key, calculates the encoded message length, and sets up the SHA-256 message
@@ -24,7 +31,27 @@ public class ANSI_X9_31_RDSA extends SigScheme {
    */
   public ANSI_X9_31_RDSA(Key key) {
     super(key);
-    initialiseHash();
+    this.hashID = SHA_256_HASH_ID;
+  }
+
+  /**
+   * Retrieves the hash ID associated with a given digest type. This method returns the predefined
+   * hash ID byte array for the specified digest type as per the ISO/IEC 10118 standard which
+   * defines various dedicated hash functions referenced form ANSI X9.31 specification.
+   *
+   * @param digestType The type of digest algorithm for which the hash ID is required.
+   * @return A byte array representing the hash ID associated with the specified digest type.
+   * @throws IllegalArgumentException If the provided digest type is not supported.
+   */
+  public byte[] getHashID(DigestType digestType) {
+    return switch (digestType) {
+      case SHA_256 -> SHA_256_HASH_ID;
+      case SHA_512 -> SHA_512_HASH_ID;
+      case SHAKE_128 -> SHAKE_HASH_ID;
+      case SHAKE_256 -> SHAKE_HASH_ID;
+      case MGF_1_SHA_256 -> SHA_256_HASH_ID;
+      case MGF_1_SHA_512 -> SHA_512_HASH_ID;
+    };
   }
 
 
@@ -39,22 +66,7 @@ public class ANSI_X9_31_RDSA extends SigScheme {
    */
   public ANSI_X9_31_RDSA(Key key, boolean isProvablySecureParams) {
     super(key, isProvablySecureParams);
-    initialiseHash();
-  }
-
-  /**
-   * Initialises hash IDs for supported hash functions according to the Iso/Iec 10118
-   */
-  public void initialiseHash() {
-    this.hashID = new byte[]{(byte) 0x34, (byte) 0xCC};
-    byte[] sha512HashID = new byte[]{(byte) 0x35, (byte) 0xCC};
-    hashIDmap.put(DigestType.SHA_256, this.hashID);
-    hashIDmap.put(DigestType.SHA_512, sha512HashID);
-    byte[] shakeHashID = new byte[]{(byte) 0x3D, (byte) 0xCC};
-    hashIDmap.put(DigestType.SHAKE_128, shakeHashID);
-    hashIDmap.put(DigestType.SHAKE_256, shakeHashID);
-    hashIDmap.put(DigestType.MGF_1_SHA_256, this.hashID);
-    hashIDmap.put(DigestType.MGF_1_SHA_512, sha512HashID);
+    this.hashID = SHA_256_HASH_ID;
   }
 
 
@@ -92,8 +104,8 @@ public class ANSI_X9_31_RDSA extends SigScheme {
 
 
   /**
-   * Sets the message digest algorithm to be used for hashing in the ANSI X9.31 RDSA
-   * signature scheme to the specified digest type, with the option to specify a custom hash size.
+   * Sets the message digest algorithm to be used for hashing in the ANSI X9.31 RDSA signature
+   * scheme to the specified digest type, with the option to specify a custom hash size.
    *
    * @param digestType     The type of message digest algorithm to be set.
    * @param customHashSize The custom hash size, used only for variable-length hash types.
