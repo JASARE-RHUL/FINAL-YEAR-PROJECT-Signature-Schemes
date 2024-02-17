@@ -6,8 +6,6 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.zip.DataFormatException;
 import uk.msci.project.rsa.exceptions.InvalidDigestException;
 
@@ -56,11 +54,6 @@ public abstract class SigScheme implements SigSchemeInterface {
    * The identifier of the hash algorithm used.
    */
   byte[] hashID;
-
-  /**
-   * A mapping of DigestType to hash algorithm identifiers.
-   */
-  Map<DigestType, byte[]> hashIDmap = new HashMap<DigestType, byte[]>();
 
   /**
    * Non-recoverable portion of message as applicable to the signing process of a message recovery
@@ -328,7 +321,7 @@ public abstract class SigScheme implements SigSchemeInterface {
     md.reset();
     this.currentHashType = digestType;
     this.md = DigestFactory.getMessageDigest(digestType);
-    this.hashID = hashIDmap.get(digestType);
+    this.hashID = getHashID(currentHashType);
 
     if (digestType == DigestType.SHA_256 || digestType == DigestType.SHA_512) {
       this.hashSize = md.getDigestLength(); // Fixed size
@@ -410,6 +403,15 @@ public abstract class SigScheme implements SigSchemeInterface {
   public DigestType getHashType() {
     return currentHashType;
   }
+
+  /**
+   * Retrieves the hash ID associated with a given digest type.
+   *
+   * @param digestType The type of digest algorithm for which the hash ID is required.
+   * @return A byte array representing the hash ID associated with the specified digest type.
+   * @throws IllegalArgumentException If the provided digest type is not supported.
+   */
+  public abstract byte[] getHashID(DigestType digestType);
 
 
 }
