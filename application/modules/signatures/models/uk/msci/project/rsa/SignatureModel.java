@@ -831,7 +831,7 @@ public class SignatureModel {
     try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
       // Write header
       writer.write(
-          "KeyIndex" + " (" + getPublicKeyLengths().get(keyIndex) + "bit)"
+          "KeyIndex" + " (" + getPublicKeyLengths().get(keyIndex) + "bit), "
               + "Verification Result, Original Message, Signature, Recovered Message\n");
 
       int numKeys = publicKeyBatch.size();
