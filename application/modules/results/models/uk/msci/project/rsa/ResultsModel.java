@@ -243,17 +243,17 @@ public class ResultsModel {
 
       // Writing each statistic
       writeStatisticLine(statsWriter, "Number of Trials", String.valueOf(numTrials));
-      writeStatisticLine(statsWriter, "Overall Time", String.format("%.2f ms", overallData));
-      writeStatisticLine(statsWriter, "Mean", String.format("%.2f ms", meanData));
-      writeStatisticLine(statsWriter, "Confidence Interval", String.format("%.2f ms - %.2f ms", confidenceInterval[0], confidenceInterval[1]));
-      writeStatisticLine(statsWriter, "25th Percentile", String.format("%.2f ms", percentile25Data));
-      writeStatisticLine(statsWriter, "Median", String.format("%.2f ms", medianData));
-      writeStatisticLine(statsWriter, "75th Percentile", String.format("%.2f ms", percentile75Data));
-      writeStatisticLine(statsWriter, "Range", String.format("%.2f ms", rangeData));
-      writeStatisticLine(statsWriter, "Standard Deviation", String.format("%.2f ms", stdDeviationData));
-      writeStatisticLine(statsWriter, "Variance", String.format("%.2f ms", varianceData));
-      writeStatisticLine(statsWriter, "Minimum Time", String.format("%.2f ms", minTimeData));
-      writeStatisticLine(statsWriter, "Maximum Time", String.format("%.2f ms", maxTimeData));
+      writeStatisticLine(statsWriter, "Overall Time", String.format("%.5f ms", overallData));
+      writeStatisticLine(statsWriter, "Mean", String.format("%.5f ms", meanData));
+      writeStatisticLine(statsWriter, "Confidence Interval", String.format("%.5f ms - %.5f ms", confidenceInterval[0], confidenceInterval[1]));
+      writeStatisticLine(statsWriter, "25th Percentile", String.format("%.5f ms", percentile25Data));
+      writeStatisticLine(statsWriter, "Median", String.format("%.5f ms", medianData));
+      writeStatisticLine(statsWriter, "75th Percentile", String.format("%.5f ms", percentile75Data));
+      writeStatisticLine(statsWriter, "Range", String.format("%.5f ms", rangeData));
+      writeStatisticLine(statsWriter, "Standard Deviation", String.format("%.5f ms", stdDeviationData));
+      writeStatisticLine(statsWriter, "Variance", String.format("%.5f ms", varianceData));
+      writeStatisticLine(statsWriter, "Minimum Time", String.format("%.5f ms", minTimeData));
+      writeStatisticLine(statsWriter, "Maximum Time", String.format("%.5f ms", maxTimeData));
     }
   }
 
