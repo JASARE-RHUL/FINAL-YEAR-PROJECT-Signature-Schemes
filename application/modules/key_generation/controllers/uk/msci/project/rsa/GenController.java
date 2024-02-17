@@ -229,7 +229,7 @@ public class GenController {
     BenchmarkingContext context = new KeyGenerationContext(genModel);
     resultsController.setContext(context);
     resultsController.showResultsView(mainController.getPrimaryStage(),
-        genModel.getClockTimesPerTrial());
+        genModel.getClockTimesPerTrial(), genModel.summedKeySizes(genModel.getKeyParams()));
   }
 
 
