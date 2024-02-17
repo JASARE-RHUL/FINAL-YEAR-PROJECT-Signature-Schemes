@@ -236,8 +236,8 @@ public class ISO_IEC_9796_2_SCHEME_1 extends SigScheme {
   }
 
   /**
-   * Sets the message digest algorithm to be used for hashing in the ISO_IEC_9796_2_SCHEME_1 signature
-   * scheme to the specified digest type, with the option to specify a custom hash size.
+   * Sets the message digest algorithm to be used for hashing in the ISO_IEC_9796_2_SCHEME_1
+   * signature scheme to the specified digest type, with the option to specify a custom hash size.
    *
    * @param digestType     The type of message digest algorithm to be set.
    * @param customHashSize The custom hash size, used only for variable-length hash types.
@@ -258,5 +258,19 @@ public class ISO_IEC_9796_2_SCHEME_1 extends SigScheme {
     }
     super.setDigest(digestType, customHashSize);
   }
+
+  /**
+   * Retrieves the hash ID associated with a given digest type. Not applicable to this scheme
+   * (ISO_IEC_9796_2_SCHEME_1) where a hash ID is not using in message encoding
+   *
+   * @param digestType The type of digest algorithm for which the hash ID is required.
+   * @return A byte array representing the hash ID associated with the specified digest type.
+   * @throws IllegalArgumentException If the provided digest type is not supported.
+   */
+  @Override
+  public byte[] getHashID(DigestType digestType) {
+    return new byte[0];
+  }
+
 
 }
