@@ -4,70 +4,81 @@
 <?import javafx.geometry.Insets?>
 <?import org.controlsfx.control.ToggleSwitch?>
 <?import javafx.scene.image.ImageView?>
-<AnchorPane xmlns:fx="http://javafx.com/fxml" fx:controller="uk.msci.project.rsa.GenView"
-  prefHeight="400.0" prefWidth="600.0">
-  <VBox alignment="CENTER" spacing="20" AnchorPane.topAnchor="50" AnchorPane.bottomAnchor="50"
-    AnchorPane.leftAnchor="50" AnchorPane.rightAnchor="50">
-    <!-- Title and Logo -->
-    <VBox alignment="CENTER" spacing="10">
-      <Label text="Signature Scheme POC - Generate Keys"
-        style="-fx-font-weight: bold; -fx-font-size: 24;"/>
-      <!-- Assuming the logo image is set in the controller or via an image path -->
-      <ImageView fx:id="logoImageView"/>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml" fx:controller="uk.msci.project.rsa.GenView"  stylesheets="SignatureView.css" prefHeight="650.0" prefWidth="800.0">
+
+  <!-- Header Section -->
+  <top>
+    <VBox styleClass="header-section">
+      <BorderPane minHeight="100" style="-fx-padding: 10 0 0 0;">
+        <left>
+          <Label id="header-text" text="Digital Signatures"/>
+        </left>
+        <right>
+            <Label text="Generating Keys" id="header-text"/>
+        </right>
+      </BorderPane>
     </VBox>
+  </top>
 
-    <Separator/>
+  <!-- Main Content -->
+  <center>
+    <VBox alignment="CENTER" spacing="20" style="-fx-padding: 10 10 10 10;">
+      <!-- Title and Logo -->
+      <VBox alignment="CENTER" spacing="10">
+        <Label text="Key Generation" style="-fx-font-weight: 700; -fx-font-size: 24;"/>
+        <ImageView fx:id="logoImageView"/>
+      </VBox>
 
-    <!-- ToggleSwitch for Benchmarking Mode -->
-    <HBox alignment="CENTER_LEFT" spacing="10">
-      <Label text="Benchmarking Mode:" style="-fx-font-weight: bold;"/>
-      <ToggleSwitch fx:id="benchmarkingModeToggle" selected="true"/>
-    </HBox>
+      <Separator/>
 
-    <Separator/>
-    <!-- Key Size Input Section -->
-    <VBox alignment="CENTER" spacing="5" visible="false" managed="false">
-      <Label text="Enter multiple bit sizes, separated by commas eg., (512, 512)" style="-fx-font-weight: bold;" />
-      <TextField fx:id="keySizeTextField" prefWidth="200"/>
-    </VBox>
+      <!-- ToggleSwitch for Benchmarking Mode -->
+      <HBox alignment="CENTER_LEFT" spacing="10">
+        <Label text="Benchmarking Mode:" style="-fx-font-weight: bold;"/>
+        <ToggleSwitch fx:id="benchmarkingModeToggle" selected="true"/>
+      </HBox>
 
-    <!-- number of keys input -->
-    <VBox alignment="CENTER" spacing="5">
-      <Label text="How many keys would you like to generate:" style="-fx-font-weight: bold;" />
-      <TextField fx:id="numKeysTextField" prefWidth="100"/>
-    </VBox>
+      <Separator/>
 
+      <!-- Key Size Input Section -->
+      <VBox alignment="CENTER" spacing="5" visible="false" managed="false">
+        <Label text="Enter multiple bit sizes, separated by commas eg., (512, 512)" styleClass="bold-label" />
+        <TextField fx:id="keySizeTextField" prefWidth="200" maxWidth="200"/>
+      </VBox>
 
+      <!-- Number of Keys Input -->
+      <VBox alignment="CENTER" spacing="5">
+        <Label text="How many keys would you like to generate:" styleClass="bold-label" />
+        <TextField fx:id="numKeysTextField" prefWidth="200" maxWidth="200"/>
+      </VBox>
 
-    <!-- Generate Button -->
-    <Button text="Generate Keys" fx:id="generateButton" minWidth="200" visible="false"  managed="false"/>
-    <Button text="Submit" fx:id="numKeysButton" minWidth="200"/>
-    <!-- Success Pop-up (Initially invisible) -->
-    <VBox fx:id="successPopup" alignment="CENTER" spacing="10" visible="false">
-      <Label text="Success! Keys generated successfully."
-        style="-fx-font-weight: bold; -fx-text-fill: green;"/>
+      <!-- Generate Button -->
+      <Button text="Generate Keys" fx:id="generateButton" minWidth="200" visible="false"  managed="false"/>
+      <Button text="Submit" fx:id="numKeysButton" minWidth="200"/>
+
+      <!-- Success and Failure Pop-ups -->
+      <VBox fx:id="successPopup" alignment="CENTER" spacing="10" visible="false">
+        <Label text="Success! Keys generated successfully." style="-fx-font-weight: bold; -fx-text-fill: green;"/>
+        <HBox spacing="20" alignment="CENTER">
+          <Button text="Export Private Key" fx:id="exportPrivateKeyButton"/>
+          <Button text="Export Public Key" fx:id="exportPublicKeyButton"/>
+        </HBox>
+      </VBox>
+
+      <VBox fx:id="failurePopup" alignment="CENTER" spacing="10" visible="false">
+        <Label fx:id="failureLabel" text="Failure. Please ensure your input is a comma separated sequence of bit sizes
+        corresponding to the number of prime factors you wish the modulus to contain."
+          style="-fx-font-weight: bold; -fx-text-fill: red;" wrapText="true" minHeight="40" prefHeight="60"/>
+      </VBox>
+
+      <Separator/>
+
+      <!-- Navigation Buttons -->
       <HBox spacing="20" alignment="CENTER">
-        <Button text="Export Private Key" fx:id="exportPrivateKeyButton"/>
-        <Button text="Export Public Key" fx:id="exportPublicKeyButton"/>
+        <Button fx:id="backToMainMenuButton" text="Back to Main Menu"/>
+        <Button fx:id="helpButton" text="Help"/>
+        <Label text="Version: 1.0.0   Copyright 2023"/>
       </HBox>
     </VBox>
-    <VBox fx:id="failurePopup" alignment="CENTER" spacing="10" visible="false">
-      <Label fx:id="failureLabel" text="Failure. Please ensure your input is a comma separated sequence of bit sizes
-      corresponding to the number of prime factors you wish the modulus to contain."
-        style="-fx-font-weight: bold; -fx-text-fill: red;" wrapText="true" minHeight="40"
-        prefHeight="60"/>
-    </VBox>
-
-
-    <Separator/>
-
-    <!-- Bottom Menu -->
-    <!-- Navigation Buttons -->
-    <HBox spacing="20" alignment="CENTER">
-      <Button fx:id="backToMainMenuButton" text="Back to Main Menu"/>
-      <Button fx:id="helpButton" text="Help"/>
-      <Label text="Version: 1.0.0   Copyright 2023"/>
-    </HBox>
-
-  </VBox>
-</AnchorPane>
+  </center>
+</BorderPane>
