@@ -362,45 +362,50 @@ public class SignatureModel {
 
   public void batchCreateSignatures(File batchMessageFile, DoubleConsumer progressUpdater)
       throws InterruptedException {
-    try (BufferedReader messageReader = new BufferedReader(new FileReader(batchMessageFile))) {
-      // Initialise lists to store times and results (signatures and non-recoverable parts) for each key.
-      List<List<Long>> timesPerKey = new ArrayList<>();
-      List<List<byte[]>> signaturesPerKey = new ArrayList<>();
-      List<List<byte[]>> nonRecoverableMessagesPerKey = new ArrayList<>();
+    try (ExecutorService executor = Executors.newFixedThreadPool(
+        Runtime.getRuntime().availableProcessors())) {
+      try (BufferedReader messageReader = new BufferedReader(new FileReader(batchMessageFile))) {
+        // Initialise lists to store times and results (signatures and non-recoverable parts) for each key.
+        List<List<Long>> timesPerKey = new ArrayList<>();
+        List<List<byte[]>> signaturesPerKey = new ArrayList<>();
+        List<List<byte[]>> nonRecoverableMessagesPerKey = new ArrayList<>();
 
-      for (int k = 0; k < privKeyBatch.size(); k++) {
-        timesPerKey.add(new ArrayList<>());
-        signaturesPerKey.add(new ArrayList<>());
-        nonRecoverableMessagesPerKey.add(new ArrayList<>());
-      }
-
-      String message;
-      int totalWork = numTrials * privKeyBatch.size();
-      int completedWork = 0;
-      int messageCounter = 0;
-      while ((message = messageReader.readLine()) != null && messageCounter < this.numTrials) {
-        int keyIndex = 0;
-        for (PrivateKey key : privKeyBatch) {
-          int finalCompletedWork = completedWork;
-          batchCreateSignatures(messageCounter, message, keyIndex, key, trialProgress -> {
-                double currentKeyProgress = trialProgress / numTrials;
-                double overallProgress = ((double) finalCompletedWork / totalWork) + (currentKeyProgress
-                    / privKeyBatch.size());
-                progressUpdater.accept(overallProgress);
-              }, timesPerKey, signaturesPerKey,
-              nonRecoverableMessagesPerKey);
-          completedWork++;
-          keyIndex++;
+        for (int k = 0; k < privKeyBatch.size(); k++) {
+          timesPerKey.add(new ArrayList<>());
+          signaturesPerKey.add(new ArrayList<>());
+          nonRecoverableMessagesPerKey.add(new ArrayList<>());
         }
-        messageCounter++;
 
+        String message;
+        int totalWork = numTrials * privKeyBatch.size();
+        int completedWork = 0;
+        int messageCounter = 0;
+        while ((message = messageReader.readLine()) != null && messageCounter < this.numTrials) {
+          int keyIndex = 0;
+          for (PrivateKey key : privKeyBatch) {
+            int finalCompletedWork = completedWork;
+            batchCreateSignatures(executor, messageCounter, message, keyIndex, key,
+                trialProgress -> {
+                  double currentKeyProgress = trialProgress / numTrials;
+                  double overallProgress =
+                      ((double) finalCompletedWork / totalWork) + (currentKeyProgress
+                          / privKeyBatch.size());
+                  progressUpdater.accept(overallProgress);
+                }, timesPerKey, signaturesPerKey,
+                nonRecoverableMessagesPerKey);
+            completedWork++;
+            keyIndex++;
+          }
+          messageCounter++;
+
+        }
+        shutdownExecutorService(executor);
+
+        combineResultsIntoFinalLists(timesPerKey, signaturesPerKey, nonRecoverableMessagesPerKey);
+      } catch (Exception e) {
+        e.printStackTrace();
       }
-
-      combineResultsIntoFinalLists(timesPerKey, signaturesPerKey, nonRecoverableMessagesPerKey);
-    } catch (Exception e) {
-      e.printStackTrace();
     }
-
   }
 
 
@@ -410,6 +415,8 @@ public class SignatureModel {
    * of messages, storing these in the provided lists. The progress of the signing process is
    * updated using the progressUpdater consumer.
    *
+   * @param executor                     The ExecutorService used for concurrent processing of
+   *                                     signature tasks.
    * @param messageCounter               The counter for the current message being processed.
    * @param message                      The message to be signed.
    * @param keyIndex                     The index of the private key used for signing.
@@ -419,24 +426,20 @@ public class SignatureModel {
    *                                     generation.
    * @param signaturesPerKey             A list to store the generated signatures.
    * @param nonRecoverableMessagesPerKey A list to store the non-recoverable parts of the messages.
-   * @throws Exception If any error occurs during the signature creation process.
    */
-  public void batchCreateSignatures(int messageCounter, String message, int keyIndex,
+  public void batchCreateSignatures(ExecutorService executor, int messageCounter, String message,
+      int keyIndex,
       PrivateKey privateKey,
       DoubleConsumer progressUpdater, List<List<Long>> timesPerKey,
       List<List<byte[]>> signaturesPerKey,
-      List<List<byte[]>> nonRecoverableMessagesPerKey)
-      throws Exception {
-    try (ExecutorService executor = Executors.newFixedThreadPool(
-        Runtime.getRuntime().availableProcessors())) {
+      List<List<byte[]>> nonRecoverableMessagesPerKey) {
 
-      List<Future<List<byte[]>>> futures = submitSignatureTasks(executor, message, privateKey);
-      collectSignatureResults(keyIndex, futures, timesPerKey, signaturesPerKey,
-          nonRecoverableMessagesPerKey);
-      progressUpdater.accept((double) ++messageCounter / this.numTrials);
-      shutdownExecutorService(executor);
+    List<Future<List<byte[]>>> futures = submitSignatureTasks(executor, message, privateKey);
+    collectSignatureResults(keyIndex, futures, timesPerKey, signaturesPerKey,
+        nonRecoverableMessagesPerKey);
+    progressUpdater.accept((double) ++messageCounter / this.numTrials);
 
-    }
+
   }
 
 
@@ -634,7 +637,8 @@ public class SignatureModel {
           int keyIndex = 0;
           for (PublicKey key : publicKeyBatch) {
             int finalCompletedWork = completedWork;
-            batchVerifySignatures(messageCounter, messageLine, keyIndex, key, signatureReader,
+            batchVerifySignatures(executor, messageCounter, messageLine, keyIndex, key,
+                signatureReader,
                 trialProgress -> {
                   double currentKeyProgress = trialProgress / numTrials;
                   double overallProgress =
@@ -648,10 +652,10 @@ public class SignatureModel {
           }
           messageCounter++;
         }
-
+        shutdownExecutorService(executor);
         combineVerificationResultsIntoFinalLists(timesPerKey, verificationResultsPerKey,
             signaturesPerKey, recoveredMessagesPerKey);
-        shutdownExecutorService(executor);
+
       }
     }
   }
@@ -662,6 +666,8 @@ public class SignatureModel {
    * recovered message parts, in the provided lists. This method also updates the progress of the
    * verification process using the progressUpdater consumer.
    *
+   * @param executor                  The ExecutorService used for concurrent processing of
+   *                                  verification tasks.
    * @param messageCounter            The counter for the current message being processed.
    * @param messageLine               The message to be verified.
    * @param keyIndex                  The index of the public key used for verification.
@@ -674,28 +680,25 @@ public class SignatureModel {
    * @param verificationResultsPerKey A list to store the results of each verification.
    * @param signaturesPerKey          A list to store the signatures.
    * @param recoveredMessagesPerKey   A list to store any recovered message parts.
-   * @throws Exception If any error occurs during the verification process.
+   * @throws IOException If any error occurs during the verification process.
    */
 
-  public void batchVerifySignatures(int messageCounter, String messageLine, int keyIndex,
+  public void batchVerifySignatures(ExecutorService executor, int messageCounter,
+      String messageLine, int keyIndex,
       PublicKey key, BufferedReader signatureReader,
       DoubleConsumer progressUpdater, List<List<Long>> timesPerKey,
       List<List<Boolean>> verificationResultsPerKey,
       List<List<byte[]>> signaturesPerKey, List<List<byte[]>> recoveredMessagesPerKey)
-      throws Exception {
+      throws IOException {
 
-    try (ExecutorService executor = Executors.newFixedThreadPool(
-        Runtime.getRuntime().availableProcessors())) {
+    List<Future<Pair<Boolean, List<byte[]>>>> futures = submitVerificationTasks(executor,
+        messageLine, signatureReader, key);
+    collectVerificationResults(keyIndex, futures, timesPerKey, verificationResultsPerKey,
+        signaturesPerKey,
+        recoveredMessagesPerKey);
+    progressUpdater.accept((double) ++messageCounter / this.numTrials);
+    shutdownExecutorService(executor);
 
-      List<Future<Pair<Boolean, List<byte[]>>>> futures = submitVerificationTasks(executor,
-          messageLine, signatureReader, key);
-      collectVerificationResults(keyIndex, futures, timesPerKey, verificationResultsPerKey,
-          signaturesPerKey,
-          recoveredMessagesPerKey);
-      progressUpdater.accept((double) ++messageCounter / this.numTrials);
-      shutdownExecutorService(executor);
-
-    }
 
   }
 
