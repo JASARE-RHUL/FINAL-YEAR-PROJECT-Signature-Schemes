@@ -3,75 +3,108 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.collections.FXCollections?>
-<?import javafx.beans.property.SimpleDoubleProperty?>
+<?import com.jfoenix.controls.JFXTabPane?>
 
-<AnchorPane xmlns:fx="http://javafx.com/fxml" fx:controller="uk.msci.project.rsa.ResultsView"
-  prefHeight="600.0" prefWidth="800.0" fx:id="root">
-  <VBox alignment="CENTER" spacing="20" AnchorPane.topAnchor="20" AnchorPane.bottomAnchor="20"
-    AnchorPane.leftAnchor="20" AnchorPane.rightAnchor="20">
-    <!-- Title and Logo (Optional) -->
-    <HBox alignment="CENTER" spacing="10">
-      <VBox>
-      <Label fx:id="resultsLabel" text="Benchmarking Results" style="-fx-font-weight: bold; -fx-font-size: 24;"/>
-      </VBox>
-      <!-- Optional ImageView -->
-    </HBox>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.image.Image?>
+<BorderPane xmlns:fx="http://javafx.com/fxml" fx:controller="uk.msci.project.rsa.ResultsView" stylesheets="SignatureView.css"  prefHeight="650.0" prefWidth="800.0" fx:id="root">
+  <top>
+    <VBox styleClass="header-section">
+      <BorderPane  minHeight="100" style="-fx-padding: 10 0 0 0;">
+        <left>
+          <Label id="header-text" text="Digital Signature Benchmarking">  </Label>
+        </left>
+        <right>
+          <Label text="Results" id="header-text"/>
+        </right>
+      </BorderPane>
+    </VBox>
 
-    <Separator/>
 
-    <!-- TabPane for Statistics and Graphs -->
-    <TabPane VBox.vgrow="ALWAYS" tabClosingPolicy="UNAVAILABLE">
-      <!-- Statistics Tab -->
-      <Tab text="Statistics">
-        <VBox alignment="CENTER" spacing="20">
-          <!-- ... other components ... -->
+  </top>
 
-          <!-- Wrap the TableView in an HBox for horizontal centering -->
-          <HBox alignment="CENTER" VBox.vgrow="ALWAYS">
-            <TableView fx:id="tableView" >
-              <columns>
-                <TableColumn fx:id="nameColumn" text="Statistic" minWidth="150" maxWidth="900"/>
-                <TableColumn fx:id="valueColumn" text="Value" minWidth="270"  maxWidth="900"/>
-              </columns>
-            </TableView>
-          </HBox>
+  <Separator/>
+  <!-- Sidebar (JFXTabPane) -->
+  <left>
+    <JFXTabPane fx:id="sideTabContainer" side="LEFT" tabClosingPolicy="UNAVAILABLE">
+      <tabs>
 
-          <!-- ... other components ... -->
+      </tabs>
+    </JFXTabPane>
+  </left>
+
+  <!-- Main Content -->
+  <center>
+
+    <VBox  spacing="20" style="-fx-padding: 7;" >
+
+      <!-- Title and Logo (Optional) -->
+      <HBox alignment="CENTER" spacing="10">
+        <VBox>
+          <Label fx:id="resultsLabel" text="Benchmarking Results" style="-fx-font-weight: bold; -fx-font-size: 24;"/>
         </VBox>
-      </Tab>
+        <!-- Optional ImageView -->
+      </HBox>
 
-      <!-- Graphs Tab -->
-      <Tab text="Graphs">
-        <content>
-          <VBox spacing="10">
-            <HBox>
-              <Button text="Show Histogram" />
-              <Button text="Show Box Plot" />
+
+
+      <!-- TabPane for Statistics and Graphs -->
+      <TabPane VBox.vgrow="ALWAYS" tabClosingPolicy="UNAVAILABLE">
+        <!-- Statistics Tab -->
+        <Tab text="Statistics">
+          <VBox alignment="CENTER" spacing="10">
+            <!-- ... other components ... -->
+
+            <!-- Wrap the TableView in an HBox for horizontal centering -->
+            <HBox alignment="CENTER" VBox.vgrow="ALWAYS">
+              <TableView fx:id="tableView" >
+                <columns>
+                  <TableColumn fx:id="nameColumn" text="Statistic" minWidth="150" maxWidth="900"/>
+                  <TableColumn fx:id="valueColumn" text="Value" minWidth="270"  maxWidth="900"/>
+                </columns>
+              </TableView>
             </HBox>
-            <Pane fx:id="graphArea" /> <!-- Graph Area -->
+
+            <!-- ... other components ... -->
+            <!-- Buttons and Navigation -->
+            <HBox alignment="CENTER" spacing="10">
+              <Button fx:id="exportBenchmarkingResultsBtn" text="Export Benchmarking Results" visible="true"  managed="true" />
+              <Button fx:id="exportPrivateKeyBatchBtn" text="Export Private Key Batch" visible="false"  managed="false" />
+              <Button fx:id="exportPublicKeyBatchBtn" text="Export Public Key Batch" visible="false"  managed="false" />
+              <Button fx:id="exportSignatureBatchBtn" text="Export Signature Batch" visible="false"  managed="false" />
+              <Button fx:id="exportNonRecoverableMessageBatchBtn" text="Export Non-recoverable Message Batch" visible="false"  managed="false" />
+              <Button fx:id="exportRecoverableMessageBatchBtn" text="Export Recoverable Message Batch" visible="false"  managed="false" />
+              <Button fx:id="exportVerificationResultsBtn" text="Export Verification Results" visible="false"  managed="false" />
+            </HBox>
           </VBox>
-        </content>
-      </Tab>
-    </TabPane>
+        </Tab>
 
-    <!-- Buttons and Navigation -->
-    <HBox alignment="CENTER" spacing="10">
-      <Button fx:id="exportBenchmarkingResultsBtn" text="Export Benchmarking Results" visible="true"  managed="true" />
-      <Button fx:id="exportPrivateKeyBatchBtn" text="Export Private Key Batch" visible="false"  managed="false" />
-      <Button fx:id="exportPublicKeyBatchBtn" text="Export Public Key Batch" visible="false"  managed="false" />
-      <Button fx:id="exportSignatureBatchBtn" text="Export Signature Batch" visible="false"  managed="false" />
-      <Button fx:id="exportNonRecoverableMessageBatchBtn" text="Export Non-recoverable Message Batch" visible="false"  managed="false" />
-      <Button fx:id="exportRecoverableMessageBatchBtn" text="Export Recoverable Message Batch" visible="false"  managed="false" />
-      <Button fx:id="exportVerificationResultsBtn" text="Export Verification Results" visible="false"  managed="false" />
-    </HBox>
+        <!-- Graphs Tab -->
+        <Tab text="Graphs">
+          <content>
+            <VBox spacing="10">
+              <HBox>
+                <Button text="Show Histogram" />
+                <Button text="Show Box Plot" />
+              </HBox>
+              <Pane fx:id="graphArea" /> <!-- Graph Area -->
+            </VBox>
+          </content>
+        </Tab>
+      </TabPane>
 
 
-    <Separator/>
-    <!-- Bottom Menu -->
-    <HBox spacing="20" alignment="CENTER">
-      <Button fx:id="backToMainMenuButton" text="Back to Main Menu"/>
-      <Button fx:id="helpButton" text="Help"/>
-      <Label text="Version: 1.0.0   Copyright 2023"/>
-    </HBox>
-  </VBox>
-</AnchorPane>
+
+
+      <Separator/>
+      <!-- Bottom Menu -->
+
+      <HBox spacing="20" alignment="CENTER">
+        <Button fx:id="backToMainMenuButton" text="Back to Main Menu"/>
+        <Button fx:id="helpButton" text="Help"/>
+        <Label text="Version: 1.0.0   Copyright 2023"/>
+      </HBox>
+    </VBox>
+  </center>
+</BorderPane>
+

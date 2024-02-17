@@ -2,3 +2,81 @@
   -fx-font-weight: bold;
   -fx-font-size: 15px; /* Adjust font size as needed */
 }
+
+.root {
+  -fx-base: white;
+  -fx-color: -fx-base;
+
+  -fx-font-family: "Montserrat";
+  -fx-accent: rgb(246, 246, 246);
+  -fx-default-button: -fx-accent;
+  -jfx-primary-color: -fx-accent;
+  -jfx-light-primary-color: -fx-accent;
+  -jfx-dark-primary-color: -fx-accent;
+  -fx-focus-color: rgb(222, 222, 222);
+  -jfx-secondary-color: -fx-focus-color;
+  -jfx-light-secondary-color: -fx-focus-color;
+  -jfx-dark-secondary-color: -fx-focus-color;
+}
+
+
+.header-section {
+
+  -fx-font-size: 20px;
+  -fx-background-color: teal;
+}
+
+.header-section Label {
+  -fx-text-fill: #ffffff;
+  -fx-padding: 10px;
+}
+
+#account {
+  -fx-background-color: transparent;
+  -fx-text-fill: #ffffff;
+  -fx-font-size: 16px;
+  -fx-cursor: hand;
+}
+
+/* Custom styles for JFXTabPane */
+.jfx-tab-pane .headers-region {
+  -fx-background-color: -fx-accent; /* Background color of the tab headers */
+}
+
+.jfx-tab-pane .tab-header-background {
+  -fx-background-color: -fx-accent; /* Background color behind the tabs */
+}
+
+.jfx-tab-pane .tab-selected-line {
+  -fx-stroke: -fx-accent; /* Line color for selected tab */
+}
+
+.jfx-tab-pane .tab-header-area .jfx-rippler {
+  -jfx-rippler-fill: -fx-focus-color; /* Ripple effect color */
+}
+
+.tab-selected-line {
+  -fx-background-color: -fx-focus-color; /* Background color for the selected line */
+}
+
+.jfx-tab-pane .tab-label {
+  -fx-text-fill: black; /* Text color for tab labels */
+  -fx-alignment: center; /* Center text within the tab */
+  -fx-text-alignment: center;
+}
+
+.jfx-tab-pane .tab {
+  -fx-pref-height: 120px; /* Preferred height for tabs */
+  -fx-text-fill: black; /* Text color inside tabs */
+  -fx-rotate: 90; /* Rotates the tab labels by 90 degrees */
+
+}
+#resultsLabel {
+  -fx-font-size: 18px;
+  -fx-padding: 0 0 10 0;
+  -fx-font-weight: 700;
+}
+.header-section Label {
+  -fx-text-fill: #ffffff;
+  -fx-padding: 10px;
+}
