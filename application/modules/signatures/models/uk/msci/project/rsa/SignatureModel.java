@@ -433,8 +433,8 @@ public class SignatureModel {
       List<List<byte[]>> signaturesPerKey,
       List<List<byte[]>> nonRecoverableMessagesPerKey) {
 
-    List<Future<List<byte[]>>> futures = submitSignatureTasks(executor, message, privateKey);
-    collectSignatureResults(keyIndex, futures, timesPerKey, signaturesPerKey,
+    Future<List<byte[]>> future = submitSignatureTasks(executor, message, privateKey);
+    collectSignatureResults(keyIndex, future, timesPerKey, signaturesPerKey,
         nonRecoverableMessagesPerKey);
     progressUpdater.accept((double) ++messageCounter / this.numTrials);
 
@@ -450,13 +450,12 @@ public class SignatureModel {
    * @param executor   The ExecutorService used for concurrent processing of signature tasks.
    * @param message    The message to be signed.
    * @param privateKey The private key used for signing the message.
-   * @return A list of Future objects, each representing the outcome of a signature task.
+   * @return A Future object representing the outcome of a signature task.
    */
-  private List<Future<List<byte[]>>> submitSignatureTasks(ExecutorService executor,
+  private Future<List<byte[]>> submitSignatureTasks(ExecutorService executor,
       String message, PrivateKey privateKey) {
-    List<Future<List<byte[]>>> futures = new ArrayList<>();
 
-    Future<List<byte[]>> future = executor.submit(() -> {
+    return executor.submit(() -> {
       SigScheme sigScheme = SignatureFactory.getSignatureScheme(currentType, privateKey,
           isProvablySecure);
       sigScheme.setDigest(currentHashType, hashSize);
@@ -464,42 +463,37 @@ public class SignatureModel {
       byte[] nonRecoverableM = sigScheme.getNonRecoverableM();
       return List.of(signature, nonRecoverableM);
     });
-    futures.add(future);
 
-    return futures;
+
   }
 
 
   /**
-   * Collects the results from future tasks of signature generation. It records the time taken for
-   * each signature creation and stores the generated signatures and non-recoverable parts of the
-   * messages into the provided lists.
+   * Collects the results from a single future task for a signature generation. It records the time
+   * taken for each signature creation and stores the generated signatures and non-recoverable parts
+   * of the messages into the provided lists.
    *
    * @param keyIndex                     The index of the private key used for signing.
-   * @param futures                      The list of futures from which to collect results.
+   * @param future                       A future object from which to collect results.
    * @param timesPerKey                  A list to store the time taken for each signature
    *                                     generation.
    * @param signaturesPerKey             A list to store the generated signatures.
    * @param nonRecoverableMessagesPerKey A list to store the non-recoverable parts of messages.
    */
-  private void collectSignatureResults(int keyIndex, List<Future<List<byte[]>>> futures,
+  private void collectSignatureResults(int keyIndex, Future<List<byte[]>> future,
       List<List<Long>> timesPerKey, List<List<byte[]>> signaturesPerKey,
       List<List<byte[]>> nonRecoverableMessagesPerKey) {
-    for (Future<List<byte[]>> future1 : futures) {
-      List<byte[]> result = null;
-      long startTime = System.nanoTime();
-      try {
-        result = future1.get();
-      } catch (ExecutionException | InterruptedException e) {
-        throw new RuntimeException(e.getCause());
-      }
-
-      long endTime = System.nanoTime() - startTime;
-      timesPerKey.get(keyIndex).add(endTime);
-      signaturesPerKey.get(keyIndex).add(result.get(0));
-      nonRecoverableMessagesPerKey.get(keyIndex).add(result.get(1));
-
+    List<byte[]> result = null;
+    long startTime = System.nanoTime();
+    try {
+      result = future.get();
+    } catch (ExecutionException | InterruptedException e) {
+      throw new RuntimeException(e.getCause());
     }
+    long endTime = System.nanoTime() - startTime;
+    timesPerKey.get(keyIndex).add(endTime);
+    signaturesPerKey.get(keyIndex).add(result.get(0));
+    nonRecoverableMessagesPerKey.get(keyIndex).add(result.get(1));
   }
 
 
@@ -679,7 +673,6 @@ public class SignatureModel {
    * @param recoveredMessagesPerKey   A list to store any recovered message parts.
    * @throws IOException If any error occurs during the verification process.
    */
-
   public void batchVerifySignatures(ExecutorService executor, int messageCounter,
       String messageLine, int keyIndex,
       PublicKey key, BufferedReader signatureReader,
@@ -688,9 +681,9 @@ public class SignatureModel {
       List<List<byte[]>> signaturesPerKey, List<List<byte[]>> recoveredMessagesPerKey)
       throws IOException {
 
-    List<Future<Pair<Boolean, List<byte[]>>>> futures = submitVerificationTasks(executor,
+    Future<Pair<Boolean, List<byte[]>>> future = submitVerificationTasks(executor,
         messageLine, signatureReader, key);
-    collectVerificationResults(keyIndex, futures, timesPerKey, verificationResultsPerKey,
+    collectVerificationResults(keyIndex, future, timesPerKey, verificationResultsPerKey,
         signaturesPerKey,
         recoveredMessagesPerKey);
     progressUpdater.accept((double) ++messageCounter / this.numTrials);
@@ -710,24 +703,21 @@ public class SignatureModel {
    * @param messageLine     The message to be verified.
    * @param signatureReader The BufferedReader to read the signature corresponding to the message.
    * @param publicKey       The public key used for verification.
-   * @return A list of Future objects, each representing the outcome of a verification task.
+   * @return A  Future object, representing the outcome of a verification task.
    * @throws IOException If an error occurs while reading the signature.
    */
-  private List<Future<Pair<Boolean, List<byte[]>>>> submitVerificationTasks(
+  private Future<Pair<Boolean, List<byte[]>>> submitVerificationTasks(
       ExecutorService executor,
       String messageLine,
       BufferedReader signatureReader, PublicKey publicKey) throws IOException {
-    List<Future<Pair<Boolean, List<byte[]>>>> futures = new ArrayList<>();
 
     String signatureLine = signatureReader.readLine();
-    Future<Pair<Boolean, List<byte[]>>> future = executor.submit(() -> {
+    return executor.submit(() -> {
       byte[] signatureBytes = new BigInteger(signatureLine).toByteArray();
       return verifySignature(publicKey, messageLine, signatureBytes);
     });
 
-    futures.add(future);
 
-    return futures;
   }
 
   /**
@@ -773,7 +763,7 @@ public class SignatureModel {
    * any recovered message parts, in the provided lists.
    *
    * @param keyIndex                  The index of the public key used for verification.
-   * @param futures                   The list of futures from which to collect results.
+   * @param future                    A future object from which to collect results.
    * @param timesPerKey               A list to store the time taken for each verification.
    * @param verificationResultsPerKey A list to store the results of each verification.
    * @param signaturesPerKey          A list to store the signatures.
@@ -781,26 +771,25 @@ public class SignatureModel {
    */
 
   private void collectVerificationResults(int keyIndex,
-      List<Future<Pair<Boolean, List<byte[]>>>> futures,
+      Future<Pair<Boolean, List<byte[]>>> future,
       List<List<Long>> timesPerKey, List<List<Boolean>> verificationResultsPerKey,
       List<List<byte[]>> signaturesPerKey, List<List<byte[]>> recoveredMessagesPerKey) {
-    for (Future<Pair<Boolean, List<byte[]>>> future1 : futures) {
-      Pair<Boolean, List<byte[]>> result = null;
-      long startTime = System.nanoTime();
-      try {
-        result = future1.get();
-      } catch (ExecutionException | InterruptedException e) {
-        throw new RuntimeException(e.getCause());
-      }
-      long endTime = System.nanoTime() - startTime;
 
-      timesPerKey.get(keyIndex).add(endTime);
-      verificationResultsPerKey.get(keyIndex).add(result.getKey());
-      signaturesPerKey.get(keyIndex).add(result.getValue().get(1));
-      recoveredMessagesPerKey.get(keyIndex).add(result.getValue().get(2));
-
-
+    Pair<Boolean, List<byte[]>> result = null;
+    long startTime = System.nanoTime();
+    try {
+      result = future.get();
+    } catch (ExecutionException | InterruptedException e) {
+      throw new RuntimeException(e.getCause());
     }
+    long endTime = System.nanoTime() - startTime;
+
+    timesPerKey.get(keyIndex).add(endTime);
+    verificationResultsPerKey.get(keyIndex).add(result.getKey());
+    signaturesPerKey.get(keyIndex).add(result.getValue().get(1));
+    recoveredMessagesPerKey.get(keyIndex).add(result.getValue().get(2));
+
+
   }
 
   /**
