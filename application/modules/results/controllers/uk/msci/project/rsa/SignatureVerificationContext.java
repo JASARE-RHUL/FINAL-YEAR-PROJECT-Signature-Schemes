@@ -35,8 +35,9 @@ public class SignatureVerificationContext extends BenchmarkingContext {
    *
    * @throws IOException If an I/O error occurs during file writing.
    */
-  public void exportVerificationResults() throws IOException {
-    signatureModel.exportVerificationResultsToCSV();
+  @Override
+  public void exportVerificationResults(int keyIndex) throws IOException {
+    signatureModel.exportVerificationResultsToCSV(keyIndex);
   }
 
   /**

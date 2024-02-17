@@ -35,12 +35,6 @@ public abstract class BenchmarkingContext {
   public void exportSignatureBatch() throws IOException { /* Default empty implementation */ }
 
   /**
-   * Exports the batch of recoverable messages generated during the benchmarking process. The method
-   * is to be overridden in subclasses to handle operation-specific export logic.
-   */
-  public void exportRecoverableMessages() throws IOException { /* Default empty implementation */ }
-
-  /**
    * Exports the batch of non-recoverable messages generated during the benchmarking process. The
    * method is to be overridden in subclasses to handle operation-specific export logic.
    */
@@ -51,7 +45,7 @@ public abstract class BenchmarkingContext {
    * Exports the results of the signature verification process conducted during benchmarking. The
    * method is to be overridden in subclasses to handle operation-specific export logic.
    */
-  public void exportVerificationResults() throws IOException { /* Default empty implementation */ }
+  public void exportVerificationResults(int keyIndex) throws IOException { /* Default empty implementation */ }
 
 
   /**
@@ -135,14 +129,5 @@ public abstract class BenchmarkingContext {
 
   }
 
-  /**
-   * Determines if the UI button for exporting the portions of messages recovered during signature
-   * verification should be shown. Subclasses can override this method to provide operation-specific
-   * display logic.
-   *
-   * @return false by default
-   */
-  public boolean showRecoverableBatchButton() {
-    return false;
-  }
+
 }
