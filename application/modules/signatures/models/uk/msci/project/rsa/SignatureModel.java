@@ -432,7 +432,8 @@ public class SignatureModel {
       PrivateKey privateKey,
       DoubleConsumer progressUpdater, List<List<Long>> timesPerKey,
       List<List<byte[]>> signaturesPerKey,
-      List<List<byte[]>> nonRecoverableMessagesPerKey) {
+      List<List<byte[]>> nonRecoverableMessagesPerKey)
+      throws InvalidSignatureTypeException, NoSuchAlgorithmException, InvalidDigestException, NoSuchProviderException {
 
     Future<List<byte[]>> future = submitSignatureTasks(executor, message, privateKey);
     collectSignatureResults(keyIndex, future, timesPerKey, signaturesPerKey,
