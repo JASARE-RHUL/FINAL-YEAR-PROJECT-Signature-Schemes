@@ -13,6 +13,51 @@ import uk.msci.project.rsa.exceptions.InvalidDigestException;
  */
 public class RSASSA_PKCS1_v1_5 extends SigScheme {
 
+  private static final byte[] SHA_256_HASH_ID = new byte[]{(byte) 0x30, (byte) 0x31, (byte) 0x30,
+      (byte) 0x0d, (byte) 0x06,
+      (byte) 0x09, (byte) 0x60, (byte) 0x86, (byte) 0x48, (byte) 0x01,
+      (byte) 0x65, (byte) 0x03, (byte) 0x04, (byte) 0x02, (byte) 0x01,
+      (byte) 0x05, (byte) 0x00, (byte) 0x04, (byte) 0x20};
+
+  private static final byte[] SHA_512_HASH_ID = new byte[]{
+      (byte) 0x30, (byte) 0x51, (byte) 0x30, (byte) 0x0D,
+      (byte) 0x06, (byte) 0x09, (byte) 0x60, (byte) 0x86,
+      (byte) 0x48, (byte) 0x01, (byte) 0x65, (byte) 0x03,
+      (byte) 0x04, (byte) 0x02, (byte) 0x03, (byte) 0x05,
+      (byte) 0x00, (byte) 0x04, (byte) 0x40};
+
+  private static final byte[] SHAKE_128_HASH_ID = new byte[]{
+      (byte) 0x30, (byte) 0x31, (byte) 0x30, (byte) 0x0D,
+      (byte) 0x06, (byte) 0x09, (byte) 0x60, (byte) 0x86,
+      (byte) 0x48, (byte) 0x01, (byte) 0x65, (byte) 0x03,
+      (byte) 0x04, (byte) 0x02, (byte) 0x0B, (byte) 0x04,
+      (byte) 0x20};
+
+  private static final byte[] SHAKE_256_HASH_ID = new byte[]{
+      (byte) 0x30, (byte) 0x51, (byte) 0x30, (byte) 0x0D,
+      (byte) 0x06, (byte) 0x09, (byte) 0x60, (byte) 0x86,
+      (byte) 0x48, (byte) 0x01, (byte) 0x65, (byte) 0x03,
+      (byte) 0x04, (byte) 0x02, (byte) 0x0C, (byte) 0x04,
+      (byte) 0x40};
+
+  private static final byte[] MGF_1_SHA_256_HASH_ID = new byte[]{
+      (byte) 0x30, (byte) 0x18, (byte) 0x06, (byte) 0x08,
+      (byte) 0x2A, (byte) 0x86, (byte) 0x48, (byte) 0x86,
+      (byte) 0xF7, (byte) 0x0D, (byte) 0x01, (byte) 0x01,
+      (byte) 0x08, (byte) 0x30, (byte) 0x0B, (byte) 0x06,
+      (byte) 0x09, (byte) 0x60, (byte) 0x86, (byte) 0x48,
+      (byte) 0x01, (byte) 0x65, (byte) 0x03, (byte) 0x04,
+      (byte) 0x02, (byte) 0x01};
+
+  private static final byte[] MGF_1_SHA_512_HASH_ID = new byte[]{
+      (byte) 0x30, (byte) 0x18,
+      (byte) 0x06, (byte) 0x08, (byte) 0x2A, (byte) 0x86, (byte) 0x48, (byte) 0x86, (byte) 0xF7,
+      (byte) 0x0D, (byte) 0x01, (byte) 0x01, (byte) 0x08,
+      (byte) 0x30, (byte) 0x0B,
+      (byte) 0x06, (byte) 0x09, (byte) 0x60, (byte) 0x86, (byte) 0x48, (byte) 0x01, (byte) 0x65,
+      (byte) 0x03, (byte) 0x04, (byte) 0x02, (byte) 0x03
+  };
+
 
   /**
    * Constructs an RSASSA_PKCS1_v1_5 instance with the specified RSA key. Initialises the modulus
@@ -23,7 +68,7 @@ public class RSASSA_PKCS1_v1_5 extends SigScheme {
    */
   public RSASSA_PKCS1_v1_5(Key key) {
     super(key);
-    initialiseHash();
+    this.hashID = SHA_256_HASH_ID;
   }
 
 
@@ -39,57 +84,28 @@ public class RSASSA_PKCS1_v1_5 extends SigScheme {
    */
   public RSASSA_PKCS1_v1_5(Key key, boolean isProvablySecureParams) {
     super(key, isProvablySecureParams);
-    initialiseHash();
+    this.hashID = SHA_256_HASH_ID;
   }
+
 
   /**
-   * Initialises hash IDs for supported hash functions (SHA-256 and SHA-512) according to the PKCS#1
-   * v1.5 specification.
+   * Retrieves the hash ID associated with a given digest type. This method returns the predefined
+   * hash ID byte array for the specified digest type as per the PKCS#1 v1.5 specification.
+   *
+   * @param digestType The type of digest algorithm for which the hash ID is required.
+   * @return A byte array representing the hash ID associated with the specified digest type.
+   * @throws IllegalArgumentException If the provided digest type is not supported.
    */
-  public void initialiseHash() {
-    // hash IDs for supported hash functions according to the PKCS Specification
-    this.hashID = new byte[]{(byte) 0x30, (byte) 0x31, (byte) 0x30, (byte) 0x0d, (byte) 0x06,
-        (byte) 0x09, (byte) 0x60, (byte) 0x86, (byte) 0x48, (byte) 0x01,
-        (byte) 0x65, (byte) 0x03, (byte) 0x04, (byte) 0x02, (byte) 0x01,
-        (byte) 0x05, (byte) 0x00, (byte) 0x04, (byte) 0x20};
-    hashIDmap.put(DigestType.SHA_256, this.hashID);
-    hashIDmap.put(DigestType.SHA_512, new byte[]{
-        (byte) 0x30, (byte) 0x51, (byte) 0x30, (byte) 0x0D,
-        (byte) 0x06, (byte) 0x09, (byte) 0x60, (byte) 0x86,
-        (byte) 0x48, (byte) 0x01, (byte) 0x65, (byte) 0x03,
-        (byte) 0x04, (byte) 0x02, (byte) 0x03, (byte) 0x05,
-        (byte) 0x00, (byte) 0x04, (byte) 0x40});
-    hashIDmap.put(DigestType.SHAKE_128, new byte[]{
-        (byte) 0x30, (byte) 0x31, (byte) 0x30, (byte) 0x0D,
-        (byte) 0x06, (byte) 0x09, (byte) 0x60, (byte) 0x86,
-        (byte) 0x48, (byte) 0x01, (byte) 0x65, (byte) 0x03,
-        (byte) 0x04, (byte) 0x02, (byte) 0x0B, (byte) 0x04,
-        (byte) 0x20});
-    hashIDmap.put(DigestType.SHAKE_256, new byte[]{
-        (byte) 0x30, (byte) 0x51, (byte) 0x30, (byte) 0x0D,
-        (byte) 0x06, (byte) 0x09, (byte) 0x60, (byte) 0x86,
-        (byte) 0x48, (byte) 0x01, (byte) 0x65, (byte) 0x03,
-        (byte) 0x04, (byte) 0x02, (byte) 0x0C, (byte) 0x04,
-        (byte) 0x40});
-    hashIDmap.put(DigestType.MGF_1_SHA_256, new byte[]{
-        (byte) 0x30, (byte) 0x18, (byte) 0x06, (byte) 0x08,
-        (byte) 0x2A, (byte) 0x86, (byte) 0x48, (byte) 0x86,
-        (byte) 0xF7, (byte) 0x0D, (byte) 0x01, (byte) 0x01,
-        (byte) 0x08, (byte) 0x30, (byte) 0x0B, (byte) 0x06,
-        (byte) 0x09, (byte) 0x60, (byte) 0x86, (byte) 0x48,
-        (byte) 0x01, (byte) 0x65, (byte) 0x03, (byte) 0x04,
-        (byte) 0x02, (byte) 0x01});
-    hashIDmap.put(DigestType.MGF_1_SHA_512, new byte[]{
-        (byte) 0x30, (byte) 0x18,
-        (byte) 0x06, (byte) 0x08, (byte) 0x2A, (byte) 0x86, (byte) 0x48, (byte) 0x86, (byte) 0xF7,
-        (byte) 0x0D, (byte) 0x01, (byte) 0x01, (byte) 0x08,
-        (byte) 0x30, (byte) 0x0B,
-        (byte) 0x06, (byte) 0x09, (byte) 0x60, (byte) 0x86, (byte) 0x48, (byte) 0x01, (byte) 0x65,
-        (byte) 0x03, (byte) 0x04, (byte) 0x02, (byte) 0x03
-    });
-
+  public byte[] getHashID(DigestType digestType) {
+    return switch (digestType) {
+      case SHA_256 -> SHA_256_HASH_ID;
+      case SHA_512 -> SHA_512_HASH_ID;
+      case SHAKE_128 -> SHAKE_128_HASH_ID;
+      case SHAKE_256 -> SHAKE_256_HASH_ID;
+      case MGF_1_SHA_256 -> MGF_1_SHA_256_HASH_ID;
+      case MGF_1_SHA_512 -> MGF_1_SHA_512_HASH_ID;
+    };
   }
-
 
   /**
    * Encodes a message using a custom implementation of the EMSA-PKCS1-v1_5 encoding method designed
