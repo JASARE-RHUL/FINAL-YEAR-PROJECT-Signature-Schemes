@@ -568,16 +568,14 @@ public class SignatureModel {
    *                 exported.
    * @throws IOException If there is an error in creating the file or writing to it.
    */
-  public void exportNonRecoverableBatch(String fileName, int keyIndex) throws IOException {
-    File nonRecoverableBatch = FileHandle.createUniqueFile(
-        fileName.substring(0, fileName.length() - 4) + "_" + getPrivKeyLengths().get(keyIndex)
-            + "bits" + fileName.substring(fileName.length() - 4));
+  public void exportNonRecoverableBatch(String fileName) throws IOException {
+    File nonRecoverableBatch = FileHandle.createUniqueFile(fileName);
     try (BufferedWriter nonRecoverableWriter = new BufferedWriter(
         new FileWriter(nonRecoverableBatch))) {
-      for (int i = keyIndex * nonRecoverableMessages.size(); i < numTrials; i++) {
-        if (nonRecoverableMessages.get(i).length > 0) {
+      for (byte[] nonRecoverableMessage : nonRecoverableMessages) {
+        if (nonRecoverableMessage.length > 0) {
           nonRecoverableWriter.write("1 ");  // Flag indicating a non-recoverable message follows
-          nonRecoverableWriter.write(new String(nonRecoverableMessages.get(i)));
+          nonRecoverableWriter.write(new String(nonRecoverableMessage));
         } else {
           nonRecoverableWriter.write("0");  // Flag indicating no non-recoverable message
         }
@@ -585,6 +583,7 @@ public class SignatureModel {
       }
     }
   }
+
 
 
   /**
