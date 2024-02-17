@@ -522,7 +522,7 @@ public abstract class SignatureBaseController {
               + " batch. Please make sure the file contains a contiguous sequence of new line separated messages that matches the number entered in the the above field.");
     }
 
-    return isValidFile ? numMessages : 0;
+    return isValidFile  ? numMessages : 0;
   }
 
   /**

@@ -303,7 +303,7 @@ public class SignatureCreationController extends SignatureBaseController {
     BenchmarkingContext context = new SignatureCreationContext(signatureModel);
     resultsController.setContext(context);
     resultsController.showResultsView(mainController.getPrimaryStage(),
-        signatureModel.getClockTimesPerTrial());
+        signatureModel.getClockTimesPerTrial(), signatureModel.getPrivKeyLengths());
   }
 
 
