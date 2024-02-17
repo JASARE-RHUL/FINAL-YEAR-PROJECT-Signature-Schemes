@@ -19,6 +19,7 @@ import java.util.function.DoubleConsumer;
 import java.util.stream.Collectors;
 import java.util.zip.DataFormatException;
 import javafx.util.Pair;
+import net.sf.saxon.expr.instruct.Message;
 import uk.msci.project.rsa.exceptions.InvalidDigestException;
 import uk.msci.project.rsa.exceptions.InvalidSignatureTypeException;
 
@@ -453,12 +454,13 @@ public class SignatureModel {
    * @return A Future object representing the outcome of a signature task.
    */
   private Future<List<byte[]>> submitSignatureTasks(ExecutorService executor,
-      String message, PrivateKey privateKey) {
+      String message, PrivateKey privateKey)
+      throws InvalidSignatureTypeException, NoSuchAlgorithmException, InvalidDigestException, NoSuchProviderException {
 
+    SigScheme sigScheme = SignatureFactory.getSignatureScheme(currentType, privateKey,
+        isProvablySecure);
+    sigScheme.setDigest(currentHashType, hashSize);
     return executor.submit(() -> {
-      SigScheme sigScheme = SignatureFactory.getSignatureScheme(currentType, privateKey,
-          isProvablySecure);
-      sigScheme.setDigest(currentHashType, hashSize);
       byte[] signature = sigScheme.sign(message.getBytes());
       byte[] nonRecoverableM = sigScheme.getNonRecoverableM();
       return List.of(signature, nonRecoverableM);
@@ -583,7 +585,6 @@ public class SignatureModel {
       }
     }
   }
-
 
 
   /**
@@ -711,10 +712,8 @@ public class SignatureModel {
       BufferedReader signatureReader, PublicKey publicKey) throws IOException {
 
     String signatureLine = signatureReader.readLine();
-    return executor.submit(() -> {
-      byte[] signatureBytes = new BigInteger(signatureLine).toByteArray();
-      return verifySignature(publicKey, messageLine, signatureBytes);
-    });
+    byte[] signatureBytes = new BigInteger(signatureLine).toByteArray();
+    return executor.submit(() -> verifySignature(publicKey, messageLine, signatureBytes));
 
 
   }
@@ -830,7 +829,8 @@ public class SignatureModel {
     try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
       // Write header
       writer.write(
-          "KeyIndex, Verification Result, Original Message, Signature, Recovered Message\n");
+          "KeyIndex" + " (" + getPublicKeyLengths().get(keyIndex) + "bit)"
+              + "Verification Result, Original Message, Signature, Recovered Message\n");
 
       int numKeys = publicKeyBatch.size();
       int numMessagesPerKey = verificationResults.size() / numKeys;

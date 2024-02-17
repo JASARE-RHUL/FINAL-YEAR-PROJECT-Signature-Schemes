@@ -204,10 +204,11 @@ public class GenModel {
       // List to hold future objects for asynchronous task execution.
 
       // Submit a new key generation task to the executor service.
+      int[] intArray = keyParam.getKey();
+      boolean isSmallE = keyParam.getValue();
+      GenRSA genRSA = new GenRSA(intArray.length, intArray, isSmallE);
       Future<?> future = executor.submit(() -> {
-        int[] intArray = keyParam.getKey();
-        boolean isSmallE = keyParam.getValue();
-        new GenRSA(intArray.length, intArray, isSmallE).generateKeyPair();
+        genRSA.generateKeyPair();
       });
 
       // Collect and measure the time taken for each key generation task after submission.
