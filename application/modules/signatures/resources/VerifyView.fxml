@@ -3,168 +3,184 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.geometry.*?>
 <?import javafx.collections.FXCollections?>
-
 <?import javafx.scene.image.ImageView?>
 <?import java.lang.String?>
 <?import org.controlsfx.control.ToggleSwitch?>
-<AnchorPane xmlns:fx="http://javafx.com/fxml" fx:controller="uk.msci.project.rsa.VerifyView"
-  prefHeight="400.0" prefWidth="600.0" fx:id="root">
-  <VBox alignment="CENTER" spacing="20" AnchorPane.topAnchor="50" AnchorPane.bottomAnchor="50"
-    AnchorPane.leftAnchor="50" AnchorPane.rightAnchor="50">
-    <!-- Title and Logo -->
-    <HBox alignment="CENTER" spacing="10">
-      <Label text="Signature Scheme POC - Verify" style="-fx-font-weight: bold; -fx-font-size: 24;">
-        <graphic>
 
-          <ImageView fitHeight="30" fitWidth="30" preserveRatio="true"/>
-        </graphic>
-      </Label>
-    </HBox>
+<BorderPane xmlns:fx="http://javafx.com/fxml" fx:controller="uk.msci.project.rsa.VerifyView"
+  prefHeight="650.0" prefWidth="800.0" fx:id="root">
 
-    <Separator/>
+  <!-- Header Section -->
+  <top>
+    <VBox styleClass="header-section">
+      <BorderPane minHeight="100" style="-fx-padding: 10 0 0 0;">
+        <left>
+          <Label id="header-text" text="Digital Signatures"/>
+        </left>
+        <right>
+          <Label text="Verifying" id="header-text"/>
+        </right>
+      </BorderPane>
+    </VBox>
+  </top>
 
-    <!-- ToggleSwitch for Benchmarking Mode -->
-    <HBox alignment="CENTER_LEFT" spacing="10">
-      <Label text="Benchmarking Mode:" styleClass="bold-label"/>
-      <ToggleSwitch fx:id="benchmarkingModeToggle" selected="true"/>
-    </HBox>
-    <Separator/>
-    <!-- Text Area and Import Text Button -->
-    <HBox spacing="10" alignment="CENTER">
+  <!-- Main Content -->
+  <center>
+    <VBox alignment="CENTER" spacing="20" style="-fx-padding: 10 10 10 10;">
+      <!-- Title and Logo -->
+      <HBox alignment="CENTER" spacing="10">
+        <Label text="Signature Verification" style="-fx-font-weight: bold; -fx-font-size: 24;">
+          <graphic>
+            <ImageView fitHeight="30" fitWidth="30" preserveRatio="true"/>
+          </graphic>
+        </Label>
+      </HBox>
 
-      <VBox spacing="27">
-        <VBox spacing="5" managed="false" visible="false">
-          <HBox spacing="10" alignment="CENTER_LEFT">
-            <Label text="Enter text to verify:" styleClass="bold-label"/>
-            <Button fx:id="importTextButton" text="Import Text..."/>
-          </HBox>
+      <Separator/>
 
-          <TextArea fx:id="textInput" prefHeight="100" prefWidth="400" wrapText="true"
-            visible="true"/>
-          <HBox alignment="CENTER_LEFT" spacing="5" visible="false" fx:id="textInputHBox">
-            <Label fx:id="textFileNameLabel" text=""/>
-            <ImageView fx:id="textFileCheckmarkImage" fitWidth="20" fitHeight="20"
-              preserveRatio="true"/>
-          </HBox>
-        </VBox>
-        <VBox spacing="5" alignment="CENTER">
-          <HBox spacing="10" fx:id="messageBatchHBox">
-            <Label fx:id="messageBatchText" text="Message Batch:" styleClass="bold-label"/>
-            <TextField fx:id="messageBatchField" prefWidth="200"
-              text="Please Import a message batch"
-              editable="false"/>
-            <ImageView fx:id="textFileCheckmarkImage" fitWidth="20" fitHeight="20"
-              preserveRatio="true"
-              visible="false"/>
-            <Button fx:id="importTextButton" text="Import Text" visible="false" managed="false"/>
-            <Button fx:id="importTextBatchBtn" text="Import Text"/>
-            <Button fx:id="cancelImportTextButton" text="Cancel Import" visible="false"
-              managed="false"/>
-          </HBox>
-        </VBox>
+      <!-- ToggleSwitch for Benchmarking Mode -->
+      <HBox alignment="CENTER_LEFT" spacing="10">
+        <Label text="Benchmarking Mode:" styleClass="bold-label"/>
+        <ToggleSwitch fx:id="benchmarkingModeToggle" selected="true"/>
+      </HBox>
 
-        <!-- Public Key Input and Import Button -->
-        <HBox alignment="CENTER_LEFT" spacing="10">
-          <Label text="Public Key Batch:" styleClass="bold-label"/>
-          <TextField fx:id="keyField" prefWidth="200" text="Please Import a public key batch"
-            editable="false"/>
-          <ImageView fx:id="checkmarkImage" fitWidth="20" fitHeight="20" preserveRatio="true"
-            visible="false"/>
-          <Button fx:id="importKeyButton" text="Import Private Key" visible="false"
-            managed="false"/>
-          <Button fx:id="importKeyBatchButton" text="Import Key Batch" visible="true"
-            managed="true"/>
-          <Button fx:id="cancelImportKeyButton" text="Cancel Import" visible="false"
-            managed="false"/>
-        </HBox>
+      <Separator/>
 
-        <!-- Signature -->
-
-        <HBox spacing="10" alignment="CENTER_LEFT" managed="false" visible="false" fx:id="signatureBatchHBox">
-          <VBox spacing="5">
+      <!-- Text Area and Import Text Button -->
+      <HBox spacing="10" alignment="CENTER">
+        <VBox spacing="27">
+          <VBox spacing="5" managed="false" visible="false">
             <HBox spacing="10" alignment="CENTER_LEFT">
-              <Label text="Signature:" styleClass="bold-label"/>
-              <Button fx:id="importSigButton" text="Import Signature..."/>
+              <Label text="Enter text to verify:" styleClass="bold-label"/>
+              <Button fx:id="importTextButton" text="Import Text..."/>
             </HBox>
-            <TextArea fx:id="signatureText" prefHeight="100" prefWidth="400" wrapText="true"
+
+            <TextArea fx:id="textInput" prefHeight="100" prefWidth="400" wrapText="true"
               visible="true"/>
-            <HBox alignment="CENTER_LEFT" spacing="5" visible="false" fx:id="sigFileHBox">
-              <Label fx:id="sigFileNameLabel"/>
-              <ImageView fx:id="sigFileCheckmarkImage" fitWidth="20" fitHeight="20"
+            <HBox alignment="CENTER_LEFT" spacing="5" visible="false" fx:id="textInputHBox">
+              <Label fx:id="textFileNameLabel" text=""/>
+              <ImageView fx:id="textFileCheckmarkImage" fitWidth="20" fitHeight="20"
                 preserveRatio="true"/>
             </HBox>
-
           </VBox>
-        </HBox>
-        <HBox alignment="CENTER_LEFT" spacing="10">
-          <Label fx:id="signatureBatchText" text="Signature Batch:" styleClass="bold-label"/>
-          <TextField fx:id="signatureField" prefWidth="200" text="Please Import a signature batch"
-            editable="false"/>
-          <ImageView fx:id="sigFileCheckmarkImage" fitWidth="20" fitHeight="20" preserveRatio="true"
-            visible="false"/>
-          <Button fx:id="importSigBatchButton" text="Import Signature Batch"/>
-          <Button fx:id="cancelImportSigBatchButton" text="Cancel Import" visible="false"
-            managed="false"/>
-        </HBox>
-        <!-- Signature Scheme Dropdown -->
-        <HBox spacing="10">
-          <Label text="Signature Scheme:" styleClass="bold-label"/>
-          <ComboBox fx:id="signatureSchemeDropdown" prefWidth="200">
-            <items>
-              <FXCollections fx:factory="observableArrayList">
-                <String fx:value="PKCS#1 v1.5"/>
-                <String fx:value="ANSI X9.31 rDSA"/>
-                <String fx:value="ISO\IEC 9796-2 Scheme 1"/>
-              </FXCollections>
-            </items>
-          </ComboBox>
-        </HBox>
+          <VBox spacing="5" alignment="CENTER">
+            <HBox spacing="10" fx:id="messageBatchHBox">
+              <Label fx:id="messageBatchText" text="Message Batch:" styleClass="bold-label"/>
+              <TextField fx:id="messageBatchField" prefWidth="200"
+                text="Please Import a message batch"
+                editable="false"/>
+              <ImageView fx:id="textFileCheckmarkImage" fitWidth="20" fitHeight="20"
+                preserveRatio="true"
+                visible="false"/>
+              <Button fx:id="importTextButton" text="Import Text" visible="false" managed="false"/>
+              <Button fx:id="importTextBatchBtn" text="Import Text"/>
+              <Button fx:id="cancelImportTextButton" text="Cancel Import" visible="false"
+                managed="false"/>
+            </HBox>
+          </VBox>
 
-        <!-- Parameter Choice Radio Buttons -->
-        <HBox spacing="10">
-          <Label text="Hash Function Size:" styleClass="bold-label"/>
-          <RadioButton fx:id="standardParametersRadio" text="Standard" selected="true"/>
-          <RadioButton fx:id="provablySecureParametersRadio" text="Provably Secure"/>
-          <RadioButton fx:id="customParametersRadio" text="Custom"/>
-        </HBox>
+          <!-- Public Key Input and Import Button -->
+          <HBox alignment="CENTER_LEFT" spacing="10">
+            <Label text="Public Key Batch:" styleClass="bold-label"/>
+            <TextField fx:id="keyField" prefWidth="200" text="Please Import a public key batch"
+              editable="false"/>
+            <ImageView fx:id="checkmarkImage" fitWidth="20" fitHeight="20" preserveRatio="true"
+              visible="false"/>
+            <Button fx:id="importKeyButton" text="Import Private Key" visible="false"
+              managed="false"/>
+            <Button fx:id="importKeyBatchButton" text="Import Key Batch" visible="true"
+              managed="true"/>
+            <Button fx:id="cancelImportKeyButton" text="Cancel Import" visible="false"
+              managed="false"/>
+          </HBox>
 
-        <!-- Hash function Dropdown -->
-        <HBox spacing="10">
-          <Label text="Hash Function:" styleClass="bold-label"/>
-          <ComboBox fx:id="hashFunctionDropdown" prefWidth="200">
-            <items>
-              <FXCollections fx:factory="observableArrayList">
-                <String fx:value="SHA-256"/>
-                <String fx:value="SHA-512"/>
-                <String fx:value="SHA-256 with MGF1"/>
-                <String fx:value="SHA-512 with MGF1"/>
-                <String fx:value="SHAKE-128"/>
-                <String fx:value="SHAKE-256"/>
-              </FXCollections>
-            </items>
-          </ComboBox>
-          <TextField fx:id="hashOutputSizeField" promptText="Enter hash output size"
-            visible="false" managed="false" maxWidth="140"/>
-        </HBox>
-      </VBox>
-    </HBox>
+          <!-- Signature -->
 
+          <HBox spacing="10" alignment="CENTER_LEFT" managed="false" visible="false" fx:id="signatureBatchHBox">
+            <VBox spacing="5">
+              <HBox spacing="10" alignment="CENTER_LEFT">
+                <Label text="Signature:" styleClass="bold-label"/>
+                <Button fx:id="importSigButton" text="Import Signature..."/>
+              </HBox>
+              <TextArea fx:id="signatureText" prefHeight="100" prefWidth="400" wrapText="true"
+                visible="true"/>
+              <HBox alignment="CENTER_LEFT" spacing="5" visible="false" fx:id="sigFileHBox">
+                <Label fx:id="sigFileNameLabel"/>
+                <ImageView fx:id="sigFileCheckmarkImage" fitWidth="20" fitHeight="20"
+                  preserveRatio="true"/>
+              </HBox>
 
-    <Button text="Verify Signature" fx:id="verifyBtn" maxWidth="400" managed="false"
-      visible="false"/>
-    <Button fx:id="verificationBenchmarkButton" styleClass="bold-label"
-      text="Start Verification Benchmarking"
-      maxWidth="400" managed="true" visible="true"/>
+            </VBox>
+          </HBox>
+          <HBox alignment="CENTER_LEFT" spacing="10">
+            <Label fx:id="signatureBatchText" text="Signature Batch:" styleClass="bold-label"/>
+            <TextField fx:id="signatureField" prefWidth="200" text="Please Import a signature batch"
+              editable="false"/>
+            <ImageView fx:id="sigFileCheckmarkImage" fitWidth="20" fitHeight="20" preserveRatio="true"
+              visible="false"/>
+            <Button fx:id="importSigBatchButton" text="Import Signature Batch"/>
+            <Button fx:id="cancelImportSigBatchButton" text="Cancel Import" visible="false"
+              managed="false"/>
+          </HBox>
+          <!-- Signature Scheme Dropdown -->
+          <HBox spacing="10">
+            <Label text="Signature Scheme:" styleClass="bold-label"/>
+            <ComboBox fx:id="signatureSchemeDropdown" prefWidth="200">
+              <items>
+                <FXCollections fx:factory="observableArrayList">
+                  <String fx:value="PKCS#1 v1.5"/>
+                  <String fx:value="ANSI X9.31 rDSA"/>
+                  <String fx:value="ISO\IEC 9796-2 Scheme 1"/>
+                </FXCollections>
+              </items>
+            </ComboBox>
+          </HBox>
 
-    <Separator/>
+          <!-- Parameter Choice Radio Buttons -->
+          <HBox spacing="10">
+            <Label text="Hash Function Size:" styleClass="bold-label"/>
+            <RadioButton fx:id="standardParametersRadio" text="Standard" selected="true"/>
+            <RadioButton fx:id="provablySecureParametersRadio" text="Provably Secure"/>
+            <RadioButton fx:id="customParametersRadio" text="Custom"/>
+          </HBox>
 
-    <!-- Navigation Buttons -->
-    <HBox spacing="20" alignment="CENTER">
-      <Button fx:id="backToMainMenuButton" text="Back to Main Menu"/>
-      <Button fx:id="helpButton" text="Help"/>
-      <Label text="Version: 1.0.0   Copyright 2023"/>
-    </HBox>
-  </VBox>
+          <!-- Hash function Dropdown -->
+          <HBox spacing="10">
+            <Label text="Hash Function:" styleClass="bold-label"/>
+            <ComboBox fx:id="hashFunctionDropdown" prefWidth="200">
+              <items>
+                <FXCollections fx:factory="observableArrayList">
+                  <String fx:value="SHA-256"/>
+                  <String fx:value="SHA-512"/>
+                  <String fx:value="SHA-256 with MGF1"/>
+                  <String fx:value="SHA-512 with MGF1"/>
+                  <String fx:value="SHAKE-128"/>
+                  <String fx:value="SHAKE-256"/>
+                </FXCollections>
+              </items>
+            </ComboBox>
+            <TextField fx:id="hashOutputSizeField" promptText="Enter hash output size" visible="false" managed="false" maxWidth="140"/>
+          </HBox>
+        </VBox>
+      </HBox>
+
+      <Button text="Verify Signature" fx:id="verifyBtn" maxWidth="400" managed="false"
+        visible="false"/>
+      <Button fx:id="verificationBenchmarkButton" styleClass="bold-label"
+        text="Start Verification Benchmarking"
+        maxWidth="400" managed="true" visible="true"/>
+      <Separator/>
+
+      <!-- Navigation Buttons -->
+      <HBox spacing="20" alignment="CENTER">
+        <Button fx:id="backToMainMenuButton" text="Back to Main Menu"/>
+        <Button fx:id="helpButton" text="Help"/>
+        <Label text="Version: 1.0.0   Copyright 2023"/>
+      </HBox>
+    </VBox>
+  </center>
+
+  <!-- Overlay Notification Pane -->
   <StackPane fx:id="notificationPane" alignment="CENTER" visible="false" disable="true"
     style="-fx-background-color: rgba(0,0,0,0.5);"
     AnchorPane.topAnchor="0" AnchorPane.rightAnchor="0" AnchorPane.bottomAnchor="0"
@@ -186,6 +202,4 @@
       <Button fx:id="closeNotificationButton" text="Close" alignment="CENTER"/>
     </VBox>
   </StackPane>
-
-
-</AnchorPane>
+</BorderPane>

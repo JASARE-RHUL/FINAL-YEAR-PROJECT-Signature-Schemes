@@ -2,21 +2,41 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.control.*?>
 
-<AnchorPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="uk.msci.project.rsa.MainMenuView" prefHeight="400.0" prefWidth="600.0">
-  <VBox alignment="CENTER" spacing="20" AnchorPane.topAnchor="0" AnchorPane.bottomAnchor="0" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0">
-    <Label text="Signature Scheme POC" style="-fx-font-size: 24; -fx-font-weight: bold;" />
-    <!--<Label text="[LOGO HERE]" />-->
-    <Separator />
-    <Button fx:id="generateKeysButton" text="[K] Generate Keys" prefWidth="200" />
-    <Button fx:id="signDocumentButton" text="[S] Sign Document" prefWidth="200" />
-    <Button fx:id="verifySignatureButton" text="[V] Verify Signature" prefWidth="200" />
-    <Separator />
+<BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+  stylesheets="SignatureView.css" fx:controller="uk.msci.project.rsa.MainMenuView"
+  prefHeight="650.0" prefWidth="800.0">
 
-    <!-- Navigation Buttons -->
-    <HBox spacing="20" alignment="CENTER">
-      <Button fx:id="helpButton" text="Help"/>
-      <Label text="Version: 1.0.0   Copyright 2023"/>
-    </HBox>
-  </VBox>
+  <!-- Header Section -->
+  <top>
+    <VBox styleClass="header-section">
+      <BorderPane minHeight="100" style="-fx-padding: 10 0 0 0;">
+        <left>
+          <Label id="header-text" text="Digital Signatures"/>
+        </left>
+        <right>
+          <Label text="Main Menu" id="header-text"/>
+        </right>
+      </BorderPane>
+    </VBox>
+  </top>
 
-</AnchorPane>
+  <!-- Main Content -->
+  <center>
+    <VBox alignment="CENTER" spacing="20" style="-fx-padding: 10 10 10 10;">
+      <Label text="Signature Schemes in Practice" style="-fx-font-size: 24; -fx-font-weight: 700;"/>
+      <!--<Label text="[LOGO HERE]" />-->
+      <Separator/>
+      <Button fx:id="generateKeysButton" text="Generate Keys" styleClass="bold-label" prefWidth="200"/>
+      <Button fx:id="signDocumentButton" text="Sign Document"  styleClass="bold-label" prefWidth="200"/>
+      <Button fx:id="verifySignatureButton" text="Verify Signature"  styleClass="bold-label" prefWidth="200"/>
+      <Separator/>
+
+      <!-- Navigation Buttons -->
+      <HBox spacing="20" alignment="CENTER">
+        <Button fx:id="helpButton" text="Help"/>
+        <Label text="Version: 1.0.0   Copyright 2023"/>
+      </HBox>
+    </VBox>
+  </center>
+
+</BorderPane>
