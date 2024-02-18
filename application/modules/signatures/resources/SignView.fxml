@@ -134,16 +134,17 @@
       <Button fx:id="createSignatureButton" styleClass="bold-label" text="Create Signature" maxWidth="200" managed="false" visible="false"/>
       <Button fx:id="SigBenchmarkButton" styleClass="bold-label" text="Start Signature Benchmarking" maxWidth="400" managed="true" visible="true"/>
 
-      <Separator/>
 
-      <!-- Navigation Buttons -->
-      <HBox spacing="20" alignment="CENTER">
-        <Button fx:id="backToMainMenuButton" text="Back to Main Menu"/>
-        <Button fx:id="helpButton" text="Help"/>
-        <Label text="Version: 1.0.0   Copyright 2023"/>
-      </HBox>
     </VBox>
   </center>
+  <bottom>
+    <!-- Navigation Buttons -->
+    <HBox id="footer-section" spacing="20">
+      <Button fx:id="backToMainMenuButton" text="Back to Main Menu"/>
+      <Button fx:id="helpButton" text="Help"/>
+      <Label text="Version: 1.0.0 Copyright 2024 JA"/>
+    </HBox>
+  </bottom>
 
   <!-- Overlay Notification Pane -->
   <StackPane fx:id="notificationPane" alignment="CENTER" visible="false" disable="true"

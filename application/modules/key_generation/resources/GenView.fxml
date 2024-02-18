@@ -37,8 +37,8 @@
         <Label text="Benchmarking Mode:" style="-fx-font-weight: bold;"/>
         <ToggleSwitch fx:id="benchmarkingModeToggle" selected="true"/>
       </HBox>
-
       <Separator/>
+
 
       <!-- Key Size Input Section -->
       <VBox alignment="CENTER" spacing="5" visible="false" managed="false">
@@ -71,14 +71,16 @@
           style="-fx-font-weight: bold; -fx-text-fill: red;" wrapText="true" minHeight="40" prefHeight="60"/>
       </VBox>
 
-      <Separator/>
 
-      <!-- Navigation Buttons -->
-      <HBox spacing="20" alignment="CENTER">
-        <Button fx:id="backToMainMenuButton" text="Back to Main Menu"/>
-        <Button fx:id="helpButton" text="Help"/>
-        <Label text="Version: 1.0.0   Copyright 2023"/>
-      </HBox>
+
     </VBox>
   </center>
+  <bottom>
+  <!-- Navigation Buttons -->
+  <HBox id="footer-section" spacing="20">
+    <Button fx:id="backToMainMenuButton" text="Back to Main Menu"/>
+    <Button fx:id="helpButton" text="Help"/>
+    <Label text="Version: 1.0.0 Copyright 2024 JA"/>
+  </HBox>
+  </bottom>
 </BorderPane>

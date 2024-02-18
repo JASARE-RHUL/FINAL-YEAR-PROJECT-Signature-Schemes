@@ -13,7 +13,7 @@
   -jfx-primary-color: -fx-accent;
   -jfx-light-primary-color: -fx-accent;
   -jfx-dark-primary-color: -fx-accent;
-  -fx-focus-color: rgb(222, 222, 222);
+
   -jfx-secondary-color: -fx-focus-color;
   -jfx-light-secondary-color: -fx-focus-color;
   -jfx-dark-secondary-color: -fx-focus-color;
@@ -43,6 +43,13 @@
   -fx-background-color: -fx-accent; /* Background color of the tab headers */
 }
 
+#footer-section {
+  -fx-alignment: center;
+
+  -fx-border-width: 1;
+  -fx-border-color: #E8E8E8 transparent transparent transparent;
+  -fx-padding: 15 0 30 0;
+}
 .jfx-tab-pane .tab-header-background {
   -fx-background-color: -fx-accent; /* Background color behind the tabs */
 }
@@ -63,6 +70,10 @@
   -fx-text-fill: black; /* Text color for tab labels */
   -fx-alignment: center; /* Center text within the tab */
   -fx-text-alignment: center;
+}
+.jfx-tab-pane .tab {
+  -fx-border-width: 1;
+  -fx-border-color: transparent transparent #E8E8E8 transparent;
 }
 
 .jfx-tab-pane .tab {

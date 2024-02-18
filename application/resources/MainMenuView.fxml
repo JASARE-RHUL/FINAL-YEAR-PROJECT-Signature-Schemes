@@ -29,14 +29,15 @@
       <Button fx:id="generateKeysButton" text="Generate Keys" styleClass="bold-label" prefWidth="200"/>
       <Button fx:id="signDocumentButton" text="Sign Document"  styleClass="bold-label" prefWidth="200"/>
       <Button fx:id="verifySignatureButton" text="Verify Signature"  styleClass="bold-label" prefWidth="200"/>
-      <Separator/>
 
-      <!-- Navigation Buttons -->
-      <HBox spacing="20" alignment="CENTER">
-        <Button fx:id="helpButton" text="Help"/>
-        <Label text="Version: 1.0.0   Copyright 2023"/>
-      </HBox>
+
     </VBox>
   </center>
+  <bottom>
+  <!-- Navigation Buttons -->
+  <HBox id="footer-section" spacing="20">
+    <Label text="Version: 1.0.0 Copyright 2024 JA"/>
+  </HBox>
+</bottom>
 
 </BorderPane>
