@@ -6,6 +6,7 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 import java.io.IOException;
 
@@ -15,11 +16,39 @@ import java.io.IOException;
  */
 public class MainController {
 
+  /**
+   * The primary stage for the application. This is the main window or frame of the JavaFX
+   * application where different views are displayed.
+   */
   private Stage primaryStage;
+  /**
+   * The main scene for the application. This is the container for all content in a scene graph.
+   */
+  private Scene scene;
+  /**
+   * The main menu view of the application. This view serves as the starting point of the
+   * application, allowing navigation to core functionality.
+   */
   private MainMenuView mainMenuView;
+
+  /**
+   * Controller for the key generation functionality. This controller handles the logic related to
+   * generating keys.
+   */
   private GenController genController;
+
+  /**
+   * Controller for the signature verification functionality. Manages the logic and view related to
+   * verifying digital signatures.
+   */
   private SignatureVerificationController SignatureVerificationController;
+
+  /**
+   * Controller for the signature creation functionality. Handles the process of creating digital
+   * signatures, typically by signing documents or messages.
+   */
   private SignatureCreationController SignatureCreationController;
+
 
   /**
    * Constructs a MainController with the primary stage of the application. This constructor
@@ -29,6 +58,7 @@ public class MainController {
    */
   public MainController(Stage primaryStage) {
     this.primaryStage = primaryStage;
+    scene = new Scene(new Pane());
 
     // Initially show the MainMenuView
     showMainMenuView();
@@ -40,11 +70,12 @@ public class MainController {
    */
   void showMainMenuView() {
     try {
-      FXMLLoader loader = new FXMLLoader(
-          getClass().getResource("/MainMenuView.fxml"));
+
+      FXMLLoader loader = new FXMLLoader(getClass().getResource("/MainMenuView.fxml"));
       Parent root = loader.load();
+      scene.setRoot(root);
       mainMenuView = loader.getController();
-      primaryStage.setScene(new Scene(root));
+      primaryStage.setScene(scene);
       primaryStage.show();
       mainMenuView.addGenerateKeysObserver(new GenerateKeysButtonObserver());
       mainMenuView.addSignDocumentObserver(new SignDocumentObserver());
@@ -121,4 +152,27 @@ public class MainController {
   public Stage getPrimaryStage() {
     return primaryStage;
   }
+
+  /**
+   * Sets the root of the main scene to the provided parent node.
+   * This method is used to change the content displayed in the primary stage of the application.
+   *
+   * @param parent The root node of the new content to be displayed on the scene.
+   */
+  public void setScene(Parent parent) {
+    scene.setRoot(parent);
+    primaryStage.setScene(scene);
+  }
+
+
+  /**
+   * Retrieves the main scene of the application.
+   * This scene is used as the primary container for all content in the application's user interface.
+   *
+   * @return The main Scene of the application.
+   */
+  public Scene getScene() {
+    return scene;
+  }
+
 }
