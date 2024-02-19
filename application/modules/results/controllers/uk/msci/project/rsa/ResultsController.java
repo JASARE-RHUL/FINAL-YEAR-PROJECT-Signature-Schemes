@@ -125,6 +125,7 @@ public class ResultsController {
     try {
       FXMLLoader loader = new FXMLLoader(getClass().getResource("/ResultsView.fxml"));
       Parent root = loader.load();
+      resultsView = loader.getController();
       this.keyLengths = keyLengths;
       this.totalKeys = this.keyLengths.size();
       this.results = results;
@@ -132,13 +133,13 @@ public class ResultsController {
       this.trialsPerKey = totalTrials / totalKeys;
 
       splitResultsByKeys();
-      resultsView = loader.getController();
+
       displayCurrentContextButtons();
       initialiseKeySwitchButtons();
       resultsModel = resultsModels.get(0);
       setStatsResultsView(resultsModel); // Display results for the first key by default
       setupObservers();
-      primaryStage.setScene(new Scene(root));
+      mainController.setScene(root);
     } catch (IOException e) {
       e.printStackTrace();
     }
