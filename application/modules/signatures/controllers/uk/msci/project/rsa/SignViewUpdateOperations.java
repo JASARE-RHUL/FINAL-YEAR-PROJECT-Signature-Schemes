@@ -118,6 +118,14 @@ public class SignViewUpdateOperations implements ViewUpdate {
   }
 
   /**
+   * Updates the image next to the message batch file input within the sign view, typically with a
+   * checkmark to indicate that the text file has been successfully loaded.
+   */
+  public void setCheckmarkImageMessageBatch() {
+    signView.setCheckmarkImageMessageBatch();
+  }
+
+  /**
    * Sets the visibility of the text file checkmark in the sign view.
    *
    * @param visible {@code true} to make the text file checkmark visible, {@code false} otherwise.
@@ -153,8 +161,19 @@ public class SignViewUpdateOperations implements ViewUpdate {
    * @param visible {@code true} to show the cancel import key button, {@code false} to hide it.
    */
   @Override
-  public void setCancelImportKeyButtonVisibility(boolean visible) {
+  public void setCancelImportKeyBatchButtonVisibility(boolean visible) {
     signView.setCancelImportKeyButtonVisibility(visible);
+  }
+
+
+  /**
+   * Sets the visibility of the button used to cancel the import of a single key.
+   *
+   * @param visible true to make the cancel import single key button visible, false to hide it.
+   */
+  @Override
+  public void setCancelImportSingleKeyButtonVisibility(boolean visible) {
+    signView.setCancelImportSingleKeyButtonVisibility(visible);
   }
 
 
@@ -166,6 +185,16 @@ public class SignViewUpdateOperations implements ViewUpdate {
   @Override
   public void setImportKeyBatchButtonVisibility(boolean visible) {
     signView.setImportKeyBatchButtonVisibility(visible);
+
+  }
+
+  /**
+   * Sets the visibility of the button used to import a key.
+   *
+   * @param visible true to make the import key button visible, false to hide it.
+   */
+  public void setImportKeyButtonVisibility(boolean visible) {
+    signView.setImportKeyButtonVisibility(visible);
 
   }
 
@@ -190,12 +219,30 @@ public class SignViewUpdateOperations implements ViewUpdate {
   }
 
   /**
+   * Sets the visibility of the button used to import text.
+   *
+   * @param visible true to make the import text button visible, false to hide it.
+   */
+  public void setImportTextButtonVisibility(boolean visible) {
+    signView.setImportTextButtonVisibility(visible);
+  }
+
+  /**
    * Controls the visibility of the button used to cancel the import of a text message batch in the
    * sign view.
    *
    * @param visible {@code true} to show the cancel import text button, {@code false} to hide it.
    */
   @Override
+  public void setCancelImportTextBatchButtonVisibility(boolean visible) {
+    signView.setCancelImportTextBatchButtonVisibility(visible);
+  }
+
+  /**
+   * Sets the visibility of the button used to cancel the import of text.
+   *
+   * @param visible true to make the cancel import text button visible, false to hide it.
+   */
   public void setCancelImportTextButtonVisibility(boolean visible) {
     signView.setCancelImportTextButtonVisibility(visible);
   }
