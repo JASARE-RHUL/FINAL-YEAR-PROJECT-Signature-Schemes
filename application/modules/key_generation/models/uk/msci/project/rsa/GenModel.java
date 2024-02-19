@@ -147,90 +147,56 @@ public class GenModel {
    * @throws InterruptedException if the thread executing the batch generation is interrupted.
    */
   public void batchGenerateKeys(int numTrials, List<Pair<int[], Boolean>> keyParams,
-      DoubleConsumer progressUpdater) throws InterruptedException {
-    try (ExecutorService executor = Executors.newFixedThreadPool(
-        Runtime.getRuntime().availableProcessors())) {
-      this.keyParams = keyParams;
-      int totalWork = numTrials * keyParams.size(); // Total units of work
-      final int[] completedWork = {0}; // To keep track of completed work
+      DoubleConsumer progressUpdater) {
+    clockTimesPerTrial.clear();
+    this.keyParams = keyParams;
+    int totalWork = numTrials * keyParams.size(); // Total units of work
+    final int[] completedWork = {0}; // To keep track of completed work
 
-      for (Pair<int[], Boolean> keyParam : this.keyParams) {
-        batchGenerateKeys(executor, numTrials, keyParam, trialProgress -> {
-          // Calculate the progress within the current keyParam
-          double currentKeyParamProgress = trialProgress / numTrials;
+    for (Pair<int[], Boolean> keyParam : this.keyParams) {
+      batchGenerateKeys(numTrials, keyParam, trialProgress -> {
+        // Increment the completed work with each trial
+        completedWork[0]++;
 
-          // Calculate the overall progress including previous keyParams
-          double overallProgress =
-              ((double) completedWork[0] / totalWork) + (currentKeyParamProgress
-                  / keyParams.size());
-
-          progressUpdater.accept(overallProgress);
-        });
-        completedWork[0] += numTrials; // Update completed work after each keyParam
-      }
-
-      // Shutdown the executor service and handle termination.
-      executor.shutdown();
-      if (!executor.awaitTermination(60, java.util.concurrent.TimeUnit.SECONDS)) {
-        System.err.println("Executor did not terminate in the specified time.");
-        List<Runnable> droppedTasks = executor.shutdownNow();
-        System.err.println("Dropped " + droppedTasks.size() + " tasks.");
-      }
+        // Calculate the overall progress
+        double overallProgress = (double) completedWork[0] / totalWork;
+        progressUpdater.accept(overallProgress);
+      });
     }
   }
 
-  /**
-   * Generates a batch of RSA keys for a specific set of key parameters. This method is used within
-   * the 'batchGenerateKeys' method for each set of key parameters. It generates RSA keys in
-   * parallel using an ExecutorService and updates the progress of the current batch using the given
-   * 'progressUpdater' consumer.
-   *
-   * @param executor        The ExecutorService used for processing of key generation tasks.
-   * @param numTrials       The number of trials to be conducted with the given key parameters.
-   * @param keyParam        A pair of key parameters, consisting of an array of integers for key
-   *                        sizes and a boolean flag for using a smaller 'e' value.
-   * @param progressUpdater A DoubleConsumer to report the progress of the current batch
-   *                        generation.
-   * @throws InterruptedException if the thread executing the batch generation is interrupted.
-   */
-  public void batchGenerateKeys(ExecutorService executor, int numTrials,
-      Pair<int[], Boolean> keyParam,
-      DoubleConsumer progressUpdater) throws InterruptedException {
 
-    // Initialise lists to store the time taken for each key generation task.
+  /**
+   * Performs batch generation of RSA keys with specified parameters for a single key configuration.
+   * This method generates keys with the specified parameters and measures the time taken for each
+   * generation for a fixed number of trials.
+   *
+   * @param numTrials       The number of trials to be conducted for the specified key parameters.
+   * @param keyParam        A pair consisting of an array of integers representing key sizes and a
+   *                        boolean flag indicating whether to use a smaller 'e' value in key
+   *                        generation.
+   * @param progressUpdater A DoubleConsumer to report the progress of the batch generation
+   *                        process.
+   */
+  public void batchGenerateKeys(int numTrials, Pair<int[], Boolean> keyParam,
+      DoubleConsumer progressUpdater) {
     List<Long> timesPerKey = new ArrayList<>();
 
     for (int trial = 0; trial < numTrials; trial++) {
-      // List to hold future objects for asynchronous task execution.
-
-      // Submit a new key generation task to the executor service.
       int[] intArray = keyParam.getKey();
       boolean isSmallE = keyParam.getValue();
       GenRSA genRSA = new GenRSA(intArray.length, intArray, isSmallE);
-      Future<?> future = executor.submit(() -> {
-        genRSA.generateKeyPair();
-      });
 
-      // Collect and measure the time taken for each key generation task after submission.
       long startTime = System.nanoTime();
-      try {
-        future.get(); // Wait for the key generation task to complete.
-      } catch (ExecutionException e) {
-        throw new RuntimeException(e.getCause());
-      }
+      genRSA.generateKeyPair();
       long endTime = System.nanoTime() - startTime;
-      timesPerKey.add(endTime);
 
-      // Update the progress of the batch process after each trial.
-      progressUpdater.accept(trial + 1);
+      timesPerKey.add(endTime);
+      progressUpdater.accept((double) (trial + 1) / numTrials);
     }
 
     // Aggregate times from all trials and keys into a single list.
-    for (Long keyTime : timesPerKey) {
-      clockTimesPerTrial.add(keyTime);
-    }
-
-
+    clockTimesPerTrial.addAll(timesPerKey);
   }
 
 
