@@ -110,9 +110,20 @@ public class GenView {
   @FXML
   private Button helpButton;
 
+  /**
+   * List of pairs, each holding an array of integers and a boolean.
+   * This list stores dynamic key data, where each pair consists of an array representing key sizes
+   * and a boolean indicating whether a small exponent 'e' is used.
+   */
   private List<Pair<int[], Boolean>> dynamicKeyData = new ArrayList<>();
 
+
+  /**
+   * Integer holding the number of trials for key generation. This is used primarily in benchmarking
+   * mode to specify how many times key generation should be performed per key.
+   */
   private int numTrials;
+
 
   /**
    * Toggle switch for enabling or disabling benchmarking mode.
@@ -120,9 +131,18 @@ public class GenView {
   @FXML
   private ToggleSwitch benchmarkingModeToggle;
 
+  /**
+   * VBox for standard key generation mode. This VBox contains the UI elements relevant to the
+   * standard key generation mode, including input fields for key size and the generate keys
+   * button.
+   */
   @FXML
   private VBox standardModeVBox;
 
+  /**
+   * VBox for benchmarking mode. This VBox contains UI elements specific to the benchmarking mode,
+   * such as the field for entering the number of keys to be generated.
+   */
   @FXML
   private VBox benchmarkingModeVBox;
 
@@ -439,26 +459,44 @@ public class GenView {
     benchmarkingModeToggle.selectedProperty().addListener(observer);
   }
 
+  /**
+   * Sets the visibility of the standardModeVBox.
+   * @param visible A boolean indicating whether the standardModeVBox should be visible.
+   */
   public void setStandardModeVBoxVisibility(boolean visible) {
     standardModeVBox.setVisible(visible);
     standardModeVBox.setManaged(visible);
   }
 
+
+  /**
+   * Sets the visibility of the benchmarkingModeVBox.
+   * @param visible A boolean indicating whether the benchmarkingModeVBox should be visible.
+   */
   public void setBenchmarkingModeVBoxVisibility(boolean visible) {
     benchmarkingModeVBox.setVisible(visible);
     benchmarkingModeVBox.setManaged(visible);
   }
 
+
+  /**
+   * Sets the visibility of the numKeysButton.
+   * @param visible A boolean indicating whether the numKeysButton should be visible.
+   */
   public void setNumKeysButtonVisibility(boolean visible) {
     numKeysButton.setVisible(visible);
     numKeysButton.setManaged(visible);
   }
 
+
+  /**
+   * Sets the visibility of the generateButton.
+   * @param visible A boolean indicating whether the generateButton should be visible.
+   */
   public void setGenerateButtonVisibility(boolean visible) {
     generateButton.setVisible(visible);
     generateButton.setManaged(visible);
   }
-
 
 
 
