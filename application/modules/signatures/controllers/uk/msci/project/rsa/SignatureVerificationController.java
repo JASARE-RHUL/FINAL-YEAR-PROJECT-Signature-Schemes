@@ -4,12 +4,13 @@ import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
 import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
@@ -55,10 +56,13 @@ public class SignatureVerificationController extends SignatureBaseController {
   }
 
   /**
-   * Initialises and displays the verifyView stage. It loads the FXML for the verifyView and sets up
-   * the scene and the stage.
+   * Initialises and displays the SignView in benchmarking mode. This method loads the FXML for the
+   * SignView, sets up the user interface scene, and configures the stage for the
+   * application.
    *
-   * @param primaryStage The primary stage for this application.
+   * @param primaryStage The primary stage for this application upon which the standard mode sign
+   *                     view will be set. This stage is used as the main window for the
+   *                     application.
    */
   public void showVerifyView(Stage primaryStage) {
     try {
@@ -67,10 +71,34 @@ public class SignatureVerificationController extends SignatureBaseController {
       verifyView = loader.getController();
       signatureModel = new SignatureModel();
 
+      verifyView.addBenchmarkingModeToggleObserver(new ApplicationModeChangeObserver());
       setupVerificationObserversBenchmarking(primaryStage);
-      Scene scene = new Scene(root);
-      scene.getStylesheets().add("/SignatureView.css");
-      primaryStage.setScene(scene);
+      mainController.setScene(root);
+
+
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+  }
+
+  /**
+   * Initialises and displays the SignView in standard mode. This method loads the FXML for the
+   * SignViewStandardMode, sets up the user interface scene, and configures the stage for the
+   * application.
+   *
+   * @param primaryStage The primary stage for this application upon which the standard mode sign
+   *                     view will be set. This stage is used as the main window for the
+   *                     application.
+   */
+  public void showVerifyViewStandardMode(Stage primaryStage) {
+    try {
+      FXMLLoader loader = new FXMLLoader(getClass().getResource("/VerifyViewStandardMode.fxml"));
+      Parent root = loader.load();
+      verifyView = loader.getController();
+      signatureModel = new SignatureModel();
+      verifyView.addBenchmarkingModeToggleObserver(new ApplicationModeChangeObserver());
+      setupVerifyObservers(primaryStage);
+      mainController.setScene(root);
 
     } catch (IOException e) {
       e.printStackTrace();
@@ -90,13 +118,23 @@ public class SignatureVerificationController extends SignatureBaseController {
     verifyView.addImportKeyObserver(
         new ImportObserver(primaryStage, new VerifyViewUpdateOperations(verifyView),
             this::handleKey, "*.rsa"));
+    verifyView.addCancelImportSingleKeyButtonObserver(
+        new CancelImportKeyButtonObserver(new VerifyViewUpdateOperations(verifyView)));
     verifyView.addSignatureSchemeChangeObserver(new SignatureSchemeChangeObserver());
     verifyView.addBackToMainMenuObserver(new BackToMainMenuObserver(verifyView));
     verifyView.addImportSigButtonObserver(
         new ImportObserver(primaryStage, null, this::handleSig, "*.rsa"));
+    verifyView.addParameterChoiceChangeObserver(
+        new ParameterChoiceChangeObserver(new VerifyViewUpdateOperations(verifyView)));
+    verifyView.addHashFunctionChangeObserver(
+        new HashFunctionChangeObserver(new VerifyViewUpdateOperations(verifyView)));
     verifyView.addVerifyBtnObserver(
         new VerifyBtnObserver(new VerifyViewUpdateOperations(verifyView)));
     verifyView.addCloseNotificationObserver(new BackToMainMenuObserver(verifyView));
+    verifyView.addCancelImportTextButtonObserver(
+        new CancelImportTextButtonObserver(new VerifyViewUpdateOperations(verifyView)));
+    verifyView.addCancelImportSignatureButtonObserver(
+        new CancelImportSignatureButtonObserver());
   }
 
   /**
@@ -112,7 +150,7 @@ public class SignatureVerificationController extends SignatureBaseController {
         new ImportObserver(primaryStage, new VerifyViewUpdateOperations(verifyView),
             this::handleKeyBatch, "*.rsa"));
     verifyView.addCancelImportKeyButtonObserver(
-        new CancelImportKeyButtonObserver(new VerifyViewUpdateOperations(verifyView)));
+        new CancelImportKeyBatchButtonObserver(new VerifyViewUpdateOperations(verifyView)));
     verifyView.addImportSigBatchButtonObserver(
         new ImportObserver(primaryStage, new VerifyViewUpdateOperations(verifyView),
             this::handleSignatureBatch, "*.rsa"));
@@ -163,6 +201,8 @@ public class SignatureVerificationController extends SignatureBaseController {
     verifyView.setSigFileNameLabel("Signature imported");
     verifyView.setSignatureTextVisibility(false);
     verifyView.setSigFileHBoxVisibility(true);
+    verifyView.setImportSigButtonVisibility(false);
+    verifyView.setCancelImportSignatureButtonVisibility(true);
   }
 
   /**
@@ -357,11 +397,11 @@ public class SignatureVerificationController extends SignatureBaseController {
    * cancel the import of a batch of messages by replacing the cancel button with the original
    * import button and resetting corresponding text field that display the name of the file.
    */
-  class CancelImportTextButtonObserver implements EventHandler<ActionEvent> {
+  class CancelImportTextBatchButtonObserver implements EventHandler<ActionEvent> {
 
     private ViewUpdate viewOps;
 
-    public CancelImportTextButtonObserver(ViewUpdate viewOps) {
+    public CancelImportTextBatchButtonObserver(ViewUpdate viewOps) {
       this.viewOps = viewOps;
     }
 
@@ -374,6 +414,7 @@ public class SignatureVerificationController extends SignatureBaseController {
       verifyView.setCancelImportTextButtonVisibility(false);
     }
   }
+
 
   /**
    * Observer for canceling the import of a signature batch. Handles the event when the user decides
@@ -412,7 +453,7 @@ public class SignatureVerificationController extends SignatureBaseController {
       viewOps.setImportTextBatchBtnVisibility(false);
       viewOps.setCancelImportTextButtonVisibility(true);
       verifyView.addCancelImportTextButtonObserver(
-          new CancelImportTextButtonObserver(new VerifyViewUpdateOperations(verifyView)));
+          new CancelImportTextBatchButtonObserver(new VerifyViewUpdateOperations(verifyView)));
     }
   }
 
@@ -432,6 +473,7 @@ public class SignatureVerificationController extends SignatureBaseController {
     }
     return true;
   }
+
 
 
   /**
@@ -469,6 +511,60 @@ public class SignatureVerificationController extends SignatureBaseController {
   @Override
   public void setMessage(byte[] message) {
     this.message = message;
+  }
+
+  /**
+   * Observer for application mode changes in the Signing view. This observer observes for changes
+   * in the toggle switch that switches between standard and benchmarking modes in the signature
+   * creation view. When the mode changes, it sets up the corresponding view and clears any previous
+   * state such as selected messages or keys.
+   */
+  class ApplicationModeChangeObserver implements ChangeListener<Boolean> {
+
+    @Override
+    public void changed(ObservableValue<? extends Boolean> observableValue, Boolean oldValue,
+        Boolean newValue) {
+      // Checks if the new value of the toggle is TRUE (e.g., switched on)
+      if (Boolean.TRUE.equals(newValue)) {
+        // Further checks if the old value was FALSE, indicating a change from off to on
+        if (Boolean.FALSE.equals(oldValue)) {
+          // If the toggle is switched on, the application initializes the sign view for benchmarking mode
+          showVerifyView(mainController.getPrimaryStage());
+          // Clears any existing message data, as the mode change might require different data handling
+          message = null;
+        }
+      } else {
+        // If the new value is not TRUE (i.e., the toggle is switched off), checks if it was previously on
+        if (Boolean.TRUE.equals(oldValue)) {
+          // Initializes the sign view for the standard mode, as the toggle is switched off
+          showVerifyViewStandardMode(mainController.getPrimaryStage());
+          // Clears any existing batch file data, as it's not needed in standard mode
+          messageBatchFile = null;
+        }
+      }
+    }
+
+  }
+
+
+  /**
+   * Observer for canceling the import of a signature in non benchmarking mode. Handles the event
+   * when the user decides to cancel the import of the signature by replacing the cancel button with
+   * the original import button and resetting corresponding text field that display the name of the
+   * file.
+   */
+  class CancelImportSignatureButtonObserver implements EventHandler<ActionEvent> {
+
+    @Override
+    public void handle(ActionEvent event) {
+      verifyView.setSigFileCheckmarkImageVisibility(false);
+      verifyView.setSigFileNameLabel("");
+      verifyView.setSigFileHBoxVisibility(false);
+      verifyView.setSignatureTextVisibility(true);
+      verifyView.setCancelImportSignatureButtonVisibility(false);
+      verifyView.setImportSigButtonVisibility(true);
+
+    }
   }
 
 }
