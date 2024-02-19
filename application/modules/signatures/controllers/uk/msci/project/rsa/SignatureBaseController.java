@@ -16,7 +16,6 @@ import javafx.event.EventHandler;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.Toggle;
 import javafx.stage.Stage;
-import uk.msci.project.rsa.SignatureCreationController.CancelImportTextButtonObserver;
 
 
 /**
@@ -78,16 +77,18 @@ public abstract class SignatureBaseController {
    * @param file    The key file selected by the user.
    * @param viewOps The {@code ViewUpdate} operations that will update the view.
    */
-  public void handleKey(File file, ViewUpdate viewOps) {
+  public boolean handleKey(File file, ViewUpdate viewOps) {
     String content = "";
     try {
       content = FileHandle.importFromFile(file);
     } catch (Exception e) {
       uk.msci.project.rsa.DisplayUtility.showErrorAlert("Error importing file, please try again.");
+      return false;
     }
     if (!(Pattern.compile("^\\d+,\\d+$").matcher(content).matches())) {
       uk.msci.project.rsa.DisplayUtility.showErrorAlert(
           "Error: Invalid key. Key could not be imported.");
+      return false;
     } else {
       if (viewOps instanceof SignViewUpdateOperations) {
         signatureModel.setKey(new PrivateKey(content));
@@ -100,6 +101,7 @@ public abstract class SignatureBaseController {
       viewOps.setKeyVisibility(true);
 
     }
+    return true;
   }
 
 
@@ -237,8 +239,12 @@ public abstract class SignatureBaseController {
       viewOps.setTextInput("");
       viewOps.setTextFileNameLabel(file.getName());
       viewOps.setTextInputVisibility(false);
-      viewOps.setTextFileCheckmarkImage();
+      viewOps.setCheckmarkImageMessageBatch();
       viewOps.setTextInputHBoxVisibility(true);
+
+      viewOps.setImportTextButtonVisibility(false);
+      viewOps.setCancelImportTextButtonVisibility(true);
+
     }
   }
 
@@ -425,6 +431,30 @@ public abstract class SignatureBaseController {
    * Observer for canceling the import of a key batch. Handles the event when the user decides to
    * cancel the import of a batch of keys.
    */
+  class CancelImportKeyBatchButtonObserver implements EventHandler<ActionEvent> {
+
+    private ViewUpdate viewOps;
+
+    public CancelImportKeyBatchButtonObserver(ViewUpdate viewOps) {
+      this.viewOps = viewOps;
+    }
+
+    @Override
+    public void handle(ActionEvent event) {
+      viewOps.setCheckmarkVisibility(false);
+      viewOps.setFixedKeyName();
+      signatureModel.clearPrivateKeyBatch();
+      signatureModel.clearPublicKeyBatch();
+      viewOps.setCancelImportKeyBatchButtonVisibility(false);
+      viewOps.setImportKeyBatchButtonVisibility(true);
+
+    }
+  }
+
+  /**
+   * Observer for canceling the import of a key. Handles the event when the user decides to cancel
+   * the import of a key in non-benchmarking mode.
+   */
   class CancelImportKeyButtonObserver implements EventHandler<ActionEvent> {
 
     private ViewUpdate viewOps;
@@ -436,11 +466,9 @@ public abstract class SignatureBaseController {
     @Override
     public void handle(ActionEvent event) {
       viewOps.setCheckmarkVisibility(false);
-      viewOps.setKeyName("Please Import a private key batch");
-      signatureModel.clearPrivateKeyBatch();
-      signatureModel.clearPublicKeyBatch();
-      viewOps.setCancelImportKeyButtonVisibility(false);
-      viewOps.setImportKeyBatchButtonVisibility(true);
+      viewOps.setKeyName("Please Import a key");
+      viewOps.setCancelImportSingleKeyButtonVisibility(false);
+      viewOps.setImportKeyButtonVisibility(true);
 
     }
   }
@@ -522,7 +550,7 @@ public abstract class SignatureBaseController {
               + " batch. Please make sure the file contains a contiguous sequence of new line separated messages that matches the number entered in the the above field.");
     }
 
-    return isValidFile  ? numMessages : 0;
+    return isValidFile ? numMessages : 0;
   }
 
   /**
