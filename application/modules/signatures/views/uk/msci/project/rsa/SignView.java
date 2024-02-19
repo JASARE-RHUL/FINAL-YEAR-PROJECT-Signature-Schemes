@@ -2,6 +2,7 @@ package uk.msci.project.rsa;
 
 
 import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -21,6 +22,7 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import org.controlsfx.control.ToggleSwitch;
 
 /**
@@ -210,6 +212,12 @@ public class SignView implements SignatureViewInterface {
    * Button for canceling text batch import.
    */
   @FXML
+  private Button cancelImportTextBatchButton;
+
+  /**
+   * Button for canceling text batch import.
+   */
+  @FXML
   private Button cancelImportTextButton;
 
   /**
@@ -223,6 +231,12 @@ public class SignView implements SignatureViewInterface {
    */
   @FXML
   private Button cancelImportKeyButton;
+
+  /**
+   * Button for canceling key import (standard mode).
+   */
+  @FXML
+  private Button cancelImportSingleKeyButton;
 
   /**
    * Button for starting signature benchmarking.
@@ -260,6 +274,37 @@ public class SignView implements SignatureViewInterface {
    */
   @FXML
   private TextField hashOutputSizeField;
+
+  /**
+   * VBox containing elements for message input in standard mode. This includes the text area for
+   * inputting or importing the text to be signed.
+   */
+  @FXML
+  private VBox standardModeMessageVBox;
+
+  /**
+   * HBox for inputting the number of messages in benchmarking mode. Contains elements to specify
+   * the number of trials or messages to be used in benchmarking.
+   */
+  @FXML
+  private HBox benchmarkingModeNumMessageHBox;
+
+
+  /**
+   * VBox containing elements for message batch input in benchmarking mode. This includes fields for
+   * importing and managing message batches for signature benchmarking.
+   */
+  @FXML
+  private VBox benchmarkingModeMessageVBox;
+
+
+  /**
+   * Label associated with the keyField TextField. Displays a description or instruction related to
+   * the private key input field.
+   */
+  @FXML
+  private Label keyFieldLabel;
+
 
   /**
    * Initialises the SignView, setting up the toggle group for parameter choice.
@@ -306,6 +351,21 @@ public class SignView implements SignatureViewInterface {
 
     // Preserve the image's aspect ratio
     this.textFileCheckmarkImage.setPreserveRatio(true);
+  }
+
+  /**
+   * Sets the image for the text file checkmark to indicate the status of message batch file
+   * import.
+   */
+  public void setCheckmarkImageMessageBatch() {
+    this.checkmarkImageMessageBatch.setImage(new Image("/checkmark.png"));
+
+    // Set the ImageView size
+    this.checkmarkImageMessageBatch.setFitWidth(20);
+    this.checkmarkImageMessageBatch.setFitHeight(20);
+
+    // Preserve the image's aspect ratio
+    this.checkmarkImageMessageBatch.setPreserveRatio(true);
   }
 
   /**
@@ -384,6 +444,7 @@ public class SignView implements SignatureViewInterface {
    */
   public void setTextInputVisibility(boolean visible) {
     this.textInput.setVisible(visible);
+    this.textInput.setManaged(visible);
   }
 
   /**
@@ -393,6 +454,7 @@ public class SignView implements SignatureViewInterface {
    */
   public void setTextInputHBoxVisibility(boolean visible) {
     this.textInputHBox.setVisible(visible);
+    this.textInputHBox.setManaged(visible);
   }
 
   /**
@@ -412,6 +474,16 @@ public class SignView implements SignatureViewInterface {
    */
   public void setKey(String key) {
     this.keyField.setText(key);
+  }
+
+  /**
+   * Sets the text of the keyFieldLabel. This method updates the label text associated with the
+   * keyField, providing instructions or descriptions.
+   *
+   * @param text The text to set for the label.
+   */
+  public void setKeyLabel(String text) {
+    this.keyFieldLabel.setText(text);
   }
 
   /**
@@ -669,9 +741,31 @@ public class SignView implements SignatureViewInterface {
   }
 
   /**
-   * Sets the visibility of the cancelImportTextButton and manages its properties.
+   * Sets the visibility of the importTextButton. This method controls whether the button for
+   * importing a message in standard mode is visible to the user.
    *
-   * @param visible true to make the cancelImportTextButton visible, false to hide it.
+   * @param visible true to make the button visible, false to hide it.
+   */
+  public void setImportTextButtonVisibility(boolean visible) {
+    importTextButton.setVisible(visible);
+    importTextButton.setManaged(visible);
+  }
+
+  /**
+   * Sets the visibility of the cancelImportTextBatchButton and manages its properties.
+   *
+   * @param visible true to make the cancelImportTextBatchButton visible, false to hide it.
+   */
+  public void setCancelImportTextBatchButtonVisibility(boolean visible) {
+    cancelImportTextBatchButton.setVisible(visible);
+    cancelImportTextBatchButton.setManaged(visible);
+  }
+
+  /**
+   * Sets the visibility of the cancelImportTextButton. This method controls whether the button for
+   * canceling the import of a message in standard mode is visible to the user.
+   *
+   * @param visible true to make the button visible, false to hide it.
    */
   public void setCancelImportTextButtonVisibility(boolean visible) {
     cancelImportTextButton.setVisible(visible);
@@ -689,6 +783,17 @@ public class SignView implements SignatureViewInterface {
   }
 
   /**
+   * Sets the visibility of the importKeyButton. This method controls whether the button for
+   * importing a key during standard mode is visible to the user.
+   *
+   * @param visible true to make the button visible, false to hide it.
+   */
+  public void setImportKeyButtonVisibility(boolean visible) {
+    importKeyButton.setVisible(visible);
+    importKeyButton.setManaged(visible);
+  }
+
+  /**
    * Sets the visibility of the cancelImportKeyButton and manages its properties.
    *
    * @param visible true to make the cancelImportKeyButton visible, false to hide it.
@@ -696,6 +801,17 @@ public class SignView implements SignatureViewInterface {
   public void setCancelImportKeyButtonVisibility(boolean visible) {
     cancelImportKeyButton.setVisible(visible);
     cancelImportKeyButton.setManaged(visible);
+  }
+
+  /**
+   * Sets the visibility of the cancelImportSingleKeyButton. This method controls whether the button
+   * for canceling the import of a single key in standard mode is visible to the user.
+   *
+   * @param visible true to make the button visible, false to hide it.
+   */
+  public void setCancelImportSingleKeyButtonVisibility(boolean visible) {
+    cancelImportSingleKeyButton.setVisible(visible);
+    cancelImportSingleKeyButton.setManaged(visible);
   }
 
   /**
@@ -788,7 +904,8 @@ public class SignView implements SignatureViewInterface {
   }
 
   /**
-   * Registers an observer for changes in the selected hash function from the hash function dropdown.
+   * Registers an observer for changes in the selected hash function from the hash function
+   * dropdown.
    *
    * @param observer The change listener to be registered.
    */
@@ -817,10 +934,22 @@ public class SignView implements SignatureViewInterface {
 
   /**
    * Registers an observer for the cancelImportTextButton Button's action event. This observer is
-   * called when the user clicks the button to cancel the import of a text batch.
+   * called when the user clicks the button to cancel the import of a text batch in benchmarking
+   * mode.
    *
    * @param observer The event handler to be registered.
    */
+  public void addCancelImportTextBatchButtonObserver(EventHandler<ActionEvent> observer) {
+    cancelImportTextBatchButton.setOnAction(observer);
+  }
+
+  /**
+   * Registers an observer for the cancelImportTextButton's action event. This observer is invoked
+   * when the user clicks the button to cancel the import of a single message in the applications
+   * standard mode.
+   *
+   * @param observer The event handler to be registered.
+   **/
   public void addCancelImportTextButtonObserver(EventHandler<ActionEvent> observer) {
     cancelImportTextButton.setOnAction(observer);
   }
@@ -842,6 +971,16 @@ public class SignView implements SignatureViewInterface {
    */
   public void addCancelImportKeyButtonObserver(EventHandler<ActionEvent> observer) {
     cancelImportKeyButton.setOnAction(observer);
+  }
+
+  /**
+   * Registers an observer for the cancelImportSingleKeyButton's action event. This observer is
+   * called when the user clicks the button to cancel the import of a single key.
+   *
+   * @param observer The event handler to be registered.
+   */
+  public void addCancelImportSingleKeyButtonObserver(EventHandler<ActionEvent> observer) {
+    cancelImportSingleKeyButton.setOnAction(observer);
   }
 
   /**
@@ -922,6 +1061,47 @@ public class SignView implements SignatureViewInterface {
     // Ensure the notificationPane itself remains enabled
     notificationPane.setVisible(true);
     notificationPane.setDisable(false);
+  }
+
+  /**
+   * Sets the visibility of the standardModeMessageVBox.
+   *
+   * @param visible true to make the VBox visible, false to hide it.
+   */
+  public void setStandardModeMessageVBoxVisibility(boolean visible) {
+    standardModeMessageVBox.setVisible(visible);
+    standardModeMessageVBox.setManaged(visible);
+  }
+
+  /**
+   * Sets the visibility of the benchmarkingModeMessageVBox.
+   *
+   * @param visible true to make the VBox visible, false to hide it.
+   */
+  public void setBenchmarkingModeMessageVBoxVisibility(boolean visible) {
+    benchmarkingModeMessageVBox.setVisible(visible);
+    benchmarkingModeMessageVBox.setManaged(visible);
+  }
+
+  /**
+   * Sets the visibility of the benchmarkingModeNumMessageHBox.
+   *
+   * @param visible true to make the HBox visible, false to hide it.
+   */
+  public void setBenchmarkingModeNumMessageVBoxVisibility(boolean visible) {
+    benchmarkingModeNumMessageHBox.setVisible(visible);
+    benchmarkingModeNumMessageHBox.setManaged(visible);
+  }
+
+
+  /**
+   * Sets the visibility of the createSignatureButton.
+   *
+   * @param visible true to make the button visible, false to hide it.
+   */
+  public void setCreateSignatureButtonVisibility(boolean visible) {
+    createSignatureButton.setManaged(visible);
+    createSignatureButton.setVisible(visible);
   }
 
 
