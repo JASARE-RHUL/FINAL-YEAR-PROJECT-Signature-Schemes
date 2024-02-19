@@ -93,7 +93,7 @@ public class GenController {
    */
   public void showGenViewStandardMode(Stage primaryStage) {
     try {
-      FXMLLoader loader = new FXMLLoader(getClass().getResource("/GenView.fxml"));
+      FXMLLoader loader = new FXMLLoader(getClass().getResource("/GenViewStandardMode.fxml"));
       Parent root = loader.load();
       genView = loader.getController();
       genModel = new GenModel();
@@ -101,8 +101,9 @@ public class GenController {
 
       genView.addBackToMainMenuObserver(new BackToMainMenuObserver());
       genView.addHelpObserver(new BackToMainMenuObserver());
-      genView.addBenchmarkingModeToggleObserver(new ApplicationModeChangeObserver());
       genView.addGenerateButtonObserver(new GenerateKeyObserver());
+      genView.addBenchmarkingModeToggleObserver(new ApplicationModeChangeObserver());
+
 
       mainController.setScene(root);
 
