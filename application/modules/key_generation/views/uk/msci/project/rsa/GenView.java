@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.regex.Pattern;
 import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -27,6 +28,7 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.Pair;
+import org.controlsfx.control.ToggleSwitch;
 
 
 /**
@@ -113,6 +115,19 @@ public class GenView {
   private int numTrials;
 
   /**
+   * Toggle switch for enabling or disabling benchmarking mode.
+   */
+  @FXML
+  private ToggleSwitch benchmarkingModeToggle;
+
+  @FXML
+  private VBox standardModeVBox;
+
+  @FXML
+  private VBox benchmarkingModeVBox;
+
+
+  /**
    * Gets the ImageView that may contain a logo.
    *
    * @return ImageView the ImageView component.
@@ -146,6 +161,10 @@ public class GenView {
    */
   public String getNumKeys() {
     return numKeysTextField.getText();
+  }
+
+  public void setNumKeys(String text) {
+    numKeysTextField.setText(text);
   }
 
   /**
@@ -182,6 +201,7 @@ public class GenView {
    */
   public void setSuccessPopupVisible(boolean visible) {
     this.successPopup.setVisible(visible);
+    this.successPopup.setManaged(visible);
   }
 
   /**
@@ -409,6 +429,37 @@ public class GenView {
   public int getNumTrials() {
     return numTrials;
   }
+
+  /**
+   * Registers an observer for when the benchmarking mode toggle switch value changes.
+   *
+   * @param observer The change listener to be registered.
+   */
+  public void addBenchmarkingModeToggleObserver(ChangeListener<Boolean> observer) {
+    benchmarkingModeToggle.selectedProperty().addListener(observer);
+  }
+
+  public void setStandardModeVBoxVisibility(boolean visible) {
+    standardModeVBox.setVisible(visible);
+    standardModeVBox.setManaged(visible);
+  }
+
+  public void setBenchmarkingModeVBoxVisibility(boolean visible) {
+    benchmarkingModeVBox.setVisible(visible);
+    benchmarkingModeVBox.setManaged(visible);
+  }
+
+  public void setNumKeysButtonVisibility(boolean visible) {
+    numKeysButton.setVisible(visible);
+    numKeysButton.setManaged(visible);
+  }
+
+  public void setGenerateButtonVisibility(boolean visible) {
+    generateButton.setVisible(visible);
+    generateButton.setManaged(visible);
+  }
+
+
 
 
 }
