@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.util.List;
 import java.util.regex.Pattern;
 import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -56,23 +58,54 @@ public class GenController {
   }
 
   /**
-   * Initialises and displays the GenView to the user.
+   * Initialises and displays the GenView for the key generation functionality in benchmarking mode.
+   * This method loads the GenView FXML file, sets up the necessary model and view components, and
+   * configures event handlers and observers for the various UI elements.
    *
-   * @param primaryStage The primary stage for the application.
+   * @param primaryStage The primary stage of the application where the view will be displayed.
    */
   public void showGenView(Stage primaryStage) {
     try {
-      FXMLLoader loader = new FXMLLoader(getClass().getResource("/GenView.fxml")); // Update path
+
+      FXMLLoader loader = new FXMLLoader(getClass().getResource("/GenView.fxml"));
+      Parent root = loader.load();
+      genView = loader.getController();
+      genModel = new GenModel();
+
+      genView.addBackToMainMenuObserver(new BackToMainMenuObserver());
+      genView.addHelpObserver(new BackToMainMenuObserver());
+      genView.addNumKeysObserver(new NumKeysBtnObserver());
+      genView.addBenchmarkingModeToggleObserver(new ApplicationModeChangeObserver());
+
+      mainController.setScene(root);
+
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+  }
+
+  /**
+   * Initialises and displays the GenView in standard mode. Similar to showGenView, this method sets
+   * up the GenView for the standard key generation mode. It excludes elements and observers
+   * specific to benchmarking mode and sets up the UI for standard key generation.
+   *
+   * @param primaryStage The primary stage of the application where the view will be displayed.
+   */
+  public void showGenViewStandardMode(Stage primaryStage) {
+    try {
+      FXMLLoader loader = new FXMLLoader(getClass().getResource("/GenView.fxml"));
       Parent root = loader.load();
       genView = loader.getController();
       genModel = new GenModel();
       // Add observers for buttons or other actions
-      genView.addGenerateButtonObserver(new GenerateKeyObserver());
+
       genView.addBackToMainMenuObserver(new BackToMainMenuObserver());
       genView.addHelpObserver(new BackToMainMenuObserver());
-      genView.addNumKeysObserver(new NumKeysBtnObserver());
+      genView.addBenchmarkingModeToggleObserver(new ApplicationModeChangeObserver());
+      genView.addGenerateButtonObserver(new GenerateKeyObserver());
 
-      primaryStage.setScene(new Scene(root));
+      mainController.setScene(root);
+
 
     } catch (IOException e) {
       e.printStackTrace();
@@ -91,11 +124,12 @@ public class GenController {
       String keyBitSizes = genView.getKeySize();
       if (!(Pattern.compile("^\\s*\\d+\\s*(,\\s*\\d+\\s*)*$").matcher(genView.getKeySize())
           .matches())) {
-        genView.setFailureLabel(
+        uk.msci.project.rsa.DisplayUtility.showErrorAlert(
             "Failure. Please ensure your input is comma separated sequence of bit sizes "
                 + "corresponding to the number of prime factors you wish the modulus to contain.");
+
         genView.setSuccessPopupVisible(false);
-        genView.setFailurePopupVisible(true);
+
 
       } else {
         int[] intArray = convertStringToIntArray(keyBitSizes);
@@ -104,11 +138,10 @@ public class GenController {
         try {
           genModel.setGen(false);
         } catch (IllegalArgumentException e) {
-          genView.setFailureLabel(
-              "Failure. Please ensure you have entered at least two bit sizes and that the sum of your "
-                  + "bit-sizes is not smaller than 1024 bits or larger than 7192 bits.");
+          uk.msci.project.rsa.DisplayUtility.showErrorAlert(
+              "Failure. Please ensure your input is comma separated sequence of bit sizes "
+                  + "corresponding to the number of prime factors you wish the modulus to contain.");
           genView.setSuccessPopupVisible(false);
-          genView.setFailurePopupVisible(true);
           return;
         }
         genModel.generateKey();
@@ -271,6 +304,29 @@ public class GenController {
       }
     };
 
+  }
+
+
+  /**
+   * Observer for changes in the application mode (Standard/Benchmarking). This class listens to
+   * changes in the application mode toggle switch and updates the GenView accordingly. It switches
+   * between the standard and benchmarking modes of the GenView based on the user's selection.
+   */
+  class ApplicationModeChangeObserver implements ChangeListener<Boolean> {
+
+    @Override
+    public void changed(ObservableValue<? extends Boolean> observableValue, Boolean oldValue,
+        Boolean newValue) {
+      if (Boolean.TRUE.equals(newValue)) {
+        if (Boolean.FALSE.equals(oldValue)) {
+          showGenView(mainController.getPrimaryStage());
+        }
+      } else {
+        if (Boolean.TRUE.equals(oldValue)) {
+          showGenViewStandardMode(mainController.getPrimaryStage());
+        }
+      }
+    }
   }
 
 
