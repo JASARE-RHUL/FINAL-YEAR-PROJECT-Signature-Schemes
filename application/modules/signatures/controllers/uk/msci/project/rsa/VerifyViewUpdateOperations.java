@@ -2,8 +2,8 @@ package uk.msci.project.rsa;
 
 /**
  * Provides implementation of the {@code ViewUpdate} interface specific to the {@code VerifyView}
- * class. This class encapsulates the logic required to update the visual components of the verification
- * view according to the actions defined in the {@code ViewUpdate} interface.
+ * class. This class encapsulates the logic required to update the visual components of the
+ * verification view according to the actions defined in the {@code ViewUpdate} interface.
  */
 public class VerifyViewUpdateOperations implements ViewUpdate {
 
@@ -40,7 +40,8 @@ public class VerifyViewUpdateOperations implements ViewUpdate {
   }
 
   /**
-   * Updates the checkmark image in the verification view, typically to indicate a successful operation.
+   * Updates the checkmark image in the verification view, typically to indicate a successful
+   * operation.
    */
   @Override
   public void updateCheckmarkImage() {
@@ -128,7 +129,8 @@ public class VerifyViewUpdateOperations implements ViewUpdate {
   }
 
   /**
-   * Sets the visibility of the container holding the text input elements within the verification view.
+   * Sets the visibility of the container holding the text input elements within the verification
+   * view.
    *
    * @param visible {@code true} to make the container visible, {@code false} to hide it.
    */
@@ -148,13 +150,33 @@ public class VerifyViewUpdateOperations implements ViewUpdate {
   }
 
   /**
-   * Controls the visibility of the button used to cancel the import of a key batch in the verification view.
+   * Controls the visibility of the button used to cancel the import of a key batch in the
+   * verification view.
    *
    * @param visible {@code true} to show the cancel import key button, {@code false} to hide it.
    */
   @Override
-  public void setCancelImportKeyButtonVisibility(boolean visible) {
+  public void setCancelImportKeyBatchButtonVisibility(boolean visible) {
     verifyView.setCancelImportKeyButtonVisibility(visible);
+  }
+
+  /**
+   * Updates the image next to the message batch file input within the sign view, typically with a
+   * checkmark to indicate that the text file has been successfully loaded.
+   */
+  @Override
+  public void setCheckmarkImageMessageBatch() {
+    verifyView.setCheckmarkImageMessageBatch();
+  }
+
+  /**
+   * Sets the visibility of the button used to cancel the import of a single key.
+   *
+   * @param visible true to make the cancel import single key button visible, false to hide it.
+   */
+  @Override
+  public void setCancelImportSingleKeyButtonVisibility(boolean visible) {
+    verifyView.setCancelImportSingleKeyButtonVisibility(visible);
   }
 
   /**
@@ -168,7 +190,17 @@ public class VerifyViewUpdateOperations implements ViewUpdate {
   }
 
   /**
-   * Sets a fixed, default text for the key area in the verification view, usually used to prompt the user.
+   * Sets the visibility of the button used to import a key.
+   *
+   * @param visible true to make the import key button visible, false to hide it.
+   */
+  public void setImportKeyButtonVisibility(boolean visible) {
+    verifyView.setImportKeyButtonVisibility(visible);
+  }
+
+  /**
+   * Sets a fixed, default text for the key area in the verification view, usually used to prompt
+   * the user.
    */
   @Override
   public void setFixedKeyName() {
@@ -176,7 +208,8 @@ public class VerifyViewUpdateOperations implements ViewUpdate {
   }
 
   /**
-   * Controls the visibility of the button used to import a batch of text messages in the verification view.
+   * Controls the visibility of the button used to import a batch of text messages in the
+   * verification view.
    *
    * @param visible {@code true} to show the import text batch button, {@code false} to hide it.
    */
@@ -186,11 +219,30 @@ public class VerifyViewUpdateOperations implements ViewUpdate {
   }
 
   /**
-   * Controls the visibility of the button used to cancel the import of a text message batch in the verification view.
+   * Sets the visibility of the button used to import text.
+   *
+   * @param visible true to make the import text button visible, false to hide it.
+   */
+  public void setImportTextButtonVisibility(boolean visible) {
+    verifyView.setImportTextButtonVisibility(visible);
+  }
+
+  /**
+   * Controls the visibility of the button used to cancel the import of a text message batch in the
+   * verification view.
    *
    * @param visible {@code true} to show the cancel import text button, {@code false} to hide it.
    */
   @Override
+  public void setCancelImportTextBatchButtonVisibility(boolean visible) {
+    verifyView.setCancelImportTextBatchButtonVisibility(visible);
+  }
+
+  /**
+   * Sets the visibility of the button used to cancel the import of text.
+   *
+   * @param visible true to make the cancel import text button visible, false to hide it.
+   */
   public void setCancelImportTextButtonVisibility(boolean visible) {
     verifyView.setCancelImportTextButtonVisibility(visible);
   }
