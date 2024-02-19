@@ -67,7 +67,10 @@ public class SignatureCreationController extends SignatureBaseController {
       this.signatureModel = new SignatureModel();
 
       // Set up observers for benchmarking mode SignView
-      signView.addBenchmarkingModeToggleObserver(new ApplicationModeChangeObserver());
+      signView.addBenchmarkingModeToggleObserver(new ApplicationModeChangeObserver(
+          () -> showSignViewStandardMode(primaryStage),
+          () -> showSignView(primaryStage)
+      ));
       setupSignObserversBenchmarking(primaryStage);
 
       mainController.setScene(root);
@@ -85,7 +88,10 @@ public class SignatureCreationController extends SignatureBaseController {
       this.signatureModel = new SignatureModel();
 
       // Set up observers for benchmarking mode SignView
-      signView.addBenchmarkingModeToggleObserver(new ApplicationModeChangeObserver());
+      signView.addBenchmarkingModeToggleObserver(new ApplicationModeChangeObserver(
+          () -> showSignViewStandardMode(primaryStage),
+          () -> showSignView(primaryStage)
+      ));
       setupSignObservers(primaryStage);
 
       mainController.setScene(root);
@@ -439,38 +445,7 @@ public class SignatureCreationController extends SignatureBaseController {
     this.message = message;
   }
 
-  /**
-   * Observer for application mode changes in the Signing view. This observer observes for changes
-   * in the toggle switch that switches between standard and benchmarking modes in the signature
-   * creation view. When the mode changes, it sets up the corresponding view and clears any previous
-   * state such as selected messages or keys.
-   */
-  class ApplicationModeChangeObserver implements ChangeListener<Boolean> {
 
-    @Override
-    public void changed(ObservableValue<? extends Boolean> observableValue, Boolean oldValue,
-        Boolean newValue) {
-      // Checks if the new value of the toggle is TRUE (e.g., switched on)
-      if (Boolean.TRUE.equals(newValue)) {
-        // Further checks if the old value was FALSE, indicating a change from off to on
-        if (Boolean.FALSE.equals(oldValue)) {
-          // If the toggle is switched on, the application initializes the sign view for benchmarking mode
-          showSignView(mainController.getPrimaryStage());
-          // Clears any existing message data, as the mode change might require different data handling
-          message = null;
-        }
-      } else {
-        // If the new value is not TRUE (i.e., the toggle is switched off), checks if it was previously on
-        if (Boolean.TRUE.equals(oldValue)) {
-          // Initializes the sign view for the standard mode, as the toggle is switched off
-          showSignViewStandardMode(mainController.getPrimaryStage());
-          // Clears any existing batch file data, as it's not needed in standard mode
-          messageBatchFile = null;
-        }
-      }
-    }
-
-  }
 
 
 }

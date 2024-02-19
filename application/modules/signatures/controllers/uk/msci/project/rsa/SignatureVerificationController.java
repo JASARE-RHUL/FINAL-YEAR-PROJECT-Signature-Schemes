@@ -16,6 +16,7 @@ import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 import javafx.stage.Stage;
+import uk.msci.project.rsa.SignatureBaseController.ApplicationModeChangeObserver;
 
 
 /**
@@ -71,7 +72,10 @@ public class SignatureVerificationController extends SignatureBaseController {
       verifyView = loader.getController();
       signatureModel = new SignatureModel();
 
-      verifyView.addBenchmarkingModeToggleObserver(new ApplicationModeChangeObserver());
+      verifyView.addBenchmarkingModeToggleObserver(new SignatureBaseController.ApplicationModeChangeObserver(
+          () -> showVerifyViewStandardMode(primaryStage),
+          () -> showVerifyView(primaryStage)
+      ));
       setupVerificationObserversBenchmarking(primaryStage);
       mainController.setScene(root);
 
@@ -96,7 +100,10 @@ public class SignatureVerificationController extends SignatureBaseController {
       Parent root = loader.load();
       verifyView = loader.getController();
       signatureModel = new SignatureModel();
-      verifyView.addBenchmarkingModeToggleObserver(new ApplicationModeChangeObserver());
+      verifyView.addBenchmarkingModeToggleObserver(new SignatureBaseController.ApplicationModeChangeObserver(
+          () -> showVerifyViewStandardMode(primaryStage),
+          () -> showVerifyView(primaryStage)
+      ));
       setupVerifyObservers(primaryStage);
       mainController.setScene(root);
 

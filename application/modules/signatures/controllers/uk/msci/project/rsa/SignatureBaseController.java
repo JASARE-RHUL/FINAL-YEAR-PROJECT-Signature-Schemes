@@ -397,10 +397,51 @@ public abstract class SignatureBaseController {
 
 
   /**
+   * The {@code ApplicationModeChangeObserver} class is an observer for changes in application mode,
+   * specifically for toggling between standard and benchmarking modes in signature-related views.
+   * This class observes for changes in a Boolean property (tied to a toggle switch UI element) and
+   * performs actions based on the mode switch. It uses two {@code Runnable} objects to define the
+   * actions to be executed when switching between standard and benchmarking modes.
+   * <p>
+   * This observer provides flexibility and re-usability for different views where such mode
+   * switching functionality is required.
+   */
+  class ApplicationModeChangeObserver implements ChangeListener<Boolean> {
+
+    private final Runnable onStandardMode;
+    private final Runnable onBenchmarkingMode;
+
+    /**
+     * Constructs an ApplicationModeChangeObserver with specified actions for standard and
+     * benchmarking modes.
+     *
+     * @param onStandardMode     The action to perform when switching to standard mode.
+     * @param onBenchmarkingMode The action to perform when switching to benchmarking mode.
+     */
+    public ApplicationModeChangeObserver(Runnable onStandardMode, Runnable onBenchmarkingMode) {
+      this.onStandardMode = onStandardMode;
+      this.onBenchmarkingMode = onBenchmarkingMode;
+    }
+
+    @Override
+    public void changed(ObservableValue<? extends Boolean> observableValue, Boolean oldValue,
+        Boolean newValue) {
+      if (Boolean.TRUE.equals(newValue) && Boolean.FALSE.equals(oldValue)) {
+        // Switched to Benchmarking Mode
+        onBenchmarkingMode.run();
+      } else if (Boolean.FALSE.equals(newValue) && Boolean.TRUE.equals(oldValue)) {
+        // Switched to Standard Mode
+        onStandardMode.run();
+      }
+    }
+  }
+
+
+  /**
    * Observer for canceling the import of a message in non benchmarking mode. Handles the event when
-   * the user decides to cancel the import of the message by replacing the cancel button
-   * with the original import button and resetting corresponding text field that display the name of
-   * the file.
+   * the user decides to cancel the import of the message by replacing the cancel button with the
+   * original import button and resetting corresponding text field that display the name of the
+   * file.
    */
   class CancelImportTextButtonObserver implements EventHandler<ActionEvent> {
 
