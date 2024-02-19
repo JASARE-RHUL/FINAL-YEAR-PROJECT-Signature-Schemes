@@ -395,6 +395,32 @@ public abstract class SignatureBaseController {
     }
   }
 
+
+  /**
+   * Observer for canceling the import of a message in non benchmarking mode. Handles the event when
+   * the user decides to cancel the import of the message by replacing the cancel button
+   * with the original import button and resetting corresponding text field that display the name of
+   * the file.
+   */
+  class CancelImportTextButtonObserver implements EventHandler<ActionEvent> {
+
+    private ViewUpdate viewOps;
+
+    public CancelImportTextButtonObserver(ViewUpdate viewOps) {
+      this.viewOps = viewOps;
+    }
+
+    @Override
+    public void handle(ActionEvent event) {
+      viewOps.setTextFileNameLabel("");
+      viewOps.setTextInputVisibility(true);
+      viewOps.setTextInputHBoxVisibility(false);
+      viewOps.setCancelImportTextButtonVisibility(false);
+      viewOps.setImportTextButtonVisibility(true);
+
+    }
+  }
+
   /**
    * Sets the message to be signed or verified. This method is used to update the message that will
    * be signed or verified by the signature model.
