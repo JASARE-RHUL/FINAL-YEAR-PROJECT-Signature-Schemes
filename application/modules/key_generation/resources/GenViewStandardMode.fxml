@@ -35,19 +35,38 @@
       <!-- ToggleSwitch for Benchmarking Mode -->
       <HBox alignment="CENTER_LEFT" spacing="10">
         <Label text="Benchmarking Mode:" styleClass="bold-label"/>
-        <ToggleSwitch fx:id="benchmarkingModeToggle" selected="true"/>
+        <ToggleSwitch fx:id="benchmarkingModeToggle" selected="false"/>
       </HBox>
       <Separator/>
 
 
-
-      <!-- Number of Keys Input -->
-      <VBox fx:id="benchmarkingModeVBox" alignment="CENTER" spacing="5">
-        <Label text="How many keys would you like to generate:" styleClass="bold-label" />
-        <TextField fx:id="numKeysTextField" prefWidth="200" maxWidth="200"/>
+      <!-- Key Size Input Section -->
+      <VBox fx:id="standardModeVBox" alignment="CENTER" spacing="5">
+        <Label text="Enter multiple bit sizes, separated by commas eg., (512, 512)" styleClass="bold-label" />
+        <TextField fx:id="keySizeTextField" prefWidth="200" maxWidth="200"/>
       </VBox>
 
-      <Button text="Submit" fx:id="numKeysButton" minWidth="200"/>
+
+
+      <!-- Generate Button -->
+      <Button text="Generate Keys" fx:id="generateButton" minWidth="200"/>
+
+
+      <!-- Success and Failure Pop-ups -->
+      <VBox fx:id="successPopup" alignment="CENTER" spacing="10" visible="false" managed="false">
+        <Label text="Success! Keys generated successfully." style="-fx-font-weight: bold; -fx-text-fill: green;"/>
+        <HBox spacing="20" alignment="CENTER">
+          <Button text="Export Private Key" fx:id="exportPrivateKeyButton"/>
+          <Button text="Export Public Key" fx:id="exportPublicKeyButton"/>
+        </HBox>
+      </VBox>
+
+      <VBox fx:id="failurePopup" alignment="CENTER" spacing="10" visible="false" managed="false">
+        <Label fx:id="failureLabel" text="Failure. Please ensure your input is a comma separated sequence of bit sizes
+        corresponding to the number of prime factors you wish the modulus to contain."
+          style="-fx-font-weight: bold; -fx-text-fill: red;" wrapText="true" minHeight="40" prefHeight="60"/>
+      </VBox>
+
 
 
     </VBox>

@@ -103,16 +103,39 @@ public interface ViewUpdate {
   /**
    * Sets the visibility of the button to cancel the import of a key.
    *
-   * @param visible {@code true} to make the cancel import key button visible, {@code false} otherwise.
+   * @param visible {@code true} to make the cancel import key button visible, {@code false}
+   *                otherwise.
    */
-  void setCancelImportKeyButtonVisibility(boolean visible);
+  void setCancelImportKeyBatchButtonVisibility(boolean visible);
+
+
+  /**
+   * Updates the checkmark image next to the message batch in the view, typically to indicate a
+   * successful operation such as the successful import of a message batch.
+   */
+  void setCheckmarkImageMessageBatch();
+
+  /**
+   * Sets the visibility of the button used to cancel the import of a single key in the view.
+   *
+   * @param visible true to make the cancel import single key button visible, false to hide it.
+   */
+  void setCancelImportSingleKeyButtonVisibility(boolean visible);
 
   /**
    * Sets the visibility of the button to import a batch of keys.
    *
-   * @param visible {@code true} to make the import key batch button visible, {@code false} otherwise.
+   * @param visible {@code true} to make the import key batch button visible, {@code false}
+   *                otherwise.
    */
   void setImportKeyBatchButtonVisibility(boolean visible);
+
+  /**
+   * Sets the visibility of the button used to import a single key in the view.
+   *
+   * @param visible true to make the import key button visible, false to hide it.
+   */
+  void setImportKeyButtonVisibility(boolean visible);
 
   /**
    * Sets a fixed name for the key display area in the user interface.
@@ -122,14 +145,30 @@ public interface ViewUpdate {
   /**
    * Sets the visibility of the button to import a batch of text messages.
    *
-   * @param visible {@code true} to make the import text batch button visible, {@code false} otherwise.
+   * @param visible {@code true} to make the import text batch button visible, {@code false}
+   *                otherwise.
    */
   void setImportTextBatchBtnVisibility(boolean visible);
 
   /**
+   * Sets the visibility of the button used to import text in the view.
+   *
+   * @param visible true to make the import text button visible, false to hide it.
+   */
+  void setImportTextButtonVisibility(boolean visible);
+
+  /**
    * Sets the visibility of the button to cancel the import of a text message batch.
    *
-   * @param visible {@code true} to make the cancel import text button visible, {@code false} otherwise.
+   * @param visible {@code true} to make the cancel import text button visible, {@code false}
+   *                otherwise.
+   */
+  void setCancelImportTextBatchButtonVisibility(boolean visible);
+
+  /**
+   * Sets the visibility of the button used to cancel the import of text in the view.
+   *
+   * @param visible true to make the cancel import text button visible, false to hide it.
    */
   void setCancelImportTextButtonVisibility(boolean visible);
 
@@ -148,7 +187,8 @@ public interface ViewUpdate {
   void setSelectedHashFunction(String scheme);
 
   /**
-   * Updates the hash function dropdown for custom or provably secure parameter selections in the view.
+   * Updates the hash function dropdown for custom or provably secure parameter selections in the
+   * view.
    */
   void updateHashFunctionDropdownForCustomOrProvablySecure();
 
@@ -158,7 +198,8 @@ public interface ViewUpdate {
   void updateHashFunctionDropdownForStandard();
 
   /**
-   * Retrieves the parameter choice (e.g., 'Standard', 'Provably Secure', 'Custom') selected in the view.
+   * Retrieves the parameter choice (e.g., 'Standard', 'Provably Secure', 'Custom') selected in the
+   * view.
    *
    * @return The selected parameter choice.
    */

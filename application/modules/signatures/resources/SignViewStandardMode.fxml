@@ -41,7 +41,7 @@
       <!-- ToggleSwitch for Benchmarking Mode -->
       <HBox alignment="CENTER_LEFT" spacing="10">
         <Label text="Benchmarking Mode:" styleClass="bold-label"/>
-        <ToggleSwitch fx:id="benchmarkingModeToggle" selected="true"/>
+        <ToggleSwitch fx:id="benchmarkingModeToggle" selected="false"/>
       </HBox>
 
       <Separator/>
@@ -49,30 +49,28 @@
       <!-- Text Area and Import Text Button -->
       <HBox spacing="10" alignment="CENTER">
         <VBox spacing="27">
+          <VBox fx:id="standardModeMessageVBox" spacing="11" >
+            <HBox spacing="10" alignment="CENTER_LEFT">
+              <Label text="Enter text to sign:" styleClass="bold-label" style="-fx-font-weight: bold;"/>
+              <Button fx:id="importTextButton" text="Import Text"/>
+              <Button fx:id="cancelImportTextButton" text="Cancel Import" managed="false" visible="false"/>
+            </HBox>
 
-
-          <HBox spacing="10" fx:id="benchmarkingModeNumMessageHBox">
-            <Label fx:id="numMessageLabel" text="Number of Messages (trials):" styleClass="bold-label"/>
-            <TextField fx:id="numMessageField" prefWidth="100"/>
-          </HBox>
-
-          <VBox spacing="5" alignment="CENTER" fx:id="benchmarkingModeMessageVBox">
-            <HBox spacing="10" fx:id="messageBatchHBox">
-              <Label fx:id="messageBatchText" text="Message Batch:" styleClass="bold-label"/>
-              <TextField fx:id="messageBatchField" prefWidth="200" text="Please Import a message batch" editable="false"/>
-              <ImageView fx:id="textFileCheckmarkImage" fitWidth="20" fitHeight="20" preserveRatio="true" visible="false"/>
-              <Button fx:id="importTextBatchBtn" text="Import Text"/>
-              <Button fx:id="cancelImportTextBatchButton" text="Cancel Import" visible="false" managed="false"/>
+            <TextArea fx:id="textInput" prefHeight="100" prefWidth="400" wrapText="true" visible="true"/>
+            <HBox alignment="CENTER_LEFT" spacing="5" visible="false" fx:id="textInputHBox">
+              <Label fx:id="textFileNameLabel" text=""/>
+              <ImageView fx:id="checkmarkImageMessageBatch" fitWidth="20" fitHeight="20" preserveRatio="true"/>
             </HBox>
           </VBox>
 
+
           <!-- Private Key Input and Import Button -->
           <HBox alignment="CENTER" spacing="10">
-            <Label fx:id="keyFieldLabel" text="Private Key Batch:" styleClass="bold-label"/>
-            <TextField fx:id="keyField" prefWidth="200" text="Please Import a private key batch" editable="false"/>
+            <Label fx:id="keyFieldLabel" text="Private Key:" styleClass="bold-label"/>
+            <TextField fx:id="keyField" prefWidth="200" text="Please Import a private key" editable="false"/>
             <ImageView fx:id="checkmarkImage" fitWidth="20" fitHeight="20" preserveRatio="true" visible="false"/>
-            <Button fx:id="importKeyBatchButton" text="Import Key Batch" visible="true" managed="true"/>
-            <Button fx:id="cancelImportKeyButton" text="Cancel Import" visible="false" managed="false"/>
+            <Button fx:id="importKeyButton" text="Import Private Key"/>
+            <Button fx:id="cancelImportSingleKeyButton" text="Cancel Import" managed="false" visible="true"/>
           </HBox>
 
           <!-- Signature Scheme Dropdown -->
@@ -118,8 +116,7 @@
       </HBox>
 
       <!-- Create Signature Button -->
-      <Button fx:id="createSignatureButton" styleClass="bold-label" text="Create Signature" maxWidth="200" managed="false" visible="false"/>
-      <Button fx:id="SigBenchmarkButton" styleClass="bold-label" text="Start Signature Benchmarking" maxWidth="400" managed="true" visible="true"/>
+      <Button fx:id="createSignatureButton" styleClass="bold-label" text="Create Signature" maxWidth="200"/>
 
 
     </VBox>
