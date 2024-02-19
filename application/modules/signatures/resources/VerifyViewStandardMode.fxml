@@ -8,7 +8,7 @@
 <?import org.controlsfx.control.ToggleSwitch?>
 
 <BorderPane xmlns:fx="http://javafx.com/fxml" fx:controller="uk.msci.project.rsa.VerifyView"
-  prefHeight="650.0" prefWidth="800.0" fx:id="root">
+  prefHeight="650.0" prefWidth="800.0" fx:id="root" stylesheets="SignatureView.css" >
 
   <!-- Header Section -->
   <top>
@@ -41,7 +41,7 @@
       <!-- ToggleSwitch for Benchmarking Mode -->
       <HBox alignment="CENTER_LEFT" spacing="10">
         <Label text="Benchmarking Mode:" styleClass="bold-label"/>
-        <ToggleSwitch fx:id="benchmarkingModeToggle" selected="true"/>
+        <ToggleSwitch fx:id="benchmarkingModeToggle" selected="false"/>
       </HBox>
 
       <Separator/>
@@ -49,8 +49,8 @@
       <!-- Text Area and Import Text Button -->
       <HBox spacing="10" alignment="CENTER">
         <VBox spacing="27">
-          <VBox spacing="5">
-            <HBox spacing="11" alignment="CENTER_LEFT" >
+          <VBox spacing="11">
+            <HBox spacing="10" alignment="CENTER_LEFT" >
               <Label text="Enter text to verify:" styleClass="bold-label"/>
               <Button fx:id="importTextButton" text="Import Text"/>
               <Button fx:id="cancelImportTextButton" text="Cancel Import" managed="false" visible="false"/>
@@ -77,7 +77,7 @@
 
           <!-- Signature -->
 
-          <HBox spacing="10" alignment="CENTER_LEFT" fx:id="signatureBatchHBox">
+
             <VBox spacing="11" fx:id="standardModeSignatureVBox">
               <HBox spacing="10" alignment="CENTER_LEFT">
                 <Label text="Signature:" styleClass="bold-label"/>
@@ -93,7 +93,7 @@
                   preserveRatio="true"/>
               </HBox>
             </VBox>
-          </HBox>
+
 
           <!-- Signature Scheme Dropdown -->
           <HBox spacing="10">

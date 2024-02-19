@@ -8,7 +8,7 @@
 <?import org.controlsfx.control.ToggleSwitch?>
 
 <BorderPane xmlns:fx="http://javafx.com/fxml" fx:controller="uk.msci.project.rsa.VerifyView"
-  prefHeight="650.0" prefWidth="800.0" fx:id="root">
+  prefHeight="650.0" prefWidth="800.0" fx:id="root" stylesheets="SignatureView.css" >
 
   <!-- Header Section -->
   <top>

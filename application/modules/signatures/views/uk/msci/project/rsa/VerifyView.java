@@ -1,6 +1,5 @@
 package uk.msci.project.rsa;
 
-import javafx.beans.InvalidationListener;
 import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
@@ -17,13 +16,11 @@ import javafx.scene.control.Toggle;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import org.controlsfx.control.ToggleSwitch;
-import uk.msci.project.rsa.SignatureBaseController.SignatureSchemeChangeObserver;
 
 /**
  * The {@code VerifyView} class is responsible for managing the user interface related to the
@@ -151,6 +148,9 @@ public class VerifyView implements SignatureViewInterface {
   private Button cancelImportTextButton;
 
   @FXML
+  private Button cancelImportSignatureButton;
+
+  @FXML
   private Label signatureBatchText;
 
   @FXML
@@ -201,6 +201,7 @@ public class VerifyView implements SignatureViewInterface {
   @FXML
   private Button cancelImportSigBatchButton;
 
+
   /**
    * Toggle switch for enabling or disabling benchmarking mode.
    */
@@ -216,6 +217,58 @@ public class VerifyView implements SignatureViewInterface {
 
   @FXML
   private HBox signatureBatchHBox;
+
+  /**
+   * VBox containing elements for message input in standard mode. This includes the text area for
+   * inputting or importing the text to be signed.
+   */
+  @FXML
+  private VBox standardModeMessageVBox;
+
+  /**
+   * HBox for inputting the number of messages in benchmarking mode. Contains elements to specify
+   * the number of trials or messages to be used in benchmarking.
+   */
+  @FXML
+  private HBox benchmarkingModeNumMessageHBox;
+
+
+  /**
+   * VBox containing elements for message batch input in benchmarking mode. This includes fields for
+   * importing and managing message batches for signature benchmarking.
+   */
+  @FXML
+  private VBox benchmarkingModeMessageVBox;
+
+
+  /**
+   * Label associated with the keyField TextField. Displays a description or instruction related to
+   * the private key input field.
+   */
+  @FXML
+  private Label keyFieldLabel;
+
+
+  /**
+   * ImageView displaying a checkmark indicating successful message batch import.
+   */
+  @FXML
+  private ImageView checkmarkImageMessageBatch;
+
+  /**
+   * Button for canceling text batch import.
+   */
+  @FXML
+  private Button cancelImportTextBatchButton;
+
+
+  /**
+   * Button for canceling key import (standard mode).
+   */
+  @FXML
+  private Button cancelImportSingleKeyButton;
+
+
 
   /**
    * Initialises the Verification view, setting up the toggle group for parameter choice.
@@ -308,6 +361,7 @@ public class VerifyView implements SignatureViewInterface {
    * @param visible true to show the HBox, false to hide it.
    */
   public void setSigFileHBoxVisibility(boolean visible) {
+    this.sigFileHBox.setManaged(visible);
     this.sigFileHBox.setVisible(visible);
   }
 
@@ -408,6 +462,7 @@ public class VerifyView implements SignatureViewInterface {
    * @param visible true to show the text input area, false to hide it.
    */
   public void setTextInputVisibility(boolean visible) {
+    this.textInput.setManaged(visible);
     this.textInput.setVisible(visible);
   }
 
@@ -444,6 +499,7 @@ public class VerifyView implements SignatureViewInterface {
    * @param visible true to show the signature text area, false to hide it.
    */
   public void setSignatureTextVisibility(boolean visible) {
+    this.signatureText.setManaged(visible);
     this.signatureText.setVisible(visible);
   }
 
@@ -733,6 +789,21 @@ public class VerifyView implements SignatureViewInterface {
     cancelImportTextButton.setManaged(visible);
   }
 
+  public void setImportSigButtonVisibility(boolean visible) {
+    importSigButton.setManaged(visible);
+    importSigButton.setVisible(visible);
+  }
+
+  /**
+   * Sets the visibility of the cancelImportSignatureButton and manages its properties.
+   *
+   * @param visible true to make the cancelImportSignatureButton visible, false to hide it.
+   */
+  public void setCancelImportSignatureButtonVisibility(boolean visible) {
+    cancelImportSignatureButton.setVisible(visible);
+    cancelImportSignatureButton.setManaged(visible);
+  }
+
   /**
    * Sets the visibility of the importKeyBatchButton and manages its properties.
    *
@@ -936,6 +1007,16 @@ public class VerifyView implements SignatureViewInterface {
   }
 
   /**
+   * Registers an observer for the cancelImportSignatureButton Button's action event. This observer is
+   * called when the user clicks the button to cancel the import of a text batch.
+   *
+   * @param observer The event handler to be registered.
+   */
+  public void addCancelImportSignatureButtonObserver(EventHandler<ActionEvent> observer) {
+    cancelImportSignatureButton.setOnAction(observer);
+  }
+
+  /**
    * Registers an observer for the importKeyBatchButton Button's action event. This observer is
    * invoked when the user clicks the button to import a batch of keys.
    *
@@ -1026,5 +1107,161 @@ public class VerifyView implements SignatureViewInterface {
     notificationPane.setVisible(true);
     notificationPane.setDisable(false);
   }
+
+  /**
+   * Sets the image for the text file checkmark to indicate the status of message batch file
+   * import.
+   */
+  public void setCheckmarkImageMessageBatch() {
+    this.checkmarkImageMessageBatch.setImage(new Image("/checkmark.png"));
+
+    // Set the ImageView size
+    this.checkmarkImageMessageBatch.setFitWidth(20);
+    this.checkmarkImageMessageBatch.setFitHeight(20);
+
+    // Preserve the image's aspect ratio
+    this.checkmarkImageMessageBatch.setPreserveRatio(true);
+  }
+
+
+
+  /**
+   * Sets the visibility of the notification pane, which shows the results of the signature
+   * operation.
+   *
+   * @param visible true to make the pane visible, false to hide it.
+   */
+  public void setNotificationPaneVisible(boolean visible) {
+    this.notificationPane.setVisible(visible);
+  }
+
+
+
+  /**
+   * Sets the visibility of the checkmarkImageMessageBatch and manages its properties.
+   *
+   * @param visible true to make the checkmarkImageMessageBatch visible, false to hide it.
+   */
+  public void setCheckmarkImageMessageBatchVisibility(boolean visible) {
+    checkmarkImageMessageBatch.setVisible(visible);
+    checkmarkImageMessageBatch.setManaged(visible);
+  }
+
+
+  /**
+   * Sets the visibility of the importTextButton. This method controls whether the button for
+   * importing a message in standard mode is visible to the user.
+   *
+   * @param visible true to make the button visible, false to hide it.
+   */
+  public void setImportTextButtonVisibility(boolean visible) {
+    importTextButton.setVisible(visible);
+    importTextButton.setManaged(visible);
+  }
+
+  /**
+   * Sets the visibility of the cancelImportTextBatchButton and manages its properties.
+   *
+   * @param visible true to make the cancelImportTextBatchButton visible, false to hide it.
+   */
+  public void setCancelImportTextBatchButtonVisibility(boolean visible) {
+    cancelImportTextBatchButton.setVisible(visible);
+    cancelImportTextBatchButton.setManaged(visible);
+  }
+
+
+  /**
+   * Sets the visibility of the importKeyButton. This method controls whether the button for
+   * importing a key during standard mode is visible to the user.
+   *
+   * @param visible true to make the button visible, false to hide it.
+   */
+  public void setImportKeyButtonVisibility(boolean visible) {
+    importKeyButton.setVisible(visible);
+    importKeyButton.setManaged(visible);
+  }
+
+
+  /**
+   * Sets the visibility of the cancelImportSingleKeyButton. This method controls whether the button
+   * for canceling the import of a single key in standard mode is visible to the user.
+   *
+   * @param visible true to make the button visible, false to hide it.
+   */
+  public void setCancelImportSingleKeyButtonVisibility(boolean visible) {
+    cancelImportSingleKeyButton.setVisible(visible);
+    cancelImportSingleKeyButton.setManaged(visible);
+  }
+
+
+
+
+  /**
+   * Registers an observer for the cancelImportTextButton Button's action event. This observer is
+   * called when the user clicks the button to cancel the import of a text batch in benchmarking
+   * mode.
+   *
+   * @param observer The event handler to be registered.
+   */
+  public void addCancelImportTextBatchButtonObserver(EventHandler<ActionEvent> observer) {
+    cancelImportTextBatchButton.setOnAction(observer);
+  }
+
+  /**
+   * Registers an observer for the cancelImportSignatureButton Button's action event. This observer is
+   * called when the user clicks the button to cancel the import of a text batch in standard
+   * mode.
+   *
+   * @param observer The event handler to be registered.
+   */
+  public void addCancelImportSignatureBatchButtonObserver(EventHandler<ActionEvent> observer) {
+    cancelImportSignatureButton.setOnAction(observer);
+  }
+
+
+
+  /**
+   * Registers an observer for the cancelImportSingleKeyButton's action event. This observer is
+   * called when the user clicks the button to cancel the import of a single key.
+   *
+   * @param observer The event handler to be registered.
+   */
+  public void addCancelImportSingleKeyButtonObserver(EventHandler<ActionEvent> observer) {
+    cancelImportSingleKeyButton.setOnAction(observer);
+  }
+
+
+
+  /**
+   * Sets the visibility of the standardModeMessageVBox.
+   *
+   * @param visible true to make the VBox visible, false to hide it.
+   */
+  public void setStandardModeMessageVBoxVisibility(boolean visible) {
+    standardModeMessageVBox.setVisible(visible);
+    standardModeMessageVBox.setManaged(visible);
+  }
+
+  /**
+   * Sets the visibility of the benchmarkingModeMessageVBox.
+   *
+   * @param visible true to make the VBox visible, false to hide it.
+   */
+  public void setBenchmarkingModeMessageVBoxVisibility(boolean visible) {
+    benchmarkingModeMessageVBox.setVisible(visible);
+    benchmarkingModeMessageVBox.setManaged(visible);
+  }
+
+  /**
+   * Sets the visibility of the benchmarkingModeNumMessageHBox.
+   *
+   * @param visible true to make the HBox visible, false to hide it.
+   */
+  public void setBenchmarkingModeNumMessageVBoxVisibility(boolean visible) {
+    benchmarkingModeNumMessageHBox.setVisible(visible);
+    benchmarkingModeNumMessageHBox.setManaged(visible);
+  }
+
+
 
 }
