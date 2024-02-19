@@ -1,26 +1,21 @@
 package uk.msci.project.rsa;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.math.BigInteger;
-import java.util.List;
-import java.util.regex.Pattern;
 import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 import javafx.stage.Stage;
-import javafx.util.Pair;
-import uk.msci.project.rsa.SignatureVerificationController.CancelImportTextButtonObserver;
 
 
 /**
@@ -72,11 +67,28 @@ public class SignatureCreationController extends SignatureBaseController {
       this.signatureModel = new SignatureModel();
 
       // Set up observers for benchmarking mode SignView
+      signView.addBenchmarkingModeToggleObserver(new ApplicationModeChangeObserver());
       setupSignObserversBenchmarking(primaryStage);
 
-      Scene scene = new Scene(root);
-      scene.getStylesheets().add("/SignatureView.css");
-      primaryStage.setScene(scene);
+      mainController.setScene(root);
+
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+  }
+
+  public void showSignViewStandardMode(Stage primaryStage) {
+    try {
+      FXMLLoader loader = new FXMLLoader(getClass().getResource("/SignViewStandardMode.fxml"));
+      Parent root = loader.load();
+      signView = loader.getController();
+      this.signatureModel = new SignatureModel();
+
+      // Set up observers for benchmarking mode SignView
+      signView.addBenchmarkingModeToggleObserver(new ApplicationModeChangeObserver());
+      setupSignObservers(primaryStage);
+
+      mainController.setScene(root);
 
     } catch (IOException e) {
       e.printStackTrace();
@@ -97,11 +109,16 @@ public class SignatureCreationController extends SignatureBaseController {
     signView.addImportKeyObserver(
         new ImportObserver(primaryStage, new SignViewUpdateOperations(signView),
             this::handleKey, "*.rsa"));
+    signView.addCancelImportSingleKeyButtonObserver(
+        new CancelImportKeyButtonObserver(new SignViewUpdateOperations(signView)));
     signView.addSignatureSchemeChangeObserver(new SignatureSchemeChangeObserver());
     signView.addCreateSignatureObserver(
         new CreateSignatureObserver(new SignViewUpdateOperations(signView)));
     signView.addBackToMainMenuObserver(new BackToMainMenuObserver(signView));
     signView.addCloseNotificationObserver(new BackToMainMenuObserver(signView));
+    signView.addCancelImportTextButtonObserver(
+        new CancelImportTextButtonObserver(new SignViewUpdateOperations(signView)));
+
   }
 
   /**
@@ -117,7 +134,7 @@ public class SignatureCreationController extends SignatureBaseController {
         new ImportObserver(primaryStage, new SignViewUpdateOperations(signView),
             this::handleKeyBatch, "*.rsa"));
     signView.addCancelImportKeyButtonObserver(
-        new CancelImportKeyButtonObserver(new SignViewUpdateOperations(signView)));
+        new CancelImportKeyBatchButtonObserver(new SignViewUpdateOperations(signView)));
     signView.addSignatureSchemeChangeObserver(new SignatureSchemeChangeObserver());
     signView.addParameterChoiceChangeObserver(
         new ParameterChoiceChangeObserver(new SignViewUpdateOperations(signView)));
@@ -336,9 +353,9 @@ public class SignatureCreationController extends SignatureBaseController {
           viewOps.setBatchMessageVisibility(true);
           signView.setNumMessageFieldEditable(false);
           viewOps.setImportTextBatchBtnVisibility(false);
-          viewOps.setCancelImportTextButtonVisibility(true);
-          signView.addCancelImportTextButtonObserver(
-              new CancelImportTextButtonObserver(new SignViewUpdateOperations(signView)));
+          viewOps.setCancelImportTextBatchButtonVisibility(true);
+          signView.addCancelImportTextBatchButtonObserver(
+              new CancelImportTextBatchButtonObserver(new SignViewUpdateOperations(signView)));
         }
       }
     } catch (NumberFormatException e) {
@@ -353,8 +370,8 @@ public class SignatureCreationController extends SignatureBaseController {
   /**
    * Handles the file selected by the user for a batch of keys. It validates the keys and updates
    * the model and view accordingly. It expects the key file to contain a line separated text of
-   * comma delimited positive integers and updates the view based on the result of the key
-   * validation.
+   * comma delimited positive integers (with length 2 i.e., modulus and exponent) and updates the
+   * view based on the result of the key validation.
    *
    * @param file    The file selected by the user containing a batch of keys.
    * @param viewOps The {@code ViewUpdate} operations that will update the view.
@@ -367,17 +384,34 @@ public class SignatureCreationController extends SignatureBaseController {
     return true;
   }
 
+  /**
+   * Handles the file selected by the user for a single key (non-benchmarking mode). It validates
+   * the keys and updates the model and view accordingly. It expects the key file to contain a
+   * single line with comma delimited positive integers (with length 2 i.e., modulus and exponent)
+   * and updates the view based on the result of the key validation.
+   *
+   * @param file    The file selected by the user containing a batch of keys.
+   * @param viewOps The {@code ViewUpdate} operations that will update the view.
+   */
+  public boolean handleKey(File file, ViewUpdate viewOps) {
+    if (super.handleKeyBatch(file, viewOps)) {
+      signView.setImportKeyButtonVisibility(false);
+      signView.setCancelImportSingleKeyButtonVisibility(true);
+    }
+    return true;
+  }
+
 
   /**
    * Observer for canceling the import of a text batch. Handles the event when the user decides to
    * cancel the import of a batch of messages by replacing the cancel button with the original
    * import button and resetting corresponding text field that display the name of the file.
    */
-  class CancelImportTextButtonObserver implements EventHandler<ActionEvent> {
+  class CancelImportTextBatchButtonObserver implements EventHandler<ActionEvent> {
 
     private ViewUpdate viewOps;
 
-    public CancelImportTextButtonObserver(ViewUpdate viewOps) {
+    public CancelImportTextBatchButtonObserver(ViewUpdate viewOps) {
       this.viewOps = viewOps;
     }
 
@@ -403,6 +437,31 @@ public class SignatureCreationController extends SignatureBaseController {
   @Override
   public void setMessage(byte[] message) {
     this.message = message;
+  }
+
+  /**
+   * Observer for application mode changes in the Signing view. This observer observes for changes
+   * in the toggle switch that switches between standard and benchmarking modes in the signature
+   * creation view. When the mode changes, it sets up the corresponding view and clears any previous
+   * state such as selected messages or keys.
+   */
+  class ApplicationModeChangeObserver implements ChangeListener<Boolean> {
+
+    @Override
+    public void changed(ObservableValue<? extends Boolean> observableValue, Boolean oldValue,
+        Boolean newValue) {
+      if (Boolean.TRUE.equals(newValue)) {
+        if (Boolean.FALSE.equals(oldValue)) {
+          showSignView(mainController.getPrimaryStage());
+          message = null;
+        }
+      } else {
+        if (Boolean.TRUE.equals(oldValue)) {
+          showSignViewStandardMode(mainController.getPrimaryStage());
+          messageBatchFile = null;
+        }
+      }
+    }
   }
 
 

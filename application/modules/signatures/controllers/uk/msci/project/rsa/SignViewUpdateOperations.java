@@ -195,7 +195,6 @@ public class SignViewUpdateOperations implements ViewUpdate {
    */
   public void setImportKeyButtonVisibility(boolean visible) {
     signView.setImportKeyButtonVisibility(visible);
-
   }
 
   /**
