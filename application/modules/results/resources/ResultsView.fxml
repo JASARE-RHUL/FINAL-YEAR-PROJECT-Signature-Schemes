@@ -52,6 +52,7 @@
       <TabPane VBox.vgrow="ALWAYS" tabClosingPolicy="UNAVAILABLE">
         <!-- Statistics Tab -->
         <Tab text="Statistics">
+          <ScrollPane fitToWidth="true" fitToHeight="true">
           <VBox alignment="CENTER" spacing="10">
             <!-- ... other components ... -->
 
@@ -77,6 +78,7 @@
               <Button fx:id="exportVerificationResultsBtn" text="Export Verification Results" visible="false"  managed="false" />
             </HBox>
           </VBox>
+          </ScrollPane>
         </Tab>
 
         <!-- Graphs Tab -->
@@ -94,6 +96,7 @@
       </TabPane>
 
     </VBox>
+
   </center>
   <bottom>
     <!-- Navigation Buttons -->

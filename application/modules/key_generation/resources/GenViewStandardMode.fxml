@@ -23,6 +23,7 @@
 
   <!-- Main Content -->
   <center>
+    <ScrollPane fitToWidth="true" fitToHeight="true">
     <VBox alignment="CENTER" spacing="20" style="-fx-padding: 10 10 10 10;">
       <!-- Title and Logo -->
       <VBox alignment="CENTER" spacing="10">
@@ -66,10 +67,8 @@
         corresponding to the number of prime factors you wish the modulus to contain."
           style="-fx-font-weight: bold; -fx-text-fill: red;" wrapText="true" minHeight="40" prefHeight="60"/>
       </VBox>
-
-
-
     </VBox>
+    </ScrollPane>
   </center>
   <bottom>
   <!-- Navigation Buttons -->
