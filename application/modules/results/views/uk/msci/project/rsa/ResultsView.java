@@ -20,8 +20,6 @@ import javafx.scene.control.Tab;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Region;
 
 /**
  * The {@code ResultsView} class is responsible for displaying the statistical results of the
@@ -546,13 +544,13 @@ public class ResultsView implements Initializable {
   /**
    * Resizes the table view based on the number of items it contains.
    */
-  private void resizeTableView() {
+  public void resizeTableView() {
     int rows = tableView.getItems().size() + 1; // +1 for the header row
-    double rowHeight = 26;
+    double rowHeight = 30;
     double tableHeight = rows * rowHeight;
     tableView.setPrefHeight(tableHeight);
-    tableView.setMinHeight(Region.USE_PREF_SIZE);
-    tableView.setMaxHeight(Region.USE_PREF_SIZE);
+    tableView.setMinHeight(tableHeight);
+
   }
 
   /**
@@ -641,5 +639,12 @@ public class ResultsView implements Initializable {
     tableView.getColumns().remove(valueColumn);
   }
 
-
+  /**
+   * Sets the text of the header of the first column in the results table to a specified text
+   *
+   * @param text The text to be displayed header of the first column in the results table.
+   */
+  public void setNameColumnText(String text) {
+    this.nameColumn.setText(text);
+  }
 }

@@ -60,8 +60,8 @@
 
               <TableView fx:id="tableView" >
                 <columns>
-                  <TableColumn fx:id="nameColumn" text="Statistic" minWidth="150" maxWidth="900"/>
-                  <TableColumn fx:id="valueColumn" text="Statistic" minWidth="150" maxWidth="900"/>
+                  <TableColumn fx:id="nameColumn" text="Statistic" minWidth="220"/>
+                  <TableColumn fx:id="valueColumn" text="Value" minWidth="150" maxWidth="900"/>
 
                 </columns>
               </TableView>
