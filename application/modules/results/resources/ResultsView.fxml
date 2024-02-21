@@ -57,14 +57,15 @@
             <!-- ... other components ... -->
 
             <!-- Wrap the TableView in an HBox for horizontal centering -->
-            <HBox alignment="CENTER" VBox.vgrow="ALWAYS">
+
               <TableView fx:id="tableView" >
                 <columns>
                   <TableColumn fx:id="nameColumn" text="Statistic" minWidth="150" maxWidth="900"/>
-                  <TableColumn fx:id="valueColumn" text="Value" minWidth="270"  maxWidth="900"/>
+                  <TableColumn fx:id="valueColumn" text="Statistic" minWidth="150" maxWidth="900"/>
+
                 </columns>
               </TableView>
-            </HBox>
+
 
             <!-- ... other components ... -->
             <!-- Buttons and Navigation -->

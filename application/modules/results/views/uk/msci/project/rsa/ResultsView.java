@@ -1,8 +1,14 @@
 package uk.msci.project.rsa;
 
 import com.jfoenix.controls.JFXTabPane;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.net.URL;
+import java.util.List;
 import java.util.ResourceBundle;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -98,7 +104,8 @@ public class ResultsView implements Initializable {
 
   /**
    * The sideTabContainer field represents the JFXTabPane container for displaying side tabs
-   * corresponding to different keys that will trigger the displaying of their corresponding results.
+   * corresponding to different keys that will trigger the displaying of their corresponding
+   * results.
    */
   @FXML
   private JFXTabPane sideTabContainer;
@@ -173,7 +180,7 @@ public class ResultsView implements Initializable {
    *
    * @param keyTab The tab to be added for key switching.
    */
-  public void addKeySwitchTab(Tab keyTab){
+  public void addKeySwitchTab(Tab keyTab) {
     sideTabContainer.getTabs().add(keyTab);
   }
 
@@ -509,14 +516,13 @@ public class ResultsView implements Initializable {
    */
   @Override
   public void initialize(URL location, ResourceBundle resources) {
-    setupTableView();
-    populateTableView();
+    nameColumn.setCellValueFactory(new PropertyValueFactory<>("statisticName"));
   }
 
   /**
    * Configures the table view, setting up the columns and their properties.
    */
-  private void setupTableView() {
+  public void setupTableView() {
     // Configure the columns to use the property names from StatisticData
     nameColumn.setCellValueFactory(new PropertyValueFactory<>("statisticName"));
     valueColumn.setCellValueFactory(new PropertyValueFactory<>("statisticValue"));
@@ -526,7 +532,7 @@ public class ResultsView implements Initializable {
   /**
    * Populates the table view with statistical data.
    */
-  private void populateTableView() {
+  public void populateTableView() {
     // Add the StatisticData instances to the tableView
     tableView.getItems().clear();
     tableView.getItems().addAll(numTrials,
@@ -564,5 +570,76 @@ public class ResultsView implements Initializable {
   void addBackToMainMenuObserver(EventHandler<ActionEvent> observer) {
     backToMainMenuButton.setOnAction(observer);
   }
+
+  /**
+   * Adds value columns to the table view.
+   *
+   * @param resultsTableColumn The list of value columns to be added.
+   */
+  public void addValueColumns(List<ResultsTableColumn> resultsTableColumn) {
+    for (int i = 0; i < resultsTableColumn.size(); i++) {
+      ResultsTableColumn metadata = resultsTableColumn.get(i);
+      TableColumn<StatisticData, String> column = new TableColumn<>(metadata.getColumnName());
+      int columnIndex = i;
+      column.setCellValueFactory(cellData ->
+          new SimpleStringProperty(cellData.getValue().getStatisticValues().get(columnIndex))
+      );
+      tableView.getColumns().add(column);
+    }
+  }
+
+  /**
+   * Clears all items from the table view.
+   */
+  public void clearTableView() {
+    tableView.getItems().clear();
+  }
+
+  /**
+   * Adds a statistic data item to the table view.
+   *
+   * @param data The statistic data to be added.
+   */
+  public void addStatisticData(StatisticData data) {
+    tableView.getItems().add(data);
+  }
+
+  /**
+   * Exports the comparison table results to a CSV file.
+   *
+   * @param fileName The name of the CSV file.
+   */
+  public void exportComparisonTableResultsToCSV(String fileName) {
+    File resultsFile = FileHandle.createUniqueFile(fileName);
+    try (BufferedWriter fileWriter = new BufferedWriter(new FileWriter(resultsFile))) {
+      // Write the header line
+      for (TableColumn<StatisticData, ?> column : tableView.getColumns()) {
+        fileWriter.append(column.getText() + ",");
+      }
+      fileWriter.append("\n");
+
+      // Iterate through table data
+      for (StatisticData data : tableView.getItems()) {
+        fileWriter.append(data.getStatisticName() + ",");
+
+        List<String> values = data.getStatisticValues();
+        if (values != null) {
+          fileWriter.append(String.join(",", values));
+        }
+
+        fileWriter.append("\n");
+      }
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+  }
+
+  /**
+   * Removes the value column from the table view.
+   */
+  public void removeValueColumn() {
+    tableView.getColumns().remove(valueColumn);
+  }
+
 
 }
