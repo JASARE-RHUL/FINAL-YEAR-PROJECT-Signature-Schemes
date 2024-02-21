@@ -18,9 +18,12 @@ import javafx.scene.control.Dialog;
 import javafx.scene.control.DialogPane;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
+import javafx.scene.control.RadioButton;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ScrollPane.ScrollBarPolicy;
 import javafx.scene.control.TextField;
+import javafx.scene.control.Toggle;
+import javafx.scene.control.ToggleGroup;
 import javafx.scene.effect.GaussianBlur;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
@@ -111,11 +114,40 @@ public class GenView {
   private Button helpButton;
 
   /**
-   * List of pairs, each holding an array of integers and a boolean.
-   * This list stores dynamic key data, where each pair consists of an array representing key sizes
-   * and a boolean indicating whether a small exponent 'e' is used.
+   * Radio button for opting out of cross-parameter benchmarking.
+   */
+  @FXML
+  private RadioButton noCrossParameterRadio;
+
+  /**
+   * Radio button for opting in for cross-parameter benchmarking.
+   */
+  @FXML
+  private RadioButton yesCrossParameterRadio;
+
+  /**
+   * Label for displaying the number of keys.
+   */
+  @FXML
+  private Label numKeysLabel;
+
+  /**
+   * Label for displaying the number of key sizes.
+   */
+  @FXML
+  private Label numKeySizesLabel;
+
+  /**
+   * List of pairs, each holding an array of integers and a boolean. This list stores dynamic key
+   * data, where each pair consists of an array representing key sizes and a boolean indicating
+   * whether a small exponent 'e' is used.
    */
   private List<Pair<int[], Boolean>> dynamicKeyData = new ArrayList<>();
+
+  /**
+   * List of integers representing dynamically generated key sizes.
+   */
+  private List<Integer> dynamicKeySizeData = new ArrayList<>();
 
 
   /**
@@ -146,6 +178,41 @@ public class GenView {
   @FXML
   private VBox benchmarkingModeVBox;
 
+  /**
+   * Toggle group for cross-benchmarking options.
+   */
+  @FXML
+  private ToggleGroup crossBenchMarkingToggleGroup;
+
+  /**
+   * Initialises the domain object class. This method is automatically called after the FXML file
+   * has been loaded. It sets up the toggle group for cross-benchmarking options.
+   */
+  public void initialize() {
+    crossBenchMarkingToggleGroup = new ToggleGroup();
+    noCrossParameterRadio.setToggleGroup(crossBenchMarkingToggleGroup);
+    yesCrossParameterRadio.setToggleGroup(crossBenchMarkingToggleGroup);
+
+  }
+
+  /**
+   * Gets the selected option for cross-parameter benchmarking.
+   *
+   * @return String representing the selected cross-parameter benchmarking option.
+   */
+  public String getCrossBenchMarkingToggle() {
+    RadioButton selectedButton = (RadioButton) crossBenchMarkingToggleGroup.getSelectedToggle();
+    return selectedButton != null ? selectedButton.getText() : "";
+  }
+
+  /**
+   * Registers an observer for when the cross-benchmarking toggle changes value.
+   *
+   * @param observer The observe to be registered.
+   */
+  public void addCrossBenchMarkingToggleGroupChangeObserver(ChangeListener<Toggle> observer) {
+    crossBenchMarkingToggleGroup.selectedToggleProperty().addListener(observer);
+  }
 
   /**
    * Gets the ImageView that may contain a logo.
@@ -309,7 +376,7 @@ public class GenView {
     // Generate the dynamic fields
     for (int i = 0; i < numberOfFields; i++) {
       TextField textField = new TextField();
-      textField.setPromptText("Key " + (i + 1));
+      textField.setPromptText("Enter multiple bit sizes, separated by commas");
       CheckBox checkBox = new CheckBox("Small e?");
       HBox hbox = new HBox(10, textField, checkBox);
       content.getChildren().add(hbox);
@@ -350,6 +417,66 @@ public class GenView {
   }
 
   /**
+   * Displays a dialog for dynamic field generation in comparison mode. This dialog allows users to
+   * enter single bit sizes for each key.
+   *
+   * @param numberOfFields The number of key fields to be generated in the dialog.
+   * @param primaryStage   The primary stage of the application.
+   * @return boolean indicating if the dialog submission was completed successfully.
+   */
+  boolean showDynamicFieldsDialogComparisonMode(int numberOfFields, Stage primaryStage) {
+    Dialog<Void> dialog = new Dialog<>();
+    dialog.setTitle("Key Size Fields");
+    dialog.initModality(Modality.APPLICATION_MODAL);
+    dialog.initOwner(primaryStage);
+
+    // Create the VBox to hold fields and checkboxes
+    VBox content = new VBox(10);
+
+    // Generate the dynamic fields
+    for (int i = 0; i < numberOfFields; i++) {
+      TextField textField = new TextField();
+      textField.setPromptText("Enter a Single bit size");
+      HBox hbox = new HBox(10, textField);
+      content.getChildren().add(hbox);
+    }
+    ScrollPane scrollPane = new ScrollPane(content);
+    scrollPane.setVbarPolicy(ScrollBarPolicy.AS_NEEDED);
+    scrollPane.setHbarPolicy(ScrollBarPolicy.NEVER); // Disable horizontal scrolling
+    scrollPane.setFitToWidth(true);
+
+    ButtonType okButtonType = new ButtonType("Submit", ButtonData.OK_DONE);
+    ButtonType cancelButtonType = new ButtonType("Cancel", ButtonData.CANCEL_CLOSE);
+
+    // Set the dialog content and buttons
+    DialogPane dialogPane = dialog.getDialogPane();
+    dialogPane.setContent(scrollPane);
+    dialogPane.getButtonTypes().addAll(okButtonType, cancelButtonType);
+    dialogPane.setPrefSize(275, 250);
+
+    final boolean[] isCompleted = {false};
+
+    Button okButton = (Button) dialogPane.lookupButton(okButtonType);
+    okButton.addEventFilter(ActionEvent.ACTION, event -> {
+      if (isValidInputComparisonMode(content)) {
+        isCompleted[0] = true;
+        dialog.close();
+      } else {
+        event.consume(); // Prevent dialog from closing
+        uk.msci.project.rsa.DisplayUtility.showErrorAlert(
+            "Each Key Size must be a valid integer between 1024 and 7680. Please try again.");
+      }
+    });
+
+    primaryStage.getScene().getRoot().setEffect(new GaussianBlur());
+
+    dialog.setOnHidden(e -> primaryStage.getScene().getRoot().setEffect(null));
+    dialog.showAndWait();
+
+    return isCompleted[0];
+  }
+
+  /**
    * Validates the input provided in the dynamic fields within the given VBox. It checks if the text
    * fields contain valid key size patterns and updates `dynamicKeyData` with the entered key sizes
    * and small e options. If invalid input is detected, the method highlights the respective text
@@ -369,7 +496,7 @@ public class GenView {
 
         textField.setStyle("");
 
-        if (!(Pattern.compile("^\\s*\\d+\\s*(,\\s*\\d+\\s*)*$").matcher(textField.getText())
+        if (!(Pattern.compile("^\\s*\\d+(?:\\s*,\\s*\\d+)+\\s*$").matcher(textField.getText())
             .matches())) {
           invalidField = true;
           textField.setStyle("-fx-control-inner-background: #FFDDDD;");
@@ -379,6 +506,38 @@ public class GenView {
           dynamicKeyData.add(
               new Pair<>(KeyGenUtil.convertStringToIntArray(textFieldValue), checkBoxValue));
 
+        }
+
+      }
+    }
+    return !invalidField;
+  }
+
+  /**
+   * Validates the input provided in the dynamic fields for comparison mode within the given VBox.
+   * It checks if the text fields contain valid single bit sizes and updates `dynamicKeySizeData`
+   * with the entered key sizes. If invalid input is detected, the respective text field(s) are
+   * highlighted and false is returned.
+   *
+   * @param content The VBox containing dynamically generated text fields.
+   * @return boolean indicating whether the input in all text fields is valid.
+   */
+  private boolean isValidInputComparisonMode(VBox content) {
+    dynamicKeySizeData.clear();
+    boolean invalidField = false;
+    for (Node node : content.getChildren()) {
+      if (node instanceof HBox) {
+        HBox hbox = (HBox) node;
+        TextField textField = (TextField) hbox.getChildren().get(0);
+        textField.setStyle("");
+
+        if (!(Pattern.compile("(102[4-9]|[1-6][0-9]{3}|7680)").matcher(textField.getText())
+            .matches())) {
+          invalidField = true;
+          textField.setStyle("-fx-control-inner-background: #FFDDDD;");
+        } else {
+          String textFieldValue = textField.getText();
+          dynamicKeySizeData.add(((Integer.parseInt(textFieldValue) + 7) / 8) * 8);
         }
 
       }
@@ -442,6 +601,15 @@ public class GenView {
   }
 
   /**
+   * Retrieves a list of key sizes specified by the user in comparison mode.
+   *
+   * @return List<Integer> containing the specified key sizes.
+   */
+  public List<Integer> getDynamicKeySizeData() {
+    return dynamicKeySizeData;
+  }
+
+  /**
    * Retrieves the number of trials specified for key generation.
    *
    * @return int representing the number of trials.
@@ -461,6 +629,7 @@ public class GenView {
 
   /**
    * Sets the visibility of the standardModeVBox.
+   *
    * @param visible A boolean indicating whether the standardModeVBox should be visible.
    */
   public void setStandardModeVBoxVisibility(boolean visible) {
@@ -471,6 +640,7 @@ public class GenView {
 
   /**
    * Sets the visibility of the benchmarkingModeVBox.
+   *
    * @param visible A boolean indicating whether the benchmarkingModeVBox should be visible.
    */
   public void setBenchmarkingModeVBoxVisibility(boolean visible) {
@@ -481,6 +651,7 @@ public class GenView {
 
   /**
    * Sets the visibility of the numKeysButton.
+   *
    * @param visible A boolean indicating whether the numKeysButton should be visible.
    */
   public void setNumKeysButtonVisibility(boolean visible) {
@@ -491,6 +662,7 @@ public class GenView {
 
   /**
    * Sets the visibility of the generateButton.
+   *
    * @param visible A boolean indicating whether the generateButton should be visible.
    */
   public void setGenerateButtonVisibility(boolean visible) {
@@ -499,5 +671,23 @@ public class GenView {
   }
 
 
+  /**
+   * Sets the visibility of the label displaying the number of key sizes.
+   *
+   * @param visible A boolean indicating whether the label should be visible.
+   */
+  public void setNumKeySizesLabelVisibility(boolean visible) {
+    this.numKeySizesLabel.setManaged(visible);
+    this.numKeySizesLabel.setVisible(visible);
+  }
 
+  /**
+   * Sets the visibility of the label displaying the number of keys.
+   *
+   * @param visible A boolean indicating whether the label should be visible.
+   */
+  public void setNumKeysLabelVisibility(boolean visible) {
+    this.numKeysLabel.setManaged(visible);
+    this.numKeysLabel.setVisible(visible);
+  }
 }
