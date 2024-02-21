@@ -58,6 +58,8 @@ public class GenModel {
    */
   private List<KeyPair> generatedKeyPairs = new ArrayList<>();
 
+  private int numKeySizesForComparisonMode;
+
 
   /**
    * Constructor for GenModel. This initialises the model which will be bound to the runtime
@@ -165,6 +167,35 @@ public class GenModel {
     }
   }
 
+  /**
+   * Executes batch generation of RSA keys in comparison mode. This mode generates multiple RSA keys
+   * for a set of specified key sizes, allowing for comparative analysis (provably secure vs
+   * standard) across different configurations. The method generates keys for each configuration,
+   * both with standard and smaller 'e' values (provably secure)
+   *
+   * @param keySizes        A list of integers representing the key sizes for which keys are to be
+   *                        generated. Each key size is used to create multiple key configurations.
+   * @param numTrials       The number of trials to be conducted for each key configuration. Each
+   *                        trial involves generating a key pair with the specified parameters.
+   * @param progressUpdater A DoubleConsumer to report the progress of the batch generation process.
+   *                        It provides a real-time update on the completion percentage of the
+   *                        overall batch generation task.
+   */
+  public void batchGenerateInComparisonMode(List<Integer> keySizes, int numTrials,
+      DoubleConsumer progressUpdater) {
+    numKeySizesForComparisonMode = keySizes.size();
+    List<Pair<int[], Boolean>> keyParams = new ArrayList<>();
+    for (int keySize : keySizes) {
+      keyParams.add(new Pair<>(new int[]{keySize / 2, keySize / 2}, false));
+      keyParams.add(new Pair<>(new int[]{keySize / 4, keySize / 4, keySize / 2}, false));
+      keyParams.add(new Pair<>(new int[]{keySize / 2, keySize / 2}, true));
+      keyParams.add(new Pair<>(new int[]{keySize / 4, keySize / 4, keySize / 2}, true));
+    }
+    batchGenerateKeys(numTrials, keyParams, progressUpdater);
+
+
+  }
+
 
   /**
    * Performs batch generation of RSA keys with specified parameters for a single key configuration.
@@ -197,6 +228,7 @@ public class GenModel {
 
     // Aggregate times from all trials and keys into a single list.
     clockTimesPerTrial.addAll(timesPerKey);
+
   }
 
 
@@ -283,5 +315,7 @@ public class GenModel {
     return summedArrays;
   }
 
-
+  public int getNumKeySizesForComparisonMode() {
+    return numKeySizesForComparisonMode;
+  }
 }
