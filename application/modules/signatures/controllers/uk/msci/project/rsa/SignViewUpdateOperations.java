@@ -332,4 +332,138 @@ public class SignViewUpdateOperations implements ViewUpdate {
   public boolean getHashOutputSizeFieldVisibility() {
     return signView.getHashOutputSizeFieldVisibility();
   }
+
+  /**
+   * Checks if the Benchmarking Mode is enabled in the sign view.
+   *
+   * @return true if Benchmarking Mode is enabled, false otherwise.
+   */
+  @Override
+  public boolean isBenchmarkingModeEnabled() {
+    return signView.isBenchmarkingModeEnabled();
+  }
+
+  /**
+   * Sets the visibility of the HBox containing provable parameter options in the sign view.
+   *
+   * @param visible true to make the HBox visible, false to hide it.
+   */
+  @Override
+  public void setProvableParamsHboxVisibility(boolean visible) {
+    signView.setProvableParamsHboxVisibility(visible);
+  }
+
+  /**
+   * Sets the visibility of the HBox for Cross-Parameter settings in the sign view.
+   *
+   * @param visible true to make the HBox visible, false to hide it.
+   */
+  @Override
+  public void setCrossParameterHboxVisibility(boolean visible) {
+    signView.setCrossParameterHboxVisibility(visible);
+  }
+
+  /**
+   * Sets the visibility of the radio button for selecting standard parameters in the sign view.
+   *
+   * @param visible true to make the radio button visible, false to hide it.
+   */
+  @Override
+  public void setStandardParametersRadioVisibility(boolean visible) {
+    signView.setStandardParametersRadioVisibility(visible);
+  }
+
+  /**
+   * Sets the visibility of the radio button for selecting custom parameters in the sign view.
+   *
+   * @param visible true to make the radio button visible, false to hide it.
+   */
+  @Override
+  public void setCustomParametersRadioVisibility(boolean visible) {
+    signView.setCustomParametersRadioVisibility(visible);
+  }
+
+  /**
+   * Sets the selected state of the radio button for provably secure parameters in the sign view.
+   *
+   * @param visible true to select the radio button, false otherwise.
+   */
+  @Override
+  public void setProvablySecureParametersRadioSelected(boolean visible) {
+    signView.setProvablySecureParametersRadioSelected(visible);
+  }
+
+  /**
+   * Sets the selected state of the toggle for Cross-Parameter settings in the sign view.
+   *
+   * @param isSelected true to select the toggle, false otherwise.
+   */
+  @Override
+  public void setSelectedCrossParameterToggleObserver(boolean isSelected) {
+    signView.setSelectedCrossParameterToggleObserver(isSelected);
+  }
+
+  /**
+   * Sets the visibility of the HBox for hash function size settings in the sign view.
+   *
+   * @param visible true to make the HBox visible, false to hide it.
+   */
+  @Override
+  public void setHashFunctionSizeHboxVisibility(boolean visible) {
+    signView.setHashFunctionSizeHboxVisibility(visible);
+  }
+
+  /**
+   * Sets the visibility of the HBox for choosing hash functions under standard parameters in the
+   * sign view.
+   *
+   * @param visible true to make the HBox visible, false to hide it.
+   */
+  @Override
+  public void setStandardHashChoiceComparisonModeHboxVisibility(boolean visible) {
+    signView.setStandardHashChoiceComparisonModeHboxVisibility(visible);
+  }
+
+  /**
+   * Sets the visibility of the HBox for choosing hash functions under provably secure parameters in
+   * the sign view.
+   *
+   * @param visible true to make the HBox visible, false to hide it.
+   */
+  @Override
+  public void setProvableHashChoiceComparisonModeHboxVisibility(boolean visible) {
+    signView.setProvableHashChoiceComparisonModeHboxVisibility(visible);
+  }
+
+  /**
+   * Sets the visibility of the HBox for general hash function selection in the sign view.
+   *
+   * @param visible true to make the HBox visible, false to hide it.
+   */
+  @Override
+  public void setGeneralHashFunctionHboxVisibility(boolean visible) {
+    signView.setGeneralHashFunctionHboxVisibility(visible);
+  }
+
+  /**
+   * Gets the currently selected provable hash function from the sign view.
+   *
+   * @return The name of the selected provable hash function.
+   */
+  @Override
+  public String getCurrentProvableHashFunction() {
+    return signView.getCurrentProvableHashFunction();
+  }
+
+  /**
+   * Gets the currently selected standard hash function from the sign view.
+   *
+   * @return The name of the selected standard hash function.
+   */
+  @Override
+  public String getCurrentStandardHashFunction() {
+
+    return signView.getCurrentStandardHashFunction();
+  }
+
 }
