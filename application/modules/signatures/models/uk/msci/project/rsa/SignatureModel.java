@@ -120,6 +120,20 @@ public class SignatureModel {
   private DigestType currentProvableHashType_ComparisonMode;
 
   /**
+   * The number of different key sizes that will be used for generating signatures in the comparison
+   * mode. This field indicates a number of key sizes selected by the user to be tested during
+   * benchmarking.
+   */
+  private int numKeySizesForComparisonMode;
+
+  /**
+   * The number of keys to be generated per key size in the comparison mode (2 representing the key
+   * size with standard parameters and 2 representing provably secure parameters eg., 2 vs 3 prime
+   * factors for both scenarios)
+   */
+  private static final int NUM_KEYS_PER_KEY_SIZE_COMPARISON_MODE = 4;
+
+  /**
    * Constructs a new {@code SignatureModel} without requiring an initial key representative of the
    * fact that at program launch, the model does not have any state: until it is initiated by the
    * user
@@ -413,6 +427,125 @@ public class SignatureModel {
       // Combine results into final lists
       combineResultsIntoFinalLists(timesPerKey, signaturesPerKey, nonRecoverableMessagesPerKey);
     }
+  }
+
+
+  /**
+   * Processes a batch of messages to create digital signatures in the cross-parameter
+   * benchmarking/comparison mode. This mode involves generating signatures using a variety of keys
+   * created with different parameter settings (standard vs. provably secure) for each selected key
+   * size. For each key size, this method generates signatures using two keys with standard
+   * parameters (2 vs 3 primes) and two keys with provably secure parameters (2 vs 3 primes). The
+   * method updates the progress of signature generation using the provided progressUpdater
+   * consumer.
+   *
+   * @param batchMessageFile The file containing the messages to be signed in the batch process.
+   * @param progressUpdater  A consumer to update the progress of the batch signing process.
+   * @throws InvalidSignatureTypeException if the signature type is not supported.
+   * @throws NoSuchAlgorithmException      if the specified algorithm does not exist.
+   * @throws InvalidDigestException        if the specified digest algorithm is invalid.
+   * @throws NoSuchProviderException       if the specified provider is not available.
+   * @throws IOException                   if there is an I/O error reading from the
+   *                                       batchMessageFile.
+   * @throws DataFormatException           if the data format is incorrect for signing.
+   */
+  public void batchGenerateSignatures_ComparisonMode(File batchMessageFile,
+      DoubleConsumer progressUpdater)
+      throws InvalidSignatureTypeException, NoSuchAlgorithmException, InvalidDigestException, NoSuchProviderException, IOException, DataFormatException {
+    this.numKeySizesForComparisonMode = privKeyBatch.size() / NUM_KEYS_PER_KEY_SIZE_COMPARISON_MODE;
+    try (BufferedReader messageReader = new BufferedReader(new FileReader(batchMessageFile))) {
+      // Initialize lists to store times and results (signatures and non-recoverable parts) for each key
+      List<List<Long>> timesPerKey = new ArrayList<>();
+      List<List<byte[]>> signaturesPerKey = new ArrayList<>();
+      List<List<byte[]>> nonRecoverableMessagesPerKey = new ArrayList<>();
+
+      for (int k = 0; k < privKeyBatch.size(); k++) {
+        timesPerKey.add(new ArrayList<>());
+        signaturesPerKey.add(new ArrayList<>());
+        nonRecoverableMessagesPerKey.add(new ArrayList<>());
+      }
+
+      String message;
+      int totalWork = numTrials * privKeyBatch.size();
+      int completedWork = 0;
+      int messageCounter = 0;
+      while ((message = messageReader.readLine()) != null && messageCounter < this.numTrials) {
+        for (int i = 0; i < privKeyBatch.size(); i += NUM_KEYS_PER_KEY_SIZE_COMPARISON_MODE) {
+
+          for (int keyIndexForKeySize = 0;
+              keyIndexForKeySize < NUM_KEYS_PER_KEY_SIZE_COMPARISON_MODE; keyIndexForKeySize++) {
+
+            SigScheme sigScheme = SignatureFactory.getSignatureScheme(currentType,
+                privKeyBatch.get(i + keyIndexForKeySize),
+                getProvablySecureFlagComparisonMode(keyIndexForKeySize));
+
+            sigScheme.setDigest(getDigestTypeComparisonMode(keyIndexForKeySize));
+
+            long startTime = System.nanoTime();
+            byte[] signature = sigScheme.sign(message.getBytes());
+            long endTime = System.nanoTime() - startTime;
+            byte[] nonRecoverableM = sigScheme.getNonRecoverableM();
+            // Store results
+            timesPerKey.get(i + keyIndexForKeySize).add(endTime);
+            signaturesPerKey.get(i + keyIndexForKeySize).add(signature);
+            nonRecoverableMessagesPerKey.get(i + keyIndexForKeySize).add(nonRecoverableM);
+            // Update progress
+            double currentKeyProgress = (double) (++completedWork) / totalWork;
+            progressUpdater.accept(currentKeyProgress);
+          }
+        }
+        messageCounter++;
+      }
+
+      // Combine results into final lists
+      combineResultsIntoFinalLists(timesPerKey, signaturesPerKey, nonRecoverableMessagesPerKey);
+    }
+
+  }
+
+  /**
+   * Determines the DigestType to be used for a particular key in the comparison mode, based on the
+   * index of the key. It alternates between fixed and provably secure hash types, since for a
+   * particular key size chosen in comparison mode, two keys are generated using standard parameters
+   * (2 vs 3 primes) and a further two using provably secure parameters (2 vs 3 primes).
+   *
+   * @param digestIndexForKeySize The index of the key for which to determine the DigestType.
+   * @return The DigestType to be used for the specified key index in comparison mode.
+   * @throws IllegalArgumentException if the index is out of bounds.
+   */
+  public DigestType getDigestTypeComparisonMode(int digestIndexForKeySize) {
+    return switch (digestIndexForKeySize) {
+      case 0 -> currentFixedHashType_ComparisonMode;
+      case 1 -> currentFixedHashType_ComparisonMode;
+      case 2 -> currentProvableHashType_ComparisonMode;
+      case 3 -> currentProvableHashType_ComparisonMode;
+      default -> {
+        throw new IllegalArgumentException(
+            "Invalid index: For a given key size, in comparison mode, two keys are generated using standard parameters (2 vs 3 primes) and a further two using provably secure parameters (2 vs 3 primes).");
+      }
+    };
+  }
+
+  /**
+   * Determines whether to use provably secure mode for a particular key in the comparison mode,
+   * based on the index of the key. It alternates between standard and provably secure modes since
+   * for a particular key size chosen in comparison mode, two keys are generated using standard
+   * parameters (2 vs 3 primes) and a further two using provably secure parameters (2 vs 3 primes).
+   *
+   * @param isProvablySecureForKeySize The index of the key for which to determine the security
+   *                                   mode.
+   * @return True if provably secure mode should be used, false otherwise.
+   * @throws IllegalArgumentException if the index is out of bounds.
+   */
+  public boolean getProvablySecureFlagComparisonMode(int isProvablySecureForKeySize) {
+    return switch (isProvablySecureForKeySize) {
+      case 0 -> false;
+      case 1 -> false;
+      case 2 -> true;
+      case 3 -> true;
+      default -> throw new IllegalArgumentException(
+          "Invalid index: For a given key size, in comparison mode, two keys are generated using standard parameters (2 vs 3 primes) and a further two using provably secure parameters (2 vs 3 primes).");
+    };
   }
 
 
@@ -776,16 +909,6 @@ public class SignatureModel {
   }
 
   /**
-   * Gets the hash type currently set for use under standard parameters in the cross-parameter
-   * benchmarking/comparison mode.
-   *
-   * @return The hash type set for standard parameters.
-   */
-  public DigestType getCurrentFixedHashType_ComparisonMode() {
-    return currentFixedHashType_ComparisonMode;
-  }
-
-  /**
    * Sets the hash type for use under provably secure parameters in the cross-parameter
    * benchmarking/comparison mode of the signature scheme.
    *
@@ -798,6 +921,16 @@ public class SignatureModel {
   }
 
   /**
+   * Gets the hash type currently set for use under standard parameters in the cross-parameter
+   * benchmarking/comparison mode.
+   *
+   * @return The hash type set for standard parameters.
+   */
+  public DigestType getCurrentFixedHashType_ComparisonMode() {
+    return currentFixedHashType_ComparisonMode;
+  }
+
+  /**
    * Gets the hash type currently set for use under provably secure parameters in the
    * cross-parameter benchmarking/comparison mode.
    *
@@ -806,6 +939,4 @@ public class SignatureModel {
   public DigestType getCurrentProvableHashType_ComparisonMode() {
     return currentProvableHashType_ComparisonMode;
   }
-
-
 }
