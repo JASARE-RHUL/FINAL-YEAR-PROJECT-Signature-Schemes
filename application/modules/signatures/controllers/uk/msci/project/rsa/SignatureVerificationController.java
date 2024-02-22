@@ -16,7 +16,6 @@ import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 import javafx.stage.Stage;
-import uk.msci.project.rsa.SignatureBaseController.ApplicationModeChangeObserver;
 
 
 /**
@@ -57,26 +56,46 @@ public class SignatureVerificationController extends SignatureBaseController {
   }
 
   /**
-   * Initialises and displays the SignView in benchmarking mode. This method loads the FXML for the
-   * SignView, sets up the user interface scene, and configures the stage for the
+   * Initialises and displays the VerifyView in benchmarking mode. This method loads the FXML for
+   * the VerifyView, sets up the user interface scene, and configures the stage for the
    * application.
    *
-   * @param primaryStage The primary stage for this application upon which the standard mode sign
-   *                     view will be set. This stage is used as the main window for the
-   *                     application.
+   * @param primaryStage The primary stage for this application upon which the standard mode
+   *                     verification view will be set. This stage is used as the main window for
+   *                     the application.
    */
   public void showVerifyView(Stage primaryStage) {
+    if (isKeyForComparisonMode && isCrossParameterBenchmarkingEnabled) {
+      showVerifyViewCrossBenchmarkingMode(primaryStage);
+      return;
+    }
     try {
       FXMLLoader loader = new FXMLLoader(getClass().getResource("/VerifyView.fxml"));
       Parent root = loader.load();
       verifyView = loader.getController();
       signatureModel = new SignatureModel();
 
-      verifyView.addBenchmarkingModeToggleObserver(new SignatureBaseController.ApplicationModeChangeObserver(
-          () -> showVerifyViewStandardMode(primaryStage),
-          () -> showVerifyView(primaryStage)
-      ));
+      // Set up observers for benchmarking mode VerifyView
+      verifyView.addBenchmarkingModeToggleObserver(
+          new SignatureBaseController.ApplicationModeChangeObserver(
+              () -> showVerifyViewStandardMode(primaryStage),
+              () -> showVerifyView(primaryStage)
+          ));
+      verifyView.addCrossParameterToggleObserver(new CrossBenchmarkingModeChangeObserver(
+          () -> showVerifyViewCrossBenchmarkingMode(primaryStage),
+          () -> showVerifyView(primaryStage), new VerifyViewUpdateOperations(verifyView)));
       setupVerificationObserversBenchmarking(primaryStage);
+      if (isKeyProvablySecure && this.importedKeyBatch != null
+          && !isCrossParameterBenchmarkingEnabled) {
+        updateWithImportedKey(new VerifyViewUpdateOperations(verifyView));
+        verifyView.setImportKeyBatchButtonVisibility(false);
+        verifyView.setCancelImportKeyButtonVisibility(true);
+        verifyView.setProvableParamsHboxVisibility(true);
+        verifyView.setProvablySecureParametersRadioSelected(true);
+        verifyView.setCustomParametersRadioVisibility(false);
+        verifyView.setStandardParametersRadioVisibility(false);
+      }
+
       mainController.setScene(root);
 
 
@@ -86,13 +105,11 @@ public class SignatureVerificationController extends SignatureBaseController {
   }
 
   /**
-   * Initialises and displays the SignView in standard mode. This method loads the FXML for the
-   * SignViewStandardMode, sets up the user interface scene, and configures the stage for the
-   * application.
+   * Displays the VerifyView in standard mode. This method loads the VerifyView for the standard
+   * (non-benchmarking) mode. It initialises the view, sets up the required observers for handling
+   * events like text and key import, and displays the view on the provided stage.
    *
-   * @param primaryStage The primary stage for this application upon which the standard mode sign
-   *                     view will be set. This stage is used as the main window for the
-   *                     application.
+   * @param primaryStage The primary stage of the application where the view will be displayed.
    */
   public void showVerifyViewStandardMode(Stage primaryStage) {
     try {
@@ -100,11 +117,49 @@ public class SignatureVerificationController extends SignatureBaseController {
       Parent root = loader.load();
       verifyView = loader.getController();
       signatureModel = new SignatureModel();
-      verifyView.addBenchmarkingModeToggleObserver(new SignatureBaseController.ApplicationModeChangeObserver(
-          () -> showVerifyViewStandardMode(primaryStage),
-          () -> showVerifyView(primaryStage)
-      ));
+      verifyView.addBenchmarkingModeToggleObserver(
+          new SignatureBaseController.ApplicationModeChangeObserver(
+              () -> showVerifyViewStandardMode(primaryStage),
+              () -> showVerifyView(primaryStage)
+          ));
       setupVerifyObservers(primaryStage);
+      mainController.setScene(root);
+
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+  }
+
+  /**
+   * Displays the VerifyView in cross-parameter benchmarking mode. This method loads the VerifyView
+   * specifically configured for cross-parameter benchmarking. It initialises the view, sets up the
+   * necessary observers for handling key and message batch imports, and displays the view on the
+   * provided stage.
+   *
+   * @param primaryStage The primary stage of the application where the view will be displayed.
+   */
+  public void showVerifyViewCrossBenchmarkingMode(Stage primaryStage) {
+    try {
+      FXMLLoader loader = new FXMLLoader(
+          getClass().getResource("/VerifyViewCrossBenchmarkingMode.fxml"));
+      Parent root = loader.load();
+      verifyView = loader.getController();
+      this.signatureModel = new SignatureModel();
+      updateWithImportedKey(new VerifyViewUpdateOperations(verifyView));
+      if (isCrossParameterBenchmarkingEnabled && this.importedKeyBatch != null) {
+        verifyView.setImportKeyBatchButtonVisibility(false);
+        verifyView.setCancelImportKeyButtonVisibility(true);
+      }
+      verifyView.addBenchmarkingModeToggleObserver(
+          new SignatureBaseController.ApplicationModeChangeObserver(
+              () -> showVerifyViewStandardMode(primaryStage),
+              () -> showVerifyView(primaryStage)
+          ));
+      verifyView.addCrossParameterToggleObserver(new CrossBenchmarkingModeChangeObserver(
+          () -> showVerifyViewCrossBenchmarkingMode(primaryStage),
+          () -> showVerifyView(primaryStage), new VerifyViewUpdateOperations(verifyView)));
+      setupVerificationObserversCrossBenchmarking(primaryStage);
+
       mainController.setScene(root);
 
     } catch (IOException e) {
@@ -169,6 +224,37 @@ public class SignatureVerificationController extends SignatureBaseController {
     verifyView.addVerificationBenchmarkButtonObserver(
         new VerificationBenchmarkButtonObserver(new VerifyViewUpdateOperations(verifyView)));
     verifyView.addBackToMainMenuObserver(new BackToMainMenuObserver(verifyView));
+    verifyView.addProvableSchemeChangeObserver(
+        new ProvableParamsChangeObserver(new VerifyViewUpdateOperations(verifyView)));
+  }
+
+  /**
+   * Displays the VerifyView in cross-parameter benchmarking mode. This method loads the VerifyView
+   * specifically configured for cross-parameter benchmarking. It initialises the view, sets up the
+   * necessary observers for handling key and message batch imports, and displays the view on the
+   * provided stage.
+   *
+   * @param primaryStage The primary stage of the application where the view will be displayed.
+   */
+  private void setupVerificationObserversCrossBenchmarking(Stage primaryStage) {
+    verifyView.addImportTextBatchBtnObserver(
+        new ImportObserver(primaryStage, new VerifyViewUpdateOperations(verifyView),
+            this::handleMessageBatch, "*.txt"));
+    verifyView.addImportKeyBatchButtonObserver(
+        new ImportObserver(primaryStage, new VerifyViewUpdateOperations(verifyView),
+            this::handleKeyBatch, "*.rsa"));
+    verifyView.addImportSigBatchButtonObserver(
+        new ImportObserver(primaryStage, new VerifyViewUpdateOperations(verifyView),
+            this::handleSignatureBatch, "*.rsa"));
+    verifyView.addCancelImportKeyButtonObserver(
+        new CancelImportKeyBatchButtonObserver(new VerifyViewUpdateOperations(verifyView)));
+    verifyView.addSignatureSchemeChangeObserver(new SignatureSchemeChangeObserver());
+    verifyView.addVerificationBenchmarkButtonObserver(
+        new VerificationBenchmarkButtonObserver(new VerifyViewUpdateOperations(verifyView)));
+    verifyView.addBackToMainMenuObserver(new BackToMainMenuObserver(verifyView));
+    verifyView.addStandardHashFunctionChangeObserver(new StandardHashFunctionChangeObserver());
+    verifyView.addProvableHashFunctionChangeObserver(new ProvableHashFunctionChangeObserver());
+
   }
 
   /**
@@ -312,7 +398,9 @@ public class SignatureVerificationController extends SignatureBaseController {
       if ((signatureModel.getNumTrials() == 0)
           || signatureModel.getPublicKeyBatchLength() == 0
           || verifyView.getSelectedSignatureScheme() == null || numSignatures == 0
-          || verifyView.getSelectedHashFunction() == null) {
+          || verifyView.getSelectedHashFunction() == null || (isCrossParameterBenchmarkingEnabled
+          && (verifyView.getCurrentStandardHashFunction()
+          .equals("") || verifyView.getCurrentProvableHashFunction().equals("")))) {
         uk.msci.project.rsa.DisplayUtility.showErrorAlert(
             "You must provide an input for all fields. Please try again.");
         return;
@@ -480,7 +568,6 @@ public class SignatureVerificationController extends SignatureBaseController {
     }
     return true;
   }
-
 
 
   /**
