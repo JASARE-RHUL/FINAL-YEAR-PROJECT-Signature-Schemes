@@ -1480,5 +1480,25 @@ public class VerifyView implements SignatureViewInterface {
     return fixedHashFunctionComboBox.getValue();
   }
 
+  /**
+   * Registers an observer for when the standard parameter instantiation dropdown value (cross
+   * benchmarking mode) changes.
+   *
+   * @param observer The change listener to register.
+   */
+  public void addStandardHashFunctionChangeObserver(ChangeListener<String> observer) {
+    fixedHashFunctionComboBox.valueProperty().addListener(observer);
+  }
+
+  /**
+   * Registers an observer for when the provably secure parameter instantiation dropdown value
+   * (cross benchmarking mode) changes.
+   *
+   * @param observer The change listener to register.
+   */
+  public void addProvableHashFunctionChangeObserver(ChangeListener<String> observer) {
+    provableHashFunctionComboBox.valueProperty().addListener(observer);
+  }
+
 
 }
