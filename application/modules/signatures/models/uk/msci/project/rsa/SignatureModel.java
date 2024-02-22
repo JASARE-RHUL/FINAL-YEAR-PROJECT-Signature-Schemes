@@ -11,15 +11,10 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.function.DoubleConsumer;
 import java.util.stream.Collectors;
 import java.util.zip.DataFormatException;
 import javafx.util.Pair;
-import net.sf.saxon.expr.instruct.Message;
 import uk.msci.project.rsa.exceptions.InvalidDigestException;
 import uk.msci.project.rsa.exceptions.InvalidSignatureTypeException;
 
@@ -359,9 +354,8 @@ public class SignatureModel {
    * @param progressUpdater  A consumer to update the progress of the batch signing process.
    * @throws InterruptedException If the thread executing the batch creation is interrupted.
    */
-
   public void batchCreateSignatures(File batchMessageFile, DoubleConsumer progressUpdater)
-      throws InterruptedException, InvalidSignatureTypeException, NoSuchAlgorithmException, InvalidDigestException, NoSuchProviderException, IOException, DataFormatException {
+      throws InvalidSignatureTypeException, NoSuchAlgorithmException, InvalidDigestException, NoSuchProviderException, IOException, DataFormatException {
     try (BufferedReader messageReader = new BufferedReader(new FileReader(batchMessageFile))) {
       // Initialize lists to store times and results (signatures and non-recoverable parts) for each key
       List<List<Long>> timesPerKey = new ArrayList<>();
@@ -518,11 +512,12 @@ public class SignatureModel {
           byte[] signatureBytes = new BigInteger(signatureLine).toByteArray();
 
           // Synchronous verification
-          Pair<Boolean, Pair<Long, List<byte[]>>> result = verifySignature(key, messageLine, signatureBytes);
+          Pair<Boolean, Pair<Long, List<byte[]>>> result = verifySignature(key, messageLine,
+              signatureBytes);
 
           long endTime = result.getValue().getKey();
 
-           // Store results
+          // Store results
           timesPerKey.get(keyIndex).add(endTime);
           verificationResultsPerKey.get(keyIndex).add(result.getKey());
           signaturesPerKey.get(keyIndex).add(result.getValue().getValue().get(1));
@@ -722,15 +717,14 @@ public class SignatureModel {
   }
 
   /**
-   * Retrieves the lengths of the public keys in bits. This method is useful for identifying the
-   * strength of the keys used in the signature process.
+   * Retrieves the lengths of the keys in bits. This method is useful for identifying the strength
+   * of the keys used in the signature process.
    *
-   * @return A list of integer values, each representing the bit length of a public key in the
-   * batch.
+   * @return A list of integer values, each representing the bit length of a key in the batch.
    */
-  public List<Integer> getPublicKeyLengths() {
+  public List<Integer> getKeyLengths(List<? extends Key> keyBatch) {
     List<Integer> result = new ArrayList<>();
-    for (Key key : publicKeyBatch) {
+    for (Key key : keyBatch) {
       result.add(((key.getModulus().bitLength() + 7) / 8) * 8);
     }
     return result;
@@ -744,11 +738,18 @@ public class SignatureModel {
    * batch.
    */
   public List<Integer> getPrivKeyLengths() {
-    List<Integer> result = new ArrayList<>();
-    for (PrivateKey key : privKeyBatch) {
-      result.add(((key.getModulus().bitLength() + 7) / 8) * 8);
-    }
-    return result;
+    return getKeyLengths(privKeyBatch);
+  }
+
+  /**
+   * Retrieves the lengths of the public keys in bits. This method is useful for identifying the
+   * strength of the keys used in the signature process.
+   *
+   * @return A list of integer values, each representing the bit length of a public key in the
+   * batch.
+   */
+  public List<Integer> getPublicKeyLengths() {
+    return getKeyLengths(publicKeyBatch);
   }
 
 
