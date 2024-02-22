@@ -88,6 +88,12 @@
             </ComboBox>
           </HBox>
 
+          <HBox fx:id="provableParamsHbox" spacing="6" managed="false" visible="false">
+            <Label text="Instantiate Scheme with Provably Secure Parameters:" styleClass="bold-label"/>
+            <RadioButton fx:id="noCrossParameterRadio" text="No"/>
+            <RadioButton fx:id="yesCrossParameterRadio" text="Yes" selected="true"/>
+          </HBox>
+
           <!-- Parameter Choice Radio Buttons -->
           <HBox spacing="10">
             <Label text="Hash Function Size:" styleClass="bold-label"/>

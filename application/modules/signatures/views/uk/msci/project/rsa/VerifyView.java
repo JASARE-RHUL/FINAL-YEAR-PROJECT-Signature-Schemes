@@ -268,6 +268,83 @@ public class VerifyView implements SignatureViewInterface {
   @FXML
   private Button cancelImportSingleKeyButton;
 
+  /**
+   * Horizontal Box containing options on whether to instantiate a scheme with provably secure
+   * parameters on the occasion that a key has been pre-loaded (not selected by the user) as a
+   * consequence of the key generation process.
+   */
+  @FXML
+  private HBox provableParamsHbox;
+
+  /**
+   * Radio Button for opting out of Cross-Parameter mode.
+   */
+  @FXML
+  private RadioButton noCrossParameterRadio;
+
+  /**
+   * Radio Button for opting into Cross-Parameter mode.
+   */
+  @FXML
+  private RadioButton yesCrossParameterRadio;
+
+  /**
+   * Toggle Group for selecting between standard and provably secure parameters.
+   */
+  @FXML
+  private ToggleGroup provableParamsToggleGroup;
+
+  /**
+   * Horizontal Box for toggling Cross-Parameter Benchmarking Mode.
+   */
+  @FXML
+  private HBox crossParameterHbox;
+
+  /**
+   * Toggle Switch for enabling or disabling Cross-Parameter Benchmarking Mode.
+   */
+  @FXML
+  private ToggleSwitch crossParameterBenchmarkingModeToggle;
+
+  /**
+   * Horizontal Box containing elements for setting the hash function size.
+   */
+  @FXML
+  private HBox hashFunctionSizeHbox;
+
+  /**
+   * Horizontal Box containing options for the hash type to be used under standard parameters in the
+   * * cross-parameter benchmarking/comparison mode.
+   */
+  @FXML
+  private HBox standardHashChoiceComparisonModeHbox;
+
+  /**
+   * Horizontal Box containing options for the hash type to be used under provably secure parameters
+   * in the * cross-parameter benchmarking/comparison mode.
+   */
+  @FXML
+  private HBox provableHashChoiceComparisonModeHbox;
+
+  /**
+   * Horizontal Box containing options for hash function choice in benchmarking and standard modes.
+   */
+  @FXML
+  private HBox generalHashFunctionHbox;
+
+  /**
+   * Combo Box for selecting a hash function to be used under provably secure parameters in the
+   * cross-parameter benchmarking/comparison mode.
+   */
+  @FXML
+  private ComboBox<String> provableHashFunctionComboBox;
+
+  /**
+   * Combo Box for selecting a hash function to be used under standard parameters in the
+   * cross-parameter benchmarking/comparison mode.
+   */
+  @FXML
+  private ComboBox<String> fixedHashFunctionComboBox;
 
 
   /**
@@ -279,6 +356,10 @@ public class VerifyView implements SignatureViewInterface {
     standardParametersRadio.setToggleGroup(parameterChoiceToggleGroup);
     provablySecureParametersRadio.setToggleGroup(parameterChoiceToggleGroup);
     customParametersRadio.setToggleGroup(parameterChoiceToggleGroup);
+
+    provableParamsToggleGroup = new ToggleGroup();
+    noCrossParameterRadio.setToggleGroup(provableParamsToggleGroup);
+    yesCrossParameterRadio.setToggleGroup(provableParamsToggleGroup);
   }
 
   /**
@@ -1007,8 +1088,8 @@ public class VerifyView implements SignatureViewInterface {
   }
 
   /**
-   * Registers an observer for the cancelImportSignatureButton Button's action event. This observer is
-   * called when the user clicks the button to cancel the import of a text batch.
+   * Registers an observer for the cancelImportSignatureButton Button's action event. This observer
+   * is called when the user clicks the button to cancel the import of a text batch.
    *
    * @param observer The event handler to be registered.
    */
@@ -1124,7 +1205,6 @@ public class VerifyView implements SignatureViewInterface {
   }
 
 
-
   /**
    * Sets the visibility of the notification pane, which shows the results of the signature
    * operation.
@@ -1134,7 +1214,6 @@ public class VerifyView implements SignatureViewInterface {
   public void setNotificationPaneVisible(boolean visible) {
     this.notificationPane.setVisible(visible);
   }
-
 
 
   /**
@@ -1194,8 +1273,6 @@ public class VerifyView implements SignatureViewInterface {
   }
 
 
-
-
   /**
    * Registers an observer for the cancelImportTextButton Button's action event. This observer is
    * called when the user clicks the button to cancel the import of a text batch in benchmarking
@@ -1208,8 +1285,8 @@ public class VerifyView implements SignatureViewInterface {
   }
 
   /**
-   * Registers an observer for the cancelImportSignatureButton Button's action event. This observer is
-   * called when the user clicks the button to cancel the import of a text batch in standard
+   * Registers an observer for the cancelImportSignatureButton Button's action event. This observer
+   * is called when the user clicks the button to cancel the import of a text batch in standard
    * mode.
    *
    * @param observer The event handler to be registered.
@@ -1217,7 +1294,6 @@ public class VerifyView implements SignatureViewInterface {
   public void addCancelImportSignatureBatchButtonObserver(EventHandler<ActionEvent> observer) {
     cancelImportSignatureButton.setOnAction(observer);
   }
-
 
 
   /**
@@ -1229,7 +1305,6 @@ public class VerifyView implements SignatureViewInterface {
   public void addCancelImportSingleKeyButtonObserver(EventHandler<ActionEvent> observer) {
     cancelImportSingleKeyButton.setOnAction(observer);
   }
-
 
 
   /**
@@ -1262,6 +1337,148 @@ public class VerifyView implements SignatureViewInterface {
     benchmarkingModeNumMessageHBox.setManaged(visible);
   }
 
+  /**
+   * Checks if Benchmarking Mode is enabled.
+   *
+   * @return true if Benchmarking Mode is selected, false otherwise.
+   */
+  public boolean isBenchmarkingModeEnabled() {
+    return benchmarkingModeToggle.isSelected();
+  }
+
+  /**
+   * Sets the visibility of the provable parameters options horizontal box.
+   *
+   * @param visible true to make the box visible, false to hide it.
+   */
+  public void setProvableParamsHboxVisibility(boolean visible) {
+    this.provableParamsHbox.setVisible(visible);
+    this.provableParamsHbox.setManaged(visible);
+  }
+
+  /**
+   * Sets the visibility of the cross-parameter horizontal box.
+   *
+   * @param visible true to make the box visible, false to hide it.
+   */
+  public void setCrossParameterHboxVisibility(boolean visible) {
+    this.crossParameterHbox.setManaged(visible);
+    this.crossParameterHbox.setVisible(visible);
+  }
+
+  /**
+   * Adds an observer for the Cross-Parameter toggle switch.
+   *
+   * @param observer the observer to be notified when the toggle state changes.
+   */
+  public void addCrossParameterToggleObserver(ChangeListener<Boolean> observer) {
+    crossParameterBenchmarkingModeToggle.selectedProperty().addListener(observer);
+  }
+
+  /**
+   * Sets the visibility of the standard parameters radio button.
+   *
+   * @param visible true to make the radio button visible, false to hide it.
+   */
+  public void setStandardParametersRadioVisibility(boolean visible) {
+    this.standardParametersRadio.setManaged(visible);
+    this.standardParametersRadio.setVisible(visible);
+  }
+
+  /**
+   * Sets the visibility of the custom parameters radio button.
+   *
+   * @param visible true to make the radio button visible, false to hide it.
+   */
+  public void setCustomParametersRadioVisibility(boolean visible) {
+    this.customParametersRadio.setManaged(visible);
+    this.customParametersRadio.setVisible(visible);
+  }
+
+  /**
+   * Sets the selected state of the provably secure parameters radio button.
+   *
+   * @param visible true to select the radio button, false otherwise.
+   */
+  public void setProvablySecureParametersRadioSelected(boolean visible) {
+    provablySecureParametersRadio.setSelected(visible);
+  }
+
+  /**
+   * Adds an observer for changes in the provable scheme selection.
+   *
+   * @param observer the observer to be notified when the scheme selection changes.
+   */
+  public void addProvableSchemeChangeObserver(ChangeListener<Toggle> observer) {
+    provableParamsToggleGroup.selectedToggleProperty().addListener(observer);
+  }
+
+  /**
+   * Sets the selected state of the Cross-Parameter toggle switch.
+   *
+   * @param isSelected true to select the toggle switch, false otherwise.
+   */
+  public void setSelectedCrossParameterToggleObserver(boolean isSelected) {
+    crossParameterBenchmarkingModeToggle.setSelected(isSelected);
+  }
+
+  /**
+   * Sets the visibility of the hash function size horizontal box.
+   *
+   * @param visible true to make the box visible, false to hide it.
+   */
+  public void setHashFunctionSizeHboxVisibility(boolean visible) {
+    hashFunctionSizeHbox.setVisible(visible);
+    hashFunctionSizeHbox.setManaged(visible);
+  }
+
+  /**
+   * Sets the visibility of the standard hash choice comparison mode horizontal box.
+   *
+   * @param visible true to make the box visible, false to hide it.
+   */
+  public void setStandardHashChoiceComparisonModeHboxVisibility(boolean visible) {
+    standardHashChoiceComparisonModeHbox.setVisible(visible);
+    standardHashChoiceComparisonModeHbox.setManaged(visible);
+  }
+
+  /**
+   * Sets the visibility of the provable hash choice comparison mode horizontal box.
+   *
+   * @param visible true to make the box visible, false to hide it.
+   */
+  public void setProvableHashChoiceComparisonModeHboxVisibility(boolean visible) {
+    provableHashChoiceComparisonModeHbox.setVisible(visible);
+    provableHashChoiceComparisonModeHbox.setManaged(visible);
+  }
+
+  /**
+   * Sets the visibility of the general hash function horizontal box.
+   *
+   * @param visible true to make the box visible, false to hide it.
+   */
+  public void setGeneralHashFunctionHboxVisibility(boolean visible) {
+    generalHashFunctionHbox.setVisible(visible);
+    generalHashFunctionHbox.setManaged(visible);
+  }
+
+  /**
+   * Gets the currently selected provable hash function from the combo box.
+   *
+   * @return The selected provable hash function.
+   */
+  public String getCurrentProvableHashFunction() {
+    return provableHashFunctionComboBox.getValue();
+  }
+
+  /**
+   * Gets the currently selected standard hash function from the combo box.
+   *
+   * @return The selected standard hash function.
+   */
+  public String getCurrentStandardHashFunction() {
+    return fixedHashFunctionComboBox.getValue();
+  }
 
 
 }
