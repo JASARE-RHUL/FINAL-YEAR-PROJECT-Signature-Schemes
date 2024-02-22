@@ -114,6 +114,12 @@ public class SignatureModel {
   private DigestType currentFixedHashType_ComparisonMode;
 
   /**
+   * The {@code DigestType} representing the hash type used under provably secure parameters in the
+   * cross-parameter benchmarking/comparison mode.
+   */
+  private DigestType currentProvableHashType_ComparisonMode;
+
+  /**
    * Constructs a new {@code SignatureModel} without requiring an initial key representative of the
    * fact that at program launch, the model does not have any state: until it is initiated by the
    * user
@@ -777,6 +783,28 @@ public class SignatureModel {
    */
   public DigestType getCurrentFixedHashType_ComparisonMode() {
     return currentFixedHashType_ComparisonMode;
+  }
+
+  /**
+   * Sets the hash type for use under provably secure parameters in the cross-parameter
+   * benchmarking/comparison mode of the signature scheme.
+   *
+   * @param currentProvableHashType_ComparisonMode The hash type to be set for provably secure
+   *                                               parameters.
+   */
+  public void setCurrentProvableHashType_ComparisonMode(
+      DigestType currentProvableHashType_ComparisonMode) {
+    this.currentProvableHashType_ComparisonMode = currentProvableHashType_ComparisonMode;
+  }
+
+  /**
+   * Gets the hash type currently set for use under provably secure parameters in the
+   * cross-parameter benchmarking/comparison mode.
+   *
+   * @return The hash type set for provably secure parameters.
+   */
+  public DigestType getCurrentProvableHashType_ComparisonMode() {
+    return currentProvableHashType_ComparisonMode;
   }
 
 
