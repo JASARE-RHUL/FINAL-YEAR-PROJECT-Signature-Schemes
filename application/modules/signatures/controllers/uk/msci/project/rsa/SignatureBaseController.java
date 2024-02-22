@@ -4,9 +4,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.io.StringReader;
 import java.util.function.BiConsumer;
 import java.util.regex.Pattern;
 import javafx.beans.value.ChangeListener;
@@ -57,6 +55,14 @@ public abstract class SignatureBaseController {
    * raw user entered value for their desired hash output size.
    */
   String hashOutputSize;
+
+  boolean isCrossParameterBenchmarkingEnabled;
+
+  boolean isKeyForComparisonMode;
+
+  boolean isKeyProvablySecure;
+
+  String importedKeyBatch;
 
 
   /**
@@ -341,10 +347,12 @@ public abstract class SignatureBaseController {
           break;
         case "SHA-512":
           signatureModel.setHashType(DigestType.SHA_512);
+          signatureModel.setProvablySecure(false);
           break;
         case "SHA-256":
         default:
           signatureModel.setHashType(DigestType.SHA_256);
+          signatureModel.setProvablySecure(false);
           break;
       }
     }
@@ -508,6 +516,13 @@ public abstract class SignatureBaseController {
 
     @Override
     public void handle(ActionEvent event) {
+      isKeyForComparisonMode = false;
+      isCrossParameterBenchmarkingEnabled = false;
+      viewOps.setProvableParamsHboxVisibility(false);
+      viewOps.setCustomParametersRadioVisibility(true);
+      viewOps.setStandardParametersRadioVisibility(true);
+      importedKeyBatch = null;
+      viewOps.setSelectedCrossParameterToggleObserver(false);
       viewOps.setCheckmarkVisibility(false);
       viewOps.setFixedKeyName();
       signatureModel.clearPrivateKeyBatch();
@@ -532,6 +547,11 @@ public abstract class SignatureBaseController {
 
     @Override
     public void handle(ActionEvent event) {
+      isKeyForComparisonMode = false;
+      isCrossParameterBenchmarkingEnabled = false;
+      importedKeyBatch = null;
+      viewOps.setSelectedCrossParameterToggleObserver(false);
+      viewOps.setProvableParamsHboxVisibility(false);
       viewOps.setCheckmarkVisibility(false);
       viewOps.setKeyName("Please Import a key");
       viewOps.setCancelImportSingleKeyButtonVisibility(false);
@@ -646,5 +666,210 @@ public abstract class SignatureBaseController {
     return true;
   }
 
+  /**
+   * Updates the signature model and view with an imported key. This method is used to update the
+   * model with the key content and to update the view to reflect that a key has been imported. It
+   * processes the imported key batch line by line to add keys to the signature model.
+   *
+   * @param viewOps The {@code ViewUpdate} operations that will update the view.
+   */
+  public void updateWithImportedKey(ViewUpdate viewOps) {
+    try (BufferedReader reader = new BufferedReader(new StringReader(this.importedKeyBatch))) {
+      String keyContent;
+      while ((keyContent = reader.readLine()) != null) {
+        if (this instanceof SignatureCreationController) {
+          signatureModel.addPrivKeyToBatch(keyContent);
+        } else {
+          signatureModel.addPublicKeyToBatch(keyContent);
+        }
+      }
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+    if (viewOps.isBenchmarkingModeEnabled()) {
+      if (isCrossParameterBenchmarkingEnabled) {
+        viewOps.setKeyName("Keys were loaded for cross-parameter comparison");
+      } else {
+        viewOps.setKeyName("A provably-secure key batch was loaded");
+      }
 
+    } else {
+      viewOps.setKeyName("A provably-secure key was loaded");
+    }
+    viewOps.updateCheckmarkImage();
+    viewOps.setCheckmarkVisibility(true);
+    viewOps.setKeyVisibility(true);
+  }
+
+  /**
+   * Observer for changes in the Cross Benchmarking Mode. This observer handles the toggle event
+   * between enabling and disabling cross benchmarking mode. It launches an FXML file with
+   * specialised cross-parameter benchmarking options when the toggle is switched on and does not
+   * allow a user to switch the toggle on, unless a key in the format expected for the mode and been
+   * pre-loaded implicitly through the prior key generation process where the option was selected.
+   */
+  class CrossBenchmarkingModeChangeObserver implements ChangeListener<Boolean> {
+
+    private ViewUpdate viewOps;
+    private final Runnable onCrossBenchmarkingMode;
+    private final Runnable onBenchmarkingMode;
+
+
+    /**
+     * Constructs an CrossBenchmarkingModeChangeObserver with specified actions for cross
+     * benchmarking and benchmarking modes.
+     *
+     * @param onCrossBenchmarkingMode The action to perform when switching to Cross Benchmarking
+     *                                mode.
+     * @param onBenchmarkingMode      The action to perform when switching to benchmarking mode.
+     */
+    public CrossBenchmarkingModeChangeObserver(Runnable onCrossBenchmarkingMode,
+        Runnable onBenchmarkingMode, ViewUpdate viewOps) {
+      this.onCrossBenchmarkingMode = onCrossBenchmarkingMode;
+      this.onBenchmarkingMode = onBenchmarkingMode;
+      this.viewOps = viewOps;
+    }
+
+    @Override
+    public void changed(ObservableValue<? extends Boolean> observableValue, Boolean oldValue,
+        Boolean newValue) {
+      if (Boolean.TRUE.equals(newValue) && Boolean.FALSE.equals(oldValue)) {
+        if ((!isCrossParameterBenchmarkingEnabled && importedKeyBatch == null)
+            || !isKeyForComparisonMode) {
+          viewOps.setSelectedCrossParameterToggleObserver(false);
+          uk.msci.project.rsa.DisplayUtility.showErrorAlert(
+              "Cross parameter benchmarking cannot be enabled without an initial cross parameter generation of keys.");
+        } else {
+          isCrossParameterBenchmarkingEnabled = true;
+          onCrossBenchmarkingMode.run();
+        }
+      } else if (Boolean.FALSE.equals(newValue) && Boolean.TRUE.equals(oldValue)) {
+        isCrossParameterBenchmarkingEnabled = false;
+        onBenchmarkingMode.run();
+      }
+    }
+  }
+
+  /**
+   * Observer for changes in the selection of provable parameters in benchmarking mode. This
+   * observer reacts to change in the provable parameters toggle group and updates the view
+   * accordingly. It only appears if a key in the format expected for the mode and been pre-loaded
+   * implicitly through the prior key generation process where all keys generated were provably
+   * secure.
+   */
+  class ProvableParamsChangeObserver implements ChangeListener<Toggle> {
+
+    private ViewUpdate viewOps;
+
+    public ProvableParamsChangeObserver(ViewUpdate viewOps) {
+      this.viewOps = viewOps;
+    }
+
+    @Override
+    public void changed(ObservableValue<? extends Toggle> observable, Toggle oldValue,
+        Toggle newValue) {
+      if (newValue != null) {
+        RadioButton selectedRadioButton = (RadioButton) newValue;
+        String radioButtonText = selectedRadioButton.getText();
+        switch (radioButtonText) {
+          case "Yes":
+            if (isKeyProvablySecure) {
+              viewOps.setProvablySecureParametersRadioSelected(true);
+              viewOps.setCustomParametersRadioVisibility(false);
+              viewOps.setStandardParametersRadioVisibility(false);
+            }
+            break;
+          case "No":
+          default:
+            viewOps.setProvablySecureParametersRadioSelected(false);
+            viewOps.setCustomParametersRadioVisibility(true);
+            viewOps.setStandardParametersRadioVisibility(true);
+            break;
+
+        }
+      }
+    }
+  }
+
+  /**
+   * Observer for changes in the selection of a provably secure hash function in cross parameter
+   * benchmarking mode. This observer responds to change in hash function selection when in cross
+   * parameter benchmarking mode and updates the signature model accordingly. It sets the
+   * appropriate provably secure hash function type in the signature model to be used in comparison
+   * mode.
+   */
+  class ProvableHashFunctionChangeObserver implements ChangeListener<String> {
+
+    public void changed(ObservableValue<? extends String> observable, String oldValue,
+        String newValue) {
+      if (newValue == null) {
+        return;
+      }
+      switch (newValue) {
+        case "SHAKE-256":
+          signatureModel.setCurrentFixedHashType_ComparisonMode(DigestType.SHAKE_256);
+          signatureModel.setProvablySecure(true);
+          break;
+        case "SHAKE-128":
+          signatureModel.setCurrentFixedHashType_ComparisonMode(DigestType.SHAKE_128);
+          signatureModel.setProvablySecure(true);
+          break;
+        case "SHA-512 with MGF1":
+          signatureModel.setCurrentFixedHashType_ComparisonMode(DigestType.MGF_1_SHA_512);
+          signatureModel.setProvablySecure(true);
+          break;
+        case "SHA-256 with MGF1":
+        default:
+          signatureModel.setCurrentFixedHashType_ComparisonMode(DigestType.MGF_1_SHA_256);
+          signatureModel.setProvablySecure(true);
+          break;
+      }
+    }
+
+  }
+
+  /**
+   * Observer for changes in the selection of standard hash function. This observer responds to
+   * change in hash function selection when in cross parameter benchmarking mode and updates the
+   * signature model accordingly. It sets the appropriate standard hash function type in the
+   * signature model to be used in comparison mode.
+   */
+  class StandardHashFunctionChangeObserver implements ChangeListener<String> {
+
+    public void changed(ObservableValue<? extends String> observable, String oldValue,
+        String newValue) {
+      if (newValue == null) {
+        return;
+      }
+      switch (newValue) {
+        case "SHA-512":
+          signatureModel.setCurrentFixedHashType_ComparisonMode(DigestType.SHA_512);
+          signatureModel.setProvablySecure(false);
+          break;
+        case "SHA-256":
+        default:
+          signatureModel.setCurrentFixedHashType_ComparisonMode(DigestType.SHA_256);
+          signatureModel.setProvablySecure(false);
+          break;
+      }
+    }
+
+  }
+
+  /**
+   * Imports a key from the key generation process. This method sets the state of the controller to
+   * reflect that a key has been imported for comparison mode or provably secure mode, based on the
+   * provided parameters. It updates the internal state with the imported key batch.
+   *
+   * @param keyBatch               The batch of keys generated and to be imported.
+   * @param isKeyForComparisonMode Indicates if the key is for comparison mode.
+   */
+
+  public void importKeyFromKeyGeneration(String keyBatch, boolean isKeyForComparisonMode) {
+    this.isKeyProvablySecure = true;
+    this.isCrossParameterBenchmarkingEnabled = isKeyForComparisonMode;
+    this.isKeyForComparisonMode = isKeyForComparisonMode;
+    importedKeyBatch = keyBatch;
+
+  }
 }
