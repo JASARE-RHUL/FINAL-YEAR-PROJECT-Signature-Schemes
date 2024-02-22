@@ -268,6 +268,9 @@ public class GenController {
     ResultsController resultsController = new ResultsController(mainController);
     BenchmarkingContext context = new KeyGenerationContext(genModel);
     resultsController.setContext(context);
+    genModel.generateKeyBatch();
+    mainController.setProvableKeyBatchForSigning(genModel.getPrivateKeyBatch(), true);
+    mainController.setProvableKeyBatchForVerification(genModel.getPublicKeyBatch(), true);
     resultsController.showResultsView(mainController.getPrimaryStage(),
         genModel.getClockTimesPerTrial(), genModel.summedKeySizes(genModel.getKeyParams()), true,
         genModel.getNumKeySizesForComparisonMode());
@@ -334,6 +337,11 @@ public class GenController {
     ResultsController resultsController = new ResultsController(mainController);
     BenchmarkingContext context = new KeyGenerationContext(genModel);
     resultsController.setContext(context);
+    genModel.generateKeyBatch();
+    if (genModel.generateKeyBatch()) {
+      mainController.setProvableKeyBatchForSigning(genModel.getPrivateKeyBatch(), false);
+      mainController.setProvableKeyBatchForVerification(genModel.getPublicKeyBatch(), false);
+    }
     resultsController.showResultsView(mainController.getPrimaryStage(),
         genModel.getClockTimesPerTrial(), genModel.summedKeySizes(genModel.getKeyParams()));
   }
