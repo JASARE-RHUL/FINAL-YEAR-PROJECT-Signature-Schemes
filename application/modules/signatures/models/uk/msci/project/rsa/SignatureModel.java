@@ -108,6 +108,12 @@ public class SignatureModel {
   private File messageFile;
 
   /**
+   * The {@code DigestType} representing the hash type used under standard parameters in the
+   * cross-parameter benchmarking/comparison mode.
+   */
+  private DigestType currentFixedHashType_ComparisonMode;
+
+  /**
    * Constructs a new {@code SignatureModel} without requiring an initial key representative of the
    * fact that at program launch, the model does not have any state: until it is initiated by the
    * user
@@ -750,6 +756,27 @@ public class SignatureModel {
    */
   public List<Integer> getPublicKeyLengths() {
     return getKeyLengths(publicKeyBatch);
+  }
+
+  /**
+   * Sets the hash type for use under standard parameters in the cross-parameter
+   * benchmarking/comparison mode of the signature scheme.
+   *
+   * @param currentFixedHashType_ComparisonMode The hash type to be set for standard parameters.
+   */
+  public void setCurrentFixedHashType_ComparisonMode(
+      DigestType currentFixedHashType_ComparisonMode) {
+    this.currentFixedHashType_ComparisonMode = currentFixedHashType_ComparisonMode;
+  }
+
+  /**
+   * Gets the hash type currently set for use under standard parameters in the cross-parameter
+   * benchmarking/comparison mode.
+   *
+   * @return The hash type set for standard parameters.
+   */
+  public DigestType getCurrentFixedHashType_ComparisonMode() {
+    return currentFixedHashType_ComparisonMode;
   }
 
 
