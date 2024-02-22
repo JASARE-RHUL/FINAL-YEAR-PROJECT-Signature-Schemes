@@ -685,6 +685,137 @@ public class SignatureModel {
 
 
   /**
+   * Processes a batch of messages and their corresponding signatures for verification in the
+   * cross-parameter benchmarking/comparison mode. This mode involves verifying signatures using a
+   * variety of public keys created with different parameter settings (standard vs. provably secure)
+   * for each selected key size. For each key size, this method verifies signatures using two keys
+   * with standard parameters (2 vs 3 primes) and two keys with provably secure parameters (2 vs 3
+   * primes). The method updates the progress of signature verification using the provided
+   * progressUpdater consumer.
+   *
+   * @param batchMessageFile   The file containing the messages to be verified.
+   * @param batchSignatureFile The file containing the corresponding signatures to be verified.
+   * @param progressUpdater    A consumer to update the progress of the batch verification process.
+   * @throws IOException                   If there is an I/O error reading from the files.
+   * @throws InvalidSignatureTypeException If the signature type is not supported.
+   * @throws DataFormatException           If the data format is incorrect for verification.
+   * @throws NoSuchAlgorithmException      If the specified algorithm does not exist.
+   * @throws InvalidDigestException        If the specified digest algorithm is invalid.
+   * @throws NoSuchProviderException       If the specified provider is not available.
+   */
+  public void batchVerifySignatures_ComparisonMode(File batchMessageFile, File batchSignatureFile,
+      DoubleConsumer progressUpdater)
+      throws IOException, InvalidSignatureTypeException, DataFormatException, NoSuchAlgorithmException, InvalidDigestException, NoSuchProviderException {
+    // Initialise lists to store times, verification results, signatures, and recovered messages
+    List<List<Long>> timesPerKey = new ArrayList<>();
+    List<List<Boolean>> verificationResultsPerKey = new ArrayList<>();
+    List<List<byte[]>> signaturesPerKey = new ArrayList<>();
+    List<List<byte[]>> recoveredMessagesPerKey = new ArrayList<>();
+    for (int k = 0; k < publicKeyBatch.size(); k++) {
+      timesPerKey.add(new ArrayList<>());
+      verificationResultsPerKey.add(new ArrayList<>());
+      signaturesPerKey.add(new ArrayList<>());
+      recoveredMessagesPerKey.add(new ArrayList<>());
+    }
+
+    try (BufferedReader signatureReader = new BufferedReader(new FileReader(batchSignatureFile));
+        BufferedReader messageReader = new BufferedReader(new FileReader(batchMessageFile))) {
+
+      String messageLine;
+      int messageCounter = 0;
+      int totalWork = numTrials * publicKeyBatch.size();
+      int completedWork = 0;
+      while ((messageLine = messageReader.readLine()) != null && messageCounter < this.numTrials) {
+        for (int i = 0; i < publicKeyBatch.size(); i += NUM_KEYS_PER_KEY_SIZE_COMPARISON_MODE) {
+          for (int keyIndexForKeySize = 0;
+              keyIndexForKeySize < NUM_KEYS_PER_KEY_SIZE_COMPARISON_MODE; keyIndexForKeySize++) {
+            // Read signature for each message
+            String signatureLine = signatureReader.readLine();
+            byte[] signatureBytes = new BigInteger(signatureLine).toByteArray();
+
+            SigScheme sigScheme = SignatureFactory.getSignatureScheme(currentType,
+                publicKeyBatch.get(i + keyIndexForKeySize),
+                getProvablySecureFlagComparisonMode(keyIndexForKeySize));
+
+            sigScheme.setDigest(getDigestTypeComparisonMode(keyIndexForKeySize));
+            // Synchronous verification
+            Pair<Boolean, Pair<Long, List<byte[]>>> result = verifySignature_ComparisonMode(
+                sigScheme,
+                publicKeyBatch.get(i + keyIndexForKeySize), messageLine,
+                signatureBytes);
+
+            long endTime = result.getValue().getKey();
+
+            // Store results
+            timesPerKey.get(i + keyIndexForKeySize).add(endTime);
+            verificationResultsPerKey.get(i + keyIndexForKeySize).add(result.getKey());
+            signaturesPerKey.get(i + keyIndexForKeySize).add(result.getValue().getValue().get(1));
+            recoveredMessagesPerKey.get(i + keyIndexForKeySize)
+                .add(result.getValue().getValue().get(2));
+
+            // Update progress
+            double currentKeyProgress = (double) (++completedWork) / totalWork;
+            progressUpdater.accept(currentKeyProgress);
+          }
+
+        }
+        messageCounter++;
+      }
+
+      // Combine results into final lists
+      combineVerificationResultsIntoFinalLists(timesPerKey, verificationResultsPerKey,
+          signaturesPerKey, recoveredMessagesPerKey);
+    }
+  }
+
+
+  /**
+   * Verifies a signature against a message using a specified signature scheme in the comparison
+   * mode. This method encapsulates the logic for signature verification, handling different types
+   * of signature schemes, including those with message recovery. It accommodates the alternation
+   * between standard and provably secure modes for each key size in the comparison mode.
+   *
+   * @param sigScheme      The signature scheme used for verification.
+   * @param publicKey      The public key used for signature verification.
+   * @param messageLine    The message to be verified against the signature.
+   * @param signatureBytes The signature to be verified.
+   * @return A Pair containing the result of verification and the relevant data (original message,
+   * signature, and recovered message if applicable).
+   * @throws InvalidSignatureTypeException If the signature type is invalid.
+   * @throws DataFormatException           If the data format is incorrect.
+   * @throws NoSuchAlgorithmException      If the specified algorithm does not exist.
+   * @throws InvalidDigestException        If the specified digest algorithm is invalid.
+   * @throws NoSuchProviderException       If the specified provider is not available.
+   */
+  private Pair<Boolean, Pair<Long, List<byte[]>>> verifySignature_ComparisonMode(
+      SigScheme sigScheme,
+      PublicKey publicKey,
+      String messageLine, byte[] signatureBytes)
+      throws InvalidSignatureTypeException, DataFormatException, NoSuchAlgorithmException, InvalidDigestException, NoSuchProviderException {
+
+    boolean verificationResult;
+    byte[] recoveredMessage = new byte[]{};
+    long endTime = 0;
+    long startTime = 0;
+    if (currentType == SignatureType.ISO_IEC_9796_2_SCHEME_1) {
+      String[] nonRecoverableParts = messageLine.split(" ", 2);
+      byte[] nonRecoverableMessage =
+          nonRecoverableParts[0].equals("1") ? nonRecoverableParts[1].getBytes() : null;
+      startTime = System.nanoTime();
+      verificationResult = sigScheme.verify(nonRecoverableMessage, signatureBytes);
+      endTime = System.nanoTime() - startTime;
+      recoveredMessage = verificationResult ? sigScheme.getRecoverableM() : new byte[]{};
+    } else {
+      startTime = System.nanoTime();
+      verificationResult = sigScheme.verify(messageLine.getBytes(), signatureBytes);
+      endTime = System.nanoTime() - startTime;
+    }
+
+    return new Pair<>(verificationResult,
+        new Pair<>(endTime, List.of(messageLine.getBytes(), signatureBytes, recoveredMessage)));
+  }
+
+  /**
    * Verifies a signature against a message using a specified public key. This method encapsulates
    * the logic for signature verification, handling different types of signature schemes, including
    * those with message recovery.
@@ -697,7 +828,8 @@ public class SignatureModel {
    * @throws InvalidSignatureTypeException If the signature type is invalid.
    * @throws DataFormatException           If the data format is incorrect.
    */
-  private Pair<Boolean, Pair<Long, List<byte[]>>> verifySignature(PublicKey publicKey,
+  private Pair<Boolean, Pair<Long, List<byte[]>>> verifySignature(
+      PublicKey publicKey,
       String messageLine, byte[] signatureBytes)
       throws InvalidSignatureTypeException, DataFormatException, NoSuchAlgorithmException, InvalidDigestException, NoSuchProviderException {
     SigScheme sigScheme = SignatureFactory.getSignatureScheme(currentType, publicKey,
