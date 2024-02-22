@@ -40,6 +40,12 @@
       </HBox>
       <Separator/>
 
+      <HBox spacing="10" alignment="CENTER" managed="false" visible="false">
+        <Label text="Cross-Parameter Benchmarking (Standard vs Provably secure):"
+          styleClass="bold-label"/>
+        <RadioButton fx:id="noCrossParameterRadio" text="No" selected="true"/>
+        <RadioButton fx:id="yesCrossParameterRadio" text="Yes"/>
+      </HBox>
 
       <!-- Key Size Input Section -->
       <VBox fx:id="standardModeVBox" alignment="CENTER" spacing="5">
