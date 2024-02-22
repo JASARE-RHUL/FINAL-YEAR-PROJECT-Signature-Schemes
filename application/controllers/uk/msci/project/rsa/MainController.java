@@ -41,13 +41,15 @@ public class MainController {
    * Controller for the signature verification functionality. Manages the logic and view related to
    * verifying digital signatures.
    */
-  private SignatureVerificationController SignatureVerificationController;
+  private SignatureVerificationController signatureVerificationController = new SignatureVerificationController(
+      MainController.this);
 
   /**
    * Controller for the signature creation functionality. Handles the process of creating digital
    * signatures, typically by signing documents or messages.
    */
-  private SignatureCreationController SignatureCreationController;
+  private SignatureCreationController signatureCreationController = new SignatureCreationController(
+      MainController.this);
 
 
   /**
@@ -92,7 +94,7 @@ public class MainController {
    * @return The verification controller.
    */
   public SignatureVerificationController getSignatureVerificationController() {
-    return SignatureVerificationController;
+    return signatureVerificationController;
   }
 
   /**
@@ -102,7 +104,7 @@ public class MainController {
    * @return The signature generation controller.
    */
   public SignatureCreationController getSignatureCreationController() {
-    return SignatureCreationController;
+    return signatureCreationController;
   }
 
   /**
@@ -126,8 +128,7 @@ public class MainController {
 
     @Override
     public void handle(ActionEvent event) {
-      SignatureCreationController = new SignatureCreationController(MainController.this);
-      SignatureCreationController.showSignView(primaryStage);
+      signatureCreationController.showSignView(primaryStage);
     }
   }
 
@@ -139,8 +140,7 @@ public class MainController {
 
     @Override
     public void handle(ActionEvent event) {
-      SignatureVerificationController = new SignatureVerificationController(MainController.this);
-      SignatureVerificationController.showVerifyView(primaryStage);
+      signatureVerificationController.showVerifyView(primaryStage);
     }
   }
 
@@ -154,8 +154,8 @@ public class MainController {
   }
 
   /**
-   * Sets the root of the main scene to the provided parent node.
-   * This method is used to change the content displayed in the primary stage of the application.
+   * Sets the root of the main scene to the provided parent node. This method is used to change the
+   * content displayed in the primary stage of the application.
    *
    * @param parent The root node of the new content to be displayed on the scene.
    */
@@ -166,13 +166,47 @@ public class MainController {
 
 
   /**
-   * Retrieves the main scene of the application.
-   * This scene is used as the primary container for all content in the application's user interface.
+   * Retrieves the main scene of the application. This scene is used as the primary container for
+   * all content in the application's user interface.
    *
    * @return The main Scene of the application.
    */
   public Scene getScene() {
     return scene;
   }
+
+  /**
+   * Sets a batch of private keys for signing operations. This method is used to provide the
+   * SignatureCreationController with a batch of provably secure generated (small e ) private keys
+   * to allow for later instantiation of  a signature scheme with provably secure parameters. The keys
+   * can be set in comparison mode for production of results that enables provably secure
+   * instantiations of scheme to be compared with standard instantiations.
+   *
+   * @param privateKeyBatch        The batch of private keys to be used for signing.
+   * @param isKeyForComparisonMode If true, the keys are used in comparison mode for signing
+   *                               operations.
+   */
+  public void setProvableKeyBatchForSigning(String privateKeyBatch,
+      boolean isKeyForComparisonMode) {
+    signatureCreationController.importKeyFromKeyGeneration(privateKeyBatch, isKeyForComparisonMode);
+  }
+
+  /**
+   * Sets a batch of public keys for verification operations. This method is used to provide the
+   * signatureVerificationController with a batch of provably secure generated (small e ) public
+   * keys to allow for later instantiation of a signature scheme with provably secure parameters. The
+   * keys can be set in comparison mode for production of results that enables provably secure
+   * instantiations of scheme to be compared with standard instantiations.
+   *
+   * @param publicKeyBatch         The batch of public keys to be used for signature verification.
+   * @param isKeyForComparisonMode If true, the keys are used in comparison mode for verification
+   *                               operations.
+   */
+  public void setProvableKeyBatchForVerification(String publicKeyBatch,
+      boolean isKeyForComparisonMode) {
+    signatureVerificationController.importKeyFromKeyGeneration(publicKeyBatch,
+        isKeyForComparisonMode);
+  }
+
 
 }
