@@ -4,8 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
 import javafx.application.Platform;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -54,12 +52,19 @@ public class SignatureCreationController extends SignatureBaseController {
   }
 
   /**
-   * Initialises and displays the SignView stage. It loads the FXML for the SignView and sets up the
-   * scene and the stage.
+   * Displays the SignView interface. This method decides which version of the SignView to show
+   * based on the current benchmarking and cross-parameter modes. If cross-parameter benchmarking is
+   * enabled, it calls {@code showSignViewCrossBenchmarkingMode}. Otherwise, it loads the standard
+   * SignView. This method is responsible for setting up the SignView with the necessary controllers
+   * and observers.
    *
-   * @param primaryStage The primary stage for this application.
+   * @param primaryStage The primary stage of the application where the view will be displayed.
    */
   public void showSignView(Stage primaryStage) {
+    if (isKeyForComparisonMode && isCrossParameterBenchmarkingEnabled) {
+      showSignViewCrossBenchmarkingMode(primaryStage);
+      return;
+    }
     try {
       FXMLLoader loader = new FXMLLoader(getClass().getResource("/SignView.fxml"));
       Parent root = loader.load();
@@ -71,7 +76,20 @@ public class SignatureCreationController extends SignatureBaseController {
           () -> showSignViewStandardMode(primaryStage),
           () -> showSignView(primaryStage)
       ));
+      signView.addCrossParameterToggleObserver(new CrossBenchmarkingModeChangeObserver(
+          () -> showSignViewCrossBenchmarkingMode(primaryStage),
+          () -> showSignView(primaryStage), new SignViewUpdateOperations(signView)));
       setupSignObserversBenchmarking(primaryStage);
+      if (isKeyProvablySecure && this.importedKeyBatch != null
+          && !isCrossParameterBenchmarkingEnabled) {
+        updateWithImportedKey(new SignViewUpdateOperations(signView));
+        signView.setImportKeyBatchButtonVisibility(false);
+        signView.setCancelImportKeyButtonVisibility(true);
+        signView.setProvableParamsHboxVisibility(true);
+        signView.setProvablySecureParametersRadioSelected(true);
+        signView.setCustomParametersRadioVisibility(false);
+        signView.setStandardParametersRadioVisibility(false);
+      }
 
       mainController.setScene(root);
 
@@ -80,6 +98,13 @@ public class SignatureCreationController extends SignatureBaseController {
     }
   }
 
+  /**
+   * Displays the SignView in standard mode. This method loads the SignView for the standard
+   * (non-benchmarking) mode. It initialises the view, sets up the required observers for handling
+   * events like text and key import, and displays the view on the provided stage.
+   *
+   * @param primaryStage The primary stage of the application where the view will be displayed.
+   */
   public void showSignViewStandardMode(Stage primaryStage) {
     try {
       FXMLLoader loader = new FXMLLoader(getClass().getResource("/SignViewStandardMode.fxml"));
@@ -92,7 +117,44 @@ public class SignatureCreationController extends SignatureBaseController {
           () -> showSignViewStandardMode(primaryStage),
           () -> showSignView(primaryStage)
       ));
+
       setupSignObservers(primaryStage);
+
+      mainController.setScene(root);
+
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+  }
+
+  /**
+   * Displays the SignView in cross-parameter benchmarking mode. This method loads the SignView
+   * specifically configured for cross-parameter benchmarking. It initialises the view, sets up the
+   * necessary observers for handling key and message batch imports, and displays the view on the
+   * provided stage.
+   *
+   * @param primaryStage The primary stage of the application where the view will be displayed.
+   */
+  public void showSignViewCrossBenchmarkingMode(Stage primaryStage) {
+    try {
+      FXMLLoader loader = new FXMLLoader(
+          getClass().getResource("/SignViewCrossBenchmarkingMode.fxml"));
+      Parent root = loader.load();
+      signView = loader.getController();
+      this.signatureModel = new SignatureModel();
+      updateWithImportedKey(new SignViewUpdateOperations(signView));
+      if (isCrossParameterBenchmarkingEnabled && this.importedKeyBatch != null) {
+        signView.setImportKeyBatchButtonVisibility(false);
+        signView.setCancelImportKeyButtonVisibility(true);
+      }
+      signView.addBenchmarkingModeToggleObserver(new ApplicationModeChangeObserver(
+          () -> showSignViewStandardMode(primaryStage),
+          () -> showSignView(primaryStage)
+      ));
+      signView.addCrossParameterToggleObserver(new CrossBenchmarkingModeChangeObserver(
+          () -> showSignViewCrossBenchmarkingMode(primaryStage),
+          () -> showSignView(primaryStage), new SignViewUpdateOperations(signView)));
+      setupSignObserversCrossBenchmarking(primaryStage);
 
       mainController.setScene(root);
 
@@ -149,6 +211,27 @@ public class SignatureCreationController extends SignatureBaseController {
     signView.addSigBenchmarkButtonObserver(
         new SignatureBenchmarkObserver(new SignViewUpdateOperations(signView)));
     signView.addBackToMainMenuObserver(new BackToMainMenuObserver(signView));
+    signView.addProvableSchemeChangeObserver(
+        new ProvableParamsChangeObserver(new SignViewUpdateOperations(signView)));
+  }
+
+  private void setupSignObserversCrossBenchmarking(Stage primaryStage) {
+    signView.addImportTextBatchBtnObserver(
+        new ImportObserver(primaryStage, new SignViewUpdateOperations(signView),
+            this::handleMessageBatch, "*.txt"));
+    signView.addImportKeyBatchButtonObserver(
+        new ImportObserver(primaryStage, new SignViewUpdateOperations(signView),
+            this::handleKeyBatch, "*.rsa"));
+    signView.addCancelImportKeyButtonObserver(
+        new CancelImportKeyBatchButtonObserver(new SignViewUpdateOperations(signView)));
+    signView.addSignatureSchemeChangeObserver(new SignatureSchemeChangeObserver());
+    signView.addSigBenchmarkButtonObserver(
+        new SignatureBenchmarkObserver(new SignViewUpdateOperations(signView)));
+    signView.addStandardHashFunctionChangeObserver(new StandardHashFunctionChangeObserver());
+    signView.addProvableHashFunctionChangeObserver(new ProvableHashFunctionChangeObserver());
+    signView.addBackToMainMenuObserver(new BackToMainMenuObserver(signView));
+
+
   }
 
   /**
@@ -245,7 +328,9 @@ public class SignatureCreationController extends SignatureBaseController {
       if ((signatureModel.getNumTrials() == 0)
           || signatureModel.getPrivateKeyBatchLength() == 0
           || signView.getSelectedSignatureScheme() == null
-          || signView.getSelectedHashFunction() == null) {
+          || signView.getSelectedHashFunction() == null || (isCrossParameterBenchmarkingEnabled && (
+          signView.getCurrentStandardHashFunction()
+              .equals("") || signView.getCurrentProvableHashFunction().equals("")))) {
         uk.msci.project.rsa.DisplayUtility.showErrorAlert(
             "You must provide an input for all fields. Please try again.");
         return;
@@ -444,8 +529,5 @@ public class SignatureCreationController extends SignatureBaseController {
   public void setMessage(byte[] message) {
     this.message = message;
   }
-
-
-
 
 }
