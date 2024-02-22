@@ -807,20 +807,20 @@ public abstract class SignatureBaseController {
       }
       switch (newValue) {
         case "SHAKE-256":
-          signatureModel.setCurrentFixedHashType_ComparisonMode(DigestType.SHAKE_256);
+          signatureModel.setCurrentProvableHashType_ComparisonMode(DigestType.SHAKE_256);
           signatureModel.setProvablySecure(true);
           break;
         case "SHAKE-128":
-          signatureModel.setCurrentFixedHashType_ComparisonMode(DigestType.SHAKE_128);
+          signatureModel.setCurrentProvableHashType_ComparisonMode(DigestType.SHAKE_128);
           signatureModel.setProvablySecure(true);
           break;
         case "SHA-512 with MGF1":
-          signatureModel.setCurrentFixedHashType_ComparisonMode(DigestType.MGF_1_SHA_512);
+          signatureModel.setCurrentProvableHashType_ComparisonMode(DigestType.MGF_1_SHA_512);
           signatureModel.setProvablySecure(true);
           break;
         case "SHA-256 with MGF1":
         default:
-          signatureModel.setCurrentFixedHashType_ComparisonMode(DigestType.MGF_1_SHA_256);
+          signatureModel.setCurrentProvableHashType_ComparisonMode(DigestType.MGF_1_SHA_256);
           signatureModel.setProvablySecure(true);
           break;
       }
