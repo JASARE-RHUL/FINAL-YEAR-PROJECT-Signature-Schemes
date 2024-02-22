@@ -53,12 +53,11 @@ public class GenModel {
    */
   private List<Pair<int[], Boolean>> keyParams;
 
-  /**
-   * A batch of key pairs generated after a benchmarking session for later export
-   */
-  private List<KeyPair> generatedKeyPairs = new ArrayList<>();
-
   private int numKeySizesForComparisonMode;
+
+  private String publicKeyBatch;
+
+  private String privateKeyBatch;
 
 
   /**
@@ -247,19 +246,28 @@ public class GenModel {
    *
    * @throws IllegalStateException if key parameters are not set.
    */
-  public void generateKeyBatch() {
+  public boolean generateKeyBatch() {
+    boolean isProvablySecureKeyBatch = true;
+    StringBuilder publicKeyBatchBuilder = new StringBuilder();
+    StringBuilder privateKeyBatchBuilder = new StringBuilder();
     if (this.keyParams != null) {
       for (Pair<int[], Boolean> keyParam : this.keyParams) {
         int[] intArray = keyParam.getKey();
         setKeyParameters(intArray.length, intArray);
-        setGen(keyParam.getValue());
+        boolean isSmallE = keyParam.getValue();
+        isProvablySecureKeyBatch = isSmallE && isProvablySecureKeyBatch;
+        setGen(isSmallE);
         generateKey();
-        generatedKeyPairs.add(generatedKeyPair);
+        publicKeyBatchBuilder.append(generatedKeyPair.getPublicKey().getKeyValue()).append("\n");
+        privateKeyBatchBuilder.append(generatedKeyPair.getPrivateKey().getKeyValue()).append("\n");
       }
+      this.publicKeyBatch = publicKeyBatchBuilder.toString();
+      this.privateKeyBatch = privateKeyBatchBuilder.toString();
     } else {
       throw new IllegalStateException(
           "Error. Key batch cannot be generated before a benchmarking session.");
     }
+    return isProvablySecureKeyBatch;
   }
 
   /**
@@ -268,12 +276,9 @@ public class GenModel {
    * @throws IOException if there is an error during the export process.
    */
   public void exportPublicKeyBatch() throws IOException {
-    StringBuilder publicKeyBatch = new StringBuilder();
-    for (KeyPair keyPair : generatedKeyPairs) {
-      publicKeyBatch.append(keyPair.getPublicKey().getKeyValue()).append("\n");
-    }
-    FileHandle.exportToFile("batchPublicKey.rsa", publicKeyBatch.toString());
+    FileHandle.exportToFile("batchPublicKey.rsa", publicKeyBatch);
   }
+
 
   /**
    * Exports the private keys from the generated key pairs to a batch file.
@@ -281,11 +286,7 @@ public class GenModel {
    * @throws IOException if there is an error during the export process.
    */
   public void exportPrivateKeyBatch() throws IOException {
-    StringBuilder privateKeyBatch = new StringBuilder();
-    for (KeyPair keyPair : generatedKeyPairs) {
-      privateKeyBatch.append(keyPair.getPrivateKey().getKeyValue()).append("\n");
-    }
-    FileHandle.exportToFile("batchKey.rsa", privateKeyBatch.toString());
+    FileHandle.exportToFile("batchKey.rsa", privateKeyBatch);
   }
 
 
@@ -297,6 +298,14 @@ public class GenModel {
    */
   public List<Pair<int[], Boolean>> getKeyParams() {
     return keyParams;
+  }
+
+  public String getPrivateKeyBatch() {
+    return privateKeyBatch;
+  }
+
+  public String getPublicKeyBatch() {
+    return publicKeyBatch;
   }
 
   public List<Integer> summedKeySizes(List<Pair<int[], Boolean>> pairs) {
