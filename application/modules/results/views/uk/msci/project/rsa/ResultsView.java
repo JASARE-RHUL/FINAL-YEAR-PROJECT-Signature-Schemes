@@ -603,26 +603,36 @@ public class ResultsView implements Initializable {
   }
 
   /**
-   * Exports the comparison table results to a CSV file.
+   * Exports the data from a comparison table to a CSV file. This method iterates through each item
+   * in the table and writes the data to a file with a CSV format. It also formats confidence
+   * interval values for better readability and replaces the column header "Conf. Interval" with
+   * "Confidence Interval".
    *
-   * @param fileName The name of the CSV file.
+   * @param fileName The name of the file where the table data will be exported. This file will be
+   *                 created if it does not exist.
    */
   public void exportComparisonTableResultsToCSV(String fileName) {
     File resultsFile = FileHandle.createUniqueFile(fileName);
     try (BufferedWriter fileWriter = new BufferedWriter(new FileWriter(resultsFile))) {
       // Write the header line
       for (TableColumn<StatisticData, ?> column : tableView.getColumns()) {
-        fileWriter.append(column.getText() + ",");
+        String header = column.getText().equals("Conf. Interval") ? "Confidence Interval" : column.getText();
+        fileWriter.append(header).append(",");
       }
       fileWriter.append("\n");
 
       // Iterate through table data
       for (StatisticData data : tableView.getItems()) {
-        fileWriter.append(data.getStatisticName() + ",");
+        fileWriter.append(data.getStatisticName()).append(",");
 
         List<String> values = data.getStatisticValues();
         if (values != null) {
-          fileWriter.append(String.join(",", values));
+          for (String value : values) {
+            if (value.matches("\\d+% with bounds \\[.*\\]")) {
+              value = formatConfidenceInterval(value);
+            }
+            fileWriter.append(value).append(",");
+          }
         }
 
         fileWriter.append("\n");
@@ -630,6 +640,24 @@ public class ResultsView implements Initializable {
     } catch (IOException e) {
       e.printStackTrace();
     }
+  }
+
+  /**
+   * Formats a confidence interval string from a format like "95% with bounds [0.41813, 0.53444]"
+   * to "95% with bounds 0.41813 ms - 0.53444 ms". This method is used to ensure that the confidence
+   * interval values are formatted correctly for CSV output.
+   *
+   * @param interval The confidence interval string in the format "95% with bounds [lower, upper]".
+   * @return A formatted string of the confidence interval in the format
+   *         "95% with bounds lower ms - upper ms".
+   */
+  private String formatConfidenceInterval(String interval) {
+    // Extract percentage and bounds from the interval string
+    String percentage = interval.split(" with bounds ")[0];
+    String bounds = interval.split("\\[")[1].split("]")[0];
+    String[] boundsArray = bounds.split(", ");
+
+    return percentage + " with bounds " + boundsArray[0] + " ms - " + boundsArray[1] + " ms";
   }
 
   /**

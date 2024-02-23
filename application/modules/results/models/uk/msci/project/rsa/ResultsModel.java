@@ -245,7 +245,7 @@ public class ResultsModel {
       writeStatisticLine(statsWriter, "Number of Trials", String.valueOf(numTrials));
       writeStatisticLine(statsWriter, "Overall Time", String.format("%.5f ms", overallData));
       writeStatisticLine(statsWriter, "Mean", String.format("%.5f ms", meanData));
-      writeStatisticLine(statsWriter, "Confidence Interval", String.format("%.5f ms - %.5f ms", confidenceInterval[0], confidenceInterval[1]));
+      writeStatisticLine(statsWriter, "Confidence Interval", "95% with bounds " + String.format("%.5f ms - %.5f ms", confidenceInterval[0], confidenceInterval[1]));
       writeStatisticLine(statsWriter, "25th Percentile", String.format("%.5f ms", percentile25Data));
       writeStatisticLine(statsWriter, "Median", String.format("%.5f ms", medianData));
       writeStatisticLine(statsWriter, "75th Percentile", String.format("%.5f ms", percentile75Data));
