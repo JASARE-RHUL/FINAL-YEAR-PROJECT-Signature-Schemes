@@ -46,7 +46,7 @@
       </HBox>
       <HBox fx:id="crossParameterHbox" alignment="CENTER_LEFT" spacing="10">
         <Label text="Cross-Parameter Benchmarking Mode:" styleClass="bold-label"/>
-        <ToggleSwitch fx:id="crossParameterBenchmarkingModeToggle" selected="false"/>
+        <ToggleSwitch fx:id="crossParameterBenchmarkingModeToggle" selected="true"/>
       </HBox>
 
       <Separator/>
