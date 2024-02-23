@@ -706,6 +706,8 @@ public class SignatureModel {
   public void batchVerifySignatures_ComparisonMode(File batchMessageFile, File batchSignatureFile,
       DoubleConsumer progressUpdater)
       throws IOException, InvalidSignatureTypeException, DataFormatException, NoSuchAlgorithmException, InvalidDigestException, NoSuchProviderException {
+    this.numKeySizesForComparisonMode =
+        publicKeyBatch.size() / NUM_KEYS_PER_KEY_SIZE_COMPARISON_MODE;
     // Initialise lists to store times, verification results, signatures, and recovered messages
     List<List<Long>> timesPerKey = new ArrayList<>();
     List<List<Boolean>> verificationResultsPerKey = new ArrayList<>();
@@ -1070,5 +1072,20 @@ public class SignatureModel {
    */
   public DigestType getCurrentProvableHashType_ComparisonMode() {
     return currentProvableHashType_ComparisonMode;
+  }
+
+  /**
+   * Retrieves the number of different key sizes selected for generating/verifying signatures in the
+   * cross-parameter comparison mode of benchmarking. This method is relevant in scenarios where the
+   * signature creation/verification process is tested across various key sizes, each potentially having
+   * different parameter settings (standard vs. provably secure). It provides the count of distinct
+   * key sizes that have been chosen for benchmarking, facilitating the process of comparing
+   * performance across these varied configurations.
+   *
+   * @return The number of different key sizes selected for generating signatures in the comparison
+   * mode.
+   */
+  public int getNumKeySizesForComparisonMode() {
+    return numKeySizesForComparisonMode;
   }
 }
