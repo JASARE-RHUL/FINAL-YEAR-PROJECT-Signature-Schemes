@@ -378,7 +378,13 @@ public class SignatureModel {
    *
    * @param batchMessageFile The file containing the messages to be signed in the batch process.
    * @param progressUpdater  A consumer to update the progress of the batch signing process.
-   * @throws InterruptedException If the thread executing the batch creation is interrupted.
+   * @throws InvalidSignatureTypeException if the signature type is not supported.
+   * @throws NoSuchAlgorithmException      if the specified algorithm does not exist.
+   * @throws InvalidDigestException        if the specified digest algorithm is invalid.
+   * @throws NoSuchProviderException       if the specified provider is not available.
+   * @throws IOException                   if there is an I/O error reading from the
+   *                                       batchMessageFile.
+   * @throws DataFormatException           if the data format is incorrect for signing.
    */
   public void batchCreateSignatures(File batchMessageFile, DoubleConsumer progressUpdater)
       throws InvalidSignatureTypeException, NoSuchAlgorithmException, InvalidDigestException, NoSuchProviderException, IOException, DataFormatException {
@@ -627,7 +633,13 @@ public class SignatureModel {
    * @param batchMessageFile   The file containing the messages to be verified.
    * @param batchSignatureFile The file containing the corresponding signatures to be verified.
    * @param progressUpdater    A consumer to update the progress of the batch verification process.
-   * @throws Exception If any error occurs during the verification process.
+   * @throws InvalidSignatureTypeException if the signature type is not supported.
+   * @throws NoSuchAlgorithmException      if the specified algorithm does not exist.
+   * @throws InvalidDigestException        if the specified digest algorithm is invalid.
+   * @throws NoSuchProviderException       if the specified provider is not available.
+   * @throws IOException                   if there is an I/O error reading from the
+   *                                       batchMessageFile.
+   * @throws DataFormatException           if the data format is incorrect for signing.
    */
   public void batchVerifySignatures(File batchMessageFile, File batchSignatureFile,
       DoubleConsumer progressUpdater)
@@ -746,9 +758,7 @@ public class SignatureModel {
             sigScheme.setDigest(getDigestTypeComparisonMode(keyIndexForKeySize));
             // Synchronous verification
             Pair<Boolean, Pair<Long, List<byte[]>>> result = verifySignature_ComparisonMode(
-                sigScheme,
-                publicKeyBatch.get(i + keyIndexForKeySize), messageLine,
-                signatureBytes);
+                sigScheme, messageLine, signatureBytes);
 
             long endTime = result.getValue().getKey();
 
@@ -782,22 +792,15 @@ public class SignatureModel {
    * between standard and provably secure modes for each key size in the comparison mode.
    *
    * @param sigScheme      The signature scheme used for verification.
-   * @param publicKey      The public key used for signature verification.
    * @param messageLine    The message to be verified against the signature.
    * @param signatureBytes The signature to be verified.
    * @return A Pair containing the result of verification and the relevant data (original message,
    * signature, and recovered message if applicable).
-   * @throws InvalidSignatureTypeException If the signature type is invalid.
-   * @throws DataFormatException           If the data format is incorrect.
-   * @throws NoSuchAlgorithmException      If the specified algorithm does not exist.
-   * @throws InvalidDigestException        If the specified digest algorithm is invalid.
-   * @throws NoSuchProviderException       If the specified provider is not available.
    */
   private Pair<Boolean, Pair<Long, List<byte[]>>> verifySignature_ComparisonMode(
       SigScheme sigScheme,
-      PublicKey publicKey,
       String messageLine, byte[] signatureBytes)
-      throws InvalidSignatureTypeException, DataFormatException, NoSuchAlgorithmException, InvalidDigestException, NoSuchProviderException {
+      throws DataFormatException {
 
     boolean verificationResult;
     byte[] recoveredMessage = new byte[]{};
@@ -1081,10 +1084,10 @@ public class SignatureModel {
   /**
    * Retrieves the number of different key sizes selected for generating/verifying signatures in the
    * cross-parameter comparison mode of benchmarking. This method is relevant in scenarios where the
-   * signature creation/verification process is tested across various key sizes, each potentially having
-   * different parameter settings (standard vs. provably secure). It provides the count of distinct
-   * key sizes that have been chosen for benchmarking, facilitating the process of comparing
-   * performance across these varied configurations.
+   * signature creation/verification process is tested across various key sizes, each potentially
+   * having different parameter settings (standard vs. provably secure). It provides the count of
+   * distinct key sizes that have been chosen for benchmarking, facilitating the process of
+   * comparing performance across these varied configurations.
    *
    * @return The number of different key sizes selected for generating signatures in the comparison
    * mode.
