@@ -383,6 +383,7 @@ public class SignatureModel {
   public void batchCreateSignatures(File batchMessageFile, DoubleConsumer progressUpdater)
       throws InvalidSignatureTypeException, NoSuchAlgorithmException, InvalidDigestException, NoSuchProviderException, IOException, DataFormatException {
     try (BufferedReader messageReader = new BufferedReader(new FileReader(batchMessageFile))) {
+      this.messageFile = batchMessageFile;
       // Initialize lists to store times and results (signatures and non-recoverable parts) for each key
       List<List<Long>> timesPerKey = new ArrayList<>();
       List<List<byte[]>> signaturesPerKey = new ArrayList<>();
@@ -452,6 +453,7 @@ public class SignatureModel {
   public void batchGenerateSignatures_ComparisonMode(File batchMessageFile,
       DoubleConsumer progressUpdater)
       throws InvalidSignatureTypeException, NoSuchAlgorithmException, InvalidDigestException, NoSuchProviderException, IOException, DataFormatException {
+    this.messageFile = batchMessageFile;
     this.numKeySizesForComparisonMode = privKeyBatch.size() / NUM_KEYS_PER_KEY_SIZE_COMPARISON_MODE;
     try (BufferedReader messageReader = new BufferedReader(new FileReader(batchMessageFile))) {
       // Initialize lists to store times and results (signatures and non-recoverable parts) for each key
@@ -630,6 +632,7 @@ public class SignatureModel {
   public void batchVerifySignatures(File batchMessageFile, File batchSignatureFile,
       DoubleConsumer progressUpdater)
       throws IOException, InvalidSignatureTypeException, DataFormatException, NoSuchAlgorithmException, InvalidDigestException, NoSuchProviderException {
+    this.messageFile = batchMessageFile;
     // Initialise lists to store times, verification results, signatures, and recovered messages
     List<List<Long>> timesPerKey = new ArrayList<>();
     List<List<Boolean>> verificationResultsPerKey = new ArrayList<>();
@@ -706,6 +709,7 @@ public class SignatureModel {
   public void batchVerifySignatures_ComparisonMode(File batchMessageFile, File batchSignatureFile,
       DoubleConsumer progressUpdater)
       throws IOException, InvalidSignatureTypeException, DataFormatException, NoSuchAlgorithmException, InvalidDigestException, NoSuchProviderException {
+    this.messageFile = batchMessageFile;
     this.numKeySizesForComparisonMode =
         publicKeyBatch.size() / NUM_KEYS_PER_KEY_SIZE_COMPARISON_MODE;
     // Initialise lists to store times, verification results, signatures, and recovered messages

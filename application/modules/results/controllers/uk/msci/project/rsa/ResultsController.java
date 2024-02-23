@@ -605,7 +605,7 @@ public class ResultsController {
       try {
         currentContext.exportSignatureBatch();
         uk.msci.project.rsa.DisplayUtility.showInfoAlert("Export",
-            "The signature batch was successfully exported. Warning: The Signature batch is inclusive signatures corresponding to all keys submitted for this session");
+            "The signature batch was successfully exported. Warning: The Signature batch is inclusive of signatures corresponding to all keys submitted for this session");
       } catch (IOException e) {
         e.printStackTrace();
       }
