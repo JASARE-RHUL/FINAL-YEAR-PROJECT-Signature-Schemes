@@ -872,4 +872,27 @@ public abstract class SignatureBaseController {
     importedKeyBatch = keyBatch;
 
   }
+
+  /**
+   * Sets the hash size in the signature model based on the hash output size specified by the user.
+   * This method is invoked when there is a need to update the model with the hash size, especially
+   * when using variable length hash functions in custom mode. It validates the hash output size
+   * entered by the user to ensure it is a non-negative integer and falls within the acceptable
+   * range. If the validation fails or if the hash output size field is not visible (not required
+   * for the selected hash function), the method will not update the model and will return false.
+   * This method is crucial for maintaining the consistency of the signature model state with the
+   * user's input on the view.
+   *
+   * @param viewOps The {@code ViewUpdate} operations that will update the view based on the
+   *                validation of the hash output size.
+   * @return Boolean value indicating if validation failed.
+   */
+  boolean setHashSizeInModel(ViewUpdate viewOps) {
+    if (!handleHashOutputSize(viewOps) && viewOps.getHashOutputSizeFieldVisibility()) {
+      return false;
+    } else if (viewOps.getHashOutputSizeFieldVisibility()) {
+      signatureModel.setHashSize((Integer.parseInt(hashOutputSize) + 7) / 8);
+    }
+    return true;
+  }
 }
