@@ -77,7 +77,7 @@ public class SignatureVerificationController extends SignatureBaseController {
 
       // Set up observers for benchmarking mode VerifyView
       verifyView.addBenchmarkingModeToggleObserver(
-          new SignatureBaseController.ApplicationModeChangeObserver(
+          new ApplicationModeChangeObserver(
               () -> showVerifyViewStandardMode(primaryStage),
               () -> showVerifyView(primaryStage)
           ));
@@ -118,7 +118,7 @@ public class SignatureVerificationController extends SignatureBaseController {
       verifyView = loader.getController();
       signatureModel = new SignatureModel();
       verifyView.addBenchmarkingModeToggleObserver(
-          new SignatureBaseController.ApplicationModeChangeObserver(
+          new ApplicationModeChangeObserver(
               () -> showVerifyViewStandardMode(primaryStage),
               () -> showVerifyView(primaryStage)
           ));
@@ -151,7 +151,7 @@ public class SignatureVerificationController extends SignatureBaseController {
         verifyView.setCancelImportKeyButtonVisibility(true);
       }
       verifyView.addBenchmarkingModeToggleObserver(
-          new SignatureBaseController.ApplicationModeChangeObserver(
+          new ApplicationModeChangeObserver(
               () -> showVerifyViewStandardMode(primaryStage),
               () -> showVerifyView(primaryStage)
           ));
@@ -321,15 +321,13 @@ public class SignatureVerificationController extends SignatureBaseController {
           return;
         }
       }
-      if (!handleHashOutputSize(viewOps) && verifyView.getHashOutputSizeFieldVisibility()) {
+      if (!setHashSizeInModel(new VerifyViewUpdateOperations(verifyView))) {
         return;
-      } else if (verifyView.getHashOutputSizeFieldVisibility()) {
-        signatureModel.setHashSize((Integer.parseInt(hashOutputSize) + 7) / 8);
       }
       if (signatureModel.getKey() == null
           || signatureModel.getSignatureType() == null
           || (verifyView.getSigText().equals("") && signature == null)
-          || verifyView.getSelectedHashFunction() == null) {
+          || signatureModel.getHashType() == null) {
         uk.msci.project.rsa.DisplayUtility.showErrorAlert(
             "You must provide an input for all required fields. Please try again.");
         return;
@@ -395,20 +393,22 @@ public class SignatureVerificationController extends SignatureBaseController {
             "The numbers of messages and signatures do not match. Please ensure they match for a valid set of verification pairings.");
         return;
       }
+      if (isCrossParameterBenchmarkingEnabled) {
+        handleBenchmarkingInitiationComparisonMode();
+        return;
+      }
+
       if ((signatureModel.getNumTrials() == 0)
           || signatureModel.getPublicKeyBatchLength() == 0
-          || verifyView.getSelectedSignatureScheme() == null || numSignatures == 0
-          || verifyView.getSelectedHashFunction() == null || (isCrossParameterBenchmarkingEnabled
-          && (verifyView.getCurrentStandardHashFunction()
-          .equals("") || verifyView.getCurrentProvableHashFunction().equals("")))) {
+          || signatureModel.getSignatureType() == null || numSignatures == 0
+          || signatureModel.getHashType() == null) {
         uk.msci.project.rsa.DisplayUtility.showErrorAlert(
             "You must provide an input for all fields. Please try again.");
         return;
       }
-      if (!handleHashOutputSize(viewOps) && verifyView.getHashOutputSizeFieldVisibility()) {
+
+      if (!setHashSizeInModel(new VerifyViewUpdateOperations(verifyView))) {
         return;
-      } else if (verifyView.getHashOutputSizeFieldVisibility()) {
-        signatureModel.setHashSize((Integer.parseInt(hashOutputSize) + 7) / 8);
       }
 
       // Show the progress dialog
@@ -445,9 +445,61 @@ public class SignatureVerificationController extends SignatureBaseController {
     }
   }
 
+  /**
+   * Handles the initiation of the benchmarking process in comparison mode. This method checks for
+   * required inputs specific to comparison mode benchmarking and initiates the benchmarking task.
+   * It sets up the progress dialog and begins the task for generating signatures across different
+   * key sizes and parameter settings, providing feedback on the progress to the user.
+   */
+  private void handleBenchmarkingInitiationComparisonMode() {
+
+    if ((signatureModel.getNumTrials() == 0)
+        || signatureModel.getPublicKeyBatchLength() == 0
+        || signatureModel.getSignatureType() == null || numSignatures == 0
+        || signatureModel.getCurrentFixedHashType_ComparisonMode() == null
+        || signatureModel.getCurrentProvableHashType_ComparisonMode() == null) {
+      uk.msci.project.rsa.DisplayUtility.showErrorAlert(
+          "You must provide an input for all fields. Please try again.");
+      return;
+    }
+
+    if (!setHashSizeInModel(new VerifyViewUpdateOperations(verifyView))) {
+      return;
+    }
+    // Show the progress dialog
+    Dialog<Void> progressDialog = uk.msci.project.rsa.DisplayUtility.showProgressDialog(
+        mainController.getPrimaryStage(), "Signature Generation");
+    ProgressBar progressBar = (ProgressBar) progressDialog.getDialogPane()
+        .lookup("#progressBar");
+    Label progressLabel = (Label) progressDialog.getDialogPane().lookup("#progressLabel");
+
+    Task<Void> benchmarkingTask = createBenchmarkingTaskComparisonMode(messageBatchFile, signatureBatchFile,
+        progressBar, progressLabel);
+    new Thread(benchmarkingTask).start();
+
+
+    progressDialog.getDialogPane().lookupButton(ButtonType.CANCEL)
+        .addEventFilter(ActionEvent.ACTION, e -> {
+          if (benchmarkingTask.isRunning()) {
+            benchmarkingTask.cancel();
+          }
+        });
+
+    benchmarkingTask.setOnSucceeded(e -> {
+      progressDialog.close();
+      handleBenchmarkingCompletionComparisonMode(); // Handle completion
+    });
+
+    benchmarkingTask.setOnFailed(e -> {
+      progressDialog.close();
+      uk.msci.project.rsa.DisplayUtility.showErrorAlert(
+          "Error: Benchmarking failed. Please try again.");
+
+    });
+  }
 
   /**
-   * Creates a benchmarking task for signature generation. This task is responsible for processing a
+   * Creates a benchmarking task for signature verification in comparison mode. This task is responsible for processing a
    * batch of messages, generating signatures, and updating the UI with progress.
    *
    * @param messageFile   The file containing the messages to be signed.
@@ -456,6 +508,52 @@ public class SignatureVerificationController extends SignatureBaseController {
    * @return The task to be executed for benchmarking.
    */
 
+  private Task<Void> createBenchmarkingTaskComparisonMode(File messageFile, File batchSignatureFile,
+      ProgressBar progressBar,
+      Label progressLabel) {
+    return new Task<>() {
+      @Override
+      protected Void call() throws Exception {
+        signatureModel.batchVerifySignatures_ComparisonMode(messageFile, batchSignatureFile,
+            progress -> Platform.runLater(() -> {
+              progressBar.setProgress(progress);
+              progressLabel.setText(String.format("%.0f%%", progress * 100));
+            }));
+        return null;
+      }
+    };
+
+  }
+
+  /**
+   * Handles the completion of the benchmarking task in comparison mode. This method is called when
+   * the benchmarking task successfully completes in the context of cross-parameter benchmarking. It
+   * resets the pre-loaded key parameters, initialises the ResultsController with the appropriate
+   * context, and displays the results view with the gathered benchmarking data. This method is
+   * pivotal in finalising the benchmarking process and presenting the results to the user.
+   */
+  private void handleBenchmarkingCompletionComparisonMode() {
+    resetPreLoadedKeyParams();
+    ResultsController resultsController = new ResultsController(mainController);
+    BenchmarkingContext context = new SignatureVerificationContext(signatureModel);
+    resultsController.setContext(context);
+
+    resultsController.showResultsView(mainController.getPrimaryStage(),
+        signatureModel.getClockTimesPerTrial(), signatureModel.getPublicKeyLengths(), true,
+        signatureModel.getNumKeySizesForComparisonMode());
+  }
+
+
+
+  /**
+   * Creates a benchmarking task for signature verification. This task is responsible for processing a
+   * batch of messages, generating signatures, and updating the UI with progress.
+   *
+   * @param messageFile   The file containing the messages to be signed.
+   * @param progressBar   UI component to display progress.
+   * @param progressLabel UI component to display progress text.
+   * @return The task to be executed for benchmarking.
+   */
   private Task<Void> createBenchmarkingTask(File messageFile, File batchSignatureFile,
       ProgressBar progressBar,
       Label progressLabel) {
@@ -605,39 +703,6 @@ public class SignatureVerificationController extends SignatureBaseController {
   @Override
   public void setMessage(byte[] message) {
     this.message = message;
-  }
-
-  /**
-   * Observer for application mode changes in the Signing view. This observer observes for changes
-   * in the toggle switch that switches between standard and benchmarking modes in the signature
-   * creation view. When the mode changes, it sets up the corresponding view and clears any previous
-   * state such as selected messages or keys.
-   */
-  class ApplicationModeChangeObserver implements ChangeListener<Boolean> {
-
-    @Override
-    public void changed(ObservableValue<? extends Boolean> observableValue, Boolean oldValue,
-        Boolean newValue) {
-      // Checks if the new value of the toggle is TRUE (e.g., switched on)
-      if (Boolean.TRUE.equals(newValue)) {
-        // Further checks if the old value was FALSE, indicating a change from off to on
-        if (Boolean.FALSE.equals(oldValue)) {
-          // If the toggle is switched on, the application initializes the sign view for benchmarking mode
-          showVerifyView(mainController.getPrimaryStage());
-          // Clears any existing message data, as the mode change might require different data handling
-          message = null;
-        }
-      } else {
-        // If the new value is not TRUE (i.e., the toggle is switched off), checks if it was previously on
-        if (Boolean.TRUE.equals(oldValue)) {
-          // Initializes the sign view for the standard mode, as the toggle is switched off
-          showVerifyViewStandardMode(mainController.getPrimaryStage());
-          // Clears any existing batch file data, as it's not needed in standard mode
-          messageBatchFile = null;
-        }
-      }
-    }
-
   }
 
 
