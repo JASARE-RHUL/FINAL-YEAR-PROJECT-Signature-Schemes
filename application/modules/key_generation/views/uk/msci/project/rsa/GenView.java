@@ -185,6 +185,24 @@ public class GenView {
   private ToggleGroup crossBenchMarkingToggleGroup;
 
   /**
+   * Radio button for opting in to generation of a key arbitrary e.
+   */
+  @FXML
+  private RadioButton noSmallEradio;
+
+  /**
+   * Radio button for opting in to generation of a key with a small e.
+   */
+  @FXML
+  private RadioButton yesSmallEradio;
+
+
+  /**
+   * Toggle group for small e options.
+   */
+  private ToggleGroup smallEToggleGroup;
+
+  /**
    * Initialises the domain object class. This method is automatically called after the FXML file
    * has been loaded. It sets up the toggle group for cross-benchmarking options.
    */
@@ -193,7 +211,32 @@ public class GenView {
     noCrossParameterRadio.setToggleGroup(crossBenchMarkingToggleGroup);
     yesCrossParameterRadio.setToggleGroup(crossBenchMarkingToggleGroup);
 
+    smallEToggleGroup = new ToggleGroup();
+    noSmallEradio.setToggleGroup(smallEToggleGroup);
+    yesSmallEradio.setToggleGroup(smallEToggleGroup);
+
   }
+
+  /**
+   * Registers an observer for when the small e toggle changes value.
+   *
+   * @param observer The observer to be registered.
+   */
+  public void addSmallEToggleGroupChangeObserver(ChangeListener<Toggle> observer) {
+    smallEToggleGroup.selectedToggleProperty().addListener(observer);
+  }
+
+
+  /**
+   * Gets the selected option for whether to use a small public exponent in the generation of kay.
+   *
+   * @return String representing the selected cross-parameter benchmarking option.
+   */
+  public String getSmallEToggle() {
+    RadioButton selectedButton = (RadioButton) smallEToggleGroup.getSelectedToggle();
+    return selectedButton != null ? selectedButton.getText() : "";
+  }
+
 
   /**
    * Gets the selected option for cross-parameter benchmarking.
@@ -208,7 +251,7 @@ public class GenView {
   /**
    * Registers an observer for when the cross-benchmarking toggle changes value.
    *
-   * @param observer The observe to be registered.
+   * @param observer The observer to be registered.
    */
   public void addCrossBenchMarkingToggleGroupChangeObserver(ChangeListener<Toggle> observer) {
     crossBenchMarkingToggleGroup.selectedToggleProperty().addListener(observer);

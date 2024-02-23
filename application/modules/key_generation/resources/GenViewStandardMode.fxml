@@ -54,9 +54,15 @@
       </VBox>
 
 
+      <HBox spacing="10" alignment="CENTER">
+        <Label text="Use small e in generation of key:"
+          styleClass="bold-label"/>
+        <RadioButton fx:id="noSmallEradio" text="No" selected="true"/>
+        <RadioButton fx:id="yesSmallEradio" text="Yes"/>
+      </HBox>
 
       <!-- Generate Button -->
-      <Button text="Generate Keys" fx:id="generateButton" minWidth="200"/>
+      <Button text="Generate Key" fx:id="generateButton" minWidth="200"/>
 
 
       <!-- Success and Failure Pop-ups -->

@@ -79,6 +79,13 @@
             style="-fx-font-weight: bold; -fx-text-fill: red;" wrapText="true" minHeight="40"
             prefHeight="60"/>
         </VBox>
+
+        <HBox spacing="10" alignment="CENTER" managed="false" visible="false">
+          <Label text="Use Small e in generation of key:"
+            styleClass="bold-label"/>
+          <RadioButton fx:id="noSmallEradio" text="No" selected="true"/>
+          <RadioButton fx:id="yesSmallEradio" text="Yes"/>
+        </HBox>
       </VBox>
     </ScrollPane>
   </center>
