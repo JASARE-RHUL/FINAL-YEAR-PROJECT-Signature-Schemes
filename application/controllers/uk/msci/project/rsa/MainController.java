@@ -122,25 +122,35 @@ public class MainController {
 
   /**
    * Observes "Sign Document" button click. Instantiates the SignatureCreationController and
-   * displays the document signing view.
+   * displays the document signing view. Depending on whether a key has been pre-loaded for standard
+   * mode, the non benchmarking signing view may be launched.
    */
   class SignDocumentObserver implements EventHandler<ActionEvent> {
 
     @Override
     public void handle(ActionEvent event) {
-      signatureCreationController.showSignView(primaryStage);
+      if (signatureCreationController.getIsSingleKeyProvablySecure()) {
+        signatureCreationController.showSignViewStandardMode(primaryStage);
+      } else {
+        signatureCreationController.showSignView(primaryStage);
+      }
     }
   }
 
   /**
    * Observes "verify signature" button click. Instantiates the SignatureVerificationController and
-   * displays the signature verification view.
+   * displays the signature verification view. Depending on whether a key has been pre-loaded for
+   * standard  mode, the non benchmarking verification view may be launched.
    */
   class verifySignatureObserver implements EventHandler<ActionEvent> {
 
     @Override
     public void handle(ActionEvent event) {
-      signatureVerificationController.showVerifyView(primaryStage);
+      if (signatureVerificationController.getIsSingleKeyProvablySecure()) {
+        signatureVerificationController.showVerifyViewStandardMode(primaryStage);
+      } else {
+        signatureVerificationController.showVerifyView(primaryStage);
+      }
     }
   }
 
@@ -178,8 +188,8 @@ public class MainController {
   /**
    * Sets a batch of private keys for signing operations. This method is used to provide the
    * SignatureCreationController with a batch of provably secure generated (small e ) private keys
-   * to allow for later instantiation of  a signature scheme with provably secure parameters. The keys
-   * can be set in comparison mode for production of results that enables provably secure
+   * to allow for later instantiation of  a signature scheme with provably secure parameters. The
+   * keys can be set in comparison mode for production of results that enables provably secure
    * instantiations of scheme to be compared with standard instantiations.
    *
    * @param privateKeyBatch        The batch of private keys to be used for signing.
@@ -194,8 +204,8 @@ public class MainController {
   /**
    * Sets a batch of public keys for verification operations. This method is used to provide the
    * signatureVerificationController with a batch of provably secure generated (small e ) public
-   * keys to allow for later instantiation of a signature scheme with provably secure parameters. The
-   * keys can be set in comparison mode for production of results that enables provably secure
+   * keys to allow for later instantiation of a signature scheme with provably secure parameters.
+   * The keys can be set in comparison mode for production of results that enables provably secure
    * instantiations of scheme to be compared with standard instantiations.
    *
    * @param publicKeyBatch         The batch of public keys to be used for signature verification.
@@ -206,6 +216,21 @@ public class MainController {
       boolean isKeyForComparisonMode) {
     signatureVerificationController.importKeyFromKeyGeneration(publicKeyBatch,
         isKeyForComparisonMode);
+  }
+
+
+  /**
+   * Sets the private/public key for signature verification/creation operations. This method is used
+   * to provide the signature controller with a provably secure generated (small e ) key pairing to
+   * allow for later instantiation of a signature scheme with provably secure parameters. The key
+   * pairing can be set in non-benchmarking mode.
+   *
+   * @param privateKey The private key to be used for signature creation.
+   * @param publicKey  The public key to be used for signature verification.
+   */
+  public void setProvableKeyForSignatureProcesses(String privateKey, String publicKey) {
+    signatureCreationController.importSingleKeyFromKeyGeneration(privateKey);
+    signatureVerificationController.importSingleKeyFromKeyGeneration(publicKey);
   }
 
 
