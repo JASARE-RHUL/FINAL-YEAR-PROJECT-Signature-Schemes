@@ -77,7 +77,7 @@
 }
 
 .jfx-tab-pane .tab {
-  -fx-pref-height: 120px; /* Preferred height for tabs */
+  -fx-pref-height: 145px; /* Preferred height for tabs */
   -fx-text-fill: black; /* Text color inside tabs */
   -fx-rotate: 90; /* Rotates the tab labels by 90 degrees */
 

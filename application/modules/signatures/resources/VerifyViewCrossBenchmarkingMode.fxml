@@ -46,7 +46,7 @@
       </HBox>
       <HBox fx:id="crossParameterHbox" alignment="CENTER_LEFT" spacing="10">
         <Label text="Cross-Parameter Benchmarking Mode:" styleClass="bold-label"/>
-        <ToggleSwitch fx:id="crossParameterBenchmarkingModeToggle" selected="false"/>
+        <ToggleSwitch fx:id="crossParameterBenchmarkingModeToggle" selected="true"/>
       </HBox>
 
       <Separator/>
@@ -111,6 +111,32 @@
             </ComboBox>
           </HBox>
 
+          <HBox spacing="10" fx:id="standardHashChoiceComparisonModeHbox">
+            <Label text="Hash Function for instantiations with Standard parameters:" styleClass="bold-label"/>
+            <ComboBox fx:id="fixedHashFunctionComboBox" prefWidth="200">
+              <items>
+                <FXCollections fx:factory="observableArrayList">
+                  <String fx:value="SHA-256"/>
+                  <String fx:value="SHA-512"/>
+                </FXCollections>
+              </items>
+            </ComboBox>
+          </HBox>
+
+          <HBox spacing="10" fx:id="provableHashChoiceComparisonModeHbox">
+            <Label text="Hash Function for instantiations with Provable parameters:" styleClass="bold-label"/>
+            <ComboBox fx:id="provableHashFunctionComboBox" prefWidth="200">
+              <items>
+                <FXCollections fx:factory="observableArrayList">
+                  <String fx:value="SHA-256 with MGF1"/>
+                  <String fx:value="SHA-512 with MGF1"/>
+                  <String fx:value="SHAKE-128"/>
+                  <String fx:value="SHAKE-256"/>
+                </FXCollections>
+              </items>
+            </ComboBox>
+          </HBox>
+
           <HBox fx:id="provableParamsHbox" spacing="6" managed="false" visible="false">
             <Label text="Instantiate Scheme with Provably Secure Parameters:" styleClass="bold-label"/>
             <RadioButton fx:id="noCrossParameterRadio" text="No"/>
@@ -119,7 +145,7 @@
 
 
           <!-- Parameter Choice Radio Buttons -->
-          <HBox fx:id="hashFunctionSizeHbox" spacing="10">
+          <HBox fx:id="hashFunctionSizeHbox" spacing="10" managed="false" visible="false">
             <Label text="Hash Function Size:" styleClass="bold-label"/>
             <RadioButton fx:id="standardParametersRadio" text="Standard" selected="true"/>
             <RadioButton fx:id="provablySecureParametersRadio" text="Provably Secure"/>
@@ -127,7 +153,7 @@
           </HBox>
 
           <!-- Hash function Dropdown -->
-          <HBox spacing="10" fx:id="generalHashFunctionHbox">
+          <HBox spacing="10" fx:id="generalHashFunctionHbox" managed="false" visible="false">
             <Label text="Hash Function:" styleClass="bold-label"/>
             <ComboBox fx:id="hashFunctionDropdown" prefWidth="200">
               <items>

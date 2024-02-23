@@ -140,7 +140,7 @@ public class VerifyViewUpdateOperations implements ViewUpdate {
   }
 
   /**
-   * Retrieves the sign view associated with these operations.
+   * Retrieves the verification view associated with these operations.
    *
    * @return The associated {@code VerifyView}.
    */
@@ -161,7 +161,7 @@ public class VerifyViewUpdateOperations implements ViewUpdate {
   }
 
   /**
-   * Updates the image next to the message batch file input within the sign view, typically with a
+   * Updates the image next to the message batch file input within the verification view, typically with a
    * checkmark to indicate that the text file has been successfully loaded.
    */
   @Override
@@ -332,6 +332,139 @@ public class VerifyViewUpdateOperations implements ViewUpdate {
   @Override
   public boolean getHashOutputSizeFieldVisibility() {
     return verifyView.getHashOutputSizeFieldVisibility();
+  }
+
+  /**
+   * Checks if the Benchmarking Mode is enabled in the verification view.
+   *
+   * @return true if Benchmarking Mode is enabled, false otherwise.
+   */
+  @Override
+  public boolean isBenchmarkingModeEnabled() {
+    return verifyView.isBenchmarkingModeEnabled();
+  }
+
+  /**
+   * Sets the visibility of the HBox containing provable parameter options in the verification view.
+   *
+   * @param visible true to make the HBox visible, false to hide it.
+   */
+  @Override
+  public void setProvableParamsHboxVisibility(boolean visible) {
+    verifyView.setProvableParamsHboxVisibility(visible);
+  }
+
+  /**
+   * Sets the visibility of the HBox for Cross-Parameter settings in the verification view.
+   *
+   * @param visible true to make the HBox visible, false to hide it.
+   */
+  @Override
+  public void setCrossParameterHboxVisibility(boolean visible) {
+    verifyView.setCrossParameterHboxVisibility(visible);
+  }
+
+  /**
+   * Sets the visibility of the radio button for selecting standard parameters in the verification view.
+   *
+   * @param visible true to make the radio button visible, false to hide it.
+   */
+  @Override
+  public void setStandardParametersRadioVisibility(boolean visible) {
+    verifyView.setStandardParametersRadioVisibility(visible);
+  }
+
+  /**
+   * Sets the visibility of the radio button for selecting custom parameters in the verification view.
+   *
+   * @param visible true to make the radio button visible, false to hide it.
+   */
+  @Override
+  public void setCustomParametersRadioVisibility(boolean visible) {
+    verifyView.setCustomParametersRadioVisibility(visible);
+  }
+
+  /**
+   * Sets the selected state of the radio button for provably secure parameters in the verification view.
+   *
+   * @param visible true to select the radio button, false otherwise.
+   */
+  @Override
+  public void setProvablySecureParametersRadioSelected(boolean visible) {
+    verifyView.setProvablySecureParametersRadioSelected(visible);
+  }
+
+  /**
+   * Sets the selected state of the toggle for Cross-Parameter settings in the verification view.
+   *
+   * @param isSelected true to select the toggle, false otherwise.
+   */
+  @Override
+  public void setSelectedCrossParameterToggleObserver(boolean isSelected) {
+    verifyView.setSelectedCrossParameterToggleObserver(isSelected);
+  }
+
+  /**
+   * Sets the visibility of the HBox for hash function size settings in the verification view.
+   *
+   * @param visible true to make the HBox visible, false to hide it.
+   */
+  @Override
+  public void setHashFunctionSizeHboxVisibility(boolean visible) {
+    verifyView.setHashFunctionSizeHboxVisibility(visible);
+  }
+
+  /**
+   * Sets the visibility of the HBox for choosing hash functions under standard parameters in the
+   * verification view.
+   *
+   * @param visible true to make the HBox visible, false to hide it.
+   */
+  @Override
+  public void setStandardHashChoiceComparisonModeHboxVisibility(boolean visible) {
+    verifyView.setStandardHashChoiceComparisonModeHboxVisibility(visible);
+  }
+
+  /**
+   * Sets the visibility of the HBox for choosing hash functions under provably secure parameters in
+   * the verification view.
+   *
+   * @param visible true to make the HBox visible, false to hide it.
+   */
+  @Override
+  public void setProvableHashChoiceComparisonModeHboxVisibility(boolean visible) {
+    verifyView.setProvableHashChoiceComparisonModeHboxVisibility(visible);
+  }
+
+  /**
+   * Sets the visibility of the HBox for general hash function selection in the verification view.
+   *
+   * @param visible true to make the HBox visible, false to hide it.
+   */
+  @Override
+  public void setGeneralHashFunctionHboxVisibility(boolean visible) {
+    verifyView.setGeneralHashFunctionHboxVisibility(visible);
+  }
+
+  /**
+   * Gets the currently selected provable hash function from the verification view.
+   *
+   * @return The name of the selected provable hash function.
+   */
+  @Override
+  public String getCurrentProvableHashFunction() {
+    return verifyView.getCurrentProvableHashFunction();
+  }
+
+  /**
+   * Gets the currently selected standard hash function from the verification view.
+   *
+   * @return The name of the selected standard hash function.
+   */
+  @Override
+  public String getCurrentStandardHashFunction() {
+
+    return verifyView.getCurrentStandardHashFunction();
   }
 
 

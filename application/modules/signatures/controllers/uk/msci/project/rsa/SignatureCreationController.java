@@ -3,9 +3,8 @@ package uk.msci.project.rsa;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
+import java.util.List;
 import javafx.application.Platform;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -54,12 +53,19 @@ public class SignatureCreationController extends SignatureBaseController {
   }
 
   /**
-   * Initialises and displays the SignView stage. It loads the FXML for the SignView and sets up the
-   * scene and the stage.
+   * Displays the SignView interface. This method decides which version of the SignView to show
+   * based on the current benchmarking and cross-parameter modes. If cross-parameter benchmarking is
+   * enabled, it calls {@code showSignViewCrossBenchmarkingMode}. Otherwise, it loads the standard
+   * SignView. This method is responsible for setting up the SignView with the necessary controllers
+   * and observers.
    *
-   * @param primaryStage The primary stage for this application.
+   * @param primaryStage The primary stage of the application where the view will be displayed.
    */
   public void showSignView(Stage primaryStage) {
+    if (isKeyForComparisonMode && isCrossParameterBenchmarkingEnabled) {
+      showSignViewCrossBenchmarkingMode(primaryStage);
+      return;
+    }
     try {
       FXMLLoader loader = new FXMLLoader(getClass().getResource("/SignView.fxml"));
       Parent root = loader.load();
@@ -71,7 +77,20 @@ public class SignatureCreationController extends SignatureBaseController {
           () -> showSignViewStandardMode(primaryStage),
           () -> showSignView(primaryStage)
       ));
+      signView.addCrossParameterToggleObserver(new CrossBenchmarkingModeChangeObserver(
+          () -> showSignViewCrossBenchmarkingMode(primaryStage),
+          () -> showSignView(primaryStage), new SignViewUpdateOperations(signView)));
       setupSignObserversBenchmarking(primaryStage);
+      if (isKeyProvablySecure && this.importedKeyBatch != null
+          && !isCrossParameterBenchmarkingEnabled) {
+        updateWithImportedKey(new SignViewUpdateOperations(signView));
+        signView.setImportKeyBatchButtonVisibility(false);
+        signView.setCancelImportKeyButtonVisibility(true);
+        signView.setProvableParamsHboxVisibility(true);
+        signView.setProvablySecureParametersRadioSelected(true);
+        signView.setCustomParametersRadioVisibility(false);
+        signView.setStandardParametersRadioVisibility(false);
+      }
 
       mainController.setScene(root);
 
@@ -80,6 +99,13 @@ public class SignatureCreationController extends SignatureBaseController {
     }
   }
 
+  /**
+   * Displays the SignView in standard mode. This method loads the SignView for the standard
+   * (non-benchmarking) mode. It initialises the view, sets up the required observers for handling
+   * events like text and key import, and displays the view on the provided stage.
+   *
+   * @param primaryStage The primary stage of the application where the view will be displayed.
+   */
   public void showSignViewStandardMode(Stage primaryStage) {
     try {
       FXMLLoader loader = new FXMLLoader(getClass().getResource("/SignViewStandardMode.fxml"));
@@ -92,7 +118,44 @@ public class SignatureCreationController extends SignatureBaseController {
           () -> showSignViewStandardMode(primaryStage),
           () -> showSignView(primaryStage)
       ));
+
       setupSignObservers(primaryStage);
+
+      mainController.setScene(root);
+
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+  }
+
+  /**
+   * Displays the SignView in cross-parameter benchmarking mode. This method loads the SignView
+   * specifically configured for cross-parameter benchmarking. It initialises the view, sets up the
+   * necessary observers for handling key and message batch imports, and displays the view on the
+   * provided stage.
+   *
+   * @param primaryStage The primary stage of the application where the view will be displayed.
+   */
+  public void showSignViewCrossBenchmarkingMode(Stage primaryStage) {
+    try {
+      FXMLLoader loader = new FXMLLoader(
+          getClass().getResource("/SignViewCrossBenchmarkingMode.fxml"));
+      Parent root = loader.load();
+      signView = loader.getController();
+      this.signatureModel = new SignatureModel();
+      updateWithImportedKey(new SignViewUpdateOperations(signView));
+      if (isCrossParameterBenchmarkingEnabled && this.importedKeyBatch != null) {
+        signView.setImportKeyBatchButtonVisibility(false);
+        signView.setCancelImportKeyButtonVisibility(true);
+      }
+      signView.addBenchmarkingModeToggleObserver(new ApplicationModeChangeObserver(
+          () -> showSignViewStandardMode(primaryStage),
+          () -> showSignView(primaryStage)
+      ));
+      signView.addCrossParameterToggleObserver(new CrossBenchmarkingModeChangeObserver(
+          () -> showSignViewCrossBenchmarkingMode(primaryStage),
+          () -> showSignView(primaryStage), new SignViewUpdateOperations(signView)));
+      setupSignObserversCrossBenchmarking(primaryStage);
 
       mainController.setScene(root);
 
@@ -149,6 +212,36 @@ public class SignatureCreationController extends SignatureBaseController {
     signView.addSigBenchmarkButtonObserver(
         new SignatureBenchmarkObserver(new SignViewUpdateOperations(signView)));
     signView.addBackToMainMenuObserver(new BackToMainMenuObserver(signView));
+    signView.addProvableSchemeChangeObserver(
+        new ProvableParamsChangeObserver(new SignViewUpdateOperations(signView)));
+  }
+
+  /**
+   * Sets up observers for the SignView controls in cross-parameter benchmarking mode. This method
+   * adds observers to handle events such as text batch import, key batch import, signature scheme
+   * changes, benchmarking initiation, and navigation back to the main menu. The observers are
+   * essential for capturing user interactions and updating the model and view accordingly in the
+   * context of cross-parameter benchmarking.
+   *
+   * @param primaryStage The stage that observers will use for file dialogs.
+   */
+  private void setupSignObserversCrossBenchmarking(Stage primaryStage) {
+    signView.addImportTextBatchBtnObserver(
+        new ImportObserver(primaryStage, new SignViewUpdateOperations(signView),
+            this::handleMessageBatch, "*.txt"));
+    signView.addImportKeyBatchButtonObserver(
+        new ImportObserver(primaryStage, new SignViewUpdateOperations(signView),
+            this::handleKeyBatch, "*.rsa"));
+    signView.addCancelImportKeyButtonObserver(
+        new CancelImportKeyBatchButtonObserver(new SignViewUpdateOperations(signView)));
+    signView.addSignatureSchemeChangeObserver(new SignatureSchemeChangeObserver());
+    signView.addSigBenchmarkButtonObserver(
+        new SignatureBenchmarkObserver(new SignViewUpdateOperations(signView)));
+    signView.addStandardHashFunctionChangeObserver(new StandardHashFunctionChangeObserver());
+    signView.addProvableHashFunctionChangeObserver(new ProvableHashFunctionChangeObserver());
+    signView.addBackToMainMenuObserver(new BackToMainMenuObserver(signView));
+
+
   }
 
   /**
@@ -183,17 +276,15 @@ public class SignatureCreationController extends SignatureBaseController {
       hashOutputSize = signView.getHashOutputSize();
       if ((signView.getTextInput().equals("") && message == null)
           || signatureModel.getKey() == null
-          || signView.getSelectedSignatureScheme() == null
-          || signView.getSelectedHashFunction() == null) {
+          || signatureModel.getSignatureType() == null
+          || signatureModel.getHashType() == null) {
         uk.msci.project.rsa.DisplayUtility.showErrorAlert(
             "You must provide an input for all fields. Please try again.");
         return;
       }
 
-      if (!handleHashOutputSize(viewOps) && signView.getHashOutputSizeFieldVisibility()) {
+      if (!setHashSizeInModel(new SignViewUpdateOperations(signView))) {
         return;
-      } else if (signView.getHashOutputSizeFieldVisibility()) {
-        signatureModel.setHashSize((Integer.parseInt(hashOutputSize) + 7) / 8);
       }
 
       try {
@@ -227,8 +318,11 @@ public class SignatureCreationController extends SignatureBaseController {
   }
 
   /**
-   * Observer for initiating the signature generation benchmark. Handles the event triggered for
-   * starting the benchmarking process, sets up the task, and shows the progress on the UI.
+   * Observer for initiating the signature generation benchmark. This class handles the event
+   * triggered for starting the benchmarking process. Depending on the benchmarking mode, it either
+   * initiates a standard benchmarking task or calls 'handleBenchmarkingInitiationComparisonMode'
+   * for comparison mode benchmarking. It ensures the necessary preconditions are met, sets up the
+   * task, and manages the progress display on the UI.
    */
   class SignatureBenchmarkObserver implements EventHandler<ActionEvent> {
 
@@ -242,18 +336,22 @@ public class SignatureCreationController extends SignatureBaseController {
     public void handle(ActionEvent event) {
       hashOutputSize = signView.getHashOutputSize();
 
+      if (isCrossParameterBenchmarkingEnabled) {
+        handleBenchmarkingInitiationComparisonMode();
+        return;
+      }
+
       if ((signatureModel.getNumTrials() == 0)
           || signatureModel.getPrivateKeyBatchLength() == 0
-          || signView.getSelectedSignatureScheme() == null
-          || signView.getSelectedHashFunction() == null) {
+          || signatureModel.getSignatureType() == null
+          || signatureModel.getHashType() == null) {
         uk.msci.project.rsa.DisplayUtility.showErrorAlert(
             "You must provide an input for all fields. Please try again.");
         return;
       }
-      if (!handleHashOutputSize(viewOps) && signView.getHashOutputSizeFieldVisibility()) {
+
+      if (!setHashSizeInModel(new SignViewUpdateOperations(signView))) {
         return;
-      } else if (signView.getHashOutputSizeFieldVisibility()) {
-        signatureModel.setHashSize((Integer.parseInt(hashOutputSize) + 7) / 8);
       }
 
       // Show the progress dialog
@@ -290,6 +388,59 @@ public class SignatureCreationController extends SignatureBaseController {
 
   }
 
+
+  /**
+   * Handles the initiation of the benchmarking process in comparison mode. This method checks for
+   * required inputs specific to comparison mode benchmarking and initiates the benchmarking task.
+   * It sets up the progress dialog and begins the task for generating signatures across different
+   * key sizes and parameter settings, providing feedback on the progress to the user.
+   */
+  private void handleBenchmarkingInitiationComparisonMode() {
+
+    if ((signatureModel.getNumTrials() == 0)
+        || signatureModel.getPrivateKeyBatchLength() == 0
+        || signatureModel.getSignatureType() == null
+        || signatureModel.getCurrentFixedHashType_ComparisonMode() == null
+        || signatureModel.getCurrentProvableHashType_ComparisonMode() == null) {
+      uk.msci.project.rsa.DisplayUtility.showErrorAlert(
+          "You must provide an input for all fields. Please try again.");
+      return;
+    }
+
+    if (!setHashSizeInModel(new SignViewUpdateOperations(signView))) {
+      return;
+    }
+    // Show the progress dialog
+    Dialog<Void> progressDialog = uk.msci.project.rsa.DisplayUtility.showProgressDialog(
+        mainController.getPrimaryStage(), "Signature Generation");
+    ProgressBar progressBar = (ProgressBar) progressDialog.getDialogPane()
+        .lookup("#progressBar");
+    Label progressLabel = (Label) progressDialog.getDialogPane().lookup("#progressLabel");
+
+    Task<Void> benchmarkingTask = createBenchmarkingTaskComparisonMode(messageBatchFile,
+        progressBar, progressLabel);
+    new Thread(benchmarkingTask).start();
+
+    progressDialog.getDialogPane().lookupButton(ButtonType.CANCEL)
+        .addEventFilter(ActionEvent.ACTION, e -> {
+          if (benchmarkingTask.isRunning()) {
+            benchmarkingTask.cancel();
+          }
+        });
+
+    benchmarkingTask.setOnSucceeded(e -> {
+      progressDialog.close();
+      handleBenchmarkingCompletionComparisonMode(); // Handle completion
+    });
+
+    benchmarkingTask.setOnFailed(e -> {
+      progressDialog.close();
+      uk.msci.project.rsa.DisplayUtility.showErrorAlert(
+          "Error: Benchmarking failed. Please try again.");
+
+    });
+  }
+
   /**
    * Creates a benchmarking task for signature generation. This task is responsible for processing a
    * batch of messages, generating signatures, and updating the UI with progress.
@@ -299,7 +450,6 @@ public class SignatureCreationController extends SignatureBaseController {
    * @param progressLabel UI component to display progress text.
    * @return The task to be executed for benchmarking.
    */
-
   private Task<Void> createBenchmarkingTask(File messageFile, ProgressBar progressBar,
       Label progressLabel) {
     return new Task<>() {
@@ -316,17 +466,62 @@ public class SignatureCreationController extends SignatureBaseController {
   }
 
   /**
+   * Creates a benchmarking task for signature generation in comparison mode. This task is
+   * responsible for processing a batch of messages, generating signatures, and updating the UI with
+   * progress.
+   *
+   * @param messageFile   The file containing the messages to be signed.
+   * @param progressBar   UI component to display progress.
+   * @param progressLabel UI component to display progress text.
+   * @return The task to be executed for benchmarking.
+   */
+  private Task<Void> createBenchmarkingTaskComparisonMode(File messageFile, ProgressBar progressBar,
+      Label progressLabel) {
+    return new Task<>() {
+      @Override
+      protected Void call() throws Exception {
+        signatureModel.batchGenerateSignatures_ComparisonMode(messageFile,
+            progress -> Platform.runLater(() -> {
+              progressBar.setProgress(progress);
+              progressLabel.setText(String.format("%.0f%%", progress * 100));
+            }));
+        return null;
+      }
+    };
+
+  }
+
+  /**
    * Handles the completion of the benchmarking task for signature creation. This method is called
    * when the benchmarking task successfully completes. It initialises and sets up the
    * ResultsController with the appropriate context (SignatureCreationContext) and displays the
    * results view with the gathered benchmarking data.
    */
   private void handleBenchmarkingCompletion() {
+    resetPreLoadedKeyParams();
     ResultsController resultsController = new ResultsController(mainController);
     BenchmarkingContext context = new SignatureCreationContext(signatureModel);
     resultsController.setContext(context);
     resultsController.showResultsView(mainController.getPrimaryStage(),
         signatureModel.getClockTimesPerTrial(), signatureModel.getPrivKeyLengths());
+  }
+
+  /**
+   * Handles the completion of the benchmarking task in comparison mode. This method is called when
+   * the benchmarking task successfully completes in the context of cross-parameter benchmarking. It
+   * resets the pre-loaded key parameters, initialises the ResultsController with the appropriate
+   * context, and displays the results view with the gathered benchmarking data. This method is
+   * pivotal in finalising the benchmarking process and presenting the results to the user.
+   */
+  private void handleBenchmarkingCompletionComparisonMode() {
+    resetPreLoadedKeyParams();
+    ResultsController resultsController = new ResultsController(mainController);
+    BenchmarkingContext context = new SignatureCreationContext(signatureModel);
+    resultsController.setContext(context);
+
+    resultsController.showResultsView(mainController.getPrimaryStage(),
+        signatureModel.getClockTimesPerTrial(), signatureModel.getPrivKeyLengths(), true,
+        signatureModel.getNumKeySizesForComparisonMode());
   }
 
 
@@ -444,8 +639,5 @@ public class SignatureCreationController extends SignatureBaseController {
   public void setMessage(byte[] message) {
     this.message = message;
   }
-
-
-
 
 }

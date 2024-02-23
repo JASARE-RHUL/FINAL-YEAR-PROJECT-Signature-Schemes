@@ -11,15 +11,10 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.function.DoubleConsumer;
 import java.util.stream.Collectors;
 import java.util.zip.DataFormatException;
 import javafx.util.Pair;
-import net.sf.saxon.expr.instruct.Message;
 import uk.msci.project.rsa.exceptions.InvalidDigestException;
 import uk.msci.project.rsa.exceptions.InvalidSignatureTypeException;
 
@@ -111,6 +106,52 @@ public class SignatureModel {
    * The message file to be processed during benchmarking.
    */
   private File messageFile;
+
+  /**
+   * The {@code DigestType} representing the hash type used under standard parameters in the
+   * cross-parameter benchmarking/comparison mode.
+   */
+  private DigestType currentFixedHashType_ComparisonMode;
+
+  /**
+   * The {@code DigestType} representing the hash type used under provably secure parameters in the
+   * cross-parameter benchmarking/comparison mode.
+   */
+  private DigestType currentProvableHashType_ComparisonMode;
+
+  /**
+   * The number of different key sizes that will be used for generating signatures in the comparison
+   * mode. This field indicates a number of key sizes selected by the user to be tested during
+   * benchmarking.
+   */
+  private int numKeySizesForComparisonMode;
+
+  /**
+   * The number of keys to be generated per key size in the comparison mode (2 representing the key
+   * size with standard parameters and 2 representing provably secure parameters eg., 2 vs 3 prime
+   * factors for both scenarios)
+   */
+  private static final int NUM_KEYS_PER_KEY_SIZE_COMPARISON_MODE = 4;
+
+  /**
+   * Header text for the first row in comparison mode.
+   */
+  private static final String FIRST_ROW_COMPARISON_MODE = "Standard Parameters (2 Primes):";
+
+  /**
+   * Header text for the second row in comparison mode.
+   */
+  private static final String SECOND_ROW_COMPARISON_MODE = "Standard Parameters (3 Primes):";
+
+  /**
+   * Header text for the third row in comparison mode.
+   */
+  private static final String THIRD_ROW_COMPARISON_MODE = "Provable Parameters (2 Primes):";
+
+  /**
+   * Header text for the fourth row in comparison mode.
+   */
+  private static final String FOURTH_ROW_COMPARISON_MODE = "Provable Parameters (3 Primes):";
 
   /**
    * Constructs a new {@code SignatureModel} without requiring an initial key representative of the
@@ -357,12 +398,18 @@ public class SignatureModel {
    *
    * @param batchMessageFile The file containing the messages to be signed in the batch process.
    * @param progressUpdater  A consumer to update the progress of the batch signing process.
-   * @throws InterruptedException If the thread executing the batch creation is interrupted.
+   * @throws InvalidSignatureTypeException if the signature type is not supported.
+   * @throws NoSuchAlgorithmException      if the specified algorithm does not exist.
+   * @throws InvalidDigestException        if the specified digest algorithm is invalid.
+   * @throws NoSuchProviderException       if the specified provider is not available.
+   * @throws IOException                   if there is an I/O error reading from the
+   *                                       batchMessageFile.
+   * @throws DataFormatException           if the data format is incorrect for signing.
    */
-
   public void batchCreateSignatures(File batchMessageFile, DoubleConsumer progressUpdater)
-      throws InterruptedException, InvalidSignatureTypeException, NoSuchAlgorithmException, InvalidDigestException, NoSuchProviderException, IOException, DataFormatException {
+      throws InvalidSignatureTypeException, NoSuchAlgorithmException, InvalidDigestException, NoSuchProviderException, IOException, DataFormatException {
     try (BufferedReader messageReader = new BufferedReader(new FileReader(batchMessageFile))) {
+      this.messageFile = batchMessageFile;
       // Initialize lists to store times and results (signatures and non-recoverable parts) for each key
       List<List<Long>> timesPerKey = new ArrayList<>();
       List<List<byte[]>> signaturesPerKey = new ArrayList<>();
@@ -407,6 +454,126 @@ public class SignatureModel {
       // Combine results into final lists
       combineResultsIntoFinalLists(timesPerKey, signaturesPerKey, nonRecoverableMessagesPerKey);
     }
+  }
+
+
+  /**
+   * Processes a batch of messages to create digital signatures in the cross-parameter
+   * benchmarking/comparison mode. This mode involves generating signatures using a variety of keys
+   * created with different parameter settings (standard vs. provably secure) for each selected key
+   * size. For each key size, this method generates signatures using two keys with standard
+   * parameters (2 vs 3 primes) and two keys with provably secure parameters (2 vs 3 primes). The
+   * method updates the progress of signature generation using the provided progressUpdater
+   * consumer.
+   *
+   * @param batchMessageFile The file containing the messages to be signed in the batch process.
+   * @param progressUpdater  A consumer to update the progress of the batch signing process.
+   * @throws InvalidSignatureTypeException if the signature type is not supported.
+   * @throws NoSuchAlgorithmException      if the specified algorithm does not exist.
+   * @throws InvalidDigestException        if the specified digest algorithm is invalid.
+   * @throws NoSuchProviderException       if the specified provider is not available.
+   * @throws IOException                   if there is an I/O error reading from the
+   *                                       batchMessageFile.
+   * @throws DataFormatException           if the data format is incorrect for signing.
+   */
+  public void batchGenerateSignatures_ComparisonMode(File batchMessageFile,
+      DoubleConsumer progressUpdater)
+      throws InvalidSignatureTypeException, NoSuchAlgorithmException, InvalidDigestException, NoSuchProviderException, IOException, DataFormatException {
+    this.messageFile = batchMessageFile;
+    this.numKeySizesForComparisonMode = privKeyBatch.size() / NUM_KEYS_PER_KEY_SIZE_COMPARISON_MODE;
+    try (BufferedReader messageReader = new BufferedReader(new FileReader(batchMessageFile))) {
+      // Initialize lists to store times and results (signatures and non-recoverable parts) for each key
+      List<List<Long>> timesPerKey = new ArrayList<>();
+      List<List<byte[]>> signaturesPerKey = new ArrayList<>();
+      List<List<byte[]>> nonRecoverableMessagesPerKey = new ArrayList<>();
+
+      for (int k = 0; k < privKeyBatch.size(); k++) {
+        timesPerKey.add(new ArrayList<>());
+        signaturesPerKey.add(new ArrayList<>());
+        nonRecoverableMessagesPerKey.add(new ArrayList<>());
+      }
+
+      String message;
+      int totalWork = numTrials * privKeyBatch.size();
+      int completedWork = 0;
+      int messageCounter = 0;
+      while ((message = messageReader.readLine()) != null && messageCounter < this.numTrials) {
+        for (int i = 0; i < privKeyBatch.size(); i += NUM_KEYS_PER_KEY_SIZE_COMPARISON_MODE) {
+
+          for (int keyIndexForKeySize = 0;
+              keyIndexForKeySize < NUM_KEYS_PER_KEY_SIZE_COMPARISON_MODE; keyIndexForKeySize++) {
+
+            SigScheme sigScheme = SignatureFactory.getSignatureScheme(currentType,
+                privKeyBatch.get(i + keyIndexForKeySize),
+                getProvablySecureFlagComparisonMode(keyIndexForKeySize));
+
+            sigScheme.setDigest(getDigestTypeComparisonMode(keyIndexForKeySize));
+
+            long startTime = System.nanoTime();
+            byte[] signature = sigScheme.sign(message.getBytes());
+            long endTime = System.nanoTime() - startTime;
+            byte[] nonRecoverableM = sigScheme.getNonRecoverableM();
+            // Store results
+            timesPerKey.get(i + keyIndexForKeySize).add(endTime);
+            signaturesPerKey.get(i + keyIndexForKeySize).add(signature);
+            nonRecoverableMessagesPerKey.get(i + keyIndexForKeySize).add(nonRecoverableM);
+            // Update progress
+            double currentKeyProgress = (double) (++completedWork) / totalWork;
+            progressUpdater.accept(currentKeyProgress);
+          }
+        }
+        messageCounter++;
+      }
+
+      // Combine results into final lists
+      combineResultsIntoFinalLists(timesPerKey, signaturesPerKey, nonRecoverableMessagesPerKey);
+    }
+
+  }
+
+  /**
+   * Determines the DigestType to be used for a particular key in the comparison mode, based on the
+   * index of the key. It alternates between fixed and provably secure hash types, since for a
+   * particular key size chosen in comparison mode, two keys are generated using standard parameters
+   * (2 vs 3 primes) and a further two using provably secure parameters (2 vs 3 primes).
+   *
+   * @param digestIndexForKeySize The index of the key for which to determine the DigestType.
+   * @return The DigestType to be used for the specified key index in comparison mode.
+   * @throws IllegalArgumentException if the index is out of bounds.
+   */
+  public DigestType getDigestTypeComparisonMode(int digestIndexForKeySize) {
+    return switch (digestIndexForKeySize) {
+      case 0 -> currentFixedHashType_ComparisonMode;
+      case 1 -> currentFixedHashType_ComparisonMode;
+      case 2 -> currentProvableHashType_ComparisonMode;
+      case 3 -> currentProvableHashType_ComparisonMode;
+      default -> {
+        throw new IllegalArgumentException(
+            "Invalid index: For a given key size, in comparison mode, two keys are generated using standard parameters (2 vs 3 primes) and a further two using provably secure parameters (2 vs 3 primes).");
+      }
+    };
+  }
+
+  /**
+   * Determines whether to use provably secure mode for a particular key in the comparison mode,
+   * based on the index of the key. It alternates between standard and provably secure modes since
+   * for a particular key size chosen in comparison mode, two keys are generated using standard
+   * parameters (2 vs 3 primes) and a further two using provably secure parameters (2 vs 3 primes).
+   *
+   * @param isProvablySecureForKeySize The index of the key for which to determine the security
+   *                                   mode.
+   * @return True if provably secure mode should be used, false otherwise.
+   * @throws IllegalArgumentException if the index is out of bounds.
+   */
+  public boolean getProvablySecureFlagComparisonMode(int isProvablySecureForKeySize) {
+    return switch (isProvablySecureForKeySize) {
+      case 0 -> false;
+      case 1 -> false;
+      case 2 -> true;
+      case 3 -> true;
+      default -> throw new IllegalArgumentException(
+          "Invalid index: For a given key size, in comparison mode, two keys are generated using standard parameters (2 vs 3 primes) and a further two using provably secure parameters (2 vs 3 primes).");
+    };
   }
 
 
@@ -486,11 +653,18 @@ public class SignatureModel {
    * @param batchMessageFile   The file containing the messages to be verified.
    * @param batchSignatureFile The file containing the corresponding signatures to be verified.
    * @param progressUpdater    A consumer to update the progress of the batch verification process.
-   * @throws Exception If any error occurs during the verification process.
+   * @throws InvalidSignatureTypeException if the signature type is not supported.
+   * @throws NoSuchAlgorithmException      if the specified algorithm does not exist.
+   * @throws InvalidDigestException        if the specified digest algorithm is invalid.
+   * @throws NoSuchProviderException       if the specified provider is not available.
+   * @throws IOException                   if there is an I/O error reading from the
+   *                                       batchMessageFile.
+   * @throws DataFormatException           if the data format is incorrect for signing.
    */
   public void batchVerifySignatures(File batchMessageFile, File batchSignatureFile,
       DoubleConsumer progressUpdater)
       throws IOException, InvalidSignatureTypeException, DataFormatException, NoSuchAlgorithmException, InvalidDigestException, NoSuchProviderException {
+    this.messageFile = batchMessageFile;
     // Initialise lists to store times, verification results, signatures, and recovered messages
     List<List<Long>> timesPerKey = new ArrayList<>();
     List<List<Boolean>> verificationResultsPerKey = new ArrayList<>();
@@ -518,11 +692,12 @@ public class SignatureModel {
           byte[] signatureBytes = new BigInteger(signatureLine).toByteArray();
 
           // Synchronous verification
-          Pair<Boolean, Pair<Long, List<byte[]>>> result = verifySignature(key, messageLine, signatureBytes);
+          Pair<Boolean, Pair<Long, List<byte[]>>> result = verifySignature(key, messageLine,
+              signatureBytes);
 
           long endTime = result.getValue().getKey();
 
-           // Store results
+          // Store results
           timesPerKey.get(keyIndex).add(endTime);
           verificationResultsPerKey.get(keyIndex).add(result.getKey());
           signaturesPerKey.get(keyIndex).add(result.getValue().getValue().get(1));
@@ -545,6 +720,131 @@ public class SignatureModel {
 
 
   /**
+   * Processes a batch of messages and their corresponding signatures for verification in the
+   * cross-parameter benchmarking/comparison mode. This mode involves verifying signatures using a
+   * variety of public keys created with different parameter settings (standard vs. provably secure)
+   * for each selected key size. For each key size, this method verifies signatures using two keys
+   * with standard parameters (2 vs 3 primes) and two keys with provably secure parameters (2 vs 3
+   * primes). The method updates the progress of signature verification using the provided
+   * progressUpdater consumer.
+   *
+   * @param batchMessageFile   The file containing the messages to be verified.
+   * @param batchSignatureFile The file containing the corresponding signatures to be verified.
+   * @param progressUpdater    A consumer to update the progress of the batch verification process.
+   * @throws IOException                   If there is an I/O error reading from the files.
+   * @throws InvalidSignatureTypeException If the signature type is not supported.
+   * @throws DataFormatException           If the data format is incorrect for verification.
+   * @throws NoSuchAlgorithmException      If the specified algorithm does not exist.
+   * @throws InvalidDigestException        If the specified digest algorithm is invalid.
+   * @throws NoSuchProviderException       If the specified provider is not available.
+   */
+  public void batchVerifySignatures_ComparisonMode(File batchMessageFile, File batchSignatureFile,
+      DoubleConsumer progressUpdater)
+      throws IOException, InvalidSignatureTypeException, DataFormatException, NoSuchAlgorithmException, InvalidDigestException, NoSuchProviderException {
+    this.messageFile = batchMessageFile;
+    this.numKeySizesForComparisonMode =
+        publicKeyBatch.size() / NUM_KEYS_PER_KEY_SIZE_COMPARISON_MODE;
+    // Initialise lists to store times, verification results, signatures, and recovered messages
+    List<List<Long>> timesPerKey = new ArrayList<>();
+    List<List<Boolean>> verificationResultsPerKey = new ArrayList<>();
+    List<List<byte[]>> signaturesPerKey = new ArrayList<>();
+    List<List<byte[]>> recoveredMessagesPerKey = new ArrayList<>();
+    for (int k = 0; k < publicKeyBatch.size(); k++) {
+      timesPerKey.add(new ArrayList<>());
+      verificationResultsPerKey.add(new ArrayList<>());
+      signaturesPerKey.add(new ArrayList<>());
+      recoveredMessagesPerKey.add(new ArrayList<>());
+    }
+
+    try (BufferedReader signatureReader = new BufferedReader(new FileReader(batchSignatureFile));
+        BufferedReader messageReader = new BufferedReader(new FileReader(batchMessageFile))) {
+
+      String messageLine;
+      int messageCounter = 0;
+      int totalWork = numTrials * publicKeyBatch.size();
+      int completedWork = 0;
+      while ((messageLine = messageReader.readLine()) != null && messageCounter < this.numTrials) {
+        for (int i = 0; i < publicKeyBatch.size(); i += NUM_KEYS_PER_KEY_SIZE_COMPARISON_MODE) {
+          for (int keyIndexForKeySize = 0;
+              keyIndexForKeySize < NUM_KEYS_PER_KEY_SIZE_COMPARISON_MODE; keyIndexForKeySize++) {
+            // Read signature for each message
+            String signatureLine = signatureReader.readLine();
+            byte[] signatureBytes = new BigInteger(signatureLine).toByteArray();
+
+            SigScheme sigScheme = SignatureFactory.getSignatureScheme(currentType,
+                publicKeyBatch.get(i + keyIndexForKeySize),
+                getProvablySecureFlagComparisonMode(keyIndexForKeySize));
+
+            sigScheme.setDigest(getDigestTypeComparisonMode(keyIndexForKeySize));
+            // Synchronous verification
+            Pair<Boolean, Pair<Long, List<byte[]>>> result = verifySignature_ComparisonMode(
+                sigScheme, messageLine, signatureBytes);
+
+            long endTime = result.getValue().getKey();
+
+            // Store results
+            timesPerKey.get(i + keyIndexForKeySize).add(endTime);
+            verificationResultsPerKey.get(i + keyIndexForKeySize).add(result.getKey());
+            signaturesPerKey.get(i + keyIndexForKeySize).add(result.getValue().getValue().get(1));
+            recoveredMessagesPerKey.get(i + keyIndexForKeySize)
+                .add(result.getValue().getValue().get(2));
+
+            // Update progress
+            double currentKeyProgress = (double) (++completedWork) / totalWork;
+            progressUpdater.accept(currentKeyProgress);
+          }
+
+        }
+        messageCounter++;
+      }
+
+      // Combine results into final lists
+      combineVerificationResultsIntoFinalLists(timesPerKey, verificationResultsPerKey,
+          signaturesPerKey, recoveredMessagesPerKey);
+    }
+  }
+
+
+  /**
+   * Verifies a signature against a message using a specified signature scheme in the comparison
+   * mode. This method encapsulates the logic for signature verification, handling different types
+   * of signature schemes, including those with message recovery. It accommodates the alternation
+   * between standard and provably secure modes for each key size in the comparison mode.
+   *
+   * @param sigScheme      The signature scheme used for verification.
+   * @param messageLine    The message to be verified against the signature.
+   * @param signatureBytes The signature to be verified.
+   * @return A Pair containing the result of verification and the relevant data (original message,
+   * signature, and recovered message if applicable).
+   */
+  private Pair<Boolean, Pair<Long, List<byte[]>>> verifySignature_ComparisonMode(
+      SigScheme sigScheme,
+      String messageLine, byte[] signatureBytes)
+      throws DataFormatException {
+
+    boolean verificationResult;
+    byte[] recoveredMessage = new byte[]{};
+    long endTime = 0;
+    long startTime = 0;
+    if (currentType == SignatureType.ISO_IEC_9796_2_SCHEME_1) {
+      String[] nonRecoverableParts = messageLine.split(" ", 2);
+      byte[] nonRecoverableMessage =
+          nonRecoverableParts[0].equals("1") ? nonRecoverableParts[1].getBytes() : null;
+      startTime = System.nanoTime();
+      verificationResult = sigScheme.verify(nonRecoverableMessage, signatureBytes);
+      endTime = System.nanoTime() - startTime;
+      recoveredMessage = verificationResult ? sigScheme.getRecoverableM() : new byte[]{};
+    } else {
+      startTime = System.nanoTime();
+      verificationResult = sigScheme.verify(messageLine.getBytes(), signatureBytes);
+      endTime = System.nanoTime() - startTime;
+    }
+
+    return new Pair<>(verificationResult,
+        new Pair<>(endTime, List.of(messageLine.getBytes(), signatureBytes, recoveredMessage)));
+  }
+
+  /**
    * Verifies a signature against a message using a specified public key. This method encapsulates
    * the logic for signature verification, handling different types of signature schemes, including
    * those with message recovery.
@@ -557,7 +857,8 @@ public class SignatureModel {
    * @throws InvalidSignatureTypeException If the signature type is invalid.
    * @throws DataFormatException           If the data format is incorrect.
    */
-  private Pair<Boolean, Pair<Long, List<byte[]>>> verifySignature(PublicKey publicKey,
+  private Pair<Boolean, Pair<Long, List<byte[]>>> verifySignature(
+      PublicKey publicKey,
       String messageLine, byte[] signatureBytes)
       throws InvalidSignatureTypeException, DataFormatException, NoSuchAlgorithmException, InvalidDigestException, NoSuchProviderException {
     SigScheme sigScheme = SignatureFactory.getSignatureScheme(currentType, publicKey,
@@ -638,9 +939,8 @@ public class SignatureModel {
 
         while ((originalMessage = reader.readLine()) != null
             && messageCounter < numMessagesPerKey) {
-          boolean verificationResult = verificationResults.get(messageCounter);
-
           int keySpecificMessageResults = (keyIndex * numMessagesPerKey) + messageCounter;
+          boolean verificationResult = verificationResults.get(keySpecificMessageResults);
           String signature = new BigInteger(1,
               signaturesFromBenchmark.get(keySpecificMessageResults)).toString();
           String recoverableMessage =
@@ -658,6 +958,86 @@ public class SignatureModel {
       }
 
     }
+  }
+  /**
+   * Exports verification results to a CSV file in the cross-parameter benchmarking mode. This
+   * method generates a CSV file with results from signature verification processes conducted under
+   * different parameter settings (standard vs. provably secure) for a specific key size. The CSV
+   * file includes details such as the parameter type, verification result, original message,
+   * signature, and any recovered message. This functionality facilitates detailed analysis and
+   * comparison of signature verification performance across different parameter configurations.
+   *
+   * @param keyIndex The index of the key size for which results are to be exported. This index
+   *                 corresponds to the position of the key size in the list of all key sizes used
+   *                 during the benchmarking process.
+   * @throws IOException If there is an error in writing to the file.
+   */
+  public void exportVerificationResultsToCSV_ComparisonMode(int keyIndex) throws IOException {
+    File file = FileHandle.createUniqueFile(
+        "verificationResults_ComparisonMode_" + getPublicKeyLengths().get(keyIndex) + "bits.csv");
+
+    try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
+      // Write header
+      writer.write(
+          "Parameter Type" + " (" + getPublicKeyLengths().get(keyIndex) + "bit key), "
+              + "Verification Result, Original Message, Signature, Recovered Message\n");
+
+      int numKeys = publicKeyBatch.size();
+      int numMessagesPerKey = verificationResults.size() / numKeys;
+      for (int i = 0; i < NUM_KEYS_PER_KEY_SIZE_COMPARISON_MODE; i++) {
+        // Read original messages for each key
+        try (BufferedReader reader = new BufferedReader(new FileReader(messageFile))) {
+          String originalMessage;
+          int messageCounter = 0;
+
+          while ((originalMessage = reader.readLine()) != null
+              && messageCounter < numMessagesPerKey) {
+            int keySpecificMessageResults = ((keyIndex + i) * numMessagesPerKey) + messageCounter;
+            boolean verificationResult = verificationResults.get(keySpecificMessageResults);
+
+            String signature = new BigInteger(1,
+                signaturesFromBenchmark.get(keySpecificMessageResults)).toString();
+            String recoverableMessage =
+                recoverableMessages.get(keySpecificMessageResults) != null
+                    && recoverableMessages.get(keySpecificMessageResults).length > 0 ?
+                    new String(recoverableMessages.get(keySpecificMessageResults)) : "";
+
+            writer.write(getComparisonResultsRowHeader(i) + ", " +
+                verificationResult + ", " +
+                "\"" + originalMessage + "\", " + // Enclose in quotes to handle commas
+                signature + ", " + recoverableMessage + "\n");
+
+            messageCounter++;
+          }
+        }
+      }
+
+    }
+  }
+
+
+  /**
+   * Retrieves the header text for a specific row in the CSV file to be generated by the process for
+   * exporting of results in comparison mode. This method provides descriptive headers for each row
+   * of the CSV file, indicating the parameter setting (standard or provably secure) associated with
+   * the key that related to chosen key size used for verification.
+   *
+   * @param row The row index for which the header text is to be retrieved. This index corresponds
+   *            to the specific parameter setting and key size configuration.
+   * @return A string representing the header text for the specified row in the CSV file.
+   * @throws IllegalArgumentException If the provided row index is invalid or does not correspond to
+   *                                  any known parameter setting in the comparison mode.
+   */
+  public String getComparisonResultsRowHeader(int row) {
+    return switch (row) {
+      case 0 -> FIRST_ROW_COMPARISON_MODE;
+      case 1 -> SECOND_ROW_COMPARISON_MODE;
+      case 2 -> THIRD_ROW_COMPARISON_MODE;
+      case 3 -> FOURTH_ROW_COMPARISON_MODE;
+      default -> {
+        throw new IllegalArgumentException("Invalid row: " + row);
+      }
+    };
   }
 
 
@@ -722,15 +1102,14 @@ public class SignatureModel {
   }
 
   /**
-   * Retrieves the lengths of the public keys in bits. This method is useful for identifying the
-   * strength of the keys used in the signature process.
+   * Retrieves the lengths of the keys in bits. This method is useful for identifying the strength
+   * of the keys used in the signature process.
    *
-   * @return A list of integer values, each representing the bit length of a public key in the
-   * batch.
+   * @return A list of integer values, each representing the bit length of a key in the batch.
    */
-  public List<Integer> getPublicKeyLengths() {
+  public List<Integer> getKeyLengths(List<? extends Key> keyBatch) {
     List<Integer> result = new ArrayList<>();
-    for (Key key : publicKeyBatch) {
+    for (Key key : keyBatch) {
       result.add(((key.getModulus().bitLength() + 7) / 8) * 8);
     }
     return result;
@@ -744,12 +1123,75 @@ public class SignatureModel {
    * batch.
    */
   public List<Integer> getPrivKeyLengths() {
-    List<Integer> result = new ArrayList<>();
-    for (PrivateKey key : privKeyBatch) {
-      result.add(((key.getModulus().bitLength() + 7) / 8) * 8);
-    }
-    return result;
+    return getKeyLengths(privKeyBatch);
   }
 
+  /**
+   * Retrieves the lengths of the public keys in bits. This method is useful for identifying the
+   * strength of the keys used in the signature process.
+   *
+   * @return A list of integer values, each representing the bit length of a public key in the
+   * batch.
+   */
+  public List<Integer> getPublicKeyLengths() {
+    return getKeyLengths(publicKeyBatch);
+  }
 
+  /**
+   * Sets the hash type for use under standard parameters in the cross-parameter
+   * benchmarking/comparison mode of the signature scheme.
+   *
+   * @param currentFixedHashType_ComparisonMode The hash type to be set for standard parameters.
+   */
+  public void setCurrentFixedHashType_ComparisonMode(
+      DigestType currentFixedHashType_ComparisonMode) {
+    this.currentFixedHashType_ComparisonMode = currentFixedHashType_ComparisonMode;
+  }
+
+  /**
+   * Sets the hash type for use under provably secure parameters in the cross-parameter
+   * benchmarking/comparison mode of the signature scheme.
+   *
+   * @param currentProvableHashType_ComparisonMode The hash type to be set for provably secure
+   *                                               parameters.
+   */
+  public void setCurrentProvableHashType_ComparisonMode(
+      DigestType currentProvableHashType_ComparisonMode) {
+    this.currentProvableHashType_ComparisonMode = currentProvableHashType_ComparisonMode;
+  }
+
+  /**
+   * Gets the hash type currently set for use under standard parameters in the cross-parameter
+   * benchmarking/comparison mode.
+   *
+   * @return The hash type set for standard parameters.
+   */
+  public DigestType getCurrentFixedHashType_ComparisonMode() {
+    return currentFixedHashType_ComparisonMode;
+  }
+
+  /**
+   * Gets the hash type currently set for use under provably secure parameters in the
+   * cross-parameter benchmarking/comparison mode.
+   *
+   * @return The hash type set for provably secure parameters.
+   */
+  public DigestType getCurrentProvableHashType_ComparisonMode() {
+    return currentProvableHashType_ComparisonMode;
+  }
+
+  /**
+   * Retrieves the number of different key sizes selected for generating/verifying signatures in the
+   * cross-parameter comparison mode of benchmarking. This method is relevant in scenarios where the
+   * signature creation/verification process is tested across various key sizes, each potentially
+   * having different parameter settings (standard vs. provably secure). It provides the count of
+   * distinct key sizes that have been chosen for benchmarking, facilitating the process of
+   * comparing performance across these varied configurations.
+   *
+   * @return The number of different key sizes selected for generating signatures in the comparison
+   * mode.
+   */
+  public int getNumKeySizesForComparisonMode() {
+    return numKeySizesForComparisonMode;
+  }
 }

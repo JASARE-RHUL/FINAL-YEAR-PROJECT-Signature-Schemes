@@ -1,8 +1,14 @@
 package uk.msci.project.rsa;
 
 import com.jfoenix.controls.JFXTabPane;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.net.URL;
+import java.util.List;
 import java.util.ResourceBundle;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -14,8 +20,6 @@ import javafx.scene.control.Tab;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Region;
 
 /**
  * The {@code ResultsView} class is responsible for displaying the statistical results of the
@@ -98,7 +102,8 @@ public class ResultsView implements Initializable {
 
   /**
    * The sideTabContainer field represents the JFXTabPane container for displaying side tabs
-   * corresponding to different keys that will trigger the displaying of their corresponding results.
+   * corresponding to different keys that will trigger the displaying of their corresponding
+   * results.
    */
   @FXML
   private JFXTabPane sideTabContainer;
@@ -173,7 +178,7 @@ public class ResultsView implements Initializable {
    *
    * @param keyTab The tab to be added for key switching.
    */
-  public void addKeySwitchTab(Tab keyTab){
+  public void addKeySwitchTab(Tab keyTab) {
     sideTabContainer.getTabs().add(keyTab);
   }
 
@@ -509,14 +514,13 @@ public class ResultsView implements Initializable {
    */
   @Override
   public void initialize(URL location, ResourceBundle resources) {
-    setupTableView();
-    populateTableView();
+    nameColumn.setCellValueFactory(new PropertyValueFactory<>("statisticName"));
   }
 
   /**
    * Configures the table view, setting up the columns and their properties.
    */
-  private void setupTableView() {
+  public void setupTableView() {
     // Configure the columns to use the property names from StatisticData
     nameColumn.setCellValueFactory(new PropertyValueFactory<>("statisticName"));
     valueColumn.setCellValueFactory(new PropertyValueFactory<>("statisticValue"));
@@ -526,7 +530,7 @@ public class ResultsView implements Initializable {
   /**
    * Populates the table view with statistical data.
    */
-  private void populateTableView() {
+  public void populateTableView() {
     // Add the StatisticData instances to the tableView
     tableView.getItems().clear();
     tableView.getItems().addAll(numTrials,
@@ -540,13 +544,13 @@ public class ResultsView implements Initializable {
   /**
    * Resizes the table view based on the number of items it contains.
    */
-  private void resizeTableView() {
+  public void resizeTableView() {
     int rows = tableView.getItems().size() + 1; // +1 for the header row
-    double rowHeight = 26;
+    double rowHeight = 30;
     double tableHeight = rows * rowHeight;
     tableView.setPrefHeight(tableHeight);
-    tableView.setMinHeight(Region.USE_PREF_SIZE);
-    tableView.setMaxHeight(Region.USE_PREF_SIZE);
+    tableView.setMinHeight(tableHeight);
+
   }
 
   /**
@@ -565,4 +569,110 @@ public class ResultsView implements Initializable {
     backToMainMenuButton.setOnAction(observer);
   }
 
+  /**
+   * Adds value columns to the table view.
+   *
+   * @param resultsTableColumn The list of value columns to be added.
+   */
+  public void addValueColumns(List<ResultsTableColumn> resultsTableColumn) {
+    for (int i = 0; i < resultsTableColumn.size(); i++) {
+      ResultsTableColumn metadata = resultsTableColumn.get(i);
+      TableColumn<StatisticData, String> column = new TableColumn<>(metadata.getColumnName());
+      int columnIndex = i;
+      column.setCellValueFactory(cellData ->
+          new SimpleStringProperty(cellData.getValue().getStatisticValues().get(columnIndex))
+      );
+      tableView.getColumns().add(column);
+    }
+  }
+
+  /**
+   * Clears all items from the table view.
+   */
+  public void clearTableView() {
+    tableView.getItems().clear();
+  }
+
+  /**
+   * Adds a statistic data item to the table view.
+   *
+   * @param data The statistic data to be added.
+   */
+  public void addStatisticData(StatisticData data) {
+    tableView.getItems().add(data);
+  }
+
+  /**
+   * Exports the data from a comparison table to a CSV file. This method iterates through each item
+   * in the table and writes the data to a file with a CSV format. It also formats confidence
+   * interval values for better readability and replaces the column header "Conf. Interval" with
+   * "Confidence Interval".
+   *
+   * @param fileName The name of the file where the table data will be exported. This file will be
+   *                 created if it does not exist.
+   */
+  public void exportComparisonTableResultsToCSV(String fileName) {
+    File resultsFile = FileHandle.createUniqueFile(fileName);
+    try (BufferedWriter fileWriter = new BufferedWriter(new FileWriter(resultsFile))) {
+      // Write the header line
+      for (TableColumn<StatisticData, ?> column : tableView.getColumns()) {
+        String header = column.getText().equals("Conf. Interval") ? "Confidence Interval" : column.getText();
+        fileWriter.append(header).append(",");
+      }
+      fileWriter.append("\n");
+
+      // Iterate through table data
+      for (StatisticData data : tableView.getItems()) {
+        fileWriter.append(data.getStatisticName()).append(",");
+
+        List<String> values = data.getStatisticValues();
+        if (values != null) {
+          for (String value : values) {
+            if (value.matches("\\d+% with bounds \\[.*\\]")) {
+              value = formatConfidenceInterval(value);
+            }
+            fileWriter.append(value).append(",");
+          }
+        }
+
+        fileWriter.append("\n");
+      }
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+  }
+
+  /**
+   * Formats a confidence interval string from a format like "95% with bounds [0.41813, 0.53444]"
+   * to "95% with bounds 0.41813 ms - 0.53444 ms". This method is used to ensure that the confidence
+   * interval values are formatted correctly for CSV output.
+   *
+   * @param interval The confidence interval string in the format "95% with bounds [lower, upper]".
+   * @return A formatted string of the confidence interval in the format
+   *         "95% with bounds lower ms - upper ms".
+   */
+  private String formatConfidenceInterval(String interval) {
+    // Extract percentage and bounds from the interval string
+    String percentage = interval.split(" with bounds ")[0];
+    String bounds = interval.split("\\[")[1].split("]")[0];
+    String[] boundsArray = bounds.split(", ");
+
+    return percentage + " with bounds " + boundsArray[0] + " ms - " + boundsArray[1] + " ms";
+  }
+
+  /**
+   * Removes the value column from the table view.
+   */
+  public void removeValueColumn() {
+    tableView.getColumns().remove(valueColumn);
+  }
+
+  /**
+   * Sets the text of the header of the first column in the results table to a specified text
+   *
+   * @param text The text to be displayed header of the first column in the results table.
+   */
+  public void setNameColumnText(String text) {
+    this.nameColumn.setText(text);
+  }
 }

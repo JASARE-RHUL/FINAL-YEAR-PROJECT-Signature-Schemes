@@ -10,14 +10,13 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
 import javafx.scene.Parent;
-import javafx.scene.Scene;
-import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tab;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+
 
 /**
  * This class manages the results display and interaction logic for the digital signature
@@ -82,6 +81,37 @@ public class ResultsController {
    */
   private List<ResultsModel> resultsModels = new ArrayList<>();
 
+  /**
+   * Number of key sizes selected for comparison mode. This indicates how many different key sizes
+   * will be used to benchmark and compare provably secure versus standard parameters.
+   */
+  private int numKeySizesForComparisonMode;
+
+  /**
+   * Header text for the first row in comparison mode.
+   */
+  private static final String FIRST_ROW_COMPARISON_MODE = "Standard Parameters (2 Primes):";
+
+  /**
+   * Header text for the second row in comparison mode.
+   */
+  private static final String SECOND_ROW_COMPARISON_MODE = "Standard Parameters (3 Primes):";
+
+  /**
+   * Header text for the third row in comparison mode.
+   */
+  private static final String THIRD_ROW_COMPARISON_MODE = "Provable Parameters (2 Primes):";
+
+  /**
+   * Header text for the fourth row in comparison mode.
+   */
+  private static final String FOURTH_ROW_COMPARISON_MODE = "Provable Parameters (3 Primes):";
+
+  /**
+   * The number of rows used in comparison mode.
+   */
+  private static final int NUM_ROWS_COMPARISON_MODE = 4;
+
 
   /**
    * Constructs a new ResultsController with a reference to the MainController.
@@ -103,7 +133,7 @@ public class ResultsController {
   }
 
   /**
-   * Displays the results view and initializes the results model with the provided benchmarking
+   * Displays the results view and initialises the results model with the provided benchmarking
    * results. This method prepares the results view by configuring it based on the current
    * benchmarking context, including the display of statistical results for each key. It also sets
    * up key-specific navigation within the view, allowing the user to switch between results for
@@ -131,19 +161,95 @@ public class ResultsController {
       this.results = results;
       this.totalTrials = results.size();
       this.trialsPerKey = totalTrials / totalKeys;
+      this.keyIndex = 0;
+      resultsView.setupTableView();
+      resultsView.populateTableView();
 
       splitResultsByKeys();
 
       displayCurrentContextButtons();
       initialiseKeySwitchButtons();
       resultsModel = resultsModels.get(0);
-      setStatsResultsView(resultsModel); // Display results for the first key by default
+      setStatsResultsView(resultsModel, keyIndex); // Display results for the first key by default
       setupObservers();
       mainController.setScene(root);
     } catch (IOException e) {
       e.printStackTrace();
     }
   }
+
+  /**
+   * Displays the results view with options for either standard display or comparison mode.
+   * In comparison mode, this method will configure the results view to compare multiple
+   * key sizes and the respective results for provably secure vs standard parameters.
+   *
+   * @param primaryStage                 The primary stage for the application on which the results will be displayed.
+   * @param results                      The list of benchmarking results to be displayed.
+   * @param keyLengths                   The list of key lengths that were used in the benchmarking process.
+   * @param isComparisonMode             Flag indicating whether the comparison mode is active.
+   * @param numKeySizesForComparisonMode The number of key sizes that will be compared in comparison mode.
+   */
+  public void showResultsView(Stage primaryStage, List<Long> results, List<Integer> keyLengths,
+      boolean isComparisonMode, int numKeySizesForComparisonMode) {
+    if (!isComparisonMode) {
+      showResultsView(primaryStage, results, keyLengths);
+    } else {
+
+      try {
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/ResultsView.fxml"));
+        Parent root = loader.load();
+        resultsView = loader.getController();
+        this.keyLengths = keyLengths;
+        this.totalKeys = this.keyLengths.size();
+        this.results = results;
+        this.totalTrials = results.size();
+        this.trialsPerKey = totalTrials / totalKeys;
+        this.numKeySizesForComparisonMode = numKeySizesForComparisonMode;
+        this.keyIndex = 0;
+
+        splitResultsByKeys();
+
+        resultsView.removeValueColumn();
+        resultsView.addValueColumns(createComparisonModeColumnHeaders());
+        resultsView.setNameColumnText("Parameter Type");
+
+        displayCurrentContextButtons();
+        initialiseKeySwitchButtonsComparisonMode();
+        resultsModel = resultsModels.get(0);
+        setStatsResultsView(resultsModel, keyIndex); // Display results for the first key by default
+        resultsView.resizeTableView();
+
+        setupObservers();
+        mainController.setScene(root);
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+    }
+  }
+
+  /**
+   * Creates headers for the columns in the comparison mode table view. These headers correspond to
+   * different statistics that will be compared.
+   *
+   * @return A list of ResultsTableColumn objects initialized with header titles.
+   */
+  private List<ResultsTableColumn> createComparisonModeColumnHeaders() {
+    List<ResultsTableColumn> resultsTableColumnList = new ArrayList<>();
+    resultsTableColumnList.add(new ResultsTableColumn("Trials"));
+    resultsTableColumnList.add(new ResultsTableColumn("Overall time"));
+    resultsTableColumnList.add(new ResultsTableColumn("Mean"));
+    resultsTableColumnList.add(new ResultsTableColumn("Std Dev"));
+    resultsTableColumnList.add(new ResultsTableColumn("Variance"));
+    resultsTableColumnList.add(new ResultsTableColumn("Conf. Interval"));
+    resultsTableColumnList.add(new ResultsTableColumn("25th Percentile"));
+    resultsTableColumnList.add(new ResultsTableColumn("Median"));
+    resultsTableColumnList.add(new ResultsTableColumn("75th Percentile"));
+    resultsTableColumnList.add(new ResultsTableColumn("Range"));
+    resultsTableColumnList.add(new ResultsTableColumn("Min"));
+    resultsTableColumnList.add(new ResultsTableColumn("Max"));
+    return resultsTableColumnList;
+  }
+
 
   /**
    * Splits the results into groups based on keys and creates a ResultsModel for each group.
@@ -166,7 +272,7 @@ public class ResultsController {
   public void displayResultsForKey(int keyIndex) {
     this.keyIndex = keyIndex;
     resultsModel = resultsModels.get(keyIndex);
-    setStatsResultsView(resultsModel);
+    setStatsResultsView(resultsModel, keyIndex);
   }
 
   /**
@@ -219,26 +325,100 @@ public class ResultsController {
    *
    * @param model The ResultsModel instance containing statistical data to display.
    */
-  public void setStatsResultsView(ResultsModel model) {
-    resultsView.setNumTrials(String.valueOf(model.getNumTrials()));
-    resultsView.setMeanValue(String.format("%.5f ms", model.getMeanData()));
-    resultsView.setPercentile25Value(String.format("%.5f ms", model.getPercentile25Data()));
-    resultsView.setMedianValue(String.format("%.5f ms", model.getMedianData()));
-    resultsView.setPercentile75Value(String.format("%.5f ms", model.getPercentile75Data()));
-    resultsView.setRangeValue(String.format("%.5f ms", model.getRangeData()));
-    resultsView.setStdDeviationValue(String.format("%.5f ms", model.getStdDeviationData()));
-    resultsView.setVarianceValue(String.format("%.5f ms²", model.getVarianceData()));
-    resultsView.setMinTimeValue(String.format("%.5f ms", model.getMinTimeData()));
-    resultsView.setMaxTimeValue(String.format("%.5f ms", model.getMaxTimeData()));
-    resultsView.setOverallData(String.format("%.5f ms", model.getOverallData()));
+  public void setStatsResultsView(ResultsModel model, int keyIndex) {
 
-    double[] confidenceInterval = model.getConfidenceInterval();
-    String confidenceIntervalStr = String.format(
-        "95%% with bounds [%.5f, %.5f]",
-        confidenceInterval[0],
-        confidenceInterval[1]
-    );
-    resultsView.setConfidenceInterval(confidenceIntervalStr);
+    if (numKeySizesForComparisonMode > 0) {
+      // Handle comparison mode: each StatisticData should have multiple values
+      resultsView.clearTableView();
+      for (StatisticData data : prepareComparisonData(keyIndex)) {
+        resultsView.addStatisticData(data);
+      }
+    } else {
+      resultsView.setNumTrials(String.valueOf(model.getNumTrials()));
+      resultsView.setMeanValue(String.format("%.5f ms", model.getMeanData()));
+      resultsView.setPercentile25Value(String.format("%.5f ms", model.getPercentile25Data()));
+      resultsView.setMedianValue(String.format("%.5f ms", model.getMedianData()));
+      resultsView.setPercentile75Value(String.format("%.5f ms", model.getPercentile75Data()));
+      resultsView.setRangeValue(String.format("%.5f ms", model.getRangeData()));
+      resultsView.setStdDeviationValue(String.format("%.5f ms", model.getStdDeviationData()));
+      resultsView.setVarianceValue(String.format("%.5f ms²", model.getVarianceData()));
+      resultsView.setMinTimeValue(String.format("%.5f ms", model.getMinTimeData()));
+      resultsView.setMaxTimeValue(String.format("%.5f ms", model.getMaxTimeData()));
+      resultsView.setOverallData(String.format("%.5f ms", model.getOverallData()));
+
+      double[] confidenceInterval = model.getConfidenceInterval();
+      String confidenceIntervalStr = String.format(
+          "95%% with bounds [%.5f, %.5f]",
+          confidenceInterval[0],
+          confidenceInterval[1]
+      );
+      resultsView.setConfidenceInterval(confidenceIntervalStr);
+    }
+
+    resultsView.refreshResults();
+  }
+
+  /**
+   * Retrieves the appropriate header text for a given row in comparison mode. The header text
+   * corresponds to the specific parameter set and prime configuration.
+   *
+   * @param row The row index for which the header text is required.
+   * @return A string representing the header text for the specified row.
+   * @throws IllegalArgumentException If the row index does not correspond to a valid row.
+   */
+  public String getComparisonModeRowHeader(int row) {
+    return switch (row) {
+      case 0 -> FIRST_ROW_COMPARISON_MODE;
+      case 1 -> SECOND_ROW_COMPARISON_MODE;
+      case 2 -> THIRD_ROW_COMPARISON_MODE;
+      case 3 -> FOURTH_ROW_COMPARISON_MODE;
+      default -> {
+        throw new IllegalArgumentException("Invalid row: " + row);
+      }
+    };
+  }
+
+
+  /**
+   * Prepares the data for display in comparison mode by aggregating the statistics for each
+   * parameter set into a list of StatisticData objects.
+   *
+   * @param keyIndex The index of the key for which the comparison data is being prepared.
+   * @return A list of StatisticData objects, each representing the aggregated statistics for a
+   * parameter set.
+   */
+  private List<StatisticData> prepareComparisonData(int keyIndex) {
+    List<StatisticData> comparisonData = new ArrayList<>();
+
+    // Collecting data from each ResultsModel
+    for (int i = keyIndex * (resultsModels.size() / numKeySizesForComparisonMode);
+        i < keyIndex * (resultsModels.size() / numKeySizesForComparisonMode)
+            + NUM_ROWS_COMPARISON_MODE; i++) {
+      List<String> parameterRow = new ArrayList<>();
+      parameterRow.add(String.valueOf(resultsModels.get(i).getNumTrials()));
+      parameterRow.add(String.format("%.5f ms", resultsModels.get(i).getOverallData()));
+      parameterRow.add(String.format("%.5f ms", resultsModels.get(i).getMeanData()));
+      parameterRow.add(
+          String.format("%.5f ms", resultsModels.get(i).getStdDeviationData()));
+      parameterRow.add(String.format("%.5f ms²", resultsModels.get(i).getVarianceData()));
+      double[] confidenceInterval = resultsModels.get(i).getConfidenceInterval();
+      parameterRow.add(
+          String.format("95%% with bounds [%.5f, %.5f]", confidenceInterval[0],
+              confidenceInterval[1])
+      );
+      parameterRow.add(
+          String.format("%.5f ms", resultsModels.get(i).getPercentile25Data()));
+      parameterRow.add(String.format("%.5f ms", resultsModels.get(i).getMedianData()));
+      parameterRow.add(
+          String.format("%.5f ms", resultsModels.get(i).getPercentile75Data()));
+      parameterRow.add(String.format("%.5f ms", resultsModels.get(i).getRangeData()));
+      parameterRow.add(String.format("%.5f ms", resultsModels.get(i).getMinTimeData()));
+      parameterRow.add(String.format("%.5f ms", resultsModels.get(i).getMaxTimeData()));
+      comparisonData.add(new StatisticData(getComparisonModeRowHeader(i % NUM_ROWS_COMPARISON_MODE),
+          parameterRow));
+    }
+
+    return comparisonData;
   }
 
 
@@ -256,8 +436,41 @@ public class ResultsController {
 
 
   /**
-   * Initializes key switch buttons in the results view for selecting different keys' results. Each
-   * button corresponds to one key and its associated results.
+   * Initialises the key switch buttons in comparison mode. This method sets up the UI components
+   * that allow the user to switch between results (standard vs provable parameters) for different key sizes.
+   */
+  private void initialiseKeySwitchButtonsComparisonMode() {
+    for (int i = 0; i < numKeySizesForComparisonMode; i++) {
+      int keySizeIndex = i;
+      Tab keyTab = new Tab();
+
+      // Create the ImageView for the key image
+      ImageView imageView = new ImageView(new Image("keyImg.png"));
+      imageView.setFitHeight(90);
+      imageView.setFitWidth(90);
+      imageView.setPickOnBounds(true);
+      imageView.setPreserveRatio(true);
+
+      // Create the label with the key number
+      Label keyLabel = new Label(
+          "Key Size " + (keySizeIndex + 1) + " (" + keyLengths.get(
+              keySizeIndex * (resultsModels.size() / numKeySizesForComparisonMode)) + "bit)");
+
+      // Create a VBox to hold the ImageView and Label
+      VBox graphicBox = new VBox(imageView, keyLabel);
+      graphicBox.setAlignment(Pos.CENTER);
+
+      // Set the graphic of the tab
+      keyTab.setGraphic(graphicBox);
+
+      resultsView.addKeySwitchTab(keyTab);
+    }
+
+  }
+
+  /**
+   * Initialises the key switch buttons for the standard results mode. This method sets up the UI
+   * components that allow the user to switch between results for different keys.
    */
   private void initialiseKeySwitchButtons() {
     for (int i = 0; i < totalKeys; i++) {
@@ -296,8 +509,13 @@ public class ResultsController {
     @Override
     public void handle(ActionEvent event) {
       try {
-        resultsModel.exportStatisticsToCSV(
-            currentContext.getResultsLabel() + "_" + keyLengths.get(keyIndex) + "bit.csv");
+        if (numKeySizesForComparisonMode == 0) {
+          resultsModel.exportStatisticsToCSV(
+              currentContext.getResultsLabel() + "_" + keyLengths.get(keyIndex) + "bit.csv");
+        } else {
+          resultsView.exportComparisonTableResultsToCSV(
+              currentContext.getResultsLabel() + "_comparisonMode.csv");
+        }
         uk.msci.project.rsa.DisplayUtility.showInfoAlert("Export",
             "Benchmarking Results were successfully exported!");
       } catch (IOException e) {
@@ -336,7 +554,6 @@ public class ResultsController {
         Number newValue) {
       if (newValue != null) {
         displayResultsForKey(newValue.intValue());
-        resultsView.refreshResults();
       }
     }
   }
@@ -388,7 +605,7 @@ public class ResultsController {
       try {
         currentContext.exportSignatureBatch();
         uk.msci.project.rsa.DisplayUtility.showInfoAlert("Export",
-            "The signature batch was successfully exported. Warning: The Signature batch is inclusive signatures corresponding to all keys submitted for this session");
+            "The signature batch was successfully exported. Warning: The Signature batch is inclusive of signatures corresponding to all keys submitted for this session");
       } catch (IOException e) {
         e.printStackTrace();
       }

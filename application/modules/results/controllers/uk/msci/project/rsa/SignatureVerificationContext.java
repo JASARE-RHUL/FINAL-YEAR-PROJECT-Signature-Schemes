@@ -37,7 +37,11 @@ public class SignatureVerificationContext extends BenchmarkingContext {
    */
   @Override
   public void exportVerificationResults(int keyIndex) throws IOException {
-    signatureModel.exportVerificationResultsToCSV(keyIndex);
+    if (signatureModel.getNumKeySizesForComparisonMode() > 0) {
+      signatureModel.exportVerificationResultsToCSV_ComparisonMode(keyIndex);
+    } else {
+      signatureModel.exportVerificationResultsToCSV(keyIndex);
+    }
   }
 
   /**

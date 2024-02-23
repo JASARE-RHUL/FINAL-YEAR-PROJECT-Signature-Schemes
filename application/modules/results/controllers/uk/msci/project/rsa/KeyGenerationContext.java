@@ -22,7 +22,6 @@ public class KeyGenerationContext extends BenchmarkingContext {
    */
   public KeyGenerationContext(GenModel genModel) {
     this.genModel = genModel;
-    this.genModel.generateKeyBatch();
   }
 
   /**

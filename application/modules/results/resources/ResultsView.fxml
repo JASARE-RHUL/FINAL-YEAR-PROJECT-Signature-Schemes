@@ -26,11 +26,13 @@
   <Separator/>
   <!-- Sidebar (JFXTabPane) -->
   <left>
-    <JFXTabPane fx:id="sideTabContainer" side="LEFT" tabClosingPolicy="UNAVAILABLE">
+
+    <JFXTabPane fx:id="sideTabContainer" side="LEFT" tabClosingPolicy="UNAVAILABLE" maxWidth="100">
       <tabs>
 
       </tabs>
     </JFXTabPane>
+
   </left>
 
   <!-- Main Content -->
@@ -53,31 +55,32 @@
         <!-- Statistics Tab -->
         <Tab text="Statistics">
           <ScrollPane fitToWidth="true" fitToHeight="true">
-          <VBox alignment="CENTER" spacing="10">
-            <!-- ... other components ... -->
+            <VBox spacing="10">
+              <!-- ... other components ... -->
 
-            <!-- Wrap the TableView in an HBox for horizontal centering -->
-            <HBox alignment="CENTER" VBox.vgrow="ALWAYS">
-              <TableView fx:id="tableView" >
-                <columns>
-                  <TableColumn fx:id="nameColumn" text="Statistic" minWidth="150" maxWidth="900"/>
-                  <TableColumn fx:id="valueColumn" text="Value" minWidth="270"  maxWidth="900"/>
-                </columns>
-              </TableView>
-            </HBox>
+              <!-- Wrap the TableView in an HBox for horizontal centering -->
+              <HBox alignment="CENTER">
+                <TableView fx:id="tableView">
+                  <columns>
+                    <TableColumn fx:id="nameColumn" text="Statistic" minWidth="220"/>
+                    <TableColumn fx:id="valueColumn" text="Value" minWidth="300"/>
+                  </columns>
+                </TableView>
+              </HBox>
 
-            <!-- ... other components ... -->
-            <!-- Buttons and Navigation -->
-            <HBox alignment="CENTER" spacing="10">
-              <Button fx:id="exportBenchmarkingResultsBtn" text="Export Benchmarking Results" visible="true"  managed="true" />
-              <Button fx:id="exportPrivateKeyBatchBtn" text="Export Private Key Batch" visible="false"  managed="false" />
-              <Button fx:id="exportPublicKeyBatchBtn" text="Export Public Key Batch" visible="false"  managed="false" />
-              <Button fx:id="exportSignatureBatchBtn" text="Export Signature Batch" visible="false"  managed="false" />
-              <Button fx:id="exportNonRecoverableMessageBatchBtn" text="Export Non-recoverable Message Batch" visible="false"  managed="false" />
-              <Button fx:id="exportRecoverableMessageBatchBtn" text="Export Recoverable Message Batch" visible="false"  managed="false" />
-              <Button fx:id="exportVerificationResultsBtn" text="Export Verification Results" visible="false"  managed="false" />
-            </HBox>
-          </VBox>
+              <!-- ... other components ... -->
+              <!-- Buttons and Navigation -->
+              <HBox alignment="CENTER" spacing="10">
+                <Button fx:id="exportBenchmarkingResultsBtn" text="Export Benchmarking Results" visible="true"  managed="true" />
+                <Button fx:id="exportPrivateKeyBatchBtn" text="Export Private Key Batch" visible="false"  managed="false" />
+                <Button fx:id="exportPublicKeyBatchBtn" text="Export Public Key Batch" visible="false"  managed="false" />
+                <Button fx:id="exportSignatureBatchBtn" text="Export Signature Batch" visible="false"  managed="false" />
+                <Button fx:id="exportNonRecoverableMessageBatchBtn" text="Export Non-recoverable Message Batch" visible="false"  managed="false" />
+                <Button fx:id="exportRecoverableMessageBatchBtn" text="Export Recoverable Message Batch" visible="false"  managed="false" />
+                <Button fx:id="exportVerificationResultsBtn" text="Export Verification Results" visible="false"  managed="false" />
+              </HBox>
+              <!-- ... -->
+            </VBox>
           </ScrollPane>
         </Tab>
 

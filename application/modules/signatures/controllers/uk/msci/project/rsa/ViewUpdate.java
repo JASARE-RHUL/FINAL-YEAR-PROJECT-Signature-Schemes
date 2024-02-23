@@ -232,4 +232,95 @@ public interface ViewUpdate {
   boolean getHashOutputSizeFieldVisibility();
 
 
+  /**
+   * Checks if Benchmarking Mode is enabled.
+   *
+   * @return true if Benchmarking Mode is selected, false otherwise.
+   */
+  boolean isBenchmarkingModeEnabled();
+
+  /**
+   * Sets the visibility of the provable parameters options horizontal box.
+   *
+   * @param visible true to make the box visible, false to hide it.
+   */
+  void setProvableParamsHboxVisibility(boolean visible);
+
+  /**
+   * Sets the visibility of the cross-parameter horizontal box.
+   *
+   * @param visible true to make the box visible, false to hide it.
+   */
+  void setCrossParameterHboxVisibility(boolean visible);
+
+  /**
+   * Sets the visibility of the standard parameters radio button.
+   *
+   * @param visible true to make the radio button visible, false to hide it.
+   */
+  void setStandardParametersRadioVisibility(boolean visible);
+
+  /**
+   * Sets the visibility of the custom parameters radio button.
+   *
+   * @param visible true to make the radio button visible, false to hide it.
+   */
+  void setCustomParametersRadioVisibility(boolean visible);
+
+  /**
+   * Sets the selected state of the provably secure parameters radio button.
+   *
+   * @param visible true to select the radio button, false otherwise.
+   */
+  void setProvablySecureParametersRadioSelected(boolean visible);
+
+  /**
+   * Sets the selected state of the Cross-Parameter toggle switch.
+   *
+   * @param isSelected true to select the toggle switch, false otherwise.
+   */
+  void setSelectedCrossParameterToggleObserver(boolean isSelected);
+
+  /**
+   * Sets the visibility of the hash function size horizontal box.
+   *
+   * @param visible true to make the box visible, false to hide it.
+   */
+  void setHashFunctionSizeHboxVisibility(boolean visible);
+
+  /**
+   * Sets the visibility of the standard hash choice comparison mode horizontal box.
+   *
+   * @param visible true to make the box visible, false to hide it.
+   */
+  void setStandardHashChoiceComparisonModeHboxVisibility(boolean visible);
+
+  /**
+   * Sets the visibility of the provable hash choice comparison mode horizontal box.
+   *
+   * @param visible true to make the box visible, false to hide it.
+   */
+  void setProvableHashChoiceComparisonModeHboxVisibility(boolean visible);
+
+  /**
+   * Sets the visibility of the general hash function horizontal box.
+   *
+   * @param visible true to make the box visible, false to hide it.
+   */
+  void setGeneralHashFunctionHboxVisibility(boolean visible);
+
+  /**
+   * Gets the currently selected provable hash function from the combo box.
+   *
+   * @return The selected provable hash function.
+   */
+  String getCurrentProvableHashFunction();
+
+  /**
+   * Gets the currently selected standard hash function from the combo box.
+   *
+   * @return The selected standard hash function.
+   */
+  String getCurrentStandardHashFunction();
+
 }
