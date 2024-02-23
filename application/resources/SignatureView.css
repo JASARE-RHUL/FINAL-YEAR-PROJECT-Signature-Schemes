@@ -70,7 +70,6 @@
   -fx-text-fill: black; /* Text color for tab labels */
   -fx-alignment: center; /* Center text within the tab */
   -fx-text-alignment: center;
-
 }
 .jfx-tab-pane .tab {
   -fx-border-width: 1;

@@ -26,11 +26,13 @@
   <Separator/>
   <!-- Sidebar (JFXTabPane) -->
   <left>
-    <JFXTabPane fx:id="sideTabContainer" side="LEFT" tabClosingPolicy="UNAVAILABLE">
+
+    <JFXTabPane fx:id="sideTabContainer" side="LEFT" tabClosingPolicy="UNAVAILABLE" maxWidth="100">
       <tabs>
 
       </tabs>
     </JFXTabPane>
+
   </left>
 
   <!-- Main Content -->
