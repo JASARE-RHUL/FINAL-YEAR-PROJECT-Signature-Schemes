@@ -3,6 +3,7 @@ package uk.msci.project.rsa;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
+import java.util.List;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
@@ -215,6 +216,15 @@ public class SignatureCreationController extends SignatureBaseController {
         new ProvableParamsChangeObserver(new SignViewUpdateOperations(signView)));
   }
 
+  /**
+   * Sets up observers for the SignView controls in cross-parameter benchmarking mode. This method
+   * adds observers to handle events such as text batch import, key batch import, signature scheme
+   * changes, benchmarking initiation, and navigation back to the main menu. The observers are
+   * essential for capturing user interactions and updating the model and view accordingly in the
+   * context of cross-parameter benchmarking.
+   *
+   * @param primaryStage The stage that observers will use for file dialogs.
+   */
   private void setupSignObserversCrossBenchmarking(Stage primaryStage) {
     signView.addImportTextBatchBtnObserver(
         new ImportObserver(primaryStage, new SignViewUpdateOperations(signView),
@@ -266,17 +276,15 @@ public class SignatureCreationController extends SignatureBaseController {
       hashOutputSize = signView.getHashOutputSize();
       if ((signView.getTextInput().equals("") && message == null)
           || signatureModel.getKey() == null
-          || signView.getSelectedSignatureScheme() == null
-          || signView.getSelectedHashFunction() == null) {
+          || signatureModel.getSignatureType() == null
+          || signatureModel.getHashType() == null) {
         uk.msci.project.rsa.DisplayUtility.showErrorAlert(
             "You must provide an input for all fields. Please try again.");
         return;
       }
 
-      if (!handleHashOutputSize(viewOps) && signView.getHashOutputSizeFieldVisibility()) {
+      if (!setHashSizeInModel(new SignViewUpdateOperations(signView))) {
         return;
-      } else if (signView.getHashOutputSizeFieldVisibility()) {
-        signatureModel.setHashSize((Integer.parseInt(hashOutputSize) + 7) / 8);
       }
 
       try {
@@ -310,8 +318,11 @@ public class SignatureCreationController extends SignatureBaseController {
   }
 
   /**
-   * Observer for initiating the signature generation benchmark. Handles the event triggered for
-   * starting the benchmarking process, sets up the task, and shows the progress on the UI.
+   * Observer for initiating the signature generation benchmark. This class handles the event
+   * triggered for starting the benchmarking process. Depending on the benchmarking mode, it either
+   * initiates a standard benchmarking task or calls 'handleBenchmarkingInitiationComparisonMode'
+   * for comparison mode benchmarking. It ensures the necessary preconditions are met, sets up the
+   * task, and manages the progress display on the UI.
    */
   class SignatureBenchmarkObserver implements EventHandler<ActionEvent> {
 
@@ -325,20 +336,22 @@ public class SignatureCreationController extends SignatureBaseController {
     public void handle(ActionEvent event) {
       hashOutputSize = signView.getHashOutputSize();
 
+      if (isCrossParameterBenchmarkingEnabled) {
+        handleBenchmarkingInitiationComparisonMode();
+        return;
+      }
+
       if ((signatureModel.getNumTrials() == 0)
           || signatureModel.getPrivateKeyBatchLength() == 0
-          || signView.getSelectedSignatureScheme() == null
-          || signView.getSelectedHashFunction() == null || (isCrossParameterBenchmarkingEnabled && (
-          signView.getCurrentStandardHashFunction()
-              .equals("") || signView.getCurrentProvableHashFunction().equals("")))) {
+          || signatureModel.getSignatureType() == null
+          || signatureModel.getHashType() == null) {
         uk.msci.project.rsa.DisplayUtility.showErrorAlert(
             "You must provide an input for all fields. Please try again.");
         return;
       }
-      if (!handleHashOutputSize(viewOps) && signView.getHashOutputSizeFieldVisibility()) {
+
+      if (!setHashSizeInModel(new SignViewUpdateOperations(signView))) {
         return;
-      } else if (signView.getHashOutputSizeFieldVisibility()) {
-        signatureModel.setHashSize((Integer.parseInt(hashOutputSize) + 7) / 8);
       }
 
       // Show the progress dialog
@@ -375,6 +388,59 @@ public class SignatureCreationController extends SignatureBaseController {
 
   }
 
+
+  /**
+   * Handles the initiation of the benchmarking process in comparison mode. This method checks for
+   * required inputs specific to comparison mode benchmarking and initiates the benchmarking task.
+   * It sets up the progress dialog and begins the task for generating signatures across different
+   * key sizes and parameter settings, providing feedback on the progress to the user.
+   */
+  private void handleBenchmarkingInitiationComparisonMode() {
+
+    if ((signatureModel.getNumTrials() == 0)
+        || signatureModel.getPrivateKeyBatchLength() == 0
+        || signatureModel.getSignatureType() == null
+        || signatureModel.getCurrentFixedHashType_ComparisonMode() == null
+        || signatureModel.getCurrentProvableHashType_ComparisonMode() == null) {
+      uk.msci.project.rsa.DisplayUtility.showErrorAlert(
+          "You must provide an input for all fields. Please try again.");
+      return;
+    }
+
+    if (!setHashSizeInModel(new SignViewUpdateOperations(signView))) {
+      return;
+    }
+    // Show the progress dialog
+    Dialog<Void> progressDialog = uk.msci.project.rsa.DisplayUtility.showProgressDialog(
+        mainController.getPrimaryStage(), "Signature Generation");
+    ProgressBar progressBar = (ProgressBar) progressDialog.getDialogPane()
+        .lookup("#progressBar");
+    Label progressLabel = (Label) progressDialog.getDialogPane().lookup("#progressLabel");
+
+    Task<Void> benchmarkingTask = createBenchmarkingTaskComparisonMode(messageBatchFile,
+        progressBar, progressLabel);
+    new Thread(benchmarkingTask).start();
+
+    progressDialog.getDialogPane().lookupButton(ButtonType.CANCEL)
+        .addEventFilter(ActionEvent.ACTION, e -> {
+          if (benchmarkingTask.isRunning()) {
+            benchmarkingTask.cancel();
+          }
+        });
+
+    benchmarkingTask.setOnSucceeded(e -> {
+      progressDialog.close();
+      handleBenchmarkingCompletionComparisonMode(); // Handle completion
+    });
+
+    benchmarkingTask.setOnFailed(e -> {
+      progressDialog.close();
+      uk.msci.project.rsa.DisplayUtility.showErrorAlert(
+          "Error: Benchmarking failed. Please try again.");
+
+    });
+  }
+
   /**
    * Creates a benchmarking task for signature generation. This task is responsible for processing a
    * batch of messages, generating signatures, and updating the UI with progress.
@@ -384,7 +450,6 @@ public class SignatureCreationController extends SignatureBaseController {
    * @param progressLabel UI component to display progress text.
    * @return The task to be executed for benchmarking.
    */
-
   private Task<Void> createBenchmarkingTask(File messageFile, ProgressBar progressBar,
       Label progressLabel) {
     return new Task<>() {
@@ -401,17 +466,62 @@ public class SignatureCreationController extends SignatureBaseController {
   }
 
   /**
+   * Creates a benchmarking task for signature generation in comparison mode. This task is
+   * responsible for processing a batch of messages, generating signatures, and updating the UI with
+   * progress.
+   *
+   * @param messageFile   The file containing the messages to be signed.
+   * @param progressBar   UI component to display progress.
+   * @param progressLabel UI component to display progress text.
+   * @return The task to be executed for benchmarking.
+   */
+  private Task<Void> createBenchmarkingTaskComparisonMode(File messageFile, ProgressBar progressBar,
+      Label progressLabel) {
+    return new Task<>() {
+      @Override
+      protected Void call() throws Exception {
+        signatureModel.batchGenerateSignatures_ComparisonMode(messageFile,
+            progress -> Platform.runLater(() -> {
+              progressBar.setProgress(progress);
+              progressLabel.setText(String.format("%.0f%%", progress * 100));
+            }));
+        return null;
+      }
+    };
+
+  }
+
+  /**
    * Handles the completion of the benchmarking task for signature creation. This method is called
    * when the benchmarking task successfully completes. It initialises and sets up the
    * ResultsController with the appropriate context (SignatureCreationContext) and displays the
    * results view with the gathered benchmarking data.
    */
   private void handleBenchmarkingCompletion() {
+    resetPreLoadedKeyParams();
     ResultsController resultsController = new ResultsController(mainController);
     BenchmarkingContext context = new SignatureCreationContext(signatureModel);
     resultsController.setContext(context);
     resultsController.showResultsView(mainController.getPrimaryStage(),
         signatureModel.getClockTimesPerTrial(), signatureModel.getPrivKeyLengths());
+  }
+
+  /**
+   * Handles the completion of the benchmarking task in comparison mode. This method is called when
+   * the benchmarking task successfully completes in the context of cross-parameter benchmarking. It
+   * resets the pre-loaded key parameters, initialises the ResultsController with the appropriate
+   * context, and displays the results view with the gathered benchmarking data. This method is
+   * pivotal in finalising the benchmarking process and presenting the results to the user.
+   */
+  private void handleBenchmarkingCompletionComparisonMode() {
+    resetPreLoadedKeyParams();
+    ResultsController resultsController = new ResultsController(mainController);
+    BenchmarkingContext context = new SignatureCreationContext(signatureModel);
+    resultsController.setContext(context);
+
+    resultsController.showResultsView(mainController.getPrimaryStage(),
+        signatureModel.getClockTimesPerTrial(), signatureModel.getPrivKeyLengths(), true,
+        signatureModel.getNumKeySizesForComparisonMode());
   }
 
 
