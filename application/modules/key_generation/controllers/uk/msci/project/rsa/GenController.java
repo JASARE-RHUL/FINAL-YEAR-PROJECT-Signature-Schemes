@@ -137,9 +137,11 @@ public class GenController {
       } else {
         int[] intArray = convertStringToIntArray(keyBitSizes);
         int k = intArray.length;
+        boolean isSmallE;
         genModel.setKeyParameters(k, convertStringToIntArray(keyBitSizes));
         try {
-          genModel.setGen(false);
+          isSmallE = genView.getSmallEToggle().equals("Yes");
+          genModel.setGen(isSmallE);
         } catch (IllegalArgumentException e) {
           uk.msci.project.rsa.DisplayUtility.showErrorAlert(
               "Failure. Please ensure your input is comma separated sequence of bit sizes "
@@ -148,6 +150,9 @@ public class GenController {
           return;
         }
         genModel.generateKey();
+        mainController.setProvableKeyForSignatureProcesses(
+            genModel.getGeneratedKeyPair().getPrivateKey().getKeyValue(),
+            genModel.getGeneratedKeyPair().getPublicKey().getKeyValue());
         genView.setFailurePopupVisible(false);
         genView.setSuccessPopupVisible(true);
         genView.addExportPublicKeyObserver(new ExportPublicKeyObserver());
