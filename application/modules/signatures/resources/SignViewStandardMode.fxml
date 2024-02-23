@@ -44,7 +44,10 @@
         <Label text="Benchmarking Mode:" styleClass="bold-label"/>
         <ToggleSwitch fx:id="benchmarkingModeToggle" selected="false"/>
       </HBox>
-
+      <HBox fx:id="crossParameterHbox" alignment="CENTER_LEFT" spacing="10" managed="false" visible="false">
+        <Label text="Cross-Parameter Benchmarking Mode:" styleClass="bold-label"/>
+        <ToggleSwitch fx:id="crossParameterBenchmarkingModeToggle" selected="true"/>
+      </HBox>
       <Separator/>
 
       <!-- Text Area and Import Text Button -->

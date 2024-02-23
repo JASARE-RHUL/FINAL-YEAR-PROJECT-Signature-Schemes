@@ -64,6 +64,8 @@ public abstract class SignatureBaseController {
 
   String importedKeyBatch;
 
+  boolean isSingleKeyProvablySecure;
+
 
   /**
    * Constructs a SignatureBaseController with a reference to the MainController to be used in the
@@ -96,6 +98,7 @@ public abstract class SignatureBaseController {
           "Error: Invalid key. Key could not be imported.");
       return false;
     } else {
+      resetPreLoadedKeyParams();
       if (viewOps instanceof SignViewUpdateOperations) {
         signatureModel.setKey(new PrivateKey(content));
       } else {
@@ -516,12 +519,10 @@ public abstract class SignatureBaseController {
 
     @Override
     public void handle(ActionEvent event) {
-      isKeyForComparisonMode = false;
-      isCrossParameterBenchmarkingEnabled = false;
+      resetPreLoadedKeyParams();
       viewOps.setProvableParamsHboxVisibility(false);
       viewOps.setCustomParametersRadioVisibility(true);
       viewOps.setStandardParametersRadioVisibility(true);
-      importedKeyBatch = null;
       viewOps.setSelectedCrossParameterToggleObserver(false);
       viewOps.setCheckmarkVisibility(false);
       viewOps.setFixedKeyName();
@@ -547,9 +548,9 @@ public abstract class SignatureBaseController {
 
     @Override
     public void handle(ActionEvent event) {
-      isKeyForComparisonMode = false;
-      isCrossParameterBenchmarkingEnabled = false;
-      importedKeyBatch = null;
+      resetPreLoadedKeyParams();
+      viewOps.setCustomParametersRadioVisibility(true);
+      viewOps.setStandardParametersRadioVisibility(true);
       viewOps.setSelectedCrossParameterToggleObserver(false);
       viewOps.setProvableParamsHboxVisibility(false);
       viewOps.setCheckmarkVisibility(false);
@@ -579,6 +580,7 @@ public abstract class SignatureBaseController {
               "Invalid key batch. Please make sure the file contains a contiguous sequence of new line separated and valid keys.");
           return false;
         } else {
+          resetPreLoadedKeyParams();
           if (this instanceof SignatureCreationController) {
             signatureModel.addPrivKeyToBatch(keyContent);
           } else {
@@ -673,7 +675,7 @@ public abstract class SignatureBaseController {
    *
    * @param viewOps The {@code ViewUpdate} operations that will update the view.
    */
-  public void updateWithImportedKey(ViewUpdate viewOps) {
+  public void updateWithImportedKeyBatch(ViewUpdate viewOps) {
     try (BufferedReader reader = new BufferedReader(new StringReader(this.importedKeyBatch))) {
       String keyContent;
       while ((keyContent = reader.readLine()) != null) {
@@ -696,6 +698,26 @@ public abstract class SignatureBaseController {
     } else {
       viewOps.setKeyName("A provably-secure key was loaded");
     }
+    viewOps.updateCheckmarkImage();
+    viewOps.setCheckmarkVisibility(true);
+    viewOps.setKeyVisibility(true);
+  }
+
+  /**
+   * Updates the signature model and view with an imported key. This method is used to update the
+   * model with the key content and to update the view to reflect that a key has been imported in
+   * non benchmarking mode.
+   *
+   * @param viewOps The {@code ViewUpdate} operations that will update the view.
+   */
+  public void updateWithImportedKey(ViewUpdate viewOps) {
+    if (this instanceof SignatureCreationController) {
+      signatureModel.setKey(new PrivateKey(importedKeyBatch));
+    } else {
+      signatureModel.setKey(new PublicKey(importedKeyBatch));
+    }
+
+    viewOps.setKeyName("A provably-secure key was loaded");
     viewOps.updateCheckmarkImage();
     viewOps.setCheckmarkVisibility(true);
     viewOps.setKeyVisibility(true);
@@ -773,7 +795,7 @@ public abstract class SignatureBaseController {
         String radioButtonText = selectedRadioButton.getText();
         switch (radioButtonText) {
           case "Yes":
-            if (isKeyProvablySecure) {
+            if (isKeyProvablySecure || isSingleKeyProvablySecure) {
               viewOps.setProvablySecureParametersRadioSelected(true);
               viewOps.setCustomParametersRadioVisibility(false);
               viewOps.setStandardParametersRadioVisibility(false);
@@ -864,13 +886,24 @@ public abstract class SignatureBaseController {
    * @param keyBatch               The batch of keys generated and to be imported.
    * @param isKeyForComparisonMode Indicates if the key is for comparison mode.
    */
-
   public void importKeyFromKeyGeneration(String keyBatch, boolean isKeyForComparisonMode) {
     this.isKeyProvablySecure = true;
     this.isCrossParameterBenchmarkingEnabled = isKeyForComparisonMode;
     this.isKeyForComparisonMode = isKeyForComparisonMode;
     importedKeyBatch = keyBatch;
 
+  }
+
+  /**
+   * Imports a key from the key generation process. This method sets the state of the controller to
+   * reflect that a key has been imported for instantiating a scheme with provably secure in non
+   * benchmarking mode. It updates the internal state with the imported key batch.
+   *
+   * @param key The key generated and to be imported.
+   */
+  public void importSingleKeyFromKeyGeneration(String key) {
+    this.isSingleKeyProvablySecure = true;
+    importedKeyBatch = key;
   }
 
   /**
@@ -897,9 +930,9 @@ public abstract class SignatureBaseController {
   }
 
   /**
-   * Resets the parameters related to pre-loaded keys in the signature processes. This method
-   * is used to reset the internal state of the controller, specifically the flags and data related
-   * to cross-parameter benchmarking, comparison mode, and provably secure keys. It ensures that the
+   * Resets the parameters related to pre-loaded keys in the signature processes. This method is
+   * used to reset the internal state of the controller, specifically the flags and data related to
+   * cross-parameter benchmarking, comparison mode, and provably secure keys. It ensures that the
    * controller's state accurately reflects the absence of pre-loaded keys, particularly after the
    * completion of a benchmarking process or when switching contexts.
    */
@@ -908,5 +941,14 @@ public abstract class SignatureBaseController {
     this.isKeyForComparisonMode = false;
     this.importedKeyBatch = null;
     this.isKeyProvablySecure = false;
+    isSingleKeyProvablySecure = false;
+  }
+
+  /**
+   * An indication of whether there is single key that has been pre-loaded for the signature
+   * creation process in non benchmarking mode.
+   */
+  public boolean getIsSingleKeyProvablySecure() {
+    return isSingleKeyProvablySecure;
   }
 }
