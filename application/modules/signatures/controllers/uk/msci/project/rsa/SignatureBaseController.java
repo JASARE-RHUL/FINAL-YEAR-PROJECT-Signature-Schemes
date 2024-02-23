@@ -895,4 +895,18 @@ public abstract class SignatureBaseController {
     }
     return true;
   }
+
+  /**
+   * Resets the parameters related to pre-loaded keys in the signature processes. This method
+   * is used to reset the internal state of the controller, specifically the flags and data related
+   * to cross-parameter benchmarking, comparison mode, and provably secure keys. It ensures that the
+   * controller's state accurately reflects the absence of pre-loaded keys, particularly after the
+   * completion of a benchmarking process or when switching contexts.
+   */
+  void resetPreLoadedKeyParams() {
+    isCrossParameterBenchmarkingEnabled = false;
+    this.isKeyForComparisonMode = false;
+    this.importedKeyBatch = null;
+    this.isKeyProvablySecure = false;
+  }
 }
