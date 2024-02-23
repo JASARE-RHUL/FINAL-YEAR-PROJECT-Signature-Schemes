@@ -236,3 +236,24 @@ integration tests, refine software design specifications for the application's t
 benchmarking focus, and alter the signing and verifying processes to allow user-selected hash
 functions.
 
+## Diary Entry - Week of 12th February - 18th February 2024
+
+I started with a supervisor meeting which led to a pivotal shift in my benchmarking approach,
+transitioning from batch-based to individual key-based results. This change led me to rework the
+batch methods in my application for accurate individual task timing and to reorganize the signature
+collection process for correct verification. I also gained clarity on using hash IDs with the MGF1
+function in different signature schemes, particularly in adapting the ANSI standard (the ANSI
+standard is outdated and does not specify how to handle hash ID when applying the MGF1 to fixed hash
+function).
+
+Later on in the week I worked on enabling the choice of different hash functions in the signature
+schemes (switching from an initial the hash map of hash IDs to storing hash IDs and static final
+fields for efficiency) and adjusting the signature model to track hash types and sizes. This
+required updates to the signing and verification interfaces, allowing users to select hash
+functions, and modifying the Signature Controller to handle these changes.
+
+A challenge arose with discrepancies in timing due to parallel processing. To resolve this, I
+switched to sequential batch methods, ensuring precise timing. The week ended with me adapting the
+results controller for managing per-key results and refactoring the signature schemes with a new
+getHashID method for more efficient operations (as alluded to previously). I also added a consistent
+footer across all application screens to unify the user interface.
