@@ -3,7 +3,6 @@ package uk.msci.project.rsa;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
-import java.util.List;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
@@ -121,6 +120,16 @@ public class SignatureCreationController extends SignatureBaseController {
 
       setupSignObservers(primaryStage);
 
+      if (isSingleKeyProvablySecure && this.importedKeyBatch != null) {
+        updateWithImportedKey(new SignViewUpdateOperations(signView));
+        signView.setImportKeyButtonVisibility(false);
+        signView.setCancelImportSingleKeyButtonVisibility(true);
+        signView.setProvableParamsHboxVisibility(true);
+        signView.setProvablySecureParametersRadioSelected(true);
+        signView.setCustomParametersRadioVisibility(false);
+        signView.setStandardParametersRadioVisibility(false);
+      }
+
       mainController.setScene(root);
 
     } catch (IOException e) {
@@ -143,7 +152,7 @@ public class SignatureCreationController extends SignatureBaseController {
       Parent root = loader.load();
       signView = loader.getController();
       this.signatureModel = new SignatureModel();
-      updateWithImportedKey(new SignViewUpdateOperations(signView));
+      updateWithImportedKeyBatch(new SignViewUpdateOperations(signView));
       if (isCrossParameterBenchmarkingEnabled && this.importedKeyBatch != null) {
         signView.setImportKeyBatchButtonVisibility(false);
         signView.setCancelImportKeyButtonVisibility(true);
@@ -187,6 +196,8 @@ public class SignatureCreationController extends SignatureBaseController {
     signView.addCloseNotificationObserver(new BackToMainMenuObserver(signView));
     signView.addCancelImportTextButtonObserver(
         new CancelImportTextButtonObserver(new SignViewUpdateOperations(signView)));
+    signView.addProvableSchemeChangeObserver(
+        new ProvableParamsChangeObserver(new SignViewUpdateOperations(signView)));
 
   }
 
@@ -307,6 +318,7 @@ public class SignatureCreationController extends SignatureBaseController {
                   "Failed to copy non-recoverable message to clipboard."));
           signView.setRecoveryOptionsVisibility(true);
         }
+        resetPreLoadedKeyParams();
         signView.showNotificationPane();
       } catch (Exception e) {
         uk.msci.project.rsa.DisplayUtility.showErrorAlert(

@@ -4,8 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
 import javafx.application.Platform;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -87,7 +85,7 @@ public class SignatureVerificationController extends SignatureBaseController {
       setupVerificationObserversBenchmarking(primaryStage);
       if (isKeyProvablySecure && this.importedKeyBatch != null
           && !isCrossParameterBenchmarkingEnabled) {
-        updateWithImportedKey(new VerifyViewUpdateOperations(verifyView));
+        updateWithImportedKeyBatch(new VerifyViewUpdateOperations(verifyView));
         verifyView.setImportKeyBatchButtonVisibility(false);
         verifyView.setCancelImportKeyButtonVisibility(true);
         verifyView.setProvableParamsHboxVisibility(true);
@@ -123,6 +121,17 @@ public class SignatureVerificationController extends SignatureBaseController {
               () -> showVerifyView(primaryStage)
           ));
       setupVerifyObservers(primaryStage);
+
+      if (isSingleKeyProvablySecure && this.importedKeyBatch != null) {
+        updateWithImportedKey(new VerifyViewUpdateOperations(verifyView));
+        verifyView.setImportKeyButtonVisibility(false);
+        verifyView.setCancelImportSingleKeyButtonVisibility(true);
+        verifyView.setProvableParamsHboxVisibility(true);
+        verifyView.setProvablySecureParametersRadioSelected(true);
+        verifyView.setCustomParametersRadioVisibility(false);
+        verifyView.setStandardParametersRadioVisibility(false);
+      }
+
       mainController.setScene(root);
 
     } catch (IOException e) {
@@ -145,7 +154,7 @@ public class SignatureVerificationController extends SignatureBaseController {
       Parent root = loader.load();
       verifyView = loader.getController();
       this.signatureModel = new SignatureModel();
-      updateWithImportedKey(new VerifyViewUpdateOperations(verifyView));
+      updateWithImportedKeyBatch(new VerifyViewUpdateOperations(verifyView));
       if (isCrossParameterBenchmarkingEnabled && this.importedKeyBatch != null) {
         verifyView.setImportKeyBatchButtonVisibility(false);
         verifyView.setCancelImportKeyButtonVisibility(true);
@@ -197,6 +206,8 @@ public class SignatureVerificationController extends SignatureBaseController {
         new CancelImportTextButtonObserver(new VerifyViewUpdateOperations(verifyView)));
     verifyView.addCancelImportSignatureButtonObserver(
         new CancelImportSignatureButtonObserver());
+    verifyView.addProvableSchemeChangeObserver(
+        new ProvableParamsChangeObserver(new VerifyViewUpdateOperations(verifyView)));
   }
 
   /**
@@ -361,6 +372,7 @@ public class SignatureVerificationController extends SignatureBaseController {
         } else {
           verifyView.setFalseLabelVisibility(true);
         }
+        resetPreLoadedKeyParams();
         verifyView.showNotificationPane();
 
       } catch (Exception e) {
