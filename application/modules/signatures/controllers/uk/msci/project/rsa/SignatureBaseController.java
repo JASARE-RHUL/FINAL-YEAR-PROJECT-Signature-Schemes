@@ -887,7 +887,8 @@ public abstract class SignatureBaseController {
    * @param isKeyForComparisonMode Indicates if the key is for comparison mode.
    */
   public void importKeyFromKeyGeneration(String keyBatch, boolean isKeyForComparisonMode) {
-    this.isKeyProvablySecure = true;
+
+    this.isKeyProvablySecure = !isKeyForComparisonMode;
     this.isCrossParameterBenchmarkingEnabled = isKeyForComparisonMode;
     this.isKeyForComparisonMode = isKeyForComparisonMode;
     importedKeyBatch = keyBatch;

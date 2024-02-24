@@ -80,7 +80,7 @@ public class SignatureCreationController extends SignatureBaseController {
           () -> showSignViewCrossBenchmarkingMode(primaryStage),
           () -> showSignView(primaryStage), new SignViewUpdateOperations(signView)));
       setupSignObserversBenchmarking(primaryStage);
-      if (isKeyProvablySecure && this.importedKeyBatch != null
+      if (isSingleKeyProvablySecure && this.importedKeyBatch != null
           && !isCrossParameterBenchmarkingEnabled) {
         updateWithImportedKeyBatch(new SignViewUpdateOperations(signView));
         signView.setImportKeyBatchButtonVisibility(false);

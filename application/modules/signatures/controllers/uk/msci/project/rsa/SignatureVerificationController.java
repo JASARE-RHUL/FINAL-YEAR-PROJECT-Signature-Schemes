@@ -83,7 +83,7 @@ public class SignatureVerificationController extends SignatureBaseController {
           () -> showVerifyViewCrossBenchmarkingMode(primaryStage),
           () -> showVerifyView(primaryStage), new VerifyViewUpdateOperations(verifyView)));
       setupVerificationObserversBenchmarking(primaryStage);
-      if (isKeyProvablySecure && this.importedKeyBatch != null
+      if (isSingleKeyProvablySecure && this.importedKeyBatch != null
           && !isCrossParameterBenchmarkingEnabled) {
         updateWithImportedKeyBatch(new VerifyViewUpdateOperations(verifyView));
         verifyView.setImportKeyBatchButtonVisibility(false);
