@@ -190,6 +190,10 @@ public class SignatureCreationController extends SignatureBaseController {
     signView.addCancelImportSingleKeyButtonObserver(
         new CancelImportKeyButtonObserver(new SignViewUpdateOperations(signView)));
     signView.addSignatureSchemeChangeObserver(new SignatureSchemeChangeObserver());
+    signView.addParameterChoiceChangeObserver(
+        new ParameterChoiceChangeObserver(new SignViewUpdateOperations(signView)));
+    signView.addHashFunctionChangeObserver(
+        new HashFunctionChangeObserver(new SignViewUpdateOperations(signView)));
     signView.addCreateSignatureObserver(
         new CreateSignatureObserver(new SignViewUpdateOperations(signView)));
     signView.addBackToMainMenuObserver(new BackToMainMenuObserver(signView));
