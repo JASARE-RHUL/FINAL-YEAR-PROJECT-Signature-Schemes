@@ -66,6 +66,8 @@ public abstract class SignatureBaseController {
 
   boolean isSingleKeyProvablySecure;
 
+  boolean isKeyBatchImportCancelled;
+
 
   /**
    * Constructs a SignatureBaseController with a reference to the MainController to be used in the
@@ -523,6 +525,7 @@ public abstract class SignatureBaseController {
       viewOps.setProvableParamsHboxVisibility(false);
       viewOps.setCustomParametersRadioVisibility(true);
       viewOps.setStandardParametersRadioVisibility(true);
+      isKeyBatchImportCancelled = true;
       viewOps.setSelectedCrossParameterToggleObserver(false);
       viewOps.setCheckmarkVisibility(false);
       viewOps.setFixedKeyName();
@@ -766,8 +769,11 @@ public abstract class SignatureBaseController {
           onCrossBenchmarkingMode.run();
         }
       } else if (Boolean.FALSE.equals(newValue) && Boolean.TRUE.equals(oldValue)) {
-        isCrossParameterBenchmarkingEnabled = false;
-        onBenchmarkingMode.run();
+        if (isCrossParameterBenchmarkingEnabled || isKeyBatchImportCancelled) {
+          isKeyBatchImportCancelled = false;
+          isCrossParameterBenchmarkingEnabled = false;
+          onBenchmarkingMode.run();
+        }
       }
     }
   }
