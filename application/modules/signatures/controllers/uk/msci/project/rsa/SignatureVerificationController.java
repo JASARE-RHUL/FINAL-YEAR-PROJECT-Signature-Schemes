@@ -616,7 +616,7 @@ public class SignatureVerificationController extends SignatureBaseController {
       viewOps.setMessageBatchName("Please Import a message batch");
       messageBatchFile = null;
       verifyView.setImportTextBatchBtnVisibility(true);
-      verifyView.setCancelImportTextButtonVisibility(false);
+      verifyView.setCancelImportTextBatchButtonVisibility(false);
     }
   }
 

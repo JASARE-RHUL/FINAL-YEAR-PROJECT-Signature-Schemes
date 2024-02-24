@@ -640,7 +640,7 @@ public class SignatureCreationController extends SignatureBaseController {
       signatureModel.setNumTrials(0);
       messageBatchFile = null;
       viewOps.setImportTextBatchBtnVisibility(true);
-      viewOps.setCancelImportTextButtonVisibility(false);
+      viewOps.setCancelImportTextBatchButtonVisibility(false);
     }
   }
 
