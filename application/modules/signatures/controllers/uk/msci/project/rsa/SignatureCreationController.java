@@ -9,10 +9,6 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.Dialog;
-import javafx.scene.control.Label;
-import javafx.scene.control.ProgressBar;
 import javafx.stage.Stage;
 
 
@@ -40,6 +36,14 @@ public class SignatureCreationController extends SignatureBaseController {
    * purposes.
    */
   private String signature;
+
+  /**
+   * An instance of the BenchmarkingUtility class used to manage benchmarking tasks. This utility
+   * facilitates the execution and monitoring of tasks related to the benchmarking of key generation
+   * processes. It provides methods to initiate benchmarking tasks, update progress, and handle task
+   * completion.
+   */
+  private BenchmarkingUtility benchmarkingUtility;
 
   /**
    * Constructs a SignatureCreationController with a reference to the MainController to be used in
@@ -117,17 +121,18 @@ public class SignatureCreationController extends SignatureBaseController {
    * @param primaryStage The primary stage of the application where the view will be displayed.
    */
   public void showSignViewStandardMode(Stage primaryStage) {
-    loadSignView("/SignViewStandardMode.fxml", () -> setupSignObserversStandard(primaryStage), () -> {
-      if (isSingleKeyProvablySecure && this.importedKeyBatch != null) {
-        updateWithImportedKey(new SignViewUpdateOperations(signView));
-        signView.setImportKeyButtonVisibility(false);
-        signView.setCancelImportSingleKeyButtonVisibility(true);
-        signView.setProvableParamsHboxVisibility(true);
-        signView.setProvablySecureParametersRadioSelected(true);
-        signView.setCustomParametersRadioVisibility(false);
-        signView.setStandardParametersRadioVisibility(false);
-      }
-    });
+    loadSignView("/SignViewStandardMode.fxml", () -> setupSignObserversStandard(primaryStage),
+        () -> {
+          if (isSingleKeyProvablySecure && this.importedKeyBatch != null) {
+            updateWithImportedKey(new SignViewUpdateOperations(signView));
+            signView.setImportKeyButtonVisibility(false);
+            signView.setCancelImportSingleKeyButtonVisibility(true);
+            signView.setProvableParamsHboxVisibility(true);
+            signView.setProvablySecureParametersRadioSelected(true);
+            signView.setCustomParametersRadioVisibility(false);
+            signView.setStandardParametersRadioVisibility(false);
+          }
+        });
   }
 
   /**
@@ -156,7 +161,6 @@ public class SignatureCreationController extends SignatureBaseController {
    * changes.
    */
   private void setupNonCrossBenchmarkingObservers() {
-    signView.addSignatureSchemeChangeObserver(new SignatureSchemeChangeObserver());
     signView.addParameterChoiceChangeObserver(
         new ParameterChoiceChangeObserver(new SignViewUpdateOperations(signView)));
     signView.addHashFunctionChangeObserver(
@@ -172,6 +176,7 @@ public class SignatureCreationController extends SignatureBaseController {
    * @param primaryStage The primary stage of the application where the view will be displayed.
    */
   private void setupCommonToAllObservers(Stage primaryStage) {
+    signView.addSignatureSchemeChangeObserver(new SignatureSchemeChangeObserver());
     signView.addBenchmarkingModeToggleObserver(new ApplicationModeChangeObserver(
         () -> showSignViewStandardMode(primaryStage),
         () -> showSignView(primaryStage)
@@ -195,7 +200,7 @@ public class SignatureCreationController extends SignatureBaseController {
     signView.addCancelImportKeyButtonObserver(
         new CancelImportKeyBatchButtonObserver(new SignViewUpdateOperations(signView)));
     signView.addSigBenchmarkButtonObserver(
-        new SignatureBenchmarkObserver(new SignViewUpdateOperations(signView)));
+        new SignatureBenchmarkObserver());
     signView.addCrossParameterToggleObserver(new CrossBenchmarkingModeChangeObserver(
         () -> showSignViewCrossBenchmarkingMode(primaryStage),
         () -> showSignView(primaryStage), new SignViewUpdateOperations(signView)));
@@ -219,7 +224,7 @@ public class SignatureCreationController extends SignatureBaseController {
     signView.addCancelImportSingleKeyButtonObserver(
         new CancelImportKeyButtonObserver(new SignViewUpdateOperations(signView)));
     signView.addCreateSignatureObserver(
-        new CreateSignatureObserver(new SignViewUpdateOperations(signView)));
+        new CreateSignatureObserver());
     signView.addCloseNotificationObserver(new BackToMainMenuObserver(signView));
     signView.addCancelImportTextButtonObserver(
         new CancelImportTextButtonObserver(new SignViewUpdateOperations(signView)));
@@ -277,12 +282,6 @@ public class SignatureCreationController extends SignatureBaseController {
    */
   class CreateSignatureObserver implements EventHandler<ActionEvent> {
 
-    private ViewUpdate viewOps;
-
-    public CreateSignatureObserver(ViewUpdate viewOps) {
-      this.viewOps = viewOps;
-    }
-
     @Override
     public void handle(ActionEvent event) {
       hashOutputSize = signView.getHashOutputSize();
@@ -339,12 +338,6 @@ public class SignatureCreationController extends SignatureBaseController {
    */
   class SignatureBenchmarkObserver implements EventHandler<ActionEvent> {
 
-    private ViewUpdate viewOps;
-
-    public SignatureBenchmarkObserver(ViewUpdate viewOps) {
-      this.viewOps = viewOps;
-    }
-
     @Override
     public void handle(ActionEvent event) {
       hashOutputSize = signView.getHashOutputSize();
@@ -366,41 +359,13 @@ public class SignatureCreationController extends SignatureBaseController {
       if (!setHashSizeInModel(new SignViewUpdateOperations(signView))) {
         return;
       }
-
-      // Show the progress dialog
-      Dialog<Void> progressDialog = uk.msci.project.rsa.DisplayUtility.showProgressDialog(
-          mainController.getPrimaryStage(), "Signature Generation");
-      ProgressBar progressBar = (ProgressBar) progressDialog.getDialogPane()
-          .lookup("#progressBar");
-      Label progressLabel = (Label) progressDialog.getDialogPane().lookup("#progressLabel");
-
-      Task<Void> benchmarkingTask = createBenchmarkingTask(messageBatchFile,
-          progressBar, progressLabel);
-      new Thread(benchmarkingTask).start();
-
-      progressDialog.getDialogPane().lookupButton(ButtonType.CANCEL)
-          .addEventFilter(ActionEvent.ACTION, e -> {
-            if (benchmarkingTask.isRunning()) {
-              benchmarkingTask.cancel();
-            }
-          });
-
-      benchmarkingTask.setOnSucceeded(e -> {
-        progressDialog.close();
-        handleBenchmarkingCompletion(); // Handle completion
-      });
-
-      benchmarkingTask.setOnFailed(e -> {
-        progressDialog.close();
-        uk.msci.project.rsa.DisplayUtility.showErrorAlert(
-            "Error: Benchmarking failed. Please try again.");
-
-      });
-
+      benchmarkingUtility = new BenchmarkingUtility();
+      Task<Void> benchmarkingTask = createBenchmarkingTask(messageBatchFile);
+      BenchmarkingUtility.beginBenchmarkWithUtility(benchmarkingUtility, "Signature Generation",
+          benchmarkingTask, SignatureCreationController.this::handleBenchmarkingCompletion,
+          mainController.getPrimaryStage());
     }
-
   }
-
 
   /**
    * Handles the initiation of the benchmarking process in comparison mode. This method checks for
@@ -423,54 +388,28 @@ public class SignatureCreationController extends SignatureBaseController {
     if (!setHashSizeInModel(new SignViewUpdateOperations(signView))) {
       return;
     }
-    // Show the progress dialog
-    Dialog<Void> progressDialog = uk.msci.project.rsa.DisplayUtility.showProgressDialog(
-        mainController.getPrimaryStage(), "Signature Generation");
-    ProgressBar progressBar = (ProgressBar) progressDialog.getDialogPane()
-        .lookup("#progressBar");
-    Label progressLabel = (Label) progressDialog.getDialogPane().lookup("#progressLabel");
-
-    Task<Void> benchmarkingTask = createBenchmarkingTaskComparisonMode(messageBatchFile,
-        progressBar, progressLabel);
-    new Thread(benchmarkingTask).start();
-
-    progressDialog.getDialogPane().lookupButton(ButtonType.CANCEL)
-        .addEventFilter(ActionEvent.ACTION, e -> {
-          if (benchmarkingTask.isRunning()) {
-            benchmarkingTask.cancel();
-          }
-        });
-
-    benchmarkingTask.setOnSucceeded(e -> {
-      progressDialog.close();
-      handleBenchmarkingCompletionComparisonMode(); // Handle completion
-    });
-
-    benchmarkingTask.setOnFailed(e -> {
-      progressDialog.close();
-      uk.msci.project.rsa.DisplayUtility.showErrorAlert(
-          "Error: Benchmarking failed. Please try again.");
-
-    });
+    benchmarkingUtility = new BenchmarkingUtility();
+    Task<Void> benchmarkingTask = createBenchmarkingTaskComparisonMode(messageBatchFile);
+    BenchmarkingUtility.beginBenchmarkWithUtility(benchmarkingUtility, "Signature Generation",
+        benchmarkingTask,
+        SignatureCreationController.this::handleBenchmarkingCompletionComparisonMode,
+        mainController.getPrimaryStage());
   }
 
   /**
    * Creates a benchmarking task for signature generation. This task is responsible for processing a
    * batch of messages, generating signatures, and updating the UI with progress.
    *
-   * @param messageFile   The file containing the messages to be signed.
-   * @param progressBar   UI component to display progress.
-   * @param progressLabel UI component to display progress text.
+   * @param messageFile The file containing the messages to be signed.
    * @return The task to be executed for benchmarking.
    */
-  private Task<Void> createBenchmarkingTask(File messageFile, ProgressBar progressBar,
-      Label progressLabel) {
+  private Task<Void> createBenchmarkingTask(File messageFile) {
     return new Task<>() {
       @Override
       protected Void call() throws Exception {
         signatureModel.batchCreateSignatures(messageFile, progress -> Platform.runLater(() -> {
-          progressBar.setProgress(progress);
-          progressLabel.setText(String.format("%.0f%%", progress * 100));
+          benchmarkingUtility.updateProgress(progress);
+          benchmarkingUtility.updateProgressLabel(String.format("%.0f%%", progress * 100));
         }));
         return null;
       }
@@ -483,20 +422,17 @@ public class SignatureCreationController extends SignatureBaseController {
    * responsible for processing a batch of messages, generating signatures, and updating the UI with
    * progress.
    *
-   * @param messageFile   The file containing the messages to be signed.
-   * @param progressBar   UI component to display progress.
-   * @param progressLabel UI component to display progress text.
+   * @param messageFile The file containing the messages to be signed.
    * @return The task to be executed for benchmarking.
    */
-  private Task<Void> createBenchmarkingTaskComparisonMode(File messageFile, ProgressBar progressBar,
-      Label progressLabel) {
+  private Task<Void> createBenchmarkingTaskComparisonMode(File messageFile) {
     return new Task<>() {
       @Override
       protected Void call() throws Exception {
         signatureModel.batchGenerateSignatures_ComparisonMode(messageFile,
             progress -> Platform.runLater(() -> {
-              progressBar.setProgress(progress);
-              progressLabel.setText(String.format("%.0f%%", progress * 100));
+              benchmarkingUtility.updateProgress(progress);
+              benchmarkingUtility.updateProgressLabel(String.format("%.0f%%", progress * 100));
             }));
         return null;
       }
