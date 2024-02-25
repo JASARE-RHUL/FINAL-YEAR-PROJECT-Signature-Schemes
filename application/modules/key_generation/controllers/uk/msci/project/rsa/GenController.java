@@ -49,6 +49,14 @@ public class GenController {
    */
   private int numTrials;
 
+  /**
+   * An instance of the BenchmarkingUtility class used to manage benchmarking tasks. This utility
+   * facilitates the execution and monitoring of tasks related to the benchmarking of key generation
+   * processes. It provides methods to initiate benchmarking tasks, update progress, and handle task
+   * completion.
+   */
+  private BenchmarkingUtility benchmarkingUtility;
+
 
   /**
    * Constructs a GenController with a reference to the MainController.
@@ -132,8 +140,6 @@ public class GenController {
                 + "corresponding to the number of prime factors you wish the modulus to contain.");
 
         genView.setSuccessPopupVisible(false);
-
-
       } else {
         int[] intArray = convertStringToIntArray(keyBitSizes);
         int k = intArray.length;
@@ -227,37 +233,12 @@ public class GenController {
         // Only proceed to show the trials dialog if the fields dialog was completed
         if (genView.showTrialsDialog(mainController.getPrimaryStage())) {
           numTrials = genView.getNumTrials();
-
-          // Show the progress dialog
-          Dialog<Void> progressDialog = uk.msci.project.rsa.DisplayUtility.showProgressDialog(
-              mainController.getPrimaryStage(), "Key Generation");
-          ProgressBar progressBar = (ProgressBar) progressDialog.getDialogPane()
-              .lookup("#progressBar");
-          Label progressLabel = (Label) progressDialog.getDialogPane().lookup("#progressLabel");
-
+          benchmarkingUtility = new BenchmarkingUtility();
           Task<Void> benchmarkingTask = createBenchmarkingTask(numTrials,
-              genView.getDynamicKeyData(),
-              progressBar, progressLabel);
-          new Thread(benchmarkingTask).start();
-
-          progressDialog.getDialogPane().lookupButton(ButtonType.CANCEL)
-              .addEventFilter(ActionEvent.ACTION, e -> {
-                if (benchmarkingTask.isRunning()) {
-                  benchmarkingTask.cancel();
-                }
-              });
-
-          benchmarkingTask.setOnSucceeded(e -> {
-            progressDialog.close();
-            handleBenchmarkingCompletion(); // Handle completion
-          });
-
-          benchmarkingTask.setOnFailed(e -> {
-            progressDialog.close();
-            uk.msci.project.rsa.DisplayUtility.showErrorAlert(
-                "Error: Benchmarking failed. Please try again.");
-
-          });
+              genView.getDynamicKeyData());
+          BenchmarkingUtility.beginBenchmarkWithUtility(benchmarkingUtility, "Key Generation",
+              benchmarkingTask, GenController.this::handleBenchmarkingCompletion,
+              mainController.getPrimaryStage());
         }
       }
     }
@@ -296,37 +277,12 @@ public class GenController {
       // Only proceed to show the trials dialog if the fields dialog was completed
       if (genView.showTrialsDialog(mainController.getPrimaryStage())) {
         numTrials = genView.getNumTrials();
-
-        // Show the progress dialog
-        Dialog<Void> progressDialog = uk.msci.project.rsa.DisplayUtility.showProgressDialog(
-            mainController.getPrimaryStage(), "Key Generation");
-        ProgressBar progressBar = (ProgressBar) progressDialog.getDialogPane()
-            .lookup("#progressBar");
-        Label progressLabel = (Label) progressDialog.getDialogPane().lookup("#progressLabel");
-
+        benchmarkingUtility = new BenchmarkingUtility();
         Task<Void> benchmarkingTask = createBenchmarkingTaskComparisonMode(
-            genView.getDynamicKeySizeData(), numTrials,
-            progressBar, progressLabel);
-        new Thread(benchmarkingTask).start();
-
-        progressDialog.getDialogPane().lookupButton(ButtonType.CANCEL)
-            .addEventFilter(ActionEvent.ACTION, e -> {
-              if (benchmarkingTask.isRunning()) {
-                benchmarkingTask.cancel();
-              }
-            });
-
-        benchmarkingTask.setOnSucceeded(e -> {
-          progressDialog.close();
-          handleBenchmarkingCompletionComparisonMode(); // Handle completion
-        });
-
-        benchmarkingTask.setOnFailed(e -> {
-          progressDialog.close();
-          uk.msci.project.rsa.DisplayUtility.showErrorAlert(
-              "Error: Benchmarking failed. Please try again.");
-
-        });
+            genView.getDynamicKeySizeData(), numTrials);
+        BenchmarkingUtility.beginBenchmarkWithUtility(benchmarkingUtility, "Key Generation",
+            benchmarkingTask, GenController.this::handleBenchmarkingCompletionComparisonMode,
+            mainController.getPrimaryStage());
       }
     }
   }
@@ -369,21 +325,18 @@ public class GenController {
    * Creates a background task for benchmarking key generation. This task generates keys based on
    * provided parameters and updates the progress bar and label on the UI.
    *
-   * @param numTrials     The number of trials for key generation.
-   * @param keyParams     The parameters for key generation, including bit sizes and the small e
-   *                      option.
-   * @param progressBar   The ProgressBar to update with progress information.
-   * @param progressLabel The Label to update with progress information.
+   * @param numTrials The number of trials for key generation.
+   * @param keyParams The parameters for key generation, including bit sizes and the small e
+   *                  option.
    * @return A Task to execute the benchmarking process in the background.
    */
-  private Task<Void> createBenchmarkingTask(int numTrials, List<Pair<int[], Boolean>> keyParams,
-      ProgressBar progressBar, Label progressLabel) {
+  private Task<Void> createBenchmarkingTask(int numTrials, List<Pair<int[], Boolean>> keyParams) {
     return new Task<>() {
       @Override
       protected Void call() throws Exception {
         genModel.batchGenerateKeys(numTrials, keyParams, progress -> Platform.runLater(() -> {
-          progressBar.setProgress(progress);
-          progressLabel.setText(String.format("%.0f%%", progress * 100));
+          benchmarkingUtility.updateProgress(progress);
+          benchmarkingUtility.updateProgressLabel(String.format("%.0f%%", progress * 100));
         }));
         return null;
       }
@@ -395,21 +348,18 @@ public class GenController {
    * Creates a background task for benchmarking key generation in comparison mode. This task
    * generates keys based on provided key sizes and updates the progress bar and label on the UI.
    *
-   * @param keyParams     The list of key sizes for which keys are to be generated.
-   * @param numTrials     The number of trials for key generation.
-   * @param progressBar   The ProgressBar to update with progress information.
-   * @param progressLabel The Label to update with progress information.
+   * @param keyParams The list of key sizes for which keys are to be generated.
+   * @param numTrials The number of trials for key generation.
    * @return A Task to execute the benchmarking process in the background.
    */
-  private Task<Void> createBenchmarkingTaskComparisonMode(List<Integer> keyParams, int numTrials,
-      ProgressBar progressBar, Label progressLabel) {
+  private Task<Void> createBenchmarkingTaskComparisonMode(List<Integer> keyParams, int numTrials) {
     return new Task<>() {
       @Override
       protected Void call() throws Exception {
         genModel.batchGenerateInComparisonMode(keyParams, numTrials,
             progress -> Platform.runLater(() -> {
-              progressBar.setProgress(progress);
-              progressLabel.setText(String.format("%.0f%%", progress * 100));
+              benchmarkingUtility.updateProgress(progress);
+              benchmarkingUtility.updateProgressLabel(String.format("%.0f%%", progress * 100));
             }));
         return null;
       }
