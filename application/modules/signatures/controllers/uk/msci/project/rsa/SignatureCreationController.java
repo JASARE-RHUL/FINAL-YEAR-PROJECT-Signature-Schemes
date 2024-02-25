@@ -39,9 +39,9 @@ public class SignatureCreationController extends SignatureBaseController {
 
   /**
    * An instance of the BenchmarkingUtility class used to manage benchmarking tasks. This utility
-   * facilitates the execution and monitoring of tasks related to the benchmarking of key generation
-   * processes. It provides methods to initiate benchmarking tasks, update progress, and handle task
-   * completion.
+   * facilitates the execution and monitoring of tasks related to the benchmarking of signature
+   * creation processes. It provides methods to initiate benchmarking tasks, update progress,
+   * and handle task completion.
    */
   private BenchmarkingUtility benchmarkingUtility;
 

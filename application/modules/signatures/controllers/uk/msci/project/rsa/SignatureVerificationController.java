@@ -9,10 +9,6 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.Dialog;
-import javafx.scene.control.Label;
-import javafx.scene.control.ProgressBar;
 import javafx.stage.Stage;
 
 
@@ -40,7 +36,19 @@ public class SignatureVerificationController extends SignatureBaseController {
    */
   private String signature;
 
+  /**
+   * The number of signatures involved in the batch verification process. This field holds the total
+   * count of signatures that will be verified during the benchmarking task.
+   */
   private int numSignatures;
+
+  /**
+   * An instance of the BenchmarkingUtility class used to manage benchmarking tasks. This utility
+   * facilitates the execution and monitoring of tasks related to the benchmarking of signature
+   * verification processes. It provides methods to initiate benchmarking tasks, update progress,
+   * and handle task completion.
+   */
+  private BenchmarkingUtility benchmarkingUtility;
 
 
   /**
@@ -161,7 +169,6 @@ public class SignatureVerificationController extends SignatureBaseController {
    * changes.
    */
   private void setupNonCrossBenchmarkingObservers() {
-    verifyView.addSignatureSchemeChangeObserver(new SignatureSchemeChangeObserver());
     verifyView.addParameterChoiceChangeObserver(
         new ParameterChoiceChangeObserver(new VerifyViewUpdateOperations(verifyView)));
     verifyView.addHashFunctionChangeObserver(
@@ -171,12 +178,13 @@ public class SignatureVerificationController extends SignatureBaseController {
   }
 
   /**
-   * Sets up observers common to all modes of the VerifyView. This includes observers for benchmarking
-   * mode toggle, back to main menu actions, and other common functionalities.
+   * Sets up observers common to all modes of the VerifyView. This includes observers for
+   * benchmarking mode toggle, back to main menu actions, and other common functionalities.
    *
    * @param primaryStage The primary stage of the application where the view will be displayed.
    */
   private void setupCommonToAllObservers(Stage primaryStage) {
+    verifyView.addSignatureSchemeChangeObserver(new SignatureSchemeChangeObserver());
     verifyView.addBenchmarkingModeToggleObserver(new ApplicationModeChangeObserver(
         () -> showVerifyViewStandardMode(primaryStage),
         () -> showVerifyView(primaryStage)
@@ -206,7 +214,7 @@ public class SignatureVerificationController extends SignatureBaseController {
         new ImportObserver(primaryStage, new VerifyViewUpdateOperations(verifyView),
             this::handleSignatureBatch, "*.rsa"));
     verifyView.addVerificationBenchmarkButtonObserver(
-        new VerificationBenchmarkButtonObserver(new VerifyViewUpdateOperations(verifyView)));
+        new VerificationBenchmarkButtonObserver());
   }
 
 
@@ -263,7 +271,6 @@ public class SignatureVerificationController extends SignatureBaseController {
     setupBenchmarkingObservers(primaryStage);
     verifyView.addStandardHashFunctionChangeObserver(new StandardHashFunctionChangeObserver());
     verifyView.addProvableHashFunctionChangeObserver(new ProvableHashFunctionChangeObserver());
-
   }
 
   /**
@@ -351,15 +358,13 @@ public class SignatureVerificationController extends SignatureBaseController {
           signature = signatureInput;
         }
 
-        signatureModel.instantiateSignatureScheme();
-
         byte[] signatureBytes = new byte[0];
         try {
           signatureBytes = new BigInteger(signature).toByteArray();
-        } catch (Exception e) {
-
+        } catch (Exception ignored) {
         }
 
+        signatureModel.instantiateSignatureScheme();
         boolean verificationResult = signatureModel.verify(message, signatureBytes);
         if (verificationResult) {
           verifyView.setTrueLabelVisibility(true);
@@ -388,12 +393,6 @@ public class SignatureVerificationController extends SignatureBaseController {
    */
   class VerificationBenchmarkButtonObserver implements EventHandler<ActionEvent> {
 
-    private ViewUpdate viewOps;
-
-    public VerificationBenchmarkButtonObserver(ViewUpdate viewOps) {
-      this.viewOps = viewOps;
-    }
-
     @Override
     public void handle(ActionEvent event) {
       hashOutputSize = verifyView.getHashOutputSize();
@@ -420,38 +419,13 @@ public class SignatureVerificationController extends SignatureBaseController {
       if (!setHashSizeInModel(new VerifyViewUpdateOperations(verifyView))) {
         return;
       }
-
       // Show the progress dialog
-      Dialog<Void> progressDialog = uk.msci.project.rsa.DisplayUtility.showProgressDialog(
-          mainController.getPrimaryStage(), "Signature Generation");
-      ProgressBar progressBar = (ProgressBar) progressDialog.getDialogPane()
-          .lookup("#progressBar");
-      Label progressLabel = (Label) progressDialog.getDialogPane().lookup("#progressLabel");
-
-      Task<Void> benchmarkingTask = createBenchmarkingTask(messageBatchFile, signatureBatchFile,
-          progressBar, progressLabel);
-      new Thread(benchmarkingTask).start();
-
-      progressDialog.getDialogPane().lookupButton(ButtonType.CANCEL)
-          .addEventFilter(ActionEvent.ACTION, e -> {
-            if (benchmarkingTask.isRunning()) {
-              benchmarkingTask.cancel();
-            }
-          });
-
-      benchmarkingTask.setOnSucceeded(e -> {
-        progressDialog.close();
-        handleBenchmarkingCompletion(); // Handle completion
-
-      });
-
-      benchmarkingTask.setOnFailed(e -> {
-        progressDialog.close();
-        uk.msci.project.rsa.DisplayUtility.showErrorAlert(
-            "Error: Benchmarking failed. Please try again.");
-
-      });
-
+      benchmarkingUtility = new BenchmarkingUtility();
+      Task<Void> benchmarkingTask = createBenchmarkingTask(messageBatchFile, signatureBatchFile);
+      BenchmarkingUtility.beginBenchmarkWithUtility(benchmarkingUtility, "Signature Verification",
+          benchmarkingTask,
+          SignatureVerificationController.this::handleBenchmarkingCompletion,
+          mainController.getPrimaryStage());
     }
   }
 
@@ -476,59 +450,59 @@ public class SignatureVerificationController extends SignatureBaseController {
     if (!setHashSizeInModel(new VerifyViewUpdateOperations(verifyView))) {
       return;
     }
-    // Show the progress dialog
-    Dialog<Void> progressDialog = uk.msci.project.rsa.DisplayUtility.showProgressDialog(
-        mainController.getPrimaryStage(), "Signature Generation");
-    ProgressBar progressBar = (ProgressBar) progressDialog.getDialogPane()
-        .lookup("#progressBar");
-    Label progressLabel = (Label) progressDialog.getDialogPane().lookup("#progressLabel");
-
+    benchmarkingUtility = new BenchmarkingUtility();
     Task<Void> benchmarkingTask = createBenchmarkingTaskComparisonMode(messageBatchFile,
-        signatureBatchFile,
-        progressBar, progressLabel);
-    new Thread(benchmarkingTask).start();
-
-    progressDialog.getDialogPane().lookupButton(ButtonType.CANCEL)
-        .addEventFilter(ActionEvent.ACTION, e -> {
-          if (benchmarkingTask.isRunning()) {
-            benchmarkingTask.cancel();
-          }
-        });
-
-    benchmarkingTask.setOnSucceeded(e -> {
-      progressDialog.close();
-      handleBenchmarkingCompletionComparisonMode(); // Handle completion
-    });
-
-    benchmarkingTask.setOnFailed(e -> {
-      progressDialog.close();
-      uk.msci.project.rsa.DisplayUtility.showErrorAlert(
-          "Error: Benchmarking failed. Please try again.");
-
-    });
+        signatureBatchFile);
+    BenchmarkingUtility.beginBenchmarkWithUtility(benchmarkingUtility, "Signature Verification",
+        benchmarkingTask,
+        SignatureVerificationController.this::handleBenchmarkingCompletionComparisonMode,
+        mainController.getPrimaryStage());
   }
 
   /**
-   * Creates a benchmarking task for signature verification in comparison mode. This task is
-   * responsible for processing a batch of messages, generating signatures, and updating the UI with
-   * progress.
+   * Creates a task for benchmarking signature verification in comparison mode. This task involves
+   * verifying a batch of signatures across different key sizes and parameter settings. The task
+   * updates the progress of verification to the user.
    *
-   * @param messageFile   The file containing the messages to be signed.
-   * @param progressBar   UI component to display progress.
-   * @param progressLabel UI component to display progress text.
-   * @return The task to be executed for benchmarking.
+   * @param messageFile        The file containing a batch of messages to be verified.
+   * @param batchSignatureFile The file containing a batch of signatures corresponding to the
+   *                           messages.
+   * @return A Task<Void> that will execute the benchmarking process in the background.
    */
-
-  private Task<Void> createBenchmarkingTaskComparisonMode(File messageFile, File batchSignatureFile,
-      ProgressBar progressBar,
-      Label progressLabel) {
+  private Task<Void> createBenchmarkingTaskComparisonMode(File messageFile,
+      File batchSignatureFile) {
     return new Task<>() {
       @Override
       protected Void call() throws Exception {
         signatureModel.batchVerifySignatures_ComparisonMode(messageFile, batchSignatureFile,
             progress -> Platform.runLater(() -> {
-              progressBar.setProgress(progress);
-              progressLabel.setText(String.format("%.0f%%", progress * 100));
+              benchmarkingUtility.updateProgress(progress);
+              benchmarkingUtility.updateProgressLabel(String.format("%.0f%%", progress * 100));
+            }));
+        return null;
+      }
+    };
+
+  }
+
+  /**
+   * Creates a task for benchmarking the signature verification process. This task verifies a batch
+   * of signatures against a batch of messages and updates the progress on the UI. It is used in
+   * standard benchmarking mode.
+   *
+   * @param messageFile        The file containing a batch of messages to be verified.
+   * @param batchSignatureFile The file containing a batch of signatures corresponding to the
+   *                           messages.
+   * @return A Task<Void> that will execute the benchmarking process in the background.
+   */
+  private Task<Void> createBenchmarkingTask(File messageFile, File batchSignatureFile) {
+    return new Task<>() {
+      @Override
+      protected Void call() throws Exception {
+        signatureModel.batchVerifySignatures(messageFile, batchSignatureFile,
+            progress -> Platform.runLater(() -> {
+              benchmarkingUtility.updateProgress(progress);
+              benchmarkingUtility.updateProgressLabel(String.format("%.0f%%", progress * 100));
             }));
         return null;
       }
@@ -554,32 +528,6 @@ public class SignatureVerificationController extends SignatureBaseController {
         signatureModel.getNumKeySizesForComparisonMode());
   }
 
-
-  /**
-   * Creates a benchmarking task for signature verification. This task is responsible for processing
-   * a batch of messages, generating signatures, and updating the UI with progress.
-   *
-   * @param messageFile   The file containing the messages to be signed.
-   * @param progressBar   UI component to display progress.
-   * @param progressLabel UI component to display progress text.
-   * @return The task to be executed for benchmarking.
-   */
-  private Task<Void> createBenchmarkingTask(File messageFile, File batchSignatureFile,
-      ProgressBar progressBar,
-      Label progressLabel) {
-    return new Task<>() {
-      @Override
-      protected Void call() throws Exception {
-        signatureModel.batchVerifySignatures(messageFile, batchSignatureFile,
-            progress -> Platform.runLater(() -> {
-              progressBar.setProgress(progress);
-              progressLabel.setText(String.format("%.0f%%", progress * 100));
-            }));
-        return null;
-      }
-    };
-
-  }
 
   /**
    * Handles the completion of the benchmarking task for signature verification. This method is
@@ -624,7 +572,6 @@ public class SignatureVerificationController extends SignatureBaseController {
    * to cancel the import of a batch of signatures.
    */
   class CancelImportSigButtonObserver implements EventHandler<ActionEvent> {
-
 
     @Override
     public void handle(ActionEvent event) {
