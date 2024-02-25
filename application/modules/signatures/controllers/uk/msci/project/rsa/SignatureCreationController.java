@@ -14,6 +14,7 @@ import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 import javafx.stage.Stage;
+import uk.msci.project.rsa.SignatureVerificationController.CancelImportTextBatchButtonObserver;
 
 
 /**
@@ -52,11 +53,40 @@ public class SignatureCreationController extends SignatureBaseController {
   }
 
   /**
+   * Loads the SignView FXML corresponding to a mode for the sign view (e.g., standard,
+   * benchmarking, cross benchmarking) and initialises the view. This method handles the setup for
+   * different SignView modes based on the provided FXML path and runs the observer setup and
+   * additional setup based on mode.
+   *
+   * @param fxmlPath                   Path to the FXML file to load.
+   * @param observerSetup              Runnable containing the observer setup logic.
+   * @param additionalSetupBasedOnMode Runnable containing additional setup logic specific to the
+   *                                   mode.
+   */
+  private void loadSignView(String fxmlPath, Runnable observerSetup,
+      Runnable additionalSetupBasedOnMode) {
+    try {
+      FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
+      Parent root = loader.load();
+      signView = loader.getController();
+      this.signatureModel = new SignatureModel();
+
+      observerSetup.run();
+      additionalSetupBasedOnMode.run();
+
+      mainController.setScene(root);
+    } catch (IOException e) {
+      e.printStackTrace(); // Consider a more robust error handling approach
+    }
+  }
+
+
+  /**
    * Displays the SignView interface. This method decides which version of the SignView to show
    * based on the current benchmarking and cross-parameter modes. If cross-parameter benchmarking is
-   * enabled, it calls {@code showSignViewCrossBenchmarkingMode}. Otherwise, it loads the standard
-   * SignView. This method is responsible for setting up the SignView with the necessary controllers
-   * and observers.
+   * enabled, it calls {@code showSignViewCrossBenchmarkingMode}. Otherwise, it loads the normal
+   * benchmarking SignView. This method is responsible for setting up the SignView with the
+   * necessary controllers and observers.
    *
    * @param primaryStage The primary stage of the application where the view will be displayed.
    */
@@ -65,21 +95,7 @@ public class SignatureCreationController extends SignatureBaseController {
       showSignViewCrossBenchmarkingMode(primaryStage);
       return;
     }
-    try {
-      FXMLLoader loader = new FXMLLoader(getClass().getResource("/SignView.fxml"));
-      Parent root = loader.load();
-      signView = loader.getController();
-      this.signatureModel = new SignatureModel();
-
-      // Set up observers for benchmarking mode SignView
-      signView.addBenchmarkingModeToggleObserver(new ApplicationModeChangeObserver(
-          () -> showSignViewStandardMode(primaryStage),
-          () -> showSignView(primaryStage)
-      ));
-      signView.addCrossParameterToggleObserver(new CrossBenchmarkingModeChangeObserver(
-          () -> showSignViewCrossBenchmarkingMode(primaryStage),
-          () -> showSignView(primaryStage), new SignViewUpdateOperations(signView)));
-      setupSignObserversBenchmarking(primaryStage);
+    loadSignView("/SignView.fxml", () -> setupSignObserversBenchmarking(primaryStage), () -> {
       if (isSingleKeyProvablySecure && this.importedKeyBatch != null
           && !isCrossParameterBenchmarkingEnabled) {
         updateWithImportedKeyBatch(new SignViewUpdateOperations(signView));
@@ -90,12 +106,9 @@ public class SignatureCreationController extends SignatureBaseController {
         signView.setCustomParametersRadioVisibility(false);
         signView.setStandardParametersRadioVisibility(false);
       }
+    });
 
-      mainController.setScene(root);
 
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
   }
 
   /**
@@ -106,20 +119,7 @@ public class SignatureCreationController extends SignatureBaseController {
    * @param primaryStage The primary stage of the application where the view will be displayed.
    */
   public void showSignViewStandardMode(Stage primaryStage) {
-    try {
-      FXMLLoader loader = new FXMLLoader(getClass().getResource("/SignViewStandardMode.fxml"));
-      Parent root = loader.load();
-      signView = loader.getController();
-      this.signatureModel = new SignatureModel();
-
-      // Set up observers for benchmarking mode SignView
-      signView.addBenchmarkingModeToggleObserver(new ApplicationModeChangeObserver(
-          () -> showSignViewStandardMode(primaryStage),
-          () -> showSignView(primaryStage)
-      ));
-
-      setupSignObservers(primaryStage);
-
+    loadSignView("/SignViewStandardMode.fxml", () -> setupSignObserversStandard(primaryStage), () -> {
       if (isSingleKeyProvablySecure && this.importedKeyBatch != null) {
         updateWithImportedKey(new SignViewUpdateOperations(signView));
         signView.setImportKeyButtonVisibility(false);
@@ -129,12 +129,7 @@ public class SignatureCreationController extends SignatureBaseController {
         signView.setCustomParametersRadioVisibility(false);
         signView.setStandardParametersRadioVisibility(false);
       }
-
-      mainController.setScene(root);
-
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
+    });
   }
 
   /**
@@ -146,41 +141,77 @@ public class SignatureCreationController extends SignatureBaseController {
    * @param primaryStage The primary stage of the application where the view will be displayed.
    */
   public void showSignViewCrossBenchmarkingMode(Stage primaryStage) {
-    try {
-      FXMLLoader loader = new FXMLLoader(
-          getClass().getResource("/SignViewCrossBenchmarkingMode.fxml"));
-      Parent root = loader.load();
-      signView = loader.getController();
-      this.signatureModel = new SignatureModel();
-      updateWithImportedKeyBatch(new SignViewUpdateOperations(signView));
-      if (isCrossParameterBenchmarkingEnabled && this.importedKeyBatch != null) {
-        signView.setImportKeyBatchButtonVisibility(false);
-        signView.setCancelImportKeyButtonVisibility(true);
-      }
-      signView.addBenchmarkingModeToggleObserver(new ApplicationModeChangeObserver(
-          () -> showSignViewStandardMode(primaryStage),
-          () -> showSignView(primaryStage)
-      ));
-      signView.addCrossParameterToggleObserver(new CrossBenchmarkingModeChangeObserver(
-          () -> showSignViewCrossBenchmarkingMode(primaryStage),
-          () -> showSignView(primaryStage), new SignViewUpdateOperations(signView)));
-      setupSignObserversCrossBenchmarking(primaryStage);
+    loadSignView("/SignViewCrossBenchmarkingMode.fxml",
+        () -> setupSignObserversCrossBenchmarking(primaryStage), () -> {
+          updateWithImportedKeyBatch(new SignViewUpdateOperations(signView));
+          if (isCrossParameterBenchmarkingEnabled && this.importedKeyBatch != null) {
+            signView.setImportKeyBatchButtonVisibility(false);
+            signView.setCancelImportKeyButtonVisibility(true);
+          }
+        });
 
-      mainController.setScene(root);
+  }
 
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
+  /**
+   * Sets up observers specific to non-cross-benchmarking mode. This includes observers for handling
+   * signature scheme changes, parameter choice changes, hash function changes, and provable scheme
+   * changes.
+   */
+  private void setupNonCrossBenchmarkingObservers() {
+    signView.addSignatureSchemeChangeObserver(new SignatureSchemeChangeObserver());
+    signView.addParameterChoiceChangeObserver(
+        new ParameterChoiceChangeObserver(new SignViewUpdateOperations(signView)));
+    signView.addHashFunctionChangeObserver(
+        new HashFunctionChangeObserver(new SignViewUpdateOperations(signView)));
+    signView.addProvableSchemeChangeObserver(
+        new ProvableParamsChangeObserver(new SignViewUpdateOperations(signView)));
+  }
+
+  /**
+   * Sets up observers common to all modes of the SignView. This includes observers for benchmarking
+   * mode toggle, back to main menu actions, and other common functionalities.
+   *
+   * @param primaryStage The primary stage of the application where the view will be displayed.
+   */
+  private void setupCommonToAllObservers(Stage primaryStage) {
+    signView.addBenchmarkingModeToggleObserver(new ApplicationModeChangeObserver(
+        () -> showSignViewStandardMode(primaryStage),
+        () -> showSignView(primaryStage)
+    ));
+    signView.addBackToMainMenuObserver(new BackToMainMenuObserver(signView));
+  }
+
+  /**
+   * Sets up observers specific to benchmarking mode. This includes observers for importing text
+   * batches, key batches, canceling key batch import, and starting the benchmarking process.
+   *
+   * @param primaryStage The primary stage of the application where the view will be displayed.
+   */
+  private void setupBenchmarkingObservers(Stage primaryStage) {
+    signView.addImportTextBatchBtnObserver(
+        new ImportObserver(primaryStage, new SignViewUpdateOperations(signView),
+            this::handleMessageBatch, "*.txt"));
+    signView.addImportKeyBatchButtonObserver(
+        new ImportObserver(primaryStage, new SignViewUpdateOperations(signView),
+            this::handleKeyBatch, "*.rsa"));
+    signView.addCancelImportKeyButtonObserver(
+        new CancelImportKeyBatchButtonObserver(new SignViewUpdateOperations(signView)));
+    signView.addSigBenchmarkButtonObserver(
+        new SignatureBenchmarkObserver(new SignViewUpdateOperations(signView)));
+    signView.addCrossParameterToggleObserver(new CrossBenchmarkingModeChangeObserver(
+        () -> showSignViewCrossBenchmarkingMode(primaryStage),
+        () -> showSignView(primaryStage), new SignViewUpdateOperations(signView)));
   }
 
 
   /**
-   * Sets up observers for the SignView controls. Observers are added to handle events like text
-   * import, key import, and signature scheme changes.
+   * Sets up observers for the SignView in the standard (non-benchmarking) mode. This method
+   * initialises observers for importing text, keys, canceling imports, creating signatures, and
+   * other standard mode functionalities.
    *
-   * @param primaryStage The stage that observers will use for file dialogs.
+   * @param primaryStage The primary stage of the application where the view will be displayed.
    */
-  private void setupSignObservers(Stage primaryStage) {
+  private void setupSignObserversStandard(Stage primaryStage) {
     signView.addImportTextObserver(
         new ImportObserver(primaryStage, new SignViewUpdateOperations(signView),
             this::handleMessageFile, "*.txt"));
@@ -189,72 +220,42 @@ public class SignatureCreationController extends SignatureBaseController {
             this::handleKey, "*.rsa"));
     signView.addCancelImportSingleKeyButtonObserver(
         new CancelImportKeyButtonObserver(new SignViewUpdateOperations(signView)));
-    signView.addSignatureSchemeChangeObserver(new SignatureSchemeChangeObserver());
-    signView.addParameterChoiceChangeObserver(
-        new ParameterChoiceChangeObserver(new SignViewUpdateOperations(signView)));
-    signView.addHashFunctionChangeObserver(
-        new HashFunctionChangeObserver(new SignViewUpdateOperations(signView)));
     signView.addCreateSignatureObserver(
         new CreateSignatureObserver(new SignViewUpdateOperations(signView)));
-    signView.addBackToMainMenuObserver(new BackToMainMenuObserver(signView));
     signView.addCloseNotificationObserver(new BackToMainMenuObserver(signView));
     signView.addCancelImportTextButtonObserver(
         new CancelImportTextButtonObserver(new SignViewUpdateOperations(signView)));
-    signView.addProvableSchemeChangeObserver(
-        new ProvableParamsChangeObserver(new SignViewUpdateOperations(signView)));
+    setupNonCrossBenchmarkingObservers();
+    setupCommonToAllObservers(primaryStage);
 
   }
 
+
   /**
-   * Sets up benchmarking mode specific observers for the SignView controls.
+   * Sets up observers for the SignView in benchmarking mode. This method initialises observers
+   * specific to benchmarking, including text batch imports, key batch imports, benchmarking
+   * initiation, and additional benchmarking-specific functionalities.
    *
-   * @param primaryStage The stage that observers will use for file dialogs.
+   * @param primaryStage The primary stage of the application where the view will be displayed.
    */
   private void setupSignObserversBenchmarking(Stage primaryStage) {
-    signView.addImportTextBatchBtnObserver(
-        new ImportObserver(primaryStage, new SignViewUpdateOperations(signView),
-            this::handleMessageBatch, "*.txt"));
-    signView.addImportKeyBatchButtonObserver(
-        new ImportObserver(primaryStage, new SignViewUpdateOperations(signView),
-            this::handleKeyBatch, "*.rsa"));
-    signView.addCancelImportKeyButtonObserver(
-        new CancelImportKeyBatchButtonObserver(new SignViewUpdateOperations(signView)));
-    signView.addSignatureSchemeChangeObserver(new SignatureSchemeChangeObserver());
-    signView.addParameterChoiceChangeObserver(
-        new ParameterChoiceChangeObserver(new SignViewUpdateOperations(signView)));
-    signView.addHashFunctionChangeObserver(
-        new HashFunctionChangeObserver(new SignViewUpdateOperations(signView)));
-    signView.addSigBenchmarkButtonObserver(
-        new SignatureBenchmarkObserver(new SignViewUpdateOperations(signView)));
-    signView.addBackToMainMenuObserver(new BackToMainMenuObserver(signView));
-    signView.addProvableSchemeChangeObserver(
-        new ProvableParamsChangeObserver(new SignViewUpdateOperations(signView)));
+    setupCommonToAllObservers(primaryStage);
+    setupBenchmarkingObservers(primaryStage);
+    setupNonCrossBenchmarkingObservers();
   }
 
   /**
-   * Sets up observers for the SignView controls in cross-parameter benchmarking mode. This method
-   * adds observers to handle events such as text batch import, key batch import, signature scheme
-   * changes, benchmarking initiation, and navigation back to the main menu. The observers are
-   * essential for capturing user interactions and updating the model and view accordingly in the
-   * context of cross-parameter benchmarking.
+   * Sets up observers for the SignView in cross-parameter benchmarking mode. This method
+   * initialises observers specific to cross-parameter benchmarking, including standard and provable
+   * hash function changes, and other functionalities specific to this mode.
    *
-   * @param primaryStage The stage that observers will use for file dialogs.
+   * @param primaryStage The primary stage of the application where the view will be displayed.
    */
   private void setupSignObserversCrossBenchmarking(Stage primaryStage) {
-    signView.addImportTextBatchBtnObserver(
-        new ImportObserver(primaryStage, new SignViewUpdateOperations(signView),
-            this::handleMessageBatch, "*.txt"));
-    signView.addImportKeyBatchButtonObserver(
-        new ImportObserver(primaryStage, new SignViewUpdateOperations(signView),
-            this::handleKeyBatch, "*.rsa"));
-    signView.addCancelImportKeyButtonObserver(
-        new CancelImportKeyBatchButtonObserver(new SignViewUpdateOperations(signView)));
-    signView.addSignatureSchemeChangeObserver(new SignatureSchemeChangeObserver());
-    signView.addSigBenchmarkButtonObserver(
-        new SignatureBenchmarkObserver(new SignViewUpdateOperations(signView)));
+    setupCommonToAllObservers(primaryStage);
+    setupBenchmarkingObservers(primaryStage);
     signView.addStandardHashFunctionChangeObserver(new StandardHashFunctionChangeObserver());
     signView.addProvableHashFunctionChangeObserver(new ProvableHashFunctionChangeObserver());
-    signView.addBackToMainMenuObserver(new BackToMainMenuObserver(signView));
 
 
   }
