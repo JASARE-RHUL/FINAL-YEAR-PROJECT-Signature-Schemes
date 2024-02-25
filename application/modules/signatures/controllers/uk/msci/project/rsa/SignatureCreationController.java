@@ -14,7 +14,6 @@ import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 import javafx.stage.Stage;
-import uk.msci.project.rsa.SignatureVerificationController.CancelImportTextBatchButtonObserver;
 
 
 /**
@@ -76,7 +75,7 @@ public class SignatureCreationController extends SignatureBaseController {
 
       mainController.setScene(root);
     } catch (IOException e) {
-      e.printStackTrace(); // Consider a more robust error handling approach
+      e.printStackTrace();
     }
   }
 
@@ -107,7 +106,6 @@ public class SignatureCreationController extends SignatureBaseController {
         signView.setStandardParametersRadioVisibility(false);
       }
     });
-
 
   }
 
@@ -256,8 +254,6 @@ public class SignatureCreationController extends SignatureBaseController {
     setupBenchmarkingObservers(primaryStage);
     signView.addStandardHashFunctionChangeObserver(new StandardHashFunctionChangeObserver());
     signView.addProvableHashFunctionChangeObserver(new ProvableHashFunctionChangeObserver());
-
-
   }
 
   /**

@@ -54,6 +54,34 @@ public class SignatureVerificationController extends SignatureBaseController {
   }
 
   /**
+   * Loads the VerifyView FXML corresponding to a mode for the verification view (e.g., standard,
+   * benchmarking, cross benchmarking) and initialises the view. This method handles the setup for
+   * different VerifyView modes based on the provided FXML path and runs the observer setup and
+   * additional setup based on mode.
+   *
+   * @param fxmlPath                   Path to the FXML file to load.
+   * @param observerSetup              Runnable containing the observer setup logic.
+   * @param additionalSetupBasedOnMode Runnable containing additional setup logic specific to the
+   *                                   mode.
+   */
+  private void loadVerifyView(String fxmlPath, Runnable observerSetup,
+      Runnable additionalSetupBasedOnMode) {
+    try {
+      FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
+      Parent root = loader.load();
+      verifyView = loader.getController();
+      this.signatureModel = new SignatureModel();
+
+      observerSetup.run();
+      additionalSetupBasedOnMode.run();
+
+      mainController.setScene(root);
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+  }
+
+  /**
    * Initialises and displays the VerifyView in benchmarking mode. This method loads the FXML for
    * the VerifyView, sets up the user interface scene, and configures the stage for the
    * application.
@@ -67,39 +95,19 @@ public class SignatureVerificationController extends SignatureBaseController {
       showVerifyViewCrossBenchmarkingMode(primaryStage);
       return;
     }
-    try {
-      FXMLLoader loader = new FXMLLoader(getClass().getResource("/VerifyView.fxml"));
-      Parent root = loader.load();
-      verifyView = loader.getController();
-      signatureModel = new SignatureModel();
-
-      // Set up observers for benchmarking mode VerifyView
-      verifyView.addBenchmarkingModeToggleObserver(
-          new ApplicationModeChangeObserver(
-              () -> showVerifyViewStandardMode(primaryStage),
-              () -> showVerifyView(primaryStage)
-          ));
-      verifyView.addCrossParameterToggleObserver(new CrossBenchmarkingModeChangeObserver(
-          () -> showVerifyViewCrossBenchmarkingMode(primaryStage),
-          () -> showVerifyView(primaryStage), new VerifyViewUpdateOperations(verifyView)));
-      setupVerificationObserversBenchmarking(primaryStage);
-      if (isSingleKeyProvablySecure && this.importedKeyBatch != null
-          && !isCrossParameterBenchmarkingEnabled) {
-        updateWithImportedKeyBatch(new VerifyViewUpdateOperations(verifyView));
-        verifyView.setImportKeyBatchButtonVisibility(false);
-        verifyView.setCancelImportKeyButtonVisibility(true);
-        verifyView.setProvableParamsHboxVisibility(true);
-        verifyView.setProvablySecureParametersRadioSelected(true);
-        verifyView.setCustomParametersRadioVisibility(false);
-        verifyView.setStandardParametersRadioVisibility(false);
-      }
-
-      mainController.setScene(root);
-
-
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
+    loadVerifyView("/VerifyView.fxml", () -> setupVerificationObserversBenchmarking(primaryStage),
+        () -> {
+          if (isSingleKeyProvablySecure && this.importedKeyBatch != null
+              && !isCrossParameterBenchmarkingEnabled) {
+            updateWithImportedKeyBatch(new VerifyViewUpdateOperations(verifyView));
+            verifyView.setImportKeyBatchButtonVisibility(false);
+            verifyView.setCancelImportKeyButtonVisibility(true);
+            verifyView.setProvableParamsHboxVisibility(true);
+            verifyView.setProvablySecureParametersRadioSelected(true);
+            verifyView.setCustomParametersRadioVisibility(false);
+            verifyView.setStandardParametersRadioVisibility(false);
+          }
+        });
   }
 
   /**
@@ -110,33 +118,20 @@ public class SignatureVerificationController extends SignatureBaseController {
    * @param primaryStage The primary stage of the application where the view will be displayed.
    */
   public void showVerifyViewStandardMode(Stage primaryStage) {
-    try {
-      FXMLLoader loader = new FXMLLoader(getClass().getResource("/VerifyViewStandardMode.fxml"));
-      Parent root = loader.load();
-      verifyView = loader.getController();
-      signatureModel = new SignatureModel();
-      verifyView.addBenchmarkingModeToggleObserver(
-          new ApplicationModeChangeObserver(
-              () -> showVerifyViewStandardMode(primaryStage),
-              () -> showVerifyView(primaryStage)
-          ));
-      setupVerifyObservers(primaryStage);
+    loadVerifyView("/VerifyViewStandardMode.fxml",
+        () -> setupVerificationObserversStandard(primaryStage),
+        () -> {
+          if (isSingleKeyProvablySecure && this.importedKeyBatch != null) {
+            updateWithImportedKey(new VerifyViewUpdateOperations(verifyView));
+            verifyView.setImportKeyButtonVisibility(false);
+            verifyView.setCancelImportSingleKeyButtonVisibility(true);
+            verifyView.setProvableParamsHboxVisibility(true);
+            verifyView.setProvablySecureParametersRadioSelected(true);
+            verifyView.setCustomParametersRadioVisibility(false);
+            verifyView.setStandardParametersRadioVisibility(false);
+          }
 
-      if (isSingleKeyProvablySecure && this.importedKeyBatch != null) {
-        updateWithImportedKey(new VerifyViewUpdateOperations(verifyView));
-        verifyView.setImportKeyButtonVisibility(false);
-        verifyView.setCancelImportSingleKeyButtonVisibility(true);
-        verifyView.setProvableParamsHboxVisibility(true);
-        verifyView.setProvablySecureParametersRadioSelected(true);
-        verifyView.setCustomParametersRadioVisibility(false);
-        verifyView.setStandardParametersRadioVisibility(false);
-      }
-
-      mainController.setScene(root);
-
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
+        });
   }
 
   /**
@@ -148,33 +143,72 @@ public class SignatureVerificationController extends SignatureBaseController {
    * @param primaryStage The primary stage of the application where the view will be displayed.
    */
   public void showVerifyViewCrossBenchmarkingMode(Stage primaryStage) {
-    try {
-      FXMLLoader loader = new FXMLLoader(
-          getClass().getResource("/VerifyViewCrossBenchmarkingMode.fxml"));
-      Parent root = loader.load();
-      verifyView = loader.getController();
-      this.signatureModel = new SignatureModel();
-      updateWithImportedKeyBatch(new VerifyViewUpdateOperations(verifyView));
-      if (isCrossParameterBenchmarkingEnabled && this.importedKeyBatch != null) {
-        verifyView.setImportKeyBatchButtonVisibility(false);
-        verifyView.setCancelImportKeyButtonVisibility(true);
-      }
-      verifyView.addBenchmarkingModeToggleObserver(
-          new ApplicationModeChangeObserver(
-              () -> showVerifyViewStandardMode(primaryStage),
-              () -> showVerifyView(primaryStage)
-          ));
-      verifyView.addCrossParameterToggleObserver(new CrossBenchmarkingModeChangeObserver(
-          () -> showVerifyViewCrossBenchmarkingMode(primaryStage),
-          () -> showVerifyView(primaryStage), new VerifyViewUpdateOperations(verifyView)));
-      setupVerificationObserversCrossBenchmarking(primaryStage);
+    loadVerifyView("/VerifyViewCrossBenchmarkingMode.fxml",
+        () -> setupVerificationObserversCrossBenchmarking(primaryStage),
+        () -> {
+          updateWithImportedKeyBatch(new VerifyViewUpdateOperations(verifyView));
+          if (isCrossParameterBenchmarkingEnabled && this.importedKeyBatch != null) {
+            verifyView.setImportKeyBatchButtonVisibility(false);
+            verifyView.setCancelImportKeyButtonVisibility(true);
+          }
+        });
 
-      mainController.setScene(root);
-
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
   }
+
+  /**
+   * Sets up observers specific to non-cross-benchmarking mode. This includes observers for handling
+   * signature scheme changes, parameter choice changes, hash function changes, and provable scheme
+   * changes.
+   */
+  private void setupNonCrossBenchmarkingObservers() {
+    verifyView.addSignatureSchemeChangeObserver(new SignatureSchemeChangeObserver());
+    verifyView.addParameterChoiceChangeObserver(
+        new ParameterChoiceChangeObserver(new VerifyViewUpdateOperations(verifyView)));
+    verifyView.addHashFunctionChangeObserver(
+        new HashFunctionChangeObserver(new VerifyViewUpdateOperations(verifyView)));
+    verifyView.addProvableSchemeChangeObserver(
+        new ProvableParamsChangeObserver(new VerifyViewUpdateOperations(verifyView)));
+  }
+
+  /**
+   * Sets up observers common to all modes of the VerifyView. This includes observers for benchmarking
+   * mode toggle, back to main menu actions, and other common functionalities.
+   *
+   * @param primaryStage The primary stage of the application where the view will be displayed.
+   */
+  private void setupCommonToAllObservers(Stage primaryStage) {
+    verifyView.addBenchmarkingModeToggleObserver(new ApplicationModeChangeObserver(
+        () -> showVerifyViewStandardMode(primaryStage),
+        () -> showVerifyView(primaryStage)
+    ));
+    verifyView.addBackToMainMenuObserver(new BackToMainMenuObserver(verifyView));
+  }
+
+  /**
+   * Sets up observers specific to benchmarking mode. This includes observers for importing text
+   * batches, key batches, canceling key batch import, and starting the benchmarking process.
+   *
+   * @param primaryStage The primary stage of the application where the view will be displayed.
+   */
+  private void setupBenchmarkingObservers(Stage primaryStage) {
+    verifyView.addImportTextBatchBtnObserver(
+        new ImportObserver(primaryStage, new VerifyViewUpdateOperations(verifyView),
+            this::handleMessageBatch, "*.txt"));
+    verifyView.addImportKeyBatchButtonObserver(
+        new ImportObserver(primaryStage, new VerifyViewUpdateOperations(verifyView),
+            this::handleKeyBatch, "*.rsa"));
+    verifyView.addCancelImportKeyButtonObserver(
+        new CancelImportKeyBatchButtonObserver(new VerifyViewUpdateOperations(verifyView)));
+    verifyView.addCrossParameterToggleObserver(new CrossBenchmarkingModeChangeObserver(
+        () -> showVerifyViewCrossBenchmarkingMode(primaryStage),
+        () -> showVerifyView(primaryStage), new VerifyViewUpdateOperations(verifyView)));
+    verifyView.addImportSigBatchButtonObserver(
+        new ImportObserver(primaryStage, new VerifyViewUpdateOperations(verifyView),
+            this::handleSignatureBatch, "*.rsa"));
+    verifyView.addVerificationBenchmarkButtonObserver(
+        new VerificationBenchmarkButtonObserver(new VerifyViewUpdateOperations(verifyView)));
+  }
+
 
   /**
    * Sets up observers for the VerifyView controls. Observers are added to handle events like text
@@ -182,7 +216,7 @@ public class SignatureVerificationController extends SignatureBaseController {
    *
    * @param primaryStage The stage that observers will use for file dialogs.
    */
-  public void setupVerifyObservers(Stage primaryStage) {
+  public void setupVerificationObserversStandard(Stage primaryStage) {
     verifyView.addImportTextObserver(
         new ImportObserver(primaryStage, new VerifyViewUpdateOperations(verifyView),
             this::handleMessageFile, "*.txt"));
@@ -191,14 +225,8 @@ public class SignatureVerificationController extends SignatureBaseController {
             this::handleKey, "*.rsa"));
     verifyView.addCancelImportSingleKeyButtonObserver(
         new CancelImportKeyButtonObserver(new VerifyViewUpdateOperations(verifyView)));
-    verifyView.addSignatureSchemeChangeObserver(new SignatureSchemeChangeObserver());
-    verifyView.addBackToMainMenuObserver(new BackToMainMenuObserver(verifyView));
     verifyView.addImportSigButtonObserver(
         new ImportObserver(primaryStage, null, this::handleSig, "*.rsa"));
-    verifyView.addParameterChoiceChangeObserver(
-        new ParameterChoiceChangeObserver(new VerifyViewUpdateOperations(verifyView)));
-    verifyView.addHashFunctionChangeObserver(
-        new HashFunctionChangeObserver(new VerifyViewUpdateOperations(verifyView)));
     verifyView.addVerifyBtnObserver(
         new VerifyBtnObserver(new VerifyViewUpdateOperations(verifyView)));
     verifyView.addCloseNotificationObserver(new BackToMainMenuObserver(verifyView));
@@ -206,63 +234,33 @@ public class SignatureVerificationController extends SignatureBaseController {
         new CancelImportTextButtonObserver(new VerifyViewUpdateOperations(verifyView)));
     verifyView.addCancelImportSignatureButtonObserver(
         new CancelImportSignatureButtonObserver());
-    verifyView.addProvableSchemeChangeObserver(
-        new ProvableParamsChangeObserver(new VerifyViewUpdateOperations(verifyView)));
+    setupNonCrossBenchmarkingObservers();
+    setupCommonToAllObservers(primaryStage);
   }
 
   /**
-   * Sets up benchmarking mode specific observers for the verification view controls.
+   * Sets up observers for the VerifyView in benchmarking mode. This method initialises observers
+   * specific to benchmarking, including text batch imports, key batch imports, benchmarking
+   * initiation, and additional benchmarking-specific functionalities.
    *
-   * @param primaryStage The stage that observers will use for file dialogs.
+   * @param primaryStage The primary stage of the application where the view will be displayed.
    */
   private void setupVerificationObserversBenchmarking(Stage primaryStage) {
-    verifyView.addImportTextBatchBtnObserver(
-        new ImportObserver(primaryStage, new VerifyViewUpdateOperations(verifyView),
-            this::handleMessageBatch, "*.txt"));
-    verifyView.addImportKeyBatchButtonObserver(
-        new ImportObserver(primaryStage, new VerifyViewUpdateOperations(verifyView),
-            this::handleKeyBatch, "*.rsa"));
-    verifyView.addCancelImportKeyButtonObserver(
-        new CancelImportKeyBatchButtonObserver(new VerifyViewUpdateOperations(verifyView)));
-    verifyView.addImportSigBatchButtonObserver(
-        new ImportObserver(primaryStage, new VerifyViewUpdateOperations(verifyView),
-            this::handleSignatureBatch, "*.rsa"));
-    verifyView.addSignatureSchemeChangeObserver(new SignatureSchemeChangeObserver());
-    verifyView.addParameterChoiceChangeObserver(
-        new ParameterChoiceChangeObserver(new VerifyViewUpdateOperations(verifyView)));
-    verifyView.addHashFunctionChangeObserver(
-        new HashFunctionChangeObserver(new VerifyViewUpdateOperations(verifyView)));
-    verifyView.addVerificationBenchmarkButtonObserver(
-        new VerificationBenchmarkButtonObserver(new VerifyViewUpdateOperations(verifyView)));
-    verifyView.addBackToMainMenuObserver(new BackToMainMenuObserver(verifyView));
-    verifyView.addProvableSchemeChangeObserver(
-        new ProvableParamsChangeObserver(new VerifyViewUpdateOperations(verifyView)));
+    setupCommonToAllObservers(primaryStage);
+    setupBenchmarkingObservers(primaryStage);
+    setupNonCrossBenchmarkingObservers();
   }
 
   /**
-   * Displays the VerifyView in cross-parameter benchmarking mode. This method loads the VerifyView
-   * specifically configured for cross-parameter benchmarking. It initialises the view, sets up the
-   * necessary observers for handling key and message batch imports, and displays the view on the
-   * provided stage.
+   * Sets up observers for the VerifyView in cross-parameter benchmarking mode. This method
+   * initialises observers specific to cross-parameter benchmarking, including standard and provable
+   * hash function changes, and other functionalities specific to this mode.
    *
    * @param primaryStage The primary stage of the application where the view will be displayed.
    */
   private void setupVerificationObserversCrossBenchmarking(Stage primaryStage) {
-    verifyView.addImportTextBatchBtnObserver(
-        new ImportObserver(primaryStage, new VerifyViewUpdateOperations(verifyView),
-            this::handleMessageBatch, "*.txt"));
-    verifyView.addImportKeyBatchButtonObserver(
-        new ImportObserver(primaryStage, new VerifyViewUpdateOperations(verifyView),
-            this::handleKeyBatch, "*.rsa"));
-    verifyView.addImportSigBatchButtonObserver(
-        new ImportObserver(primaryStage, new VerifyViewUpdateOperations(verifyView),
-            this::handleSignatureBatch, "*.rsa"));
-    verifyView.addCancelImportKeyButtonObserver(
-        new CancelImportKeyBatchButtonObserver(new VerifyViewUpdateOperations(verifyView)));
-    verifyView.addSignatureSchemeChangeObserver(new SignatureSchemeChangeObserver());
-    verifyView.addVerificationBenchmarkButtonObserver(
-        new VerificationBenchmarkButtonObserver(new VerifyViewUpdateOperations(verifyView)));
-    verifyView.addBackToMainMenuObserver(new BackToMainMenuObserver(verifyView));
+    setupCommonToAllObservers(primaryStage);
+    setupBenchmarkingObservers(primaryStage);
     verifyView.addStandardHashFunctionChangeObserver(new StandardHashFunctionChangeObserver());
     verifyView.addProvableHashFunctionChangeObserver(new ProvableHashFunctionChangeObserver());
 
@@ -485,10 +483,10 @@ public class SignatureVerificationController extends SignatureBaseController {
         .lookup("#progressBar");
     Label progressLabel = (Label) progressDialog.getDialogPane().lookup("#progressLabel");
 
-    Task<Void> benchmarkingTask = createBenchmarkingTaskComparisonMode(messageBatchFile, signatureBatchFile,
+    Task<Void> benchmarkingTask = createBenchmarkingTaskComparisonMode(messageBatchFile,
+        signatureBatchFile,
         progressBar, progressLabel);
     new Thread(benchmarkingTask).start();
-
 
     progressDialog.getDialogPane().lookupButton(ButtonType.CANCEL)
         .addEventFilter(ActionEvent.ACTION, e -> {
@@ -511,8 +509,9 @@ public class SignatureVerificationController extends SignatureBaseController {
   }
 
   /**
-   * Creates a benchmarking task for signature verification in comparison mode. This task is responsible for processing a
-   * batch of messages, generating signatures, and updating the UI with progress.
+   * Creates a benchmarking task for signature verification in comparison mode. This task is
+   * responsible for processing a batch of messages, generating signatures, and updating the UI with
+   * progress.
    *
    * @param messageFile   The file containing the messages to be signed.
    * @param progressBar   UI component to display progress.
@@ -556,10 +555,9 @@ public class SignatureVerificationController extends SignatureBaseController {
   }
 
 
-
   /**
-   * Creates a benchmarking task for signature verification. This task is responsible for processing a
-   * batch of messages, generating signatures, and updating the UI with progress.
+   * Creates a benchmarking task for signature verification. This task is responsible for processing
+   * a batch of messages, generating signatures, and updating the UI with progress.
    *
    * @param messageFile   The file containing the messages to be signed.
    * @param progressBar   UI component to display progress.
