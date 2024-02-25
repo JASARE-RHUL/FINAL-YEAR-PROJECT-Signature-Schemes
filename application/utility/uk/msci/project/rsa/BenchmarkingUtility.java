@@ -4,15 +4,89 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import javafx.concurrent.Task;
+import javafx.event.ActionEvent;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.Dialog;
+import javafx.scene.control.Label;
+import javafx.scene.control.ProgressBar;
+import javafx.stage.Stage;
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.distribution.TDistribution;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 
 
 /**
- * This class provides helper methods for facilitating statistical analysis of time measurements.
+ * This class provides helper methods for facilitating statistical analysis of time measurements and
+ * launching/managing benchmarking tasks.
  */
 public class BenchmarkingUtility {
+
+  /**
+   * The progress bar used to display the progress of a benchmarking task.
+   */
+  ProgressBar progressBar;
+
+  /**
+   * The label used to display the textual representation of the progress of a benchmarking task.
+   */
+  Label progressLabel;
+
+
+  /**
+   * Starts the benchmarking process by displaying a progress dialog and initiating the provided
+   * benchmarking task. Also sets up the task completion behaviour.
+   *
+   * @param title            The title for the progress dialog.
+   * @param benchmarkingTask The task to be executed for benchmarking.
+   * @param primaryStage     The primary stage of the application.
+   * @param onCompletion     The Runnable to be executed upon successful completion of the task.
+   */
+  void launchBenchmarkingTask(String title, Task<Void> benchmarkingTask,
+      Stage primaryStage, Runnable onCompletion) {
+    Dialog<Void> progressDialog = uk.msci.project.rsa.DisplayUtility.showProgressDialog(
+        primaryStage, title);
+    progressBar = (ProgressBar) progressDialog.getDialogPane()
+        .lookup("#progressBar");
+    progressLabel = (Label) progressDialog.getDialogPane().lookup("#progressLabel");
+
+    new Thread(benchmarkingTask).start();
+
+    // Set up task completion behavior
+    benchmarkingTask.setOnSucceeded(e -> {
+      progressDialog.close();
+      onCompletion.run();
+    });
+    benchmarkingTask.setOnFailed(e -> {
+      progressDialog.close();
+      uk.msci.project.rsa.DisplayUtility.showErrorAlert(
+          "Error: Benchmarking failed. Please try again.");
+    });
+
+    progressDialog.getDialogPane().lookupButton(ButtonType.CANCEL)
+        .addEventFilter(ActionEvent.ACTION, e -> {
+          if (benchmarkingTask.isRunning()) {
+            benchmarkingTask.cancel();
+          }
+        });
+  }
+
+  /**
+   * Begins the benchmarking process using the provided BenchmarkingUtility instance. This method is
+   * a static utility to start the benchmarking process with a predefined utility instance.
+   *
+   * @param benchmarkingUtil The BenchmarkingUtility instance to use for managing the process.
+   * @param title            The title for the progress dialog.
+   * @param benchmarkingTask The task to be executed for benchmarking.
+   * @param onCompletion     The Runnable to be executed upon successful completion of the task.
+   * @param primaryStage     The primary stage of the application.
+   */
+  static void beginBenchmarkWithUtility(BenchmarkingUtility benchmarkingUtil, String title,
+      Task<Void> benchmarkingTask, Runnable onCompletion, Stage primaryStage) {
+    benchmarkingUtil.launchBenchmarkingTask(title, benchmarkingTask,
+        primaryStage, onCompletion);
+  }
+
 
   /**
    * Calculates the arithmetic mean of the provided times.
@@ -172,4 +246,21 @@ public class BenchmarkingUtility {
     return sum;
   }
 
+  /**
+   * Updates the progress bar with the given progress value.
+   *
+   * @param progress The progress value to set on the progress bar, ranging from 0.0 to 1.0.
+   */
+  public void updateProgress(double progress) {
+    this.progressBar.setProgress(progress);
+  }
+
+  /**
+   * Updates the progress label with the given text.
+   *
+   * @param text The text to set on the progress label.
+   */
+  public void updateProgressLabel(String text) {
+    this.progressLabel.setText(text);
+  }
 }
