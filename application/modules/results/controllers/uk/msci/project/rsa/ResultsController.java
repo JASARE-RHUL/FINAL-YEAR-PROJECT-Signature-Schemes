@@ -653,6 +653,7 @@ public class ResultsController {
         Number newValue) {
       if (newValue != null) {
         displayResultsForKey(newValue.intValue());
+        lastSelectedGraphButton.fire();
       }
     }
   }
