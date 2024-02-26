@@ -157,7 +157,51 @@ public class ResultsController {
    */
   public ResultsController(MainController mainController) {
     this.mainController = mainController;
+    precomputedGraphs = new HashMap<String, ChartViewer>();
+  }
 
+  /**
+   * Loads and configures the results view with the provided benchmarking results. This method
+   * encapsulates common setup steps for displaying the results view, including loading the FXML,
+   * initializing the results controller, and setting up observers and additional configurations
+   * based on the benchmarking mode.
+   *
+   * @param keyLengths                 List of key lengths used in the benchmarking process.
+   * @param results                    List of benchmarking results to display.
+   * @param observerSetup              Runnable that sets up the observers for UI interactions.
+   * @param additionalSetupBasedOnMode Runnable that contains additional setup steps specific to the
+   *                                   current benchmarking mode.
+   */
+  private void loadResultsView(List<Integer> keyLengths, List<Long> results,
+      Runnable observerSetup,
+      Runnable additionalSetupBasedOnMode) {
+    try {
+      FXMLLoader loader = new FXMLLoader(getClass().getResource("/ResultsView.fxml"));
+      Parent root = loader.load();
+      resultsView = loader.getController();
+      this.keyLengths = keyLengths;
+      this.totalKeys = this.keyLengths.size();
+      this.results = results;
+      this.totalTrials = results.size();
+      this.trialsPerKey = totalTrials / totalKeys;
+      this.keyIndex = 0;
+      splitResultsByKeys();
+      displayCurrentContextButtons();
+
+
+      observerSetup.run();
+      additionalSetupBasedOnMode.run();
+
+      resultsModel = resultsModels.get(0);
+      setStatsResultsView(resultsModel, keyIndex); // Display results for the first key by default
+      resultsView.resizeTableView();
+      lastSelectedGraphButton = resultsView.getHistogramButton();
+      setupObservers();
+
+      mainController.setScene(root);
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
   }
 
   /**
@@ -170,107 +214,57 @@ public class ResultsController {
   }
 
   /**
-   * Displays the results view and initialises the results model with the provided benchmarking
-   * results. This method prepares the results view by configuring it based on the current
-   * benchmarking context, including the display of statistical results for each key. It also sets
-   * up key-specific navigation within the view, allowing the user to switch between results for
-   * different keys.
+   * Displays the results view in standard mode and initialises the results model with the provided
+   * benchmarking results. This method prepares the results view by configuring it based on the
+   * current benchmarking context, including the display of statistical results for each key. It
+   * also sets up key-specific navigation within the view, allowing the user to switch between
+   * results for different keys.
    *
    * @param primaryStage The primary stage on which the results view is to be set. This is the main
    *                     window of the application where the results view will be displayed.
-   * @param results      The list of all benchmarking results, in a contiguous sequence, to be
-   *                     displayed. These results are grouped and displayed according to the
-   *                     corresponding key lengths.
+   * @param results      List of all benchmarking results, ordered by keys.
    * @param keyLengths   The list of key lengths, in bits, used in the benchmarking process. Each
    *                     length in this list corresponds to a set of results in the 'results' list.
-   *                     This parameter is essential for categorizing the results by key length and
+   *                     This parameter is essential for categorising the results by key length and
    *                     setting up the key-specific views.
-   * @throws IOException If there is an error loading the results view FXML file.
    */
   public void showResultsView(Stage primaryStage, List<Long> results, List<Integer> keyLengths) {
-
-    try {
-      FXMLLoader loader = new FXMLLoader(getClass().getResource("/ResultsView.fxml"));
-      Parent root = loader.load();
-      resultsView = loader.getController();
-      this.keyLengths = keyLengths;
-      this.totalKeys = this.keyLengths.size();
-      this.results = results;
-      this.totalTrials = results.size();
-      this.trialsPerKey = totalTrials / totalKeys;
-      this.keyIndex = 0;
-      resultsView.setupTableView();
-      resultsView.populateTableView();
-
-      splitResultsByKeys();
-      displayCurrentContextButtons();
-      initialiseKeySwitchButtons();
-      precomputeGraphs();
-      setupCommonGraphObservers();
-
-      resultsView.setLineGraphButtonMeanVisibility(false);
-      resultsModel = resultsModels.get(0);
-      setStatsResultsView(resultsModel, keyIndex); // Display results for the first key by default
-      lastSelectedGraphButton = resultsView.getHistogramButton();
-
-      mainController.setScene(root);
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
+    loadResultsView(keyLengths, results, this::setupCommonGraphObservers,
+        () -> {
+          resultsView.setupTableView();
+          resultsView.populateTableView();
+          initialiseKeySwitchButtons();
+          precomputeGraphs();
+          resultsView.setLineGraphButtonMeanVisibility(false);
+        });
   }
 
   /**
-   * Displays the results view with options for either standard display or comparison mode. In
-   * comparison mode, this method will configure the results view to compare multiple key sizes and
-   * the respective results for provably secure vs standard parameters.
+   * Displays the results view in either standard or comparison mode. In comparison mode, it
+   * configures the view to compare results across multiple key sizes and parameter sets (provably
+   * secure vs standard).
    *
-   * @param primaryStage                 The primary stage for the application on which the results
-   *                                     will be displayed.
-   * @param results                      The list of benchmarking results to be displayed.
-   * @param keyLengths                   The list of key lengths that were used in the benchmarking
-   *                                     process.
-   * @param isComparisonMode             Flag indicating whether the comparison mode is active.
-   * @param numKeySizesForComparisonMode The number of key sizes that will be compared in comparison
-   *                                     mode.
+   * @param primaryStage                 The primary stage for the application.
+   * @param results                      List of benchmarking results to be displayed.
+   * @param keyLengths                   List of key lengths used in the benchmarking process.
+   * @param isComparisonMode             Flag indicating if comparison mode is active.
+   * @param numKeySizesForComparisonMode Number of key sizes to be compared in comparison mode.
    */
   public void showResultsView(Stage primaryStage, List<Long> results, List<Integer> keyLengths,
       boolean isComparisonMode, int numKeySizesForComparisonMode) {
     if (!isComparisonMode) {
       showResultsView(primaryStage, results, keyLengths);
-    } else {
-
-      try {
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/ResultsView.fxml"));
-        Parent root = loader.load();
-        resultsView = loader.getController();
-        this.keyLengths = keyLengths;
-        this.totalKeys = this.keyLengths.size();
-        this.results = results;
-        this.totalTrials = results.size();
-        this.trialsPerKey = totalTrials / totalKeys;
-        this.numKeySizesForComparisonMode = numKeySizesForComparisonMode;
-        this.keyIndex = 0;
-
-        splitResultsByKeys();
-        displayCurrentContextButtons();
-        initialiseKeySwitchButtonsComparisonMode();
-        precomputeGraphsComparisonMode();
-
-        resultsView.removeValueColumn();
-        resultsView.addValueColumns(createComparisonModeColumnHeaders());
-        resultsView.setNameColumnText("Parameter Type");
-
-        setupComparisonModeGraphObservers();
-        resultsModel = resultsModels.get(0);
-        setStatsResultsView(resultsModel, keyIndex); // Display results for the first key by default
-        lastSelectedGraphButton = resultsView.getHistogramButton();
-        resultsView.resizeTableView();
-
-        mainController.setScene(root);
-      } catch (IOException e) {
-        e.printStackTrace();
-      }
+      return;
     }
+    this.numKeySizesForComparisonMode = numKeySizesForComparisonMode;
+    loadResultsView(keyLengths, results, this::setupComparisonModeGraphObservers,
+        () -> {
+          initialiseKeySwitchButtonsComparisonMode();
+          precomputeGraphsComparisonMode();
+          resultsView.removeValueColumn();
+          resultsView.addValueColumns(createComparisonModeColumnHeaders());
+          resultsView.setNameColumnText("Parameter Type");
+        });
   }
 
   /**
