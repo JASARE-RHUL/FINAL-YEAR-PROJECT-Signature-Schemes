@@ -14,6 +14,7 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
 import javafx.scene.Parent;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tab;
 import javafx.scene.image.Image;
@@ -142,6 +143,12 @@ public class ResultsController {
    */
   private Map<String, ChartViewer> precomputedGraphs;
 
+  /**
+   * Stores the last selected graph button to maintain the active state across different result
+   * sets.
+   */
+  private Button lastSelectedGraphButton;
+
 
   /**
    * Constructs a new ResultsController with a reference to the MainController.
@@ -202,6 +209,7 @@ public class ResultsController {
       resultsView.setLineGraphButtonMeanVisibility(false);
       resultsModel = resultsModels.get(0);
       setStatsResultsView(resultsModel, keyIndex); // Display results for the first key by default
+      lastSelectedGraphButton = resultsView.getHistogramButton();
 
       mainController.setScene(root);
     } catch (IOException e) {
@@ -251,6 +259,7 @@ public class ResultsController {
 
         resultsModel = resultsModels.get(0);
         setStatsResultsView(resultsModel, keyIndex); // Display results for the first key by default
+        lastSelectedGraphButton = resultsView.getHistogramButton();
         resultsView.resizeTableView();
 
         mainController.setScene(root);
