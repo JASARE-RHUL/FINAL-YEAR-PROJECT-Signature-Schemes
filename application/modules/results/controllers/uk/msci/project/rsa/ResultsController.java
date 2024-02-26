@@ -773,6 +773,47 @@ public class ResultsController {
   }
 
   /**
+   * Prepares a histogram dataset for a given key index for use in non-comparison mode.
+   *
+   * @param keyIndex The index of the key to prepare the dataset for.
+   * @return A histogram dataset for the specified key.
+   */
+  private CategoryDataset prepareHistogramDatasetForKey(int keyIndex) {
+    DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+    ResultsModel model = resultsModels.get(keyIndex);
+
+    double q1 = model.getPercentile25Data();
+    double q3 = model.getPercentile75Data();
+    double binWidth = 2 * ((q3 - q1) / 1E6) * Math.pow(trialsPerKey, -1 / 3.0);
+
+    double min = model.getMinTimeData() / 1E6;
+    double max = model.getMaxTimeData() / 1E6;
+    int numBins = (int) Math.ceil((max - min) / binWidth);
+
+    // Initialise bin counts
+    int[] binCounts = new int[numBins];
+    Arrays.fill(binCounts, 0);
+
+    // Count the number of values that fall into each bin
+    model.getResults().forEach(ns -> {
+      double value = ns / 1E6; // Convert to milliseconds
+      int binIndex = (int) ((value - min) / binWidth);
+      binIndex = Math.min(binIndex, numBins - 1); // Clamp to the range [0, numBins - 1]
+      binCounts[binIndex]++;
+    });
+
+    // Add the bin counts to the dataset
+    for (int bin = 0; bin < numBins; bin++) {
+      double lowerBound = min + (bin * binWidth);
+      double upperBound = lowerBound + binWidth;
+      String category = String.format("%.1f-%.1f ms", lowerBound, upperBound);
+      dataset.addValue(binCounts[bin], "Frequency", category);
+    }
+
+    return dataset;
+  }
+
+  /**
    * Creates a stacked histogram chart using the provided dataset.
    *
    * @param dataset The dataset to create the histogram from.
