@@ -901,6 +901,20 @@ public class ResultsController {
   }
 
   /**
+   * Prepares a dataset for the box plot for a specific key.
+   *
+   * @param keyIndex Index of the key for which the dataset is prepared.
+   * @return A dataset ready for generating a box plot.
+   */
+  private DefaultBoxAndWhiskerCategoryDataset prepareBoxPlotDatasetForKey(int keyIndex) {
+    DefaultBoxAndWhiskerCategoryDataset dataset = new DefaultBoxAndWhiskerCategoryDataset();
+    ResultsModel model = resultsModels.get(keyIndex);
+
+    dataset.add(createBoxAndWhiskerItem(model), "Key " + keyIndex, "");
+    return dataset;
+  }
+
+  /**
    * Displays a histogram for a specific key size which contains results for multiple keys
    * (comparison mode).
    *
