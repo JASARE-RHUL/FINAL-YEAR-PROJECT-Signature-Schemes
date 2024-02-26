@@ -958,6 +958,32 @@ public class ResultsController {
     return new ChartViewer(boxplot);
   }
 
+  /**
+   * Prepares a dataset for the box plot in comparison mode, collecting statistics from multiple
+   * results models.
+   *
+   * @param keyIndex Index of the key for which the dataset is prepared.
+   * @return A dataset ready for generating a box plot.
+   */
+  private DefaultBoxAndWhiskerCategoryDataset prepareBoxPlotDatasetForComparisonMode(
+      int keyIndex) {
+    DefaultBoxAndWhiskerCategoryDataset dataset = new DefaultBoxAndWhiskerCategoryDataset();
+
+    for (int i = keyIndex * (resultsModels.size() / numKeySizesForComparisonMode);
+        i < keyIndex * (resultsModels.size() / numKeySizesForComparisonMode)
+            + NUM_ROWS_COMPARISON_MODE;
+        i++) {
+
+      ResultsModel model = resultsModels.get(i);
+      String seriesName =
+          getComparisonModeRowHeader(i % NUM_ROWS_COMPARISON_MODE);
+
+      // Extract necessary statistics and add to dataset
+      dataset.add(createBoxAndWhiskerItem(model), seriesName, seriesName);
+    }
+    return dataset;
+  }
+
 
 
 
