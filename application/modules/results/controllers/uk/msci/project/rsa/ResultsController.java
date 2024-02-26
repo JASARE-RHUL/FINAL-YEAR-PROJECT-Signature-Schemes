@@ -953,13 +953,44 @@ public class ResultsController {
     String seriesName = "Key " + keyIndex;
     XYSeries series = new XYSeries(seriesName);
 
-    // Assuming each trial is a point on the x-axis
+
     for (int trial = 0; trial < model.getResults().size(); trial++) {
       double time = model.getResults().get(trial) / 1_000_000.0; // Convert to milliseconds
       series.add(trial, time);
     }
 
     dataset.addSeries(series);
+
+    return dataset;
+  }
+
+  /**
+   * Prepares a line chart dataset for comparison mode using all time data.
+   *
+   * @param keyIndex Index of the key for which the dataset is prepared.
+   * @return An XYSeriesCollection for the line chart.
+   */
+  private XYSeriesCollection prepareLineChartAllTimesDatasetComparisonMode(int keyIndex) {
+    XYSeriesCollection dataset = new XYSeriesCollection();
+
+    for (int i = keyIndex * (resultsModels.size() / numKeySizesForComparisonMode);
+        i < keyIndex * (resultsModels.size() / numKeySizesForComparisonMode)
+            + NUM_ROWS_COMPARISON_MODE;
+        i++) {
+
+      ResultsModel model = resultsModels.get(i);
+      String seriesName =
+          getComparisonModeRowHeader(i % NUM_ROWS_COMPARISON_MODE);
+      XYSeries series = new XYSeries(seriesName);
+
+      // Assuming each trial is a point on the x-axis
+      for (int trial = 0; trial < model.getResults().size(); trial++) {
+        double time = model.getResults().get(trial) / 1_000_000.0; // Convert to milliseconds
+        series.add(trial, time);
+      }
+
+      dataset.addSeries(series);
+    }
 
     return dataset;
   }
