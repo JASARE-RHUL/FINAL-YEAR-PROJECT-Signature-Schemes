@@ -205,6 +205,7 @@ public class ResultsController {
       splitResultsByKeys();
       displayCurrentContextButtons();
       initialiseKeySwitchButtons();
+      precomputeGraphsComparisonMode();
 
       resultsView.setLineGraphButtonMeanVisibility(false);
       resultsModel = resultsModels.get(0);
@@ -252,6 +253,7 @@ public class ResultsController {
         splitResultsByKeys();
         displayCurrentContextButtons();
         initialiseKeySwitchButtonsComparisonMode();
+        precomputeGraphsComparisonMode();
 
         resultsView.removeValueColumn();
         resultsView.addValueColumns(createComparisonModeColumnHeaders());
