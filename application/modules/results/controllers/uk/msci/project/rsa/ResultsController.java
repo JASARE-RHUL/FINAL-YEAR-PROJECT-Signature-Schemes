@@ -26,11 +26,13 @@ import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.CategoryAxis;
 import org.jfree.chart.axis.CategoryLabelPositions;
+import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.axis.SymbolAxis;
 import org.jfree.chart.fx.ChartViewer;
 import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.renderer.category.BoxAndWhiskerRenderer;
 import org.jfree.chart.renderer.category.StackedBarRenderer;
 import org.jfree.chart.renderer.xy.XYErrorRenderer;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
@@ -38,6 +40,7 @@ import org.jfree.data.category.CategoryDataset;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.data.statistics.BoxAndWhiskerItem;
 import org.jfree.data.statistics.DefaultBoxAndWhiskerCategoryDataset;
+import org.jfree.data.statistics.HistogramDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.data.xy.YIntervalSeries;
@@ -187,7 +190,6 @@ public class ResultsController {
       this.keyIndex = 0;
       splitResultsByKeys();
       displayCurrentContextButtons();
-
 
       observerSetup.run();
       additionalSetupBasedOnMode.run();
@@ -917,8 +919,8 @@ public class ResultsController {
    * @param keyIndex The index of the key to prepare the dataset for.
    * @return A histogram dataset for the specified key.
    */
-  private CategoryDataset prepareHistogramDatasetForKey(int keyIndex) {
-    DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+  private HistogramDataset prepareHistogramDatasetForKey(int keyIndex) {
+    HistogramDataset dataset = new HistogramDataset();
     ResultsModel model = resultsModels.get(keyIndex);
 
     double q1 = model.getPercentile25Data();
@@ -929,26 +931,11 @@ public class ResultsController {
     double max = model.getMaxTimeData() / 1E6;
     int numBins = (int) Math.ceil((max - min) / binWidth);
 
-    // Initialise bin counts
-    int[] binCounts = new int[numBins];
-    Arrays.fill(binCounts, 0);
+    double[] values = model.getResults().stream()
+        .mapToDouble(ns -> ns / 1E6) // Convert to milliseconds
+        .toArray();
 
-    // Count the number of values that fall into each bin
-    model.getResults().forEach(ns -> {
-      double value = ns / 1E6; // Convert to milliseconds
-      int binIndex = (int) ((value - min) / binWidth);
-      binIndex = Math.min(binIndex, numBins - 1); // Clamp to the range [0, numBins - 1]
-      binCounts[binIndex]++;
-    });
-
-    // Add the bin counts to the dataset
-    for (int bin = 0; bin < numBins; bin++) {
-      double lowerBound = min + (bin * binWidth);
-      double upperBound = lowerBound + binWidth;
-      String category = String.format("%.1f-%.1f ms", lowerBound, upperBound);
-      dataset.addValue(binCounts[bin], "Frequency", category);
-    }
-
+    dataset.addSeries("Key " + keyIndex, values, numBins);
     return dataset;
   }
 
@@ -998,17 +985,18 @@ public class ResultsController {
    * @param title   The title for the histogram chart.
    * @return A JFreeChart object representing the histogram.
    */
-  private JFreeChart createHistogramFromDataset(CategoryDataset dataset, String title) {
-    return ChartFactory.createBarChart(
+  private JFreeChart createHistogramFromDataset(HistogramDataset dataset, String title) {
+    return ChartFactory.createHistogram(
         title,
         "Time (ms)",
         "Frequency",
         dataset,
         PlotOrientation.VERTICAL,
-        false, // no legend needed for a histogram series
+        false,
         true,
         false
     );
+
 
   }
 
@@ -1049,7 +1037,7 @@ public class ResultsController {
     DefaultBoxAndWhiskerCategoryDataset dataset = new DefaultBoxAndWhiskerCategoryDataset();
     ResultsModel model = resultsModels.get(keyIndex);
 
-    dataset.add(createBoxAndWhiskerItem(model), "Key " + keyIndex, "");
+    dataset.add(createBoxAndWhiskerItem(model), "Key " + keyIndex + 1, "");
     return dataset;
   }
 
@@ -1089,7 +1077,7 @@ public class ResultsController {
     XYSeriesCollection dataset = new XYSeriesCollection();
 
     ResultsModel model = resultsModels.get(keyIndex);
-    String seriesName = "Key " + keyIndex;
+    String seriesName = "Key " + keyIndex + 1;
     XYSeries series = new XYSeries(seriesName);
 
     for (int trial = 0; trial < model.getResults().size(); trial++) {
@@ -1147,7 +1135,7 @@ public class ResultsController {
         "Time (ms)",
         dataset,
         PlotOrientation.VERTICAL,
-        true,
+        false,
         true,
         false
     );
@@ -1275,7 +1263,8 @@ public class ResultsController {
    * @return A ChartViewer containing the histogram.
    */
   public ChartViewer displayHistogramForKey(int keyIndex) {
-    CategoryDataset dataset = prepareHistogramDatasetForKey(keyIndex);
+    HistogramDataset dataset = prepareHistogramDatasetForKey(keyIndex);
+
     JFreeChart chart = createHistogramFromDataset(dataset,
         "Histogram for " + "Key " + (keyIndex + 1) + " (" + keyLengths.get(keyIndex) + "bit)");
     return new ChartViewer(chart);
@@ -1305,8 +1294,25 @@ public class ResultsController {
    */
   private ChartViewer displayBoxPlotForKey(int keyIndex) {
     DefaultBoxAndWhiskerCategoryDataset dataset = prepareBoxPlotDatasetForKey(keyIndex);
-    return displayBoxPlot(dataset, "Box Plot for " + keyIndex,
-        "Key " + (keyIndex + 1) + " (" + keyLengths.get(keyIndex) + "bit)");
+
+    // Create the chart
+    JFreeChart chart = ChartFactory.createBoxAndWhiskerChart(
+        "Box plot for Key " + (keyIndex + 1) + " (" + keyLengths.get(keyIndex) + "bit)",    // Title
+        "Key " + (keyIndex + 1) + " (" + keyLengths.get(keyIndex) + "bit)",
+        // X-axis label
+        "Time (ms)",               // Y-axis label
+        dataset,               // Dataset
+        false                  // Not include legend
+    );
+
+    CategoryPlot plot = (CategoryPlot) chart.getPlot();
+    plot.setDomainGridlinesVisible(true);
+    plot.setRangePannable(true);
+
+    NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
+    rangeAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
+    ChartViewer viewer = new ChartViewer(chart);
+    return viewer;
   }
 
 
