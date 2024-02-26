@@ -1119,6 +1119,40 @@ public class ResultsController {
     return new ChartViewer(chart);
   }
 
+  /**
+   * Prepares datasets for the mean times line chart in comparison mode.
+   *
+   * @param keyIndex Index of the key for which the datasets are prepared.
+   * @return A pair containing two datasets: one for the mean times and one for the error intervals.
+   */
+  private Pair<XYSeriesCollection, YIntervalSeriesCollection> prepareLineChartMeanDatasetForComparisonMode(
+      int keyIndex) {
+    XYSeriesCollection meanDataset = new XYSeriesCollection();
+    YIntervalSeriesCollection errorDataset = new YIntervalSeriesCollection();
+
+    XYSeries meanSeries = new XYSeries("Mean Times");
+    YIntervalSeries errorSeries = new YIntervalSeries("Error Bars (Standard Deviation)");
+
+    for (int i = keyIndex * (resultsModels.size() / numKeySizesForComparisonMode);
+        i < keyIndex * (resultsModels.size() / numKeySizesForComparisonMode)
+            + NUM_ROWS_COMPARISON_MODE;
+        i++) {
+
+      ResultsModel model = resultsModels.get(i);
+      double mean = model.getMeanData();
+      double stdDev = model.getStdDeviationData();
+
+      int xValue = i % NUM_ROWS_COMPARISON_MODE;
+
+      meanSeries.add(xValue, mean);
+      errorSeries.add(xValue, mean, mean - stdDev, mean + stdDev);
+    }
+
+    meanDataset.addSeries(meanSeries);
+    errorDataset.addSeries(errorSeries);
+    return new Pair<>(meanDataset, errorDataset);
+  }
+
 
 
 
