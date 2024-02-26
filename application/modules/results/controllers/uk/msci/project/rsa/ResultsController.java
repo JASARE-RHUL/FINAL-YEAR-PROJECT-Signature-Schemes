@@ -853,6 +853,27 @@ public class ResultsController {
   }
 
   /**
+   * Creates a histogram from the given category dataset.
+   *
+   * @param dataset The dataset from which the histogram is to be created.
+   * @param title   The title for the histogram chart.
+   * @return A JFreeChart object representing the histogram.
+   */
+  private JFreeChart createHistogramFromDataset(CategoryDataset dataset, String title) {
+    return ChartFactory.createBarChart(
+        title,
+        "Time (ms)",
+        "Frequency",
+        dataset,
+        PlotOrientation.VERTICAL,
+        false, // no legend needed for a histogram series
+        true,
+        false
+    );
+
+  }
+
+  /**
    * Displays a histogram for a specific key size which contains results for multiple keys
    * (comparison mode).
    *
