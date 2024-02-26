@@ -915,6 +915,32 @@ public class ResultsController {
   }
 
   /**
+   * Prepares a dataset for the box plot in comparison mode, collecting statistics from multiple
+   * results models.
+   *
+   * @param keyIndex Index of the key for which the dataset is prepared.
+   * @return A dataset ready for generating a box plot.
+   */
+  private DefaultBoxAndWhiskerCategoryDataset prepareBoxPlotDatasetForComparisonMode(
+      int keyIndex) {
+    DefaultBoxAndWhiskerCategoryDataset dataset = new DefaultBoxAndWhiskerCategoryDataset();
+
+    for (int i = keyIndex * (resultsModels.size() / numKeySizesForComparisonMode);
+        i < keyIndex * (resultsModels.size() / numKeySizesForComparisonMode)
+            + NUM_ROWS_COMPARISON_MODE;
+        i++) {
+
+      ResultsModel model = resultsModels.get(i);
+      String seriesName =
+          getComparisonModeRowHeader(i % NUM_ROWS_COMPARISON_MODE);
+
+      // Extract necessary statistics and add to dataset
+      dataset.add(createBoxAndWhiskerItem(model), seriesName, seriesName);
+    }
+    return dataset;
+  }
+
+  /**
    * Displays a histogram for a specific key size which contains results for multiple keys
    * (comparison mode).
    *
@@ -959,31 +985,19 @@ public class ResultsController {
   }
 
   /**
-   * Prepares a dataset for the box plot in comparison mode, collecting statistics from multiple
-   * results models.
+   * Prepares and displays a box plot for comparison mode.
    *
-   * @param keyIndex Index of the key for which the dataset is prepared.
-   * @return A dataset ready for generating a box plot.
+   * @param keyIndex Index of the key for which the box plot is prepared.
+   * @return A ChartViewer containing the box plot.
    */
-  private DefaultBoxAndWhiskerCategoryDataset prepareBoxPlotDatasetForComparisonMode(
-      int keyIndex) {
-    DefaultBoxAndWhiskerCategoryDataset dataset = new DefaultBoxAndWhiskerCategoryDataset();
-
-    for (int i = keyIndex * (resultsModels.size() / numKeySizesForComparisonMode);
-        i < keyIndex * (resultsModels.size() / numKeySizesForComparisonMode)
-            + NUM_ROWS_COMPARISON_MODE;
-        i++) {
-
-      ResultsModel model = resultsModels.get(i);
-      String seriesName =
-          getComparisonModeRowHeader(i % NUM_ROWS_COMPARISON_MODE);
-
-      // Extract necessary statistics and add to dataset
-      dataset.add(createBoxAndWhiskerItem(model), seriesName, seriesName);
-    }
-    return dataset;
+  private ChartViewer displayBoxPlotForComparisonMode(int keyIndex) {
+    DefaultBoxAndWhiskerCategoryDataset dataset = prepareBoxPlotDatasetForComparisonMode(
+        keyIndex);
+    return displayBoxPlot(dataset,
+        "Box Plot for " + "Key Size " + (keyIndex + 1) + " (" + keyLengths.get(
+            keyIndex * (resultsModels.size() / numKeySizesForComparisonMode)) + "bit)",
+        "Parameter Type");
   }
-
 
 
 
