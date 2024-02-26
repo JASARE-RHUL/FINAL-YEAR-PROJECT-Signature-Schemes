@@ -996,6 +996,32 @@ public class ResultsController {
   }
 
   /**
+   * Creates a line chart from the given dataset.
+   *
+   * @param dataset The dataset for the line chart.
+   * @param title   The title for the chart.
+   * @return A JFreeChart object representing the line chart.
+   */
+  private JFreeChart createLineChartAllTimes(XYSeriesCollection dataset, String title) {
+    JFreeChart lineChart = ChartFactory.createXYLineChart(
+        title,
+        "Trial",
+        "Time (ms)",
+        dataset,
+        PlotOrientation.VERTICAL,
+        true,
+        true,
+        false
+    );
+
+    XYPlot plot = lineChart.getXYPlot();
+    XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
+    plot.setRenderer(renderer);
+
+    return lineChart;
+  }
+
+  /**
    * Displays a histogram for a specific key size which contains results for multiple keys
    * (comparison mode).
    *
