@@ -941,6 +941,30 @@ public class ResultsController {
   }
 
   /**
+   * Prepares a line chart dataset for a specific key using all time data.
+   *
+   * @param keyIndex Index of the key for which the dataset is prepared.
+   * @return An XYSeriesCollection for the line chart.
+   */
+  private XYSeriesCollection prepareLineChartAllTimesDataset(int keyIndex) {
+    XYSeriesCollection dataset = new XYSeriesCollection();
+
+    ResultsModel model = resultsModels.get(keyIndex);
+    String seriesName = "Key " + keyIndex;
+    XYSeries series = new XYSeries(seriesName);
+
+    // Assuming each trial is a point on the x-axis
+    for (int trial = 0; trial < model.getResults().size(); trial++) {
+      double time = model.getResults().get(trial) / 1_000_000.0; // Convert to milliseconds
+      series.add(trial, time);
+    }
+
+    dataset.addSeries(series);
+
+    return dataset;
+  }
+
+  /**
    * Displays a histogram for a specific key size which contains results for multiple keys
    * (comparison mode).
    *
