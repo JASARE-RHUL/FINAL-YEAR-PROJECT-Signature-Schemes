@@ -900,14 +900,7 @@ public class ResultsController {
     for (Map.Entry<String, int[]> entry : seriesBinCounts.entrySet()) {
       String seriesName = entry.getKey();
       int[] binCounts = entry.getValue();
-      for (int bin = 0; bin < numBins; bin++) {
-        // Calculate the lower and upper bounds for the current bin
-        double lowerBound = min + (bin * binWidth);
-        double upperBound = lowerBound + binWidth;
-        // Format the bin range as a label
-        String binLabel = String.format("%.1f-%.1f ms", lowerBound, upperBound);
-        dataset.addValue(binCounts[bin], seriesName, binLabel);
-      }
+      addBinCountDataset(dataset, min, binWidth, numBins, seriesName, binCounts);
     }
 
     return dataset;
@@ -919,25 +912,44 @@ public class ResultsController {
    * @param keyIndex The index of the key to prepare the dataset for.
    * @return A histogram dataset for the specified key.
    */
-  private HistogramDataset prepareHistogramDatasetForKey(int keyIndex) {
-    HistogramDataset dataset = new HistogramDataset();
+  private DefaultCategoryDataset prepareHistogramForKey(int keyIndex) {
+    DefaultCategoryDataset dataset = new DefaultCategoryDataset();
     ResultsModel model = resultsModels.get(keyIndex);
 
-    double q1 = model.getPercentile25Data();
-    double q3 = model.getPercentile75Data();
-    double binWidth = 2 * ((q3 - q1) / 1E6) * Math.pow(trialsPerKey, -1 / 3.0);
-
-    double min = model.getMinTimeData() / 1E6;
-    double max = model.getMaxTimeData() / 1E6;
-    int numBins = (int) Math.ceil((max - min) / binWidth);
+    double min = model.getMinTimeData() / 1_000_000.0; // convert to milliseconds
+    double binWidth = calculateFreedmanDiaconisBinWidth(keyIndex, model.getResults());
+    int numBins = calculateNumberOfBins(keyIndex, model.getResults());
+    String seriesName = "Key " + (keyIndex + 1);
+    int[] binCounts = new int[numBins]; // Array to hold the count of values in each bin
 
     double[] values = model.getResults().stream()
-        .mapToDouble(ns -> ns / 1E6) // Convert to milliseconds
+        .mapToDouble(ns -> ns / 1_000_000.0) // Convert to milliseconds
         .toArray();
 
-    dataset.addSeries("Key " + keyIndex, values, numBins);
+    // Populate bin counts
+    for (double value : values) {
+      int bin = (int) ((value - min) / binWidth);
+      bin = Math.min(Math.max(bin, 0), numBins - 1); // Clamp to valid range
+      binCounts[bin]++; // Increment the count for the bin
+    }
+
+    // Add the bin counts to the dataset
+    addBinCountDataset(dataset, min, binWidth, numBins, seriesName, binCounts);
+
     return dataset;
   }
+
+  private void addBinCountDataset(DefaultCategoryDataset dataset, double min, double binWidth,
+      int numBins, String seriesName, int[] binCounts) {
+    for (int bin = 0; bin < numBins; bin++) {
+      double lowerBound = min + (bin * binWidth);
+      double upperBound = lowerBound + binWidth;
+      // Format the bin range as a label
+      String binLabel = String.format("%.1f-%.1f ms", lowerBound, upperBound);
+      dataset.addValue(binCounts[bin], seriesName, binLabel); // Add the count of the bin to the dataset
+    }
+  }
+
 
   /**
    * Creates a stacked histogram chart using the provided dataset.
@@ -985,8 +997,8 @@ public class ResultsController {
    * @param title   The title for the histogram chart.
    * @return A JFreeChart object representing the histogram.
    */
-  private JFreeChart createHistogramFromDataset(HistogramDataset dataset, String title) {
-    return ChartFactory.createHistogram(
+  private JFreeChart createHistogramFromDataset(CategoryDataset dataset, String title) {
+    JFreeChart chart = ChartFactory.createStackedBarChart(
         title,
         "Time (ms)",
         "Frequency",
@@ -996,6 +1008,15 @@ public class ResultsController {
         true,
         false
     );
+    CategoryPlot plot = chart.getCategoryPlot();
+    StackedBarRenderer renderer = new StackedBarRenderer();
+    plot.setRenderer(renderer);
+
+    // Set the category label positions to avoid overlap
+    CategoryAxis domainAxis = plot.getDomainAxis();
+    domainAxis.setCategoryLabelPositions(CategoryLabelPositions.UP_45);
+
+    return chart;
 
 
   }
@@ -1263,7 +1284,7 @@ public class ResultsController {
    * @return A ChartViewer containing the histogram.
    */
   public ChartViewer displayHistogramForKey(int keyIndex) {
-    HistogramDataset dataset = prepareHistogramDatasetForKey(keyIndex);
+    CategoryDataset dataset = prepareHistogramForKey(keyIndex);
 
     JFreeChart chart = createHistogramFromDataset(dataset,
         "Histogram for " + "Key " + (keyIndex + 1) + " (" + keyLengths.get(keyIndex) + "bit)");
