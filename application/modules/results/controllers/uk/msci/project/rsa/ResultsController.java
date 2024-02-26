@@ -942,6 +942,22 @@ public class ResultsController {
     return new ChartViewer(chart);
   }
 
+  /**
+   * Displays a box plot using the provided dataset.
+   *
+   * @param dataset           The dataset to be used for the box plot.
+   * @param title             The title of the chart.
+   * @param categoryAxisLabel The label for the category axis.
+   * @return A ChartViewer containing the box plot.
+   */
+  private ChartViewer displayBoxPlot(DefaultBoxAndWhiskerCategoryDataset dataset, String title,
+      String categoryAxisLabel) {
+    JFreeChart boxplot = ChartFactory.createBoxAndWhiskerChart(
+        title, categoryAxisLabel, "Time (ms)", dataset, true);
+
+    return new ChartViewer(boxplot);
+  }
+
 
 
 
