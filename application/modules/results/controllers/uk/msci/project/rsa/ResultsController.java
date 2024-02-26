@@ -786,7 +786,7 @@ public class ResultsController {
         "Category",
         "Frequency",
         dataset,
-        PlotOrientation.VERTICAL, // orientation
+        PlotOrientation.VERTICAL,
         true,                  // include legend
         true,                  // tooltips
         false
@@ -809,6 +809,21 @@ public class ResultsController {
     domainAxis.setCategoryLabelPositions(CategoryLabelPositions.UP_45);
 
     return chart;
+  }
+
+  /**
+   * Displays a histogram for a specific key size which contains results for multiple keys
+   * (comparison mode).
+   *
+   * @param keyIndex Index of the key size for which the histogram is displayed.
+   * @return A ChartViewer containing the stacked histogram.
+   */
+  public ChartViewer displayStackedHistogram(int keyIndex) {
+    CategoryDataset dataset = createStackedHistogramDataset(keyIndex);
+    JFreeChart chart = createStackedHistogramChart(dataset,
+        "Stacked Histogram for " + "Key Size " + (keyIndex + 1) + " (" + keyLengths.get(
+            keyIndex * (resultsModels.size() / numKeySizesForComparisonMode)) + "bit)");
+    return new ChartViewer(chart);
   }
 
 
