@@ -1153,6 +1153,28 @@ public class ResultsController {
     return new Pair<>(meanDataset, errorDataset);
   }
 
+  /**
+   * Configures the renderers for the line chart displaying mean times.
+   *
+   * @param plot The plot to which the renderers will be applied.
+   */
+  private void configureLineChartMeanRenderers(XYPlot plot) {
+    // Mean dataset renderer
+    XYLineAndShapeRenderer meanRenderer = new XYLineAndShapeRenderer();
+    meanRenderer.setSeriesLinesVisible(0, true);
+    meanRenderer.setSeriesShapesVisible(0, true);
+
+    plot.setRenderer(0, meanRenderer);
+
+    // Error dataset renderer
+    XYErrorRenderer errorRenderer = new XYErrorRenderer();
+    errorRenderer.setSeriesLinesVisible(0, true);
+    errorRenderer.setSeriesShapesVisible(0, false); // No shapes for error bars
+    errorRenderer.setDrawYError(true); // Enable vertical error bars
+    errorRenderer.setDrawXError(false); // Disable horizontal error bars
+    plot.setRenderer(1, errorRenderer);
+  }
+
 
 
 
