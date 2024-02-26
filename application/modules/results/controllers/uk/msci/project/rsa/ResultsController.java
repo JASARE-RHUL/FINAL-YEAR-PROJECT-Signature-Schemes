@@ -14,7 +14,6 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
 import javafx.scene.Parent;
-import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tab;
 import javafx.scene.image.Image;
@@ -138,6 +137,11 @@ public class ResultsController {
    */
   private static final int NUM_ROWS_COMPARISON_MODE = 4;
 
+  /**
+   * Stores precomputed graph views to avoid re-rendering for each view request.
+   */
+  private Map<String, ChartViewer> precomputedGraphs;
+
 
   /**
    * Constructs a new ResultsController with a reference to the MainController.
@@ -253,6 +257,28 @@ public class ResultsController {
       } catch (IOException e) {
         e.printStackTrace();
       }
+    }
+  }
+
+  /**
+   * Precomputes and stores graphs for all keys to optimise performance during graph switching.
+   */
+  private void precomputeGraphs() {
+    for (int keyIndex = 0; keyIndex < totalKeys; keyIndex++) {
+      // Precompute and store each type of graph for each key
+      String histogramKey = "Histogram_" + keyIndex;
+      precomputedGraphs.put(histogramKey, displayHistogramForKey(keyIndex));
+
+      String lineChartKey = "LineChartAllTimes_" + keyIndex;
+      ChartViewer lineChartViewer = displayLineChartAllTimes(keyIndex,
+          "Line Graph (All Trials) for " + "Key " + (keyIndex + 1) + " (" + keyLengths.get(
+              keyIndex) + "bit)");
+      precomputedGraphs.put(lineChartKey, lineChartViewer);
+
+      String boxPlotKey = "BoxPlot_" + keyIndex;
+      ChartViewer boxPlotViewer = displayBoxPlotForKey(keyIndex);
+      precomputedGraphs.put(boxPlotKey, boxPlotViewer);
+
     }
   }
 
