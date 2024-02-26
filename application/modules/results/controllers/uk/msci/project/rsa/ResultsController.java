@@ -205,7 +205,8 @@ public class ResultsController {
       splitResultsByKeys();
       displayCurrentContextButtons();
       initialiseKeySwitchButtons();
-      precomputeGraphsComparisonMode();
+      precomputeGraphs();
+      setupCommonGraphObservers();
 
       resultsView.setLineGraphButtonMeanVisibility(false);
       resultsModel = resultsModels.get(0);
@@ -259,6 +260,7 @@ public class ResultsController {
         resultsView.addValueColumns(createComparisonModeColumnHeaders());
         resultsView.setNameColumnText("Parameter Type");
 
+        setupComparisonModeGraphObservers();
         resultsModel = resultsModels.get(0);
         setStatsResultsView(resultsModel, keyIndex); // Display results for the first key by default
         lastSelectedGraphButton = resultsView.getHistogramButton();
@@ -415,6 +417,23 @@ public class ResultsController {
         new ExportVerificationResultsObserver());
     resultsView.addKeyResultsChangeObserver(new KeyResultsChangeObserver());
 
+  }
+
+  /**
+   * Sets up observers for graph buttons common to both comparison and non comparison mode.
+   */
+  public void setupCommonGraphObservers() {
+    resultsView.addHistogramButtonObserver(new HistogramButtonObserver());
+    resultsView.addLineGraphButtonAllTimesObserver(new LineGraphButtonAllTimesObserver());
+    resultsView.addBoxPlotButtonObserver(new BoxPlotButtonObserver());
+  }
+
+  /**
+   * Sets up observers specifically for the graph buttons in comparison mode.
+   */
+  public void setupComparisonModeGraphObservers() {
+    setupCommonGraphObservers();
+    resultsView.addLineGraphButtonMeanObserver(new LineGraphButtonMeanObserver());
   }
 
   /**
