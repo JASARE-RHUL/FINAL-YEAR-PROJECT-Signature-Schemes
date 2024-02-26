@@ -282,6 +282,34 @@ public class ResultsController {
     }
   }
 
+  /**
+   * Precomputes and stores graphs for comparison mode, facilitating quick switching between
+   * graphs.
+   */
+  private void precomputeGraphsComparisonMode() {
+    for (int keySizeIndex = 0; keySizeIndex < numKeySizesForComparisonMode; keySizeIndex++) {
+      // Precompute and store each type of graph for each key
+      String histogramKey = "Histogram_" + keySizeIndex;
+      precomputedGraphs.put(histogramKey, displayStackedHistogram(keySizeIndex));
+
+      String lineChartAllTimesKey = "LineChartAllTimes_" + keySizeIndex;
+      ChartViewer lineChartAllTimesViewer = displayLineChartAllTimesComparisonMode(keySizeIndex,
+          "Line Graph (All Trials) for " + "Key Size " + (keySizeIndex + 1) + " (" + keyLengths.get(
+              keySizeIndex * (resultsModels.size() / numKeySizesForComparisonMode)) + "bit)");
+
+      precomputedGraphs.put(lineChartAllTimesKey, lineChartAllTimesViewer);
+
+      String lineChartMeanKey = "LineChartMeanTimes_" + keySizeIndex;
+      ChartViewer lineChartMeanViewer = displayLineGraphMeanForComparisonMode(keySizeIndex);
+      precomputedGraphs.put(lineChartMeanKey, lineChartMeanViewer);
+
+      String boxPlotKey = "BoxPlot_" + keySizeIndex;
+      ChartViewer boxPlotViewer = displayBoxPlotForComparisonMode(keySizeIndex);
+      precomputedGraphs.put(boxPlotKey, boxPlotViewer);
+
+    }
+  }
+
 
   /**
    * Creates headers for the columns in the comparison mode table view. These headers correspond to
