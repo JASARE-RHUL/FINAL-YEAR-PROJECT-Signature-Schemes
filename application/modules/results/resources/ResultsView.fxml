@@ -86,15 +86,17 @@
 
         <!-- Graphs Tab -->
         <Tab text="Graphs">
-          <content>
-            <VBox spacing="10">
-              <HBox>
-                <Button text="Show Histogram" />
-                <Button text="Show Box Plot" />
-              </HBox>
-              <Pane fx:id="graphArea" /> <!-- Graph Area -->
-            </VBox>
-          </content>
+          <VBox spacing="5">
+            <HBox>
+              <Button text="Show Histogram" fx:id="histogramButton"/>
+              <Button text="Show Box Plot" fx:id="boxPlotButton"/>
+              <Button text="Show Line Graph (Mean)" fx:id="lineGraphButtonMean"/>
+              <Button text="Show Line Graph (Individual Times)" fx:id="lineGraphButtonAllTimes"/>
+            </HBox>
+            <AnchorPane fx:id="graphArea" prefWidth="300" prefHeight="300">
+              <!-- The graph will be added here -->
+            </AnchorPane>
+          </VBox>
         </Tab>
       </TabPane>
 

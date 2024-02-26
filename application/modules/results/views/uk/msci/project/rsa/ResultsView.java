@@ -20,6 +20,8 @@ import javafx.scene.control.Tab;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.AnchorPane;
+import org.jfree.chart.fx.ChartViewer;
 
 /**
  * The {@code ResultsView} class is responsible for displaying the statistical results of the
@@ -28,6 +30,35 @@ import javafx.scene.control.cell.PropertyValueFactory;
  */
 public class ResultsView implements Initializable {
 
+  /**
+   * The area within the GUI where graphs are displayed.
+   */
+  @FXML
+  public AnchorPane graphArea;
+
+  /**
+   * Button that triggers the display of the histogram graph.
+   */
+  @FXML
+  public Button histogramButton;
+
+  /**
+   * Button that triggers the display of the box plot graph.
+   */
+  @FXML
+  public Button boxPlotButton;
+
+  /**
+   * Button that triggers the display of the line graph showing mean values.
+   */
+  @FXML
+  public Button lineGraphButtonMean;
+
+  /**
+   * Button that triggers the display of the line graph showing all times.
+   */
+  @FXML
+  public Button lineGraphButtonAllTimes;
   /**
    * TableView to display statistical data.
    */
@@ -616,7 +647,8 @@ public class ResultsView implements Initializable {
     try (BufferedWriter fileWriter = new BufferedWriter(new FileWriter(resultsFile))) {
       // Write the header line
       for (TableColumn<StatisticData, ?> column : tableView.getColumns()) {
-        String header = column.getText().equals("Conf. Interval") ? "Confidence Interval" : column.getText();
+        String header =
+            column.getText().equals("Conf. Interval") ? "Confidence Interval" : column.getText();
         fileWriter.append(header).append(",");
       }
       fileWriter.append("\n");
@@ -643,13 +675,13 @@ public class ResultsView implements Initializable {
   }
 
   /**
-   * Formats a confidence interval string from a format like "95% with bounds [0.41813, 0.53444]"
-   * to "95% with bounds 0.41813 ms - 0.53444 ms". This method is used to ensure that the confidence
+   * Formats a confidence interval string from a format like "95% with bounds [0.41813, 0.53444]" to
+   * "95% with bounds 0.41813 ms - 0.53444 ms". This method is used to ensure that the confidence
    * interval values are formatted correctly for CSV output.
    *
    * @param interval The confidence interval string in the format "95% with bounds [lower, upper]".
-   * @return A formatted string of the confidence interval in the format
-   *         "95% with bounds lower ms - upper ms".
+   * @return A formatted string of the confidence interval in the format "95% with bounds lower ms -
+   * upper ms".
    */
   private String formatConfidenceInterval(String interval) {
     // Extract percentage and bounds from the interval string
@@ -675,4 +707,108 @@ public class ResultsView implements Initializable {
   public void setNameColumnText(String text) {
     this.nameColumn.setText(text);
   }
+
+  /**
+   * Sets the visibility of the line graph button for mean values.
+   *
+   * @param visible If true, the line graph button for mean values is visible and managed by the
+   *                layout. If false, the button is not visible and not managed by the layout,
+   *                meaning it does not take any space in the layout.
+   */
+  public void setLineGraphButtonMeanVisibility(boolean visible) {
+    lineGraphButtonMean.setManaged(visible);
+    lineGraphButtonMean.setVisible(visible);
+  }
+
+  /**
+   * Updates the graph display area with a new chart. The current contents of the graph area are
+   * cleared, and the provided ChartViewer is added as the new content. The ChartViewer is set to
+   * fill the entire space of the graph area.
+   *
+   * @param chartViewer The ChartViewer containing the chart to be displayed in the graph area.
+   */
+  public void updateGraphArea(ChartViewer chartViewer) {
+    graphArea.getChildren().clear();
+    graphArea.getChildren().add(chartViewer);
+    chartViewer.setPrefSize(graphArea.getWidth(), graphArea.getHeight()); // Set preferred size
+    graphArea.requestLayout(); // Request layout refresh
+  }
+
+
+  /**
+   * Adds an observer to the histogram button that will be triggered on button action.
+   *
+   * @param observer The event handler to be triggered when the histogram button is clicked.
+   */
+  void addHistogramButtonObserver(EventHandler<ActionEvent> observer) {
+    histogramButton.setOnAction(observer);
+  }
+
+  /**
+   * Adds an observer to the box plot button that will be triggered on button action.
+   *
+   * @param observer The event handler to be triggered when the box plot button is clicked.
+   */
+  void addBoxPlotButtonObserver(EventHandler<ActionEvent> observer) {
+    boxPlotButton.setOnAction(observer);
+  }
+
+  /**
+   * Adds an observer to the line graph button for mean values that will be triggered on button
+   * action.
+   *
+   * @param observer The event handler to be triggered when the mean line graph button is clicked.
+   */
+  void addLineGraphButtonMeanObserver(EventHandler<ActionEvent> observer) {
+    lineGraphButtonMean.setOnAction(observer);
+  }
+
+  /**
+   * Adds an observer to the line graph button for all times that will be triggered on button
+   * action.
+   *
+   * @param observer The event handler to be triggered when the all times line graph button is
+   *                 clicked.
+   */
+  void addLineGraphButtonAllTimesObserver(EventHandler<ActionEvent> observer) {
+    lineGraphButtonAllTimes.setOnAction(observer);
+  }
+
+  /**
+   * Retrieves the histogram button.
+   *
+   * @return The button for displaying the histogram graph.
+   */
+  public Button getHistogramButton() {
+    return histogramButton;
+  }
+
+  /**
+   * Retrieves the box plot button.
+   *
+   * @return The button for displaying the box plot graph.
+   */
+  public Button getBoxPlotButton() {
+    return boxPlotButton;
+  }
+
+  /**
+   * Retrieves the line graph button for all times.
+   *
+   * @return The button for displaying the line graph of all times.
+   */
+  public Button getLineGraphButtonAllTimes() {
+    return lineGraphButtonAllTimes;
+  }
+
+  /**
+   * Retrieves the line graph button for mean values.
+   *
+   * @return The button for displaying the line graph of mean values.
+   */
+  public Button getLineGraphButtonMean() {
+    return lineGraphButtonMean;
+  }
+
+
 }
