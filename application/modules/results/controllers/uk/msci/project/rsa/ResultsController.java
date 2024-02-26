@@ -1106,6 +1106,20 @@ public class ResultsController {
     return new ChartViewer(chart);
   }
 
+  /**
+   * Displays a line chart for all times in comparison mode.
+   *
+   * @param keyIndex Index of the key for which the line chart is displayed.
+   * @param title    The title for the chart.
+   * @return A ChartViewer containing the line chart.
+   */
+  private ChartViewer displayLineChartAllTimesComparisonMode(int keyIndex, String title) {
+    XYSeriesCollection dataset = prepareLineChartAllTimesDatasetComparisonMode(keyIndex);
+    JFreeChart chart = createLineChartAllTimes(dataset, title);
+    return new ChartViewer(chart);
+  }
+
+
 
 
 }
