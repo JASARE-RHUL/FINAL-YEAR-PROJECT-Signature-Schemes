@@ -985,6 +985,19 @@ public class ResultsController {
   }
 
   /**
+   * Prepares and displays a box plot for a specific key.
+   *
+   * @param keyIndex Index of the key for which the box plot is prepared.
+   * @return A ChartViewer containing the box plot.
+   */
+  private ChartViewer displayBoxPlotForKey(int keyIndex) {
+    DefaultBoxAndWhiskerCategoryDataset dataset = prepareBoxPlotDatasetForKey(keyIndex);
+    return displayBoxPlot(dataset, "Box Plot for " + keyIndex,
+        "Key " + (keyIndex + 1) + " (" + keyLengths.get(keyIndex) + "bit)");
+  }
+
+
+  /**
    * Prepares and displays a box plot for comparison mode.
    *
    * @param keyIndex Index of the key for which the box plot is prepared.
