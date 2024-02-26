@@ -1213,6 +1213,24 @@ public class ResultsController {
     return new ChartViewer(chart);
   }
 
+  /**
+   * Prepares and displays a line chart for mean times in comparison mode.
+   *
+   * @param keyIndex Index of the key for which the line chart is displayed.
+   * @return A ChartViewer containing the line chart.
+   */
+  private ChartViewer displayLineGraphMeanForComparisonMode(int keyIndex) {
+    Pair<XYSeriesCollection, YIntervalSeriesCollection> datasets = prepareLineChartMeanDatasetForComparisonMode(
+        keyIndex);
+    XYSeriesCollection meanDataset = datasets.getKey();
+    YIntervalSeriesCollection errorDataset = datasets.getValue();
+    return new ChartViewer(
+        createLineChartMeanForComparisonMode(meanDataset, errorDataset,
+            "Line Graph (Mean) for " + "Key Size " + (keyIndex + 1) + " (" + keyLengths.get(
+                keyIndex * (resultsModels.size() / numKeySizesForComparisonMode)) + "bit)"));
+
+  }
+
 
 
 
