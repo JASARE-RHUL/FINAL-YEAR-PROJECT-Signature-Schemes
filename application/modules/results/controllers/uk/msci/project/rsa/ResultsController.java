@@ -1022,6 +1022,100 @@ public class ResultsController {
   }
 
   /**
+   * Prepares datasets for the mean times line chart in comparison mode.
+   *
+   * @param keyIndex Index of the key for which the datasets are prepared.
+   * @return A pair containing two datasets: one for the mean times and one for the error intervals.
+   */
+  private Pair<XYSeriesCollection, YIntervalSeriesCollection> prepareLineChartMeanDatasetForComparisonMode(
+      int keyIndex) {
+    XYSeriesCollection meanDataset = new XYSeriesCollection();
+    YIntervalSeriesCollection errorDataset = new YIntervalSeriesCollection();
+
+    XYSeries meanSeries = new XYSeries("Mean Times");
+    YIntervalSeries errorSeries = new YIntervalSeries("Error Bars (Standard Deviation)");
+
+    for (int i = keyIndex * (resultsModels.size() / numKeySizesForComparisonMode);
+        i < keyIndex * (resultsModels.size() / numKeySizesForComparisonMode)
+            + NUM_ROWS_COMPARISON_MODE;
+        i++) {
+
+      ResultsModel model = resultsModels.get(i);
+      double mean = model.getMeanData();
+      double stdDev = model.getStdDeviationData();
+
+      int xValue = i % NUM_ROWS_COMPARISON_MODE;
+
+      meanSeries.add(xValue, mean);
+      errorSeries.add(xValue, mean, mean - stdDev, mean + stdDev);
+    }
+
+    meanDataset.addSeries(meanSeries);
+    errorDataset.addSeries(errorSeries);
+    return new Pair<>(meanDataset, errorDataset);
+  }
+
+  /**
+   * Configures the renderers for the line chart displaying mean times.
+   *
+   * @param plot The plot to which the renderers will be applied.
+   */
+  private void configureLineChartMeanRenderers(XYPlot plot) {
+    // Mean dataset renderer
+    XYLineAndShapeRenderer meanRenderer = new XYLineAndShapeRenderer();
+    meanRenderer.setSeriesLinesVisible(0, true);
+    meanRenderer.setSeriesShapesVisible(0, true);
+
+    plot.setRenderer(0, meanRenderer);
+
+    // Error dataset renderer
+    XYErrorRenderer errorRenderer = new XYErrorRenderer();
+    errorRenderer.setSeriesLinesVisible(0, true);
+    errorRenderer.setSeriesShapesVisible(0, false); // No shapes for error bars
+    errorRenderer.setDrawYError(true); // Enable vertical error bars
+    errorRenderer.setDrawXError(false); // Disable horizontal error bars
+    plot.setRenderer(1, errorRenderer);
+  }
+
+  /**
+   * Creates a line chart for mean times with error bars for standard deviation.
+   *
+   * @param meanDataset  The dataset containing the mean times.
+   * @param errorDataset The dataset containing the error bars.
+   * @param title        The title for the chart.
+   * @return A JFreeChart object representing the line chart.
+   */
+  private JFreeChart createLineChartMeanForComparisonMode(XYSeriesCollection meanDataset,
+      YIntervalSeriesCollection errorDataset, String title) {
+
+    JFreeChart lineChart = ChartFactory.createXYLineChart(
+        title,
+        "Parameter Type",
+        "Mean Time (ms)",
+        meanDataset,
+        PlotOrientation.VERTICAL,
+        true,
+        true,
+        false
+    );
+
+    XYPlot plot = lineChart.getXYPlot();
+    plot.setDataset(1, errorDataset); // Set error dataset as secondary dataset
+    configureLineChartMeanRenderers(plot);
+
+    String[] paramTypeLabels = new String[NUM_ROWS_COMPARISON_MODE];
+    for (int i = 0; i < NUM_ROWS_COMPARISON_MODE; i++) {
+      paramTypeLabels[i] = getComparisonModeRowHeader(i);
+    }
+
+    SymbolAxis xAxis = new SymbolAxis("Parameter Type", paramTypeLabels);
+    xAxis.setTickLabelsVisible(true);
+    plot.setDomainAxis(xAxis);
+
+    return lineChart;
+  }
+
+  /**
    * Displays a histogram for a specific key size which contains results for multiple keys
    * (comparison mode).
    *
@@ -1119,61 +1213,7 @@ public class ResultsController {
     return new ChartViewer(chart);
   }
 
-  /**
-   * Prepares datasets for the mean times line chart in comparison mode.
-   *
-   * @param keyIndex Index of the key for which the datasets are prepared.
-   * @return A pair containing two datasets: one for the mean times and one for the error intervals.
-   */
-  private Pair<XYSeriesCollection, YIntervalSeriesCollection> prepareLineChartMeanDatasetForComparisonMode(
-      int keyIndex) {
-    XYSeriesCollection meanDataset = new XYSeriesCollection();
-    YIntervalSeriesCollection errorDataset = new YIntervalSeriesCollection();
 
-    XYSeries meanSeries = new XYSeries("Mean Times");
-    YIntervalSeries errorSeries = new YIntervalSeries("Error Bars (Standard Deviation)");
-
-    for (int i = keyIndex * (resultsModels.size() / numKeySizesForComparisonMode);
-        i < keyIndex * (resultsModels.size() / numKeySizesForComparisonMode)
-            + NUM_ROWS_COMPARISON_MODE;
-        i++) {
-
-      ResultsModel model = resultsModels.get(i);
-      double mean = model.getMeanData();
-      double stdDev = model.getStdDeviationData();
-
-      int xValue = i % NUM_ROWS_COMPARISON_MODE;
-
-      meanSeries.add(xValue, mean);
-      errorSeries.add(xValue, mean, mean - stdDev, mean + stdDev);
-    }
-
-    meanDataset.addSeries(meanSeries);
-    errorDataset.addSeries(errorSeries);
-    return new Pair<>(meanDataset, errorDataset);
-  }
-
-  /**
-   * Configures the renderers for the line chart displaying mean times.
-   *
-   * @param plot The plot to which the renderers will be applied.
-   */
-  private void configureLineChartMeanRenderers(XYPlot plot) {
-    // Mean dataset renderer
-    XYLineAndShapeRenderer meanRenderer = new XYLineAndShapeRenderer();
-    meanRenderer.setSeriesLinesVisible(0, true);
-    meanRenderer.setSeriesShapesVisible(0, true);
-
-    plot.setRenderer(0, meanRenderer);
-
-    // Error dataset renderer
-    XYErrorRenderer errorRenderer = new XYErrorRenderer();
-    errorRenderer.setSeriesLinesVisible(0, true);
-    errorRenderer.setSeriesShapesVisible(0, false); // No shapes for error bars
-    errorRenderer.setDrawYError(true); // Enable vertical error bars
-    errorRenderer.setDrawXError(false); // Disable horizontal error bars
-    plot.setRenderer(1, errorRenderer);
-  }
 
 
 
