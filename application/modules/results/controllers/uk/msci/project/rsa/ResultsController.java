@@ -600,6 +600,66 @@ public class ResultsController {
   }
 
   /**
+   * Observer for displaying a histogram view of results for the current key/key size.
+   */
+  class HistogramButtonObserver implements EventHandler<ActionEvent> {
+
+    @Override
+    public void handle(ActionEvent event) {
+      String histogramKey = "Histogram_" + keyIndex;
+      ChartViewer viewer = precomputedGraphs.get(histogramKey);
+      resultsView.updateGraphArea(viewer);
+      lastSelectedGraphButton = resultsView.histogramButton;
+    }
+  }
+
+  /**
+   * Observer for displaying a line graph view with all individual times from the results for the
+   * current key/key size.
+   */
+  class LineGraphButtonAllTimesObserver implements EventHandler<ActionEvent> {
+
+    @Override
+    public void handle(ActionEvent event) {
+      String lineChartAllTimesKey = "LineChartAllTimes_" + keyIndex;
+      ChartViewer viewer = precomputedGraphs.get(lineChartAllTimesKey);
+      resultsView.updateGraphArea(viewer);
+      lastSelectedGraphButton = resultsView.getLineGraphButtonAllTimes();
+    }
+  }
+
+  /**
+   * Observer for displaying a box plot graph view composed of relevant statistical averages from
+   * the results for the current key/key size.
+   */
+  class BoxPlotButtonObserver implements EventHandler<ActionEvent> {
+
+    @Override
+    public void handle(ActionEvent event) {
+      String boxPlotKey = "BoxPlot_" + keyIndex;
+      ChartViewer viewer = precomputedGraphs.get(boxPlotKey);
+      resultsView.updateGraphArea(viewer);
+      lastSelectedGraphButton = resultsView.getBoxPlotButton();
+    }
+  }
+
+  /**
+   * Observer for displaying a line graph view with mean times from the results for the current key
+   * size in comparison mode.
+   */
+  class LineGraphButtonMeanObserver implements EventHandler<ActionEvent> {
+
+    @Override
+    public void handle(ActionEvent event) {
+      String lineChartMeanKey = "LineChartMeanTimes_" + keyIndex;
+      ChartViewer viewer = precomputedGraphs.get(lineChartMeanKey);
+      resultsView.updateGraphArea(viewer);
+      lastSelectedGraphButton = resultsView.getLineGraphButtonMean();
+
+    }
+  }
+
+  /**
    * Observer for handling the export of benchmarking results. Triggers upon user action to export
    * results to a CSV file.
    */
@@ -1019,7 +1079,6 @@ public class ResultsController {
     String seriesName = "Key " + keyIndex;
     XYSeries series = new XYSeries(seriesName);
 
-
     for (int trial = 0; trial < model.getResults().size(); trial++) {
       double time = model.getResults().get(trial) / 1_000_000.0; // Convert to milliseconds
       series.add(trial, time);
@@ -1296,10 +1355,6 @@ public class ResultsController {
                 keyIndex * (resultsModels.size() / numKeySizesForComparisonMode)) + "bit)"));
 
   }
-
-
-
-
 
 
 }
