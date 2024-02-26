@@ -1,8 +1,12 @@
 package uk.msci.project.rsa;
 
+import java.awt.Color;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
@@ -10,12 +14,34 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
 import javafx.scene.Parent;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tab;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import javafx.util.Pair;
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.CategoryAxis;
+import org.jfree.chart.axis.CategoryLabelPositions;
+import org.jfree.chart.axis.SymbolAxis;
+import org.jfree.chart.fx.ChartViewer;
+import org.jfree.chart.plot.CategoryPlot;
+import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.renderer.category.StackedBarRenderer;
+import org.jfree.chart.renderer.xy.XYErrorRenderer;
+import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
+import org.jfree.data.category.CategoryDataset;
+import org.jfree.data.category.DefaultCategoryDataset;
+import org.jfree.data.statistics.BoxAndWhiskerItem;
+import org.jfree.data.statistics.DefaultBoxAndWhiskerCategoryDataset;
+import org.jfree.data.xy.XYSeries;
+import org.jfree.data.xy.XYSeriesCollection;
+import org.jfree.data.xy.YIntervalSeries;
+import org.jfree.data.xy.YIntervalSeriesCollection;
 
 
 /**
@@ -113,6 +139,9 @@ public class ResultsController {
   private static final int NUM_ROWS_COMPARISON_MODE = 4;
 
 
+
+
+
   /**
    * Constructs a new ResultsController with a reference to the MainController.
    *
@@ -166,12 +195,13 @@ public class ResultsController {
       resultsView.populateTableView();
 
       splitResultsByKeys();
-
       displayCurrentContextButtons();
       initialiseKeySwitchButtons();
+
+      resultsView.setLineGraphButtonMeanVisibility(false);
       resultsModel = resultsModels.get(0);
       setStatsResultsView(resultsModel, keyIndex); // Display results for the first key by default
-      setupObservers();
+
       mainController.setScene(root);
     } catch (IOException e) {
       e.printStackTrace();
@@ -179,15 +209,18 @@ public class ResultsController {
   }
 
   /**
-   * Displays the results view with options for either standard display or comparison mode.
-   * In comparison mode, this method will configure the results view to compare multiple
-   * key sizes and the respective results for provably secure vs standard parameters.
+   * Displays the results view with options for either standard display or comparison mode. In
+   * comparison mode, this method will configure the results view to compare multiple key sizes and
+   * the respective results for provably secure vs standard parameters.
    *
-   * @param primaryStage                 The primary stage for the application on which the results will be displayed.
+   * @param primaryStage                 The primary stage for the application on which the results
+   *                                     will be displayed.
    * @param results                      The list of benchmarking results to be displayed.
-   * @param keyLengths                   The list of key lengths that were used in the benchmarking process.
+   * @param keyLengths                   The list of key lengths that were used in the benchmarking
+   *                                     process.
    * @param isComparisonMode             Flag indicating whether the comparison mode is active.
-   * @param numKeySizesForComparisonMode The number of key sizes that will be compared in comparison mode.
+   * @param numKeySizesForComparisonMode The number of key sizes that will be compared in comparison
+   *                                     mode.
    */
   public void showResultsView(Stage primaryStage, List<Long> results, List<Integer> keyLengths,
       boolean isComparisonMode, int numKeySizesForComparisonMode) {
@@ -208,24 +241,31 @@ public class ResultsController {
         this.keyIndex = 0;
 
         splitResultsByKeys();
+        displayCurrentContextButtons();
+        initialiseKeySwitchButtonsComparisonMode();
+
 
         resultsView.removeValueColumn();
         resultsView.addValueColumns(createComparisonModeColumnHeaders());
         resultsView.setNameColumnText("Parameter Type");
 
-        displayCurrentContextButtons();
-        initialiseKeySwitchButtonsComparisonMode();
+
         resultsModel = resultsModels.get(0);
         setStatsResultsView(resultsModel, keyIndex); // Display results for the first key by default
         resultsView.resizeTableView();
 
-        setupObservers();
+
         mainController.setScene(root);
       } catch (IOException e) {
         e.printStackTrace();
       }
     }
   }
+
+
+
+
+
 
   /**
    * Creates headers for the columns in the comparison mode table view. These headers correspond to
@@ -288,8 +328,10 @@ public class ResultsController {
         currentContext.showExportPublicKeyBatchButton());
     resultsView.setExportPublicKeyBatchBtnManaged(
         currentContext.showExportPublicKeyBatchButton());
-    resultsView.setExportSignatureBatchBtnVisible(currentContext.showExportSignatureBatchButton());
-    resultsView.setExportSignatureBatchBtnManaged(currentContext.showExportSignatureBatchButton());
+    resultsView.setExportSignatureBatchBtnVisible(
+        currentContext.showExportSignatureBatchButton());
+    resultsView.setExportSignatureBatchBtnManaged(
+        currentContext.showExportSignatureBatchButton());
     resultsView.setExportNonRecoverableMessageBatchBtVisible(
         currentContext.showNonRecoverableBatchButton());
     resultsView.setExportNonRecoverableMessageBatchBtnManaged(
@@ -414,8 +456,9 @@ public class ResultsController {
       parameterRow.add(String.format("%.5f ms", resultsModels.get(i).getRangeData()));
       parameterRow.add(String.format("%.5f ms", resultsModels.get(i).getMinTimeData()));
       parameterRow.add(String.format("%.5f ms", resultsModels.get(i).getMaxTimeData()));
-      comparisonData.add(new StatisticData(getComparisonModeRowHeader(i % NUM_ROWS_COMPARISON_MODE),
-          parameterRow));
+      comparisonData.add(
+          new StatisticData(getComparisonModeRowHeader(i % NUM_ROWS_COMPARISON_MODE),
+              parameterRow));
     }
 
     return comparisonData;
@@ -437,7 +480,8 @@ public class ResultsController {
 
   /**
    * Initialises the key switch buttons in comparison mode. This method sets up the UI components
-   * that allow the user to switch between results (standard vs provable parameters) for different key sizes.
+   * that allow the user to switch between results (standard vs provable parameters) for different
+   * key sizes.
    */
   private void initialiseKeySwitchButtonsComparisonMode() {
     for (int i = 0; i < numKeySizesForComparisonMode; i++) {
@@ -648,5 +692,38 @@ public class ResultsController {
       resultsView = null;
     }
   }
+
+
+  /**
+   * Calculates the bin width using the Freedman-Diaconis rule.
+   *
+   * @param keyIndex The index of the key to calculate the bin width for.
+   * @param results  The results to use in the calculation.
+   * @return The calculated bin width.
+   */
+  private double calculateFreedmanDiaconisBinWidth(int keyIndex, List<Long> results) {
+    double q1 = BenchmarkingUtility.calculatePercentile(results, 0.25);
+    double q3 = BenchmarkingUtility.calculatePercentile(results, 0.75);
+    double iqr = (q3 - q1) / 1E6;
+    return 2 * iqr * Math.pow(results.size(), -1 / 3.0);
+  }
+
+  /**
+   * Calculates the number of bins for a histogram based on the given results.
+   *
+   * @param keyIndex The index of the key to calculate the number of bins for.
+   * @param results  The results to use in the calculation.
+   * @return The number of bins.
+   */
+  private int calculateNumberOfBins(int keyIndex, List<Long> results) {
+    double min = BenchmarkingUtility.getMin(results) / 1E6;
+    double max = BenchmarkingUtility.getMax(results) / 1E6;
+    return (int) Math.ceil((max - min) / calculateFreedmanDiaconisBinWidth(keyIndex, results));
+  }
+
+
+
+
+
 
 }
