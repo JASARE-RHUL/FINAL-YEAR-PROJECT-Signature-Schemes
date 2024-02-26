@@ -139,9 +139,6 @@ public class ResultsController {
   private static final int NUM_ROWS_COMPARISON_MODE = 4;
 
 
-
-
-
   /**
    * Constructs a new ResultsController with a reference to the MainController.
    *
@@ -244,16 +241,13 @@ public class ResultsController {
         displayCurrentContextButtons();
         initialiseKeySwitchButtonsComparisonMode();
 
-
         resultsView.removeValueColumn();
         resultsView.addValueColumns(createComparisonModeColumnHeaders());
         resultsView.setNameColumnText("Parameter Type");
 
-
         resultsModel = resultsModels.get(0);
         setStatsResultsView(resultsModel, keyIndex); // Display results for the first key by default
         resultsView.resizeTableView();
-
 
         mainController.setScene(root);
       } catch (IOException e) {
@@ -261,10 +255,6 @@ public class ResultsController {
       }
     }
   }
-
-
-
-
 
 
   /**
@@ -782,9 +772,44 @@ public class ResultsController {
     return dataset;
   }
 
+  /**
+   * Creates a stacked histogram chart using the provided dataset.
+   *
+   * @param dataset The dataset to create the histogram from.
+   * @param title   The title of the histogram chart.
+   * @return A JFreeChart object representing the stacked histogram chart.
+   */
+  private JFreeChart createStackedHistogramChart(CategoryDataset dataset, String title) {
+    // Create the stacked bar chart with the dataset
+    JFreeChart chart = ChartFactory.createStackedBarChart(
+        title,
+        "Category",
+        "Frequency",
+        dataset,
+        PlotOrientation.VERTICAL, // orientation
+        true,                  // include legend
+        true,                  // tooltips
+        false
+    );
+    //chart should be rendered as a stacked bar chart, where
+    // each category contains stacked bars representing different bins of data
+    CategoryPlot plot = chart.getCategoryPlot();
+    StackedBarRenderer renderer = new StackedBarRenderer();
+    plot.setRenderer(renderer);
 
+    for (int i = 0; i < dataset.getRowCount(); i++) {
+      // generate colors based on the hue, saturation, and brightness.
+      // Each series is assigned a different hue value based on its index.
+      Color color = Color.getHSBColor((float) i / dataset.getRowCount(), 0.85f, 0.85f);
+      renderer.setSeriesPaint(i, color);
+    }
 
+    // Set the category label positions to avoid overlap
+    CategoryAxis domainAxis = plot.getDomainAxis();
+    domainAxis.setCategoryLabelPositions(CategoryLabelPositions.UP_45);
 
+    return chart;
+  }
 
 
 }
