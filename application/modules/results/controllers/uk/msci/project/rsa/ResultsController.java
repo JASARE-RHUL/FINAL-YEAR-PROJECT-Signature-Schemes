@@ -888,5 +888,18 @@ public class ResultsController {
     return new ChartViewer(chart);
   }
 
+  /**
+   * Displays a histogram for a specific key.
+   *
+   * @param keyIndex Index of the key for which the histogram is displayed.
+   * @return A ChartViewer containing the histogram.
+   */
+  public ChartViewer displayHistogramForKey(int keyIndex) {
+    CategoryDataset dataset = prepareHistogramDatasetForKey(keyIndex);
+    JFreeChart chart = createHistogramFromDataset(dataset,
+        "Histogram for " + "Key " + (keyIndex + 1) + " (" + keyLengths.get(keyIndex) + "bit)");
+    return new ChartViewer(chart);
+  }
+
 
 }
