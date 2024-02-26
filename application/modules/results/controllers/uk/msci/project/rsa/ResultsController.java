@@ -874,6 +874,33 @@ public class ResultsController {
   }
 
   /**
+   * Creates a BoxAndWhiskerItem from the provided ResultsModel.
+   *
+   * @param model The model containing statistical data.
+   * @return A BoxAndWhiskerItem representing the statistical data.
+   */
+  private BoxAndWhiskerItem createBoxAndWhiskerItem(ResultsModel model) {
+    double mean = model.getMeanData();
+    double median = model.getMedianData();
+    double q1 = model.getPercentile25Data();
+    double q3 = model.getPercentile75Data();
+    double min = model.getMinTimeData();
+    double max = model.getMaxTimeData();
+
+    return new BoxAndWhiskerItem(
+        mean,
+        median,
+        q1,
+        q3,
+        min,
+        max,
+        null, // Min outlier
+        null,     // Max outlier
+        null     // Outlier list
+    );
+  }
+
+  /**
    * Displays a histogram for a specific key size which contains results for multiple keys
    * (comparison mode).
    *
@@ -900,6 +927,8 @@ public class ResultsController {
         "Histogram for " + "Key " + (keyIndex + 1) + " (" + keyLengths.get(keyIndex) + "bit)");
     return new ChartViewer(chart);
   }
+
+
 
 
 }
