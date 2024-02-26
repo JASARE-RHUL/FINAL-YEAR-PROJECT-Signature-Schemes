@@ -1093,6 +1093,19 @@ public class ResultsController {
         "Parameter Type");
   }
 
+  /**
+   * Displays a line chart for all times for a specific key.
+   *
+   * @param keyIndex Index of the key for which the line chart is displayed.
+   * @param title    The title for the chart.
+   * @return A ChartViewer containing the line chart.
+   */
+  private ChartViewer displayLineChartAllTimes(int keyIndex, String title) {
+    XYSeriesCollection dataset = prepareLineChartAllTimesDataset(keyIndex);
+    JFreeChart chart = createLineChartAllTimes(dataset, title);
+    return new ChartViewer(chart);
+  }
+
 
 
 }
