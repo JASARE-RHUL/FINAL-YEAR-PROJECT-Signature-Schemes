@@ -721,6 +721,67 @@ public class ResultsController {
     return (int) Math.ceil((max - min) / calculateFreedmanDiaconisBinWidth(keyIndex, results));
   }
 
+  /**
+   * Creates a dataset for a stacked histogram given a key size index.
+   *
+   * @param keyIndex Index of the key for which the dataset is prepared.
+   * @return A CategoryDataset suitable for creating a stacked histogram.
+   */
+  private CategoryDataset createStackedHistogramDataset(int keyIndex) {
+    // Create the dataset
+    DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+
+    // Determine the combined range and bin width
+    List<Long> combinedResults = results.subList(
+        keyIndex * trialsPerKey * NUM_ROWS_COMPARISON_MODE,
+        (keyIndex * trialsPerKey * NUM_ROWS_COMPARISON_MODE)
+            + trialsPerKey * NUM_ROWS_COMPARISON_MODE
+    );
+    double min = BenchmarkingUtility.getMin(combinedResults) / 1E6;
+    double binWidth = calculateFreedmanDiaconisBinWidth(keyIndex, combinedResults);
+    int numBins = calculateNumberOfBins(keyIndex, combinedResults);
+
+    // Initialise bin counts for each series
+    Map<String, int[]> seriesBinCounts = new HashMap<>();
+
+    for (int i = keyIndex * (resultsModels.size() / numKeySizesForComparisonMode);
+        i < keyIndex * (resultsModels.size() / numKeySizesForComparisonMode)
+            + NUM_ROWS_COMPARISON_MODE;
+        i++) {
+
+      ResultsModel model = resultsModels.get(i);
+      String seriesName = getComparisonModeRowHeader(i % NUM_ROWS_COMPARISON_MODE);
+      seriesBinCounts.putIfAbsent(seriesName, new int[numBins]);
+
+      double[] values = model.getResults().stream()
+          .mapToDouble(ns -> ns / 1_000_000.0) // Convert to milliseconds
+          .toArray();
+
+      // Populate bin counts
+      for (double value : values) {
+        int bin = (int) ((value - min) / binWidth);
+        bin = Math.min(Math.max(bin, 0), numBins - 1); // Clamp to valid range
+        seriesBinCounts.get(seriesName)[bin]++;
+      }
+    }
+
+    // Add the bin counts to the dataset
+    for (Map.Entry<String, int[]> entry : seriesBinCounts.entrySet()) {
+      String seriesName = entry.getKey();
+      int[] binCounts = entry.getValue();
+      for (int bin = 0; bin < numBins; bin++) {
+        // Calculate the lower and upper bounds for the current bin
+        double lowerBound = min + (bin * binWidth);
+        double upperBound = lowerBound + binWidth;
+        // Format the bin range as a label
+        String binLabel = String.format("%.1f-%.1f ms", lowerBound, upperBound);
+        dataset.addValue(binCounts[bin], seriesName, binLabel);
+      }
+    }
+
+    return dataset;
+  }
+
 
 
 
