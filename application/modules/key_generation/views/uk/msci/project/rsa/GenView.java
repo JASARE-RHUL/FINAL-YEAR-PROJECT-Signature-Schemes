@@ -897,7 +897,7 @@ public class GenView {
   }
 
   /**
-   * Checks to see if comparison mode key sizes label is currently being displayed.
+   * Checks to see if the comparison mode key sizes label is currently being displayed.
    *
    * @return A boolean indicating whether the label is visible.
    */
