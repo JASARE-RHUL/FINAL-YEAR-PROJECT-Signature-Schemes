@@ -127,31 +127,12 @@ public class SignatureModel {
   private int numKeySizesForComparisonMode;
 
   /**
-   * The number of keys to be generated per key size in the comparison mode (2 representing the key
-   * size with standard parameters and 2 representing provably secure parameters eg., 2 vs 3 prime
-   * factors for both scenarios)
+   * The number of keys to be generated per key size in the comparison mode
    */
-  private static final int NUM_KEYS_PER_KEY_SIZE_COMPARISON_MODE = 4;
+  private int numKeysPerKeySizeComparisonMode;
 
-  /**
-   * Header text for the first row in comparison mode.
-   */
-  private static final String FIRST_ROW_COMPARISON_MODE = "Standard Parameters (2 Primes):";
+  private List<String> keyConfigurationStrings;
 
-  /**
-   * Header text for the second row in comparison mode.
-   */
-  private static final String SECOND_ROW_COMPARISON_MODE = "Standard Parameters (3 Primes):";
-
-  /**
-   * Header text for the third row in comparison mode.
-   */
-  private static final String THIRD_ROW_COMPARISON_MODE = "Provable Parameters (2 Primes):";
-
-  /**
-   * Header text for the fourth row in comparison mode.
-   */
-  private static final String FOURTH_ROW_COMPARISON_MODE = "Provable Parameters (3 Primes):";
 
   /**
    * Constructs a new {@code SignatureModel} without requiring an initial key representative of the
@@ -480,7 +461,7 @@ public class SignatureModel {
       DoubleConsumer progressUpdater)
       throws InvalidSignatureTypeException, NoSuchAlgorithmException, InvalidDigestException, NoSuchProviderException, IOException, DataFormatException {
     this.messageFile = batchMessageFile;
-    this.numKeySizesForComparisonMode = privKeyBatch.size() / NUM_KEYS_PER_KEY_SIZE_COMPARISON_MODE;
+    this.numKeySizesForComparisonMode = privKeyBatch.size() / numKeysPerKeySizeComparisonMode;
     try (BufferedReader messageReader = new BufferedReader(new FileReader(batchMessageFile))) {
       // Initialize lists to store times and results (signatures and non-recoverable parts) for each key
       List<List<Long>> timesPerKey = new ArrayList<>();
@@ -498,10 +479,10 @@ public class SignatureModel {
       int completedWork = 0;
       int messageCounter = 0;
       while ((message = messageReader.readLine()) != null && messageCounter < this.numTrials) {
-        for (int i = 0; i < privKeyBatch.size(); i += NUM_KEYS_PER_KEY_SIZE_COMPARISON_MODE) {
+        for (int i = 0; i < privKeyBatch.size(); i += numKeysPerKeySizeComparisonMode) {
 
           for (int keyIndexForKeySize = 0;
-              keyIndexForKeySize < NUM_KEYS_PER_KEY_SIZE_COMPARISON_MODE; keyIndexForKeySize++) {
+              keyIndexForKeySize < numKeysPerKeySizeComparisonMode; keyIndexForKeySize++) {
 
             SigScheme sigScheme = SignatureFactory.getSignatureScheme(currentType,
                 privKeyBatch.get(i + keyIndexForKeySize),
@@ -743,7 +724,7 @@ public class SignatureModel {
       throws IOException, InvalidSignatureTypeException, DataFormatException, NoSuchAlgorithmException, InvalidDigestException, NoSuchProviderException {
     this.messageFile = batchMessageFile;
     this.numKeySizesForComparisonMode =
-        publicKeyBatch.size() / NUM_KEYS_PER_KEY_SIZE_COMPARISON_MODE;
+        publicKeyBatch.size() / numKeysPerKeySizeComparisonMode;
     // Initialise lists to store times, verification results, signatures, and recovered messages
     List<List<Long>> timesPerKey = new ArrayList<>();
     List<List<Boolean>> verificationResultsPerKey = new ArrayList<>();
@@ -764,9 +745,9 @@ public class SignatureModel {
       int totalWork = numTrials * publicKeyBatch.size();
       int completedWork = 0;
       while ((messageLine = messageReader.readLine()) != null && messageCounter < this.numTrials) {
-        for (int i = 0; i < publicKeyBatch.size(); i += NUM_KEYS_PER_KEY_SIZE_COMPARISON_MODE) {
+        for (int i = 0; i < publicKeyBatch.size(); i += numKeysPerKeySizeComparisonMode) {
           for (int keyIndexForKeySize = 0;
-              keyIndexForKeySize < NUM_KEYS_PER_KEY_SIZE_COMPARISON_MODE; keyIndexForKeySize++) {
+              keyIndexForKeySize < numKeysPerKeySizeComparisonMode; keyIndexForKeySize++) {
             // Read signature for each message
             String signatureLine = signatureReader.readLine();
             byte[] signatureBytes = new BigInteger(signatureLine).toByteArray();
@@ -959,6 +940,7 @@ public class SignatureModel {
 
     }
   }
+
   /**
    * Exports verification results to a CSV file in the cross-parameter benchmarking mode. This
    * method generates a CSV file with results from signature verification processes conducted under
@@ -984,7 +966,7 @@ public class SignatureModel {
 
       int numKeys = publicKeyBatch.size();
       int numMessagesPerKey = verificationResults.size() / numKeys;
-      for (int i = 0; i < NUM_KEYS_PER_KEY_SIZE_COMPARISON_MODE; i++) {
+      for (int i = 0; i < numKeysPerKeySizeComparisonMode; i++) {
         // Read original messages for each key
         try (BufferedReader reader = new BufferedReader(new FileReader(messageFile))) {
           String originalMessage;
@@ -1002,9 +984,9 @@ public class SignatureModel {
                     && recoverableMessages.get(keySpecificMessageResults).length > 0 ?
                     new String(recoverableMessages.get(keySpecificMessageResults)) : "";
 
-            writer.write(getComparisonResultsRowHeader(i) + ", " +
+            writer.write(keyConfigurationStrings.get(i) + ", " +
                 verificationResult + ", " +
-                "\"" + originalMessage + "\", " + // Enclose in quotes to handle commas
+                "\"" + originalMessage + "\", " +
                 signature + ", " + recoverableMessage + "\n");
 
             messageCounter++;
@@ -1013,31 +995,6 @@ public class SignatureModel {
       }
 
     }
-  }
-
-
-  /**
-   * Retrieves the header text for a specific row in the CSV file to be generated by the process for
-   * exporting of results in comparison mode. This method provides descriptive headers for each row
-   * of the CSV file, indicating the parameter setting (standard or provably secure) associated with
-   * the key that related to chosen key size used for verification.
-   *
-   * @param row The row index for which the header text is to be retrieved. This index corresponds
-   *            to the specific parameter setting and key size configuration.
-   * @return A string representing the header text for the specified row in the CSV file.
-   * @throws IllegalArgumentException If the provided row index is invalid or does not correspond to
-   *                                  any known parameter setting in the comparison mode.
-   */
-  public String getComparisonResultsRowHeader(int row) {
-    return switch (row) {
-      case 0 -> FIRST_ROW_COMPARISON_MODE;
-      case 1 -> SECOND_ROW_COMPARISON_MODE;
-      case 2 -> THIRD_ROW_COMPARISON_MODE;
-      case 3 -> FOURTH_ROW_COMPARISON_MODE;
-      default -> {
-        throw new IllegalArgumentException("Invalid row: " + row);
-      }
-    };
   }
 
 
@@ -1193,5 +1150,26 @@ public class SignatureModel {
    */
   public int getNumKeySizesForComparisonMode() {
     return numKeySizesForComparisonMode;
+  }
+
+  /**
+   * Sets the number of keys to be generated per key size in the comparison mode. Each key size will
+   * have this specified number of keys generated.
+   *
+   * @param numKeysPerKeySizeComparisonMode The number of keys to be generated for each key size.
+   */
+  public void setNumKeysPerKeySizeComparisonMode(int numKeysPerKeySizeComparisonMode) {
+    this.numKeysPerKeySizeComparisonMode = numKeysPerKeySizeComparisonMode;
+  }
+
+  /**
+   * Sets the key configuration strings that describe various key parameter configurations used in
+   * the signature scheme. Each string in the list represents a specific key configuration, which to
+   * be used for benchmarking different key configurations in the signature process.
+   *
+   * @param keyConfigurationStrings A list of strings representing different key configurations.
+   */
+  public void setKeyConfigurationStrings(List<String> keyConfigurationStrings) {
+    this.keyConfigurationStrings = keyConfigurationStrings;
   }
 }
