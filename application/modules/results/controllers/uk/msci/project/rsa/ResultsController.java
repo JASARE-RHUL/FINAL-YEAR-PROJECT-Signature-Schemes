@@ -116,30 +116,11 @@ public class ResultsController {
    */
   private int numKeySizesForComparisonMode;
 
-  /**
-   * Header text for the first row in comparison mode.
-   */
-  private static final String FIRST_ROW_COMPARISON_MODE = "Standard Parameters (2 Primes):";
-
-  /**
-   * Header text for the second row in comparison mode.
-   */
-  private static final String SECOND_ROW_COMPARISON_MODE = "Standard Parameters (3 Primes):";
-
-  /**
-   * Header text for the third row in comparison mode.
-   */
-  private static final String THIRD_ROW_COMPARISON_MODE = "Provable Parameters (2 Primes):";
-
-  /**
-   * Header text for the fourth row in comparison mode.
-   */
-  private static final String FOURTH_ROW_COMPARISON_MODE = "Provable Parameters (3 Primes):";
 
   /**
    * The number of rows used in comparison mode.
    */
-  private static final int NUM_ROWS_COMPARISON_MODE = 4;
+  private int numRowsComparisonMode;
 
   /**
    * Stores precomputed graph views to avoid re-rendering for each view request.
@@ -151,6 +132,8 @@ public class ResultsController {
    * sets.
    */
   private Button lastSelectedGraphButton;
+
+  private List<String> comparisonModeRowHeaders = new ArrayList<>();
 
 
   /**
@@ -241,23 +224,40 @@ public class ResultsController {
         });
   }
 
+
   /**
-   * Displays the results view in either standard or comparison mode. In comparison mode, it
-   * configures the view to compare results across multiple key sizes and parameter sets (provably
-   * secure vs standard).
+   * Displays the results view, configured for either standard or comparison mode. In standard mode,
+   * this method initializes the results view with the provided benchmarking results and prepares
+   * the view based on the current benchmarking context. This includes displaying statistical
+   * results for each key, setting up key-specific navigation, and configuring the UI for standard
+   * results presentation.
+   * <p>
+   * In comparison mode, the view is configured to compare results across multiple key sizes and
+   * parameter sets (provably secure vs standard or any custom arrangement). Takes an additional
+   * parameter 'comparisonModeRowHeaders' which is a list of custom row headers used in the results
+   * table for comparison mode. These headers provide context for each row, making the comparison
+   * meaningful.
    *
-   * @param primaryStage                 The primary stage for the application.
-   * @param results                      List of benchmarking results to be displayed.
+   * @param primaryStage                 The primary stage where the results view is to be
+   *                                     displayed. This is the main window of the application.
+   * @param results                      List of benchmarking results, ordered by keys. Each entry
+   *                                     in the list represents the result of a benchmarking trial.
    * @param keyLengths                   List of key lengths used in the benchmarking process.
-   * @param isComparisonMode             Flag indicating if comparison mode is active.
-   * @param numKeySizesForComparisonMode Number of key sizes to be compared in comparison mode.
+   * @param isComparisonMode             Flag indicating whether the comparison mode is active.
+   * @param numKeySizesForComparisonMode Number of key sizes to be compared in comparison mode. This
+   *                                     parameter is relevant only if 'isComparisonMode' is true
+   *                                     and dictates how the results are organized and displayed
+   *                                     for comparative analysis.
    */
-  public void showResultsView(Stage primaryStage, List<Long> results, List<Integer> keyLengths,
+  public void showResultsView(Stage primaryStage, List<String> comparisonModeRowHeaders,
+      List<Long> results, List<Integer> keyLengths,
       boolean isComparisonMode, int numKeySizesForComparisonMode) {
     if (!isComparisonMode) {
       showResultsView(primaryStage, results, keyLengths);
       return;
     }
+    this.comparisonModeRowHeaders = comparisonModeRowHeaders;
+    numRowsComparisonMode = this.comparisonModeRowHeaders.size();
     this.numKeySizesForComparisonMode = numKeySizesForComparisonMode;
     loadResultsView(keyLengths, results, this::setupComparisonModeGraphObservers,
         () -> {
@@ -470,26 +470,6 @@ public class ResultsController {
     resultsView.refreshResults();
   }
 
-  /**
-   * Retrieves the appropriate header text for a given row in comparison mode. The header text
-   * corresponds to the specific parameter set and prime configuration.
-   *
-   * @param row The row index for which the header text is required.
-   * @return A string representing the header text for the specified row.
-   * @throws IllegalArgumentException If the row index does not correspond to a valid row.
-   */
-  public String getComparisonModeRowHeader(int row) {
-    return switch (row) {
-      case 0 -> FIRST_ROW_COMPARISON_MODE;
-      case 1 -> SECOND_ROW_COMPARISON_MODE;
-      case 2 -> THIRD_ROW_COMPARISON_MODE;
-      case 3 -> FOURTH_ROW_COMPARISON_MODE;
-      default -> {
-        throw new IllegalArgumentException("Invalid row: " + row);
-      }
-    };
-  }
-
 
   /**
    * Prepares the data for display in comparison mode by aggregating the statistics for each
@@ -505,7 +485,7 @@ public class ResultsController {
     // Collecting data from each ResultsModel
     for (int i = keyIndex * (resultsModels.size() / numKeySizesForComparisonMode);
         i < keyIndex * (resultsModels.size() / numKeySizesForComparisonMode)
-            + NUM_ROWS_COMPARISON_MODE; i++) {
+            + numRowsComparisonMode; i++) {
       List<String> parameterRow = new ArrayList<>();
       parameterRow.add(String.valueOf(resultsModels.get(i).getNumTrials()));
       parameterRow.add(String.format("%.5f ms", resultsModels.get(i).getOverallData()));
@@ -527,7 +507,7 @@ public class ResultsController {
       parameterRow.add(String.format("%.5f ms", resultsModels.get(i).getMinTimeData()));
       parameterRow.add(String.format("%.5f ms", resultsModels.get(i).getMaxTimeData()));
       comparisonData.add(
-          new StatisticData(getComparisonModeRowHeader(i % NUM_ROWS_COMPARISON_MODE),
+          new StatisticData(comparisonModeRowHeaders.get(i % numRowsComparisonMode),
               parameterRow));
     }
 
@@ -864,9 +844,9 @@ public class ResultsController {
 
     // Determine the combined range and bin width
     List<Long> combinedResults = results.subList(
-        keyIndex * trialsPerKey * NUM_ROWS_COMPARISON_MODE,
-        (keyIndex * trialsPerKey * NUM_ROWS_COMPARISON_MODE)
-            + trialsPerKey * NUM_ROWS_COMPARISON_MODE
+        keyIndex * trialsPerKey * numRowsComparisonMode,
+        (keyIndex * trialsPerKey * numRowsComparisonMode)
+            + trialsPerKey * numRowsComparisonMode
     );
     double min = BenchmarkingUtility.getMin(combinedResults) / 1E6;
     double binWidth = calculateFreedmanDiaconisBinWidth(keyIndex, combinedResults);
@@ -877,11 +857,11 @@ public class ResultsController {
 
     for (int i = keyIndex * (resultsModels.size() / numKeySizesForComparisonMode);
         i < keyIndex * (resultsModels.size() / numKeySizesForComparisonMode)
-            + NUM_ROWS_COMPARISON_MODE;
+            + numRowsComparisonMode;
         i++) {
 
       ResultsModel model = resultsModels.get(i);
-      String seriesName = getComparisonModeRowHeader(i % NUM_ROWS_COMPARISON_MODE);
+      String seriesName = i + ". " + comparisonModeRowHeaders.get(i % numRowsComparisonMode);
       seriesBinCounts.putIfAbsent(seriesName, new int[numBins]);
 
       double[] values = model.getResults().stream()
@@ -946,7 +926,8 @@ public class ResultsController {
       double upperBound = lowerBound + binWidth;
       // Format the bin range as a label
       String binLabel = String.format("%.1f-%.1f ms", lowerBound, upperBound);
-      dataset.addValue(binCounts[bin], seriesName, binLabel); // Add the count of the bin to the dataset
+      dataset.addValue(binCounts[bin], seriesName,
+          binLabel); // Add the count of the bin to the dataset
     }
   }
 
@@ -1075,12 +1056,12 @@ public class ResultsController {
 
     for (int i = keyIndex * (resultsModels.size() / numKeySizesForComparisonMode);
         i < keyIndex * (resultsModels.size() / numKeySizesForComparisonMode)
-            + NUM_ROWS_COMPARISON_MODE;
+            + numRowsComparisonMode;
         i++) {
 
       ResultsModel model = resultsModels.get(i);
-      String seriesName =
-          getComparisonModeRowHeader(i % NUM_ROWS_COMPARISON_MODE);
+      String seriesName = i + ". " +
+          comparisonModeRowHeaders.get(i % numRowsComparisonMode);
 
       // Extract necessary statistics and add to dataset
       dataset.add(createBoxAndWhiskerItem(model), seriesName, seriesName);
@@ -1122,12 +1103,11 @@ public class ResultsController {
 
     for (int i = keyIndex * (resultsModels.size() / numKeySizesForComparisonMode);
         i < keyIndex * (resultsModels.size() / numKeySizesForComparisonMode)
-            + NUM_ROWS_COMPARISON_MODE;
+            + numRowsComparisonMode;
         i++) {
 
       ResultsModel model = resultsModels.get(i);
-      String seriesName =
-          getComparisonModeRowHeader(i % NUM_ROWS_COMPARISON_MODE);
+      String seriesName = i + ". " + comparisonModeRowHeaders.get(i % numRowsComparisonMode);
       XYSeries series = new XYSeries(seriesName);
 
       // Assuming each trial is a point on the x-axis
@@ -1156,7 +1136,7 @@ public class ResultsController {
         "Time (ms)",
         dataset,
         PlotOrientation.VERTICAL,
-        false,
+        true,
         true,
         false
     );
@@ -1184,14 +1164,14 @@ public class ResultsController {
 
     for (int i = keyIndex * (resultsModels.size() / numKeySizesForComparisonMode);
         i < keyIndex * (resultsModels.size() / numKeySizesForComparisonMode)
-            + NUM_ROWS_COMPARISON_MODE;
+            + numRowsComparisonMode;
         i++) {
 
       ResultsModel model = resultsModels.get(i);
       double mean = model.getMeanData();
       double stdDev = model.getStdDeviationData();
 
-      int xValue = i % NUM_ROWS_COMPARISON_MODE;
+      int xValue = i % numRowsComparisonMode;
 
       meanSeries.add(xValue, mean);
       errorSeries.add(xValue, mean, mean - stdDev, mean + stdDev);
@@ -1250,9 +1230,9 @@ public class ResultsController {
     plot.setDataset(1, errorDataset); // Set error dataset as secondary dataset
     configureLineChartMeanRenderers(plot);
 
-    String[] paramTypeLabels = new String[NUM_ROWS_COMPARISON_MODE];
-    for (int i = 0; i < NUM_ROWS_COMPARISON_MODE; i++) {
-      paramTypeLabels[i] = getComparisonModeRowHeader(i);
+    String[] paramTypeLabels = new String[numRowsComparisonMode];
+    for (int i = 0; i < numRowsComparisonMode; i++) {
+      paramTypeLabels[i] = i + ". " + comparisonModeRowHeaders.get(i);
     }
 
     SymbolAxis xAxis = new SymbolAxis("Parameter Type", paramTypeLabels);

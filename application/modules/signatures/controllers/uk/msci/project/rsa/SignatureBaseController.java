@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.regex.Pattern;
 import javafx.beans.value.ChangeListener;
@@ -55,18 +56,49 @@ public abstract class SignatureBaseController {
    * raw user entered value for their desired hash output size.
    */
   String hashOutputSize;
-
+  /**
+   * Indicates whether cross-parameter benchmarking is enabled in the application. This flag is set
+   * to true when the application is operating in a mode that allows comparison of signature
+   * processes using different key parameter configurations.
+   */
   boolean isCrossParameterBenchmarkingEnabled;
 
+  /**
+   * Flag indicating if the current operation is being conducted in comparison mode. This typically
+   * involves comparing standard parameter configurations with provably secure ones.
+   */
   boolean isKeyForComparisonMode;
 
+  /**
+   * Indicates whether the key currently being used is provably secure (small e used to generate the
+   * key).
+   */
   boolean isKeyProvablySecure;
 
+  /**
+   * Holds batch of keys pre-loaded from cross benchmarking mode of the key generation process as a
+   * string. This string contains key data used for batch operations in comparison mode. Each key in
+   * the batch is typically separated by a newline character.
+   */
   String importedKeyBatch;
 
+  /**
+   * Indicates whether a single key that has been imported is provably secure. This is relevant in
+   * non-benchmarking mode where a single key is used for signature processes.
+   */
   boolean isSingleKeyProvablySecure;
 
+  /**
+   * Flag indicating whether the import of a key batch was cancelled. This is used to track the
+   * state of key batch importation processes and to handle user actions accordingly.
+   */
   boolean isKeyBatchImportCancelled;
+
+  /**
+   * A list of strings representing key configuration settings. Each string in the list details a
+   * specific configuration used in the key generation process.
+   */
+  List<String> keyConfigurationStrings;
 
 
   /**
@@ -957,5 +989,15 @@ public abstract class SignatureBaseController {
    */
   public boolean getIsSingleKeyProvablySecure() {
     return isSingleKeyProvablySecure;
+  }
+
+  /**
+   * Sets the list of key configuration strings corresponding to settings used to generate the
+   * various keys for each key size selected by the user in the key generation process.
+   *
+   * @param keyConfigurationStrings A list of key configuration strings.
+   */
+  public void setKeyConfigurationStrings(List<String> keyConfigurationStrings) {
+    this.keyConfigurationStrings = keyConfigurationStrings;
   }
 }
