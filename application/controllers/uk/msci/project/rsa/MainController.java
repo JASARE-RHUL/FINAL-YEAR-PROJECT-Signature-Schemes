@@ -1,6 +1,7 @@
 package uk.msci.project.rsa;
 
 
+import java.util.List;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
@@ -231,6 +232,23 @@ public class MainController {
   public void setProvableKeyForSignatureProcesses(String privateKey, String publicKey) {
     signatureCreationController.importSingleKeyFromKeyGeneration(privateKey);
     signatureVerificationController.importSingleKeyFromKeyGeneration(publicKey);
+  }
+
+  /**
+   * Sets the list of key configuration strings for comparison mode across the signature controller
+   * assembly by providing configuration details of the keys used in the comparison benchmarking
+   * mode. The configuration strings represent different key configurations that are used to compare
+   * signature processes under different key settings.
+   *
+   * @param keyConfigurationStringsForComparisonMode A list of string representations of key
+   *                                                 configurations.
+   */
+  public void setKeyConfigurationStringsForComparisonMode(
+      List<String> keyConfigurationStringsForComparisonMode) {
+    signatureCreationController.setKeyConfigurationStrings(
+        keyConfigurationStringsForComparisonMode);
+    signatureVerificationController.setKeyConfigurationStrings(
+        keyConfigurationStringsForComparisonMode);
   }
 
 
