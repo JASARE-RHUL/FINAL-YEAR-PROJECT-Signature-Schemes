@@ -6,6 +6,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.List;
+import javafx.util.Pair;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.msci.project.rsa.GenModel;
@@ -97,6 +100,24 @@ public class GenModelTest {
     assertThrows(IllegalStateException.class, () -> genModel.generateKey(),
         "Should throw an exception no key has been generated");
   }
+
+  @Test
+  public void testFormatCustomKeyConfigurations() {
+    GenModel model = new GenModel();
+    List<Pair<int[], Boolean>> keyConfigurationsData = new ArrayList<>();
+    keyConfigurationsData.add(new Pair<>(new int[]{1, 2, 1, 2}, true));
+    keyConfigurationsData.add(new Pair<>(new int[]{1, 4, 1, 4, 1, 2}, false));
+
+    List<String> expected = new ArrayList<>();
+    expected.add("2 primes (1/2N+1/2N) with small e");
+    expected.add("3 primes (1/4N+1/4N+1/2N)");
+
+
+    List<String> result = model.formatCustomKeyConfigurations(keyConfigurationsData);
+
+    assertEquals(expected, result);
+  }
+
 
 
 }
