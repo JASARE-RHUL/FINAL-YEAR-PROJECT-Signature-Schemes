@@ -147,6 +147,8 @@ public class SignatureCreationController extends SignatureBaseController {
     loadSignView("/SignViewCrossBenchmarkingMode.fxml",
         () -> setupSignObserversCrossBenchmarking(primaryStage), () -> {
           updateWithImportedKeyBatch(new SignViewUpdateOperations(signView));
+          signatureModel.setNumKeysPerKeySizeComparisonMode(keyConfigurationStrings.size());
+          signatureModel.setKeyConfigurationStrings(keyConfigurationStrings);
           if (isCrossParameterBenchmarkingEnabled && this.importedKeyBatch != null) {
             signView.setImportKeyBatchButtonVisibility(false);
             signView.setCancelImportKeyButtonVisibility(true);
@@ -468,7 +470,7 @@ public class SignatureCreationController extends SignatureBaseController {
     BenchmarkingContext context = new SignatureCreationContext(signatureModel);
     resultsController.setContext(context);
 
-    resultsController.showResultsView(mainController.getPrimaryStage(),
+    resultsController.showResultsView(mainController.getPrimaryStage(), keyConfigurationStrings,
         signatureModel.getClockTimesPerTrial(), signatureModel.getPrivKeyLengths(), true,
         signatureModel.getNumKeySizesForComparisonMode());
   }

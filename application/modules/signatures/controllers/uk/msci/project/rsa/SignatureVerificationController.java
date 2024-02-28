@@ -155,6 +155,8 @@ public class SignatureVerificationController extends SignatureBaseController {
         () -> setupVerificationObserversCrossBenchmarking(primaryStage),
         () -> {
           updateWithImportedKeyBatch(new VerifyViewUpdateOperations(verifyView));
+          signatureModel.setNumKeysPerKeySizeComparisonMode(keyConfigurationStrings.size());
+          signatureModel.setKeyConfigurationStrings(keyConfigurationStrings);
           if (isCrossParameterBenchmarkingEnabled && this.importedKeyBatch != null) {
             verifyView.setImportKeyBatchButtonVisibility(false);
             verifyView.setCancelImportKeyButtonVisibility(true);
@@ -523,7 +525,7 @@ public class SignatureVerificationController extends SignatureBaseController {
     BenchmarkingContext context = new SignatureVerificationContext(signatureModel);
     resultsController.setContext(context);
 
-    resultsController.showResultsView(mainController.getPrimaryStage(),
+    resultsController.showResultsView(mainController.getPrimaryStage(), keyConfigurationStrings,
         signatureModel.getClockTimesPerTrial(), signatureModel.getPublicKeyLengths(), true,
         signatureModel.getNumKeySizesForComparisonMode());
   }
