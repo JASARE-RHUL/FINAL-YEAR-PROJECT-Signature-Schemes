@@ -138,11 +138,24 @@ public class GenView {
   private Label numKeySizesLabel;
 
   /**
+   * Toggle Switch for enabling or disabling Cross-Parameter Benchmarking Mode.
+   */
+  @FXML
+  private ToggleSwitch crossParameterBenchmarkingModeToggle;
+
+  /**
    * List of pairs, each holding an array of integers and a boolean. This list stores dynamic key
    * data, where each pair consists of an array representing key sizes and a boolean indicating
    * whether a small exponent 'e' is used.
    */
   private List<Pair<int[], Boolean>> dynamicKeyData = new ArrayList<>();
+
+  /**
+   * A list storing dynamic key configuration data. Each entry in the list is a pair, where the
+   * first element is an array of integers representing key configuration parameters and the second
+   * element is a boolean indicating the use of a small 'e' value in the key generation.
+   */
+  private List<Pair<int[], Boolean>> dynamicKeyConfigurationsData = new ArrayList<>();
 
   /**
    * List of integers representing dynamically generated key sizes.
@@ -155,6 +168,11 @@ public class GenView {
    * mode to specify how many times key generation should be performed per key.
    */
   private int numTrials;
+
+  /**
+   * Stores the number of key configurations specified by the user for benchmarking.
+   */
+  private int numKeyConfigs;
 
 
   /**
@@ -398,6 +416,17 @@ public class GenView {
   }
 
   /**
+   * Functional interface defining a validator for input fields. It takes a VBox containing
+   * dynamically generated input fields and validates their contents.
+   */
+  @FunctionalInterface
+  public interface InputValidator {
+
+    boolean validate(VBox inputs);
+  }
+
+
+  /**
    * Displays a dialog for dynamic field generation based on the number of fields specified. This
    * method allows users to enter multiple key sizes and small e selections.
    *
@@ -406,20 +435,51 @@ public class GenView {
    * @return boolean indicating if the dialog submission was completed successfully.
    */
   boolean showDynamicFieldsDialog(int numberOfFields, Stage primaryStage) {
+    return showGenericDynamicFieldsDialog(numberOfFields, primaryStage, "Key Size Fields",
+        "Enter multiple bit sizes, separated by commas", this::isValidInput);
+  }
+
+  /**
+   * Displays a dialog for entering key configurations. This method is used for specifying multiple
+   * fractions in the RSA key generation process.
+   *
+   * @param numberOfFields The number of key configuration fields to be generated in the dialog.
+   * @param primaryStage   The primary stage of the application.
+   * @return A boolean indicating if the dialog submission was completed successfully.
+   */
+  boolean showKeyConfigurationsDialog(int numberOfFields, Stage primaryStage) {
+    return showGenericDynamicFieldsDialog(numberOfFields, primaryStage, "Key Configurations",
+        "Enter multiples fractions, separated by commas)",
+        this::isValidInputMultiPrime);
+  }
+
+
+  /**
+   * Displays a generic dialog for dynamic field generation based on the specified number of fields.
+   * This method allows for flexible input based on user requirements.
+   *
+   * @param numberOfFields The number of fields to be generated in the dialog.
+   * @param primaryStage   The primary stage of the application.
+   * @param title          The title of the dialog.
+   * @param promptText     The prompt text for the input fields.
+   * @param validator      The validator to be used for validating input.
+   * @return A boolean indicating if the dialog submission was completed successfully.
+   */
+  boolean showGenericDynamicFieldsDialog(int numberOfFields, Stage primaryStage, String title,
+      String promptText, InputValidator validator) {
     Dialog<Void> dialog = new Dialog<>();
-    dialog.setTitle("Key Size Fields");
+    dialog.setTitle(title);
     dialog.initModality(Modality.APPLICATION_MODAL);
     dialog.initOwner(primaryStage);
 
     // Create the VBox to hold fields and checkboxes
     VBox content = new VBox(10);
-    //    Label errorLabel = new Label(); // Label to show error messages
-    //    errorLabel.setStyle("-fx-text-fill: red;"); // Optional styling for the error label
 
     // Generate the dynamic fields
     for (int i = 0; i < numberOfFields; i++) {
       TextField textField = new TextField();
-      textField.setPromptText("Enter multiple bit sizes, separated by commas");
+      textField.setPromptText(promptText);
+      textField.setPrefWidth(300);
       CheckBox checkBox = new CheckBox("Small e?");
       HBox hbox = new HBox(10, textField, checkBox);
       content.getChildren().add(hbox);
@@ -429,7 +489,6 @@ public class GenView {
     scrollPane.setHbarPolicy(ScrollBarPolicy.NEVER); // Disable horizontal scrolling
     scrollPane.setFitToWidth(true);
 
-    //    content.getChildren().add(errorLabel); // Add the error label to the content
     ButtonType okButtonType = new ButtonType("Submit", ButtonData.OK_DONE);
     ButtonType cancelButtonType = new ButtonType("Cancel", ButtonData.CANCEL_CLOSE);
 
@@ -437,13 +496,13 @@ public class GenView {
     DialogPane dialogPane = dialog.getDialogPane();
     dialogPane.setContent(scrollPane);
     dialogPane.getButtonTypes().addAll(okButtonType, cancelButtonType);
-    dialogPane.setPrefSize(275, 250);
+    dialogPane.setPrefSize(400, 250);
 
     final boolean[] isCompleted = {false};
 
     Button okButton = (Button) dialogPane.lookupButton(okButtonType);
     okButton.addEventFilter(ActionEvent.ACTION, event -> {
-      if (isValidInput(content)) {
+      if (validator.validate(content)) {
         isCompleted[0] = true;
         dialog.close();
       } else {
@@ -557,6 +616,70 @@ public class GenView {
   }
 
   /**
+   * Validates the input for multi-prime RSA key configurations. It checks if the text fields
+   * contain a valid sequence of fractions that sum up to 1 and updates the
+   * dynamicKeyConfigurationsData list accordingly.
+   *
+   * @param content The VBox containing dynamically generated text fields and checkboxes.
+   * @return A boolean indicating whether the input in all text fields is valid.
+   */
+
+  private boolean isValidInputMultiPrime(VBox content) {
+    dynamicKeyConfigurationsData.clear();
+
+    boolean invalidField = false;
+
+    for (Node node : content.getChildren()) {
+      if (node instanceof HBox) {
+        HBox hbox = (HBox) node;
+        TextField textField = (TextField) hbox.getChildren().get(0);
+        CheckBox checkBox = (CheckBox) hbox.getChildren().get(1);
+
+        textField.setStyle("");
+
+        // Pattern to match a full string of comma-separated fractions
+        String inputText = textField.getText().trim();
+        if (!inputText.isEmpty() && Pattern.compile("^\\s*(\\d+/\\d+\\s*)(,\\s*\\d+/\\d+\\s*)*$")
+            .matcher(inputText).matches()) {
+          String[] fractionStrings = inputText.split(",");
+          double totalSum = 0;
+          for (String fraction : fractionStrings) {
+            String[] parts = fraction.trim().split("/");
+            int numerator = Integer.parseInt(parts[0]);
+            int denominator = Integer.parseInt(parts[1]);
+            double fractionValue = (double) numerator / denominator;
+            totalSum += fractionValue;
+          }
+
+          if (Math.abs(totalSum - 1.0) > 0.00001) {
+            invalidField = true;
+            textField.setStyle("-fx-control-inner-background: #FFDDDD;");
+            continue;
+          }
+
+          boolean checkBoxValue = checkBox.isSelected();
+          // Convert and store each fraction in an array
+          int[] fractionsArray = new int[fractionStrings.length * 2];
+          for (int i = 0; i < fractionStrings.length; i++) {
+            String[] parts = fractionStrings[i].trim().split("/");
+            fractionsArray[i * 2] = Integer.parseInt(parts[0]);
+            fractionsArray[i * 2 + 1] = Integer.parseInt(parts[1]);
+          }
+          dynamicKeyConfigurationsData.add(new Pair<>(fractionsArray, checkBoxValue));
+
+
+        } else {
+          invalidField = true;
+          textField.setStyle("-fx-control-inner-background: #FFDDDD;");
+        }
+      }
+    }
+
+    return !invalidField;
+  }
+
+
+  /**
    * Validates the input provided in the dynamic fields for comparison mode within the given VBox.
    * It checks if the text fields contain valid single bit sizes and updates `dynamicKeySizeData`
    * with the entered key sizes. If invalid input is detected, the respective text field(s) are
@@ -588,6 +711,73 @@ public class GenView {
     return !invalidField;
   }
 
+  /**
+   * Displays a dialog prompting the user to enter a numerical value. This method is used for
+   * entering either the number of trials or the number of key configurations for benchmarking.
+   *
+   * @param primaryStage The primary stage of the application.
+   * @param title        The title of the dialog.
+   * @param promptText   The prompt text for the input field.
+   * @param isNumTrials  A boolean indicating whether the dialog is for entering the number of
+   *                     trials.
+   * @return A boolean indicating if the dialog submission was completed successfully.
+   */
+  boolean showGenericNumberPromptDialog(Stage primaryStage, String title, String promptText,
+      boolean isNumTrials) {
+    Dialog<Void> dialog = new Dialog<>();
+    dialog.setTitle(title);
+    dialog.initModality(Modality.APPLICATION_MODAL);
+    dialog.initOwner(primaryStage);
+
+    // Create TextField for user input
+    TextField trialsField = new TextField();
+    trialsField.setPromptText(promptText);
+
+    // Create and set the dialog content
+    DialogPane dialogPane = dialog.getDialogPane();
+    dialogPane.setContent(new VBox(10, trialsField));
+    dialogPane.setPrefSize(300, 150);
+
+    // Add OK and Cancel buttons
+    ButtonType okButtonType = new ButtonType("OK", ButtonData.OK_DONE);
+    ButtonType cancelButtonType = new ButtonType("Cancel", ButtonData.CANCEL_CLOSE);
+    dialogPane.getButtonTypes().addAll(okButtonType, cancelButtonType);
+
+    // Event handling
+    final boolean[] isCompleted = {false};
+    final int[] numFieldTemp = {0};
+    Button okButton = (Button) dialogPane.lookupButton(okButtonType);
+    okButton.addEventFilter(ActionEvent.ACTION, event -> {
+      try {
+        if (isNumTrials) {
+          numTrials = Integer.parseInt(trialsField.getText());
+        } else {
+          numKeyConfigs = Integer.parseInt(trialsField.getText());
+        }
+        numFieldTemp[0] = Integer.parseInt(trialsField.getText());
+        isCompleted[0] = true;
+      } catch (NumberFormatException e) {
+        // Show an error alert if the input is not a valid integer
+        if (isNumTrials) {
+          uk.msci.project.rsa.DisplayUtility.showErrorAlert(
+              "You must provide a valid number of trials. Please try again.");
+          event.consume(); // Prevent the dialog from closing
+        } else {
+          uk.msci.project.rsa.DisplayUtility.showErrorAlert(
+              "You must provide a valid number of key configurations. Please try again.");
+        }
+      }
+    });
+
+    // Apply a blur effect on the primary stage
+    primaryStage.getScene().getRoot().setEffect(new GaussianBlur());
+    dialog.setOnHidden(e -> primaryStage.getScene().getRoot().setEffect(null));
+
+    dialog.showAndWait();
+
+    return isCompleted[0];
+  }
+
 
   /**
    * Displays a dialog for entering the number of trials for key generation. This method allows
@@ -597,41 +787,13 @@ public class GenView {
    * @return boolean indicating if the dialog submission was completed successfully.
    */
   boolean showTrialsDialog(Stage primaryStage) {
-    // Create a new dialog for the number of trials
-    Dialog<Integer> trialsDialog = new Dialog<>();
-    trialsDialog.setTitle("Number of Trials");
-    trialsDialog.initModality(Modality.APPLICATION_MODAL);
-    trialsDialog.initOwner(primaryStage);
+    return showGenericNumberPromptDialog(primaryStage, "Number of Trials",
+        "Enter number of trials", true);
+  }
 
-    // Set up the input field for the number of trials
-    TextField trialsField = new TextField();
-    trialsField.setPromptText("Enter number of trials");
-    final boolean[] isCompleted = {false};
-    // Add an event filter to validate input
-    trialsDialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
-    Button okButton = (Button) trialsDialog.getDialogPane().lookupButton(ButtonType.OK);
-    okButton.addEventFilter(ActionEvent.ACTION, event -> {
-      try {
-        numTrials = Integer.parseInt(trialsField.getText());
-        isCompleted[0] = true;
-      } catch (NumberFormatException e) {
-        // Show an error alert if the input is not a valid integer
-        uk.msci.project.rsa.DisplayUtility.showErrorAlert(
-            "You must provide a valid number of trials. Please try again.");
-        event.consume(); // Prevent the dialog from closing
-      }
-    });
-
-    // Set the content of the dialog
-    trialsDialog.getDialogPane().setContent(trialsField);
-    trialsDialog.getDialogPane().setPrefSize(300, 150);
-
-    primaryStage.getScene().getRoot().setEffect(new GaussianBlur());
-
-    trialsDialog.setOnHidden(e -> primaryStage.getScene().getRoot().setEffect(null));
-
-    trialsDialog.showAndWait();
-    return isCompleted[0];
+  boolean showNumKeyConfigsDialog(Stage primaryStage) {
+    return showGenericNumberPromptDialog(primaryStage, "Number of Key Configurations",
+        "Enter number of key configurations", false);
   }
 
   /**
@@ -641,6 +803,16 @@ public class GenView {
    */
   public List<Pair<int[], Boolean>> getDynamicKeyData() {
     return dynamicKeyData;
+  }
+
+  /**
+   * Retrieves the dynamic key configurations data specified by the user.
+   *
+   * @return A list of pairs, each containing key configuration parameters and a boolean indicating
+   * the use of a small 'e' value.
+   */
+  public List<Pair<int[], Boolean>> getDynamicKeyConfigurationsData() {
+    return dynamicKeyConfigurationsData;
   }
 
   /**
@@ -732,5 +904,36 @@ public class GenView {
   public void setNumKeysLabelVisibility(boolean visible) {
     this.numKeysLabel.setManaged(visible);
     this.numKeysLabel.setVisible(visible);
+  }
+
+  /**
+   * Adds an observer for the Cross-Parameter toggle switch.
+   *
+   * @param observer the observer to be notified when the toggle state changes.
+   */
+  public void addCrossParameterToggleObserver(ChangeListener<Boolean> observer) {
+    crossParameterBenchmarkingModeToggle.selectedProperty().addListener(observer);
+  }
+
+  /**
+   * Sets the selected state of the Cross-Parameter toggle switch.
+   *
+   * @param isSelected true to select the toggle switch, false otherwise.
+   */
+  public void setSelectedCrossParameterToggleObserver(boolean isSelected) {
+    crossParameterBenchmarkingModeToggle.setSelected(isSelected);
+  }
+
+  /**
+   * Adds an observer for changes in the provable scheme selection.
+   *
+   * @param observer the observer to be notified when the scheme selection changes.
+   */
+  public void addCrossParameterRadioChangeObserver(ChangeListener<Toggle> observer) {
+    crossBenchMarkingToggleGroup.selectedToggleProperty().addListener(observer);
+  }
+
+  public int getNumKeyConfigs() {
+    return numKeyConfigs;
   }
 }

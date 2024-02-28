@@ -41,12 +41,12 @@
         </HBox>
         <HBox fx:id="crossParameterHbox" alignment="CENTER_LEFT" spacing="10">
           <Label text="Cross-Parameter Benchmarking Mode:" styleClass="bold-label"/>
-          <ToggleSwitch fx:id="crossParameterBenchmarkingModeToggle" selected="false"/>
+          <ToggleSwitch fx:id="crossParameterBenchmarkingModeToggle" selected="true"/>
         </HBox>
         <Separator/>
 
 
-        <HBox spacing="10" alignment="CENTER" managed="false" visible="false">
+        <HBox spacing="10" alignment="CENTER">
           <Label text="Cross-Parameter Benchmarking:"
             styleClass="bold-label"/>
           <RadioButton fx:id="noCrossParameterRadio" text="Compare Standard vs Provably secure" selected="true"/>
@@ -55,10 +55,10 @@
 
         <!-- Number of Keys Input -->
         <VBox fx:id="benchmarkingModeVBox" alignment="CENTER" spacing="5">
-          <Label fx:id="numKeysLabel" text="How many keys would you like to generate:" styleClass="bold-label"/>
+          <Label fx:id="numKeysLabel" text="How many keys would you like to generate:" visible="false" managed="false" styleClass="bold-label"/>
           <Label fx:id="numKeySizesLabel"
             text="How many key sizes would you like to use to compare different parameters:"
-            styleClass="bold-label" managed="false" visible="false"/>
+            styleClass="bold-label"/>
           <TextField fx:id="numKeysTextField" prefWidth="200" maxWidth="200"/>
         </VBox>
 
