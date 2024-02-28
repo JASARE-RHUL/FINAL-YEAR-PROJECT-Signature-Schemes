@@ -435,7 +435,7 @@ public class GenView {
    * @return boolean indicating if the dialog submission was completed successfully.
    */
   boolean showDynamicFieldsDialog(int numberOfFields, Stage primaryStage) {
-    return showGenericDynamicFieldsDialog(numberOfFields, primaryStage, "Key Size Fields",
+    return showGenericDynamicFieldsDialog(numberOfFields, primaryStage, "Individual Key Fields",
         "Enter multiple bit sizes, separated by commas", this::isValidInput);
   }
 
@@ -897,6 +897,15 @@ public class GenView {
   }
 
   /**
+   * Checks to see if comparison mode key sizes label is currently being displayed.
+   *
+   * @return A boolean indicating whether the label is visible.
+   */
+  public boolean getNumKeySizesVisibility() {
+    return numKeySizesLabel.isVisible();
+  }
+
+  /**
    * Sets the visibility of the label displaying the number of keys.
    *
    * @param visible A boolean indicating whether the label should be visible.
@@ -933,6 +942,12 @@ public class GenView {
     crossBenchMarkingToggleGroup.selectedToggleProperty().addListener(observer);
   }
 
+  /**
+   * Retrieves the number of key configurations specified by the user in the initialisation of
+   * custom cross parameter benchmarking session.
+   *
+   * @return number represent the current number of key configurations.
+   */
   public int getNumKeyConfigs() {
     return numKeyConfigs;
   }
