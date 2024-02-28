@@ -258,12 +258,14 @@ public class GenController {
             "Error: Invalid input. Please enter a valid number of keys.");
         return;
       }
-      if (genView.getCrossBenchMarkingToggle().equals("Compare Standard vs Provably secure")) {
-        handleBenchmarkingInitiationComparisonMode(numKeys);
-        return;
-      } else if (genView.getCrossBenchMarkingToggle().equals("Compare Custom Parameters")) {
-        handleBenchmarkingInitiationCustomComparison(numKeys);
-        return;
+      if (genView.getNumKeySizesVisibility()) {
+        if (genView.getCrossBenchMarkingToggle().equals("Compare Standard vs Provably secure")) {
+          handleBenchmarkingInitiationComparisonMode(numKeys);
+          return;
+        } else if (genView.getCrossBenchMarkingToggle().equals("Compare Custom Parameters")) {
+          handleBenchmarkingInitiationCustomComparison(numKeys);
+          return;
+        }
       }
       // Show the dynamic fields dialog and check if it was completed successfully
       boolean isFieldsDialogCompleted = genView.showDynamicFieldsDialog(numKeys,
