@@ -68,6 +68,31 @@ public class GenController {
   }
 
   /**
+   * Loads the key generation view from the specified FXML file and sets up the view and model
+   * components. This methods abstracts the common steps involved in loading and configuring
+   * different variations of the GenView.
+   *
+   * @param fxmlPath      The path to the FXML file that contains the layout for the GenView.
+   * @param observerSetup A Runnable containing additional setup steps for event handlers and
+   *                      observers, specific to the particular GenView being loaded.
+   */
+  private void loadGenView(String fxmlPath, Runnable observerSetup) {
+    try {
+      FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
+      Parent root = loader.load();
+      genView = loader.getController();
+      this.genModel = new GenModel();
+      genView.addBackToMainMenuObserver(new BackToMainMenuObserver());
+      genView.addBenchmarkingModeToggleObserver(new ApplicationModeChangeObserver());
+      observerSetup.run();
+
+      mainController.setScene(root);
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+  }
+
+  /**
    * Initialises and displays the GenView for the key generation functionality in benchmarking mode.
    * This method loads the GenView FXML file, sets up the necessary model and view components, and
    * configures event handlers and observers for the various UI elements.
@@ -75,26 +100,7 @@ public class GenController {
    * @param primaryStage The primary stage of the application where the view will be displayed.
    */
   public void showGenView(Stage primaryStage) {
-    try {
-
-      FXMLLoader loader = new FXMLLoader(getClass().getResource("/GenView.fxml"));
-      Parent root = loader.load();
-      genView = loader.getController();
-      genModel = new GenModel();
-
-      genView.addBackToMainMenuObserver(new BackToMainMenuObserver());
-      genView.addHelpObserver(new BackToMainMenuObserver());
-      genView.addNumKeysObserver(new NumKeysBtnObserver());
-      genView.addBenchmarkingModeToggleObserver(new ApplicationModeChangeObserver());
-      genView.addCrossBenchMarkingToggleGroupChangeObserver(new ComparisonModeChangeObserver());
-      genView.addCrossParameterToggleObserver(new CrossBenchmarkingModeChangeObserver(
-          () -> showGenViewCrossBenchmarkingMode(primaryStage), () -> showGenView(primaryStage)));
-
-      mainController.setScene(root);
-
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
+    loadGenView("/GenView.fxml", () -> setupBenchmarkingObservers(primaryStage));
   }
 
   /**
@@ -107,27 +113,8 @@ public class GenController {
    * @param primaryStage The primary stage of the application where this view is to be displayed.
    */
   public void showGenViewCrossBenchmarkingMode(Stage primaryStage) {
-    try {
-
-      FXMLLoader loader = new FXMLLoader(
-          getClass().getResource("/GenViewCrossBenchmarkingMode.fxml"));
-      Parent root = loader.load();
-      genView = loader.getController();
-      genModel = new GenModel();
-
-      genView.addBackToMainMenuObserver(new BackToMainMenuObserver());
-      genView.addHelpObserver(new BackToMainMenuObserver());
-      genView.addNumKeysObserver(new NumKeysBtnObserver());
-      genView.addBenchmarkingModeToggleObserver(new ApplicationModeChangeObserver());
-      genView.addCrossBenchMarkingToggleGroupChangeObserver(new ComparisonModeChangeObserver());
-      genView.addCrossParameterToggleObserver(new CrossBenchmarkingModeChangeObserver(
-          () -> showGenViewCrossBenchmarkingMode(primaryStage), () -> showGenView(primaryStage)));
-
-      mainController.setScene(root);
-
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
+    loadGenView("/GenViewCrossBenchmarkingMode.fxml",
+        () -> setupBenchmarkingObservers(primaryStage));
   }
 
   /**
@@ -138,24 +125,24 @@ public class GenController {
    * @param primaryStage The primary stage of the application where the view will be displayed.
    */
   public void showGenViewStandardMode(Stage primaryStage) {
-    try {
-      FXMLLoader loader = new FXMLLoader(getClass().getResource("/GenViewStandardMode.fxml"));
-      Parent root = loader.load();
-      genView = loader.getController();
-      genModel = new GenModel();
-      // Add observers for buttons or other actions
+    loadGenView("/GenViewStandardMode.fxml", () -> {
+    });
+    genView.addGenerateButtonObserver(new GenerateKeyObserver());
+  }
 
-      genView.addBackToMainMenuObserver(new BackToMainMenuObserver());
-      genView.addHelpObserver(new BackToMainMenuObserver());
-      genView.addGenerateButtonObserver(new GenerateKeyObserver());
-      genView.addBenchmarkingModeToggleObserver(new ApplicationModeChangeObserver());
-
-      mainController.setScene(root);
-
-
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
+  /**
+   * Sets up observers for benchmarking related UI elements and actions in the GenView. This method
+   * configures event handlers and listeners for user interactions specific to the benchmarking
+   * process, such as comparison mode toggles, and cross-parameter benchmarking mode changes. It is
+   * used to enable the correct functioning of the GenView in different benchmarking scenarios.
+   *
+   * @param primaryStage The primary stage of the application, required for some UI actions.
+   */
+  public void setupBenchmarkingObservers(Stage primaryStage) {
+    genView.addNumKeysObserver(new NumKeysBtnObserver());
+    genView.addCrossBenchMarkingToggleGroupChangeObserver(new ComparisonModeChangeObserver());
+    genView.addCrossParameterToggleObserver(new CrossBenchmarkingModeChangeObserver(
+        () -> showGenViewCrossBenchmarkingMode(primaryStage), () -> showGenView(primaryStage)));
   }
 
 
