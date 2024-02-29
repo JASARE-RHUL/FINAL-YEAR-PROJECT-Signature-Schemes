@@ -131,6 +131,11 @@ public class SignatureModel {
    */
   private int numKeysPerKeySizeComparisonMode;
 
+  /**
+   * describes the various key parameter configurations used in the signature scheme. Each string in
+   * the list represents a specific key configuration, which to be used for benchmarking different
+   * key configurations in the signature process.
+   */
   private List<String> keyConfigurationStrings;
 
 
