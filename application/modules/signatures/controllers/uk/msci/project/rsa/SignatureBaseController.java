@@ -116,10 +116,10 @@ public abstract class SignatureBaseController {
    * accordingly. It expects the key file to contain a specific format and updates the view based on
    * the result of the key validation.
    *
-   * @param file    The key file selected by the user.
-   * @param viewOps The {@code ViewUpdate} operations that will update the view.
+   * @param file          The key file selected by the user.
+   * @param signatureView The signature view that will be updated based on the imported key.
    */
-  public boolean handleKey(File file, ViewUpdate viewOps) {
+  public boolean handleKey(File file, SignatureBaseView signatureView) {
     String content = "";
     try {
       content = FileHandle.importFromFile(file);
@@ -133,17 +133,19 @@ public abstract class SignatureBaseController {
       return false;
     } else {
       resetPreLoadedKeyParams();
-      if (viewOps instanceof SignViewUpdateOperations) {
+      if (signatureView instanceof SignView) {
         signatureModel.setKey(new PrivateKey(content));
       } else {
         signatureModel.setKey(new PublicKey(content));
       }
-      viewOps.setKeyName(file.getName());
-      viewOps.updateCheckmarkImage();
-      viewOps.setCheckmarkVisibility(true);
-      viewOps.setKeyVisibility(true);
+      signatureView.setKey(file.getName());
+      signatureView.setCheckmarkImage();
+      signatureView.setCheckmarkImageVisibility(true);
+      signatureView.setKeyVisibility(true);
 
     }
+    signatureView.setImportKeyButtonVisibility(false);
+    signatureView.setCancelImportSingleKeyButtonVisibility(true);
     return true;
   }
 
@@ -156,8 +158,8 @@ public abstract class SignatureBaseController {
   class ImportObserver implements EventHandler<ActionEvent> {
 
     private final Stage stage;
-    private final BiConsumer<File, ViewUpdate> fileConsumer;
-    private final ViewUpdate viewOps;
+    private final SignatureBaseView signatureView;
+    private final BiConsumer<File, SignatureBaseView> fileConsumer;
     private final String fileExtension;
 
     /**
@@ -165,14 +167,14 @@ public abstract class SignatureBaseController {
      * processes it using a provided BiConsumer.
      *
      * @param stage         The primary stage of the application to show the file chooser.
-     * @param viewOps       The {@code ViewUpdate} operations that will update the view.
+     * @param signatureView The signature view to be updated with the imported asset.
      * @param fileConsumer  The BiConsumer that processes the selected file and updates the view.
      * @param fileExtension The file extension to filter files in the file chooser.
      */
-    public ImportObserver(Stage stage, ViewUpdate viewOps,
-        BiConsumer<File, ViewUpdate> fileConsumer, String fileExtension) {
+    public ImportObserver(Stage stage, SignatureBaseView signatureView,
+        BiConsumer<File, SignatureBaseView> fileConsumer, String fileExtension) {
       this.stage = stage;
-      this.viewOps = viewOps;
+      this.signatureView = signatureView;
       this.fileConsumer = fileConsumer;
       this.fileExtension = fileExtension;
     }
@@ -180,7 +182,7 @@ public abstract class SignatureBaseController {
     @Override
     public void handle(ActionEvent event) {
       uk.msci.project.rsa.DisplayUtility.handleFileImport(stage, fileExtension,
-          file -> fileConsumer.accept(file, viewOps));
+          file -> fileConsumer.accept(file, signatureView));
     }
   }
 
@@ -264,10 +266,11 @@ public abstract class SignatureBaseController {
    * file contents and updates the view to reflect the text has been loaded. If the file content is
    * empty or does not meet the expected format, an error alert is shown.
    *
-   * @param file    The file selected by the user containing the message to sign.
-   * @param viewOps The {@code ViewUpdate} operations that will update the view.
+   * @param file          The file selected by the user containing the message to sign.
+   * @param signatureView The signature view that will be updated based on the imported message.
    */
-  public void handleMessageFile(File file, ViewUpdate viewOps) {
+
+  public void handleMessageFile(File file, SignatureBaseView signatureView) {
     String content = "";
     try {
       content = FileHandle.importFromFile(file);
@@ -279,14 +282,14 @@ public abstract class SignatureBaseController {
           file.getName() + " is empty. Please try again.");
     } else {
       this.setMessage(content.getBytes());
-      viewOps.setTextInput("");
-      viewOps.setTextFileNameLabel(file.getName());
-      viewOps.setTextInputVisibility(false);
-      viewOps.setCheckmarkImageMessageBatch();
-      viewOps.setTextInputHBoxVisibility(true);
+      signatureView.setTextInput("");
+      signatureView.setTextFileNameLabel(file.getName());
+      signatureView.setTextInputVisibility(false);
+      signatureView.setCheckmarkImageMessageBatch();
+      signatureView.setTextInputHBoxVisibility(true);
 
-      viewOps.setImportTextButtonVisibility(false);
-      viewOps.setCancelImportTextButtonVisibility(true);
+      signatureView.setImportTextButtonVisibility(false);
+      signatureView.setCancelImportTextButtonVisibility(true);
 
     }
   }
@@ -337,10 +340,10 @@ public abstract class SignatureBaseController {
    */
   class HashFunctionChangeObserver implements ChangeListener<String> {
 
-    private ViewUpdate viewOps;
+    private SignatureBaseView signatureView;
 
-    public HashFunctionChangeObserver(ViewUpdate viewOps) {
-      this.viewOps = viewOps;
+    public HashFunctionChangeObserver(SignatureBaseView signatureView) {
+      this.signatureView = signatureView;
     }
 
     @Override
@@ -352,34 +355,34 @@ public abstract class SignatureBaseController {
       switch (newValue) {
         case "SHAKE-256":
           signatureModel.setHashType(DigestType.SHAKE_256);
-          if (viewOps.getParameterChoice().equals("Provably Secure")) {
+          if (signatureView.getParameterChoice().equals("Provably Secure")) {
             signatureModel.setProvablySecure(true);
           } else {
-            viewOps.setHashOutputSizeFieldVisibility(true);
+            signatureView.setHashOutputSizeFieldVisibility(true);
           }
           break;
         case "SHAKE-128":
           signatureModel.setHashType(DigestType.SHAKE_128);
-          if (viewOps.getParameterChoice().equals("Provably Secure")) {
+          if (signatureView.getParameterChoice().equals("Provably Secure")) {
             signatureModel.setProvablySecure(true);
           } else {
-            viewOps.setHashOutputSizeFieldVisibility(true);
+            signatureView.setHashOutputSizeFieldVisibility(true);
           }
           break;
         case "SHA-512 with MGF1":
           signatureModel.setHashType(DigestType.MGF_1_SHA_512);
-          if (viewOps.getParameterChoice().equals("Provably Secure")) {
+          if (signatureView.getParameterChoice().equals("Provably Secure")) {
             signatureModel.setProvablySecure(true);
           } else {
-            viewOps.setHashOutputSizeFieldVisibility(true);
+            signatureView.setHashOutputSizeFieldVisibility(true);
           }
           break;
         case "SHA-256 with MGF1":
           signatureModel.setHashType(DigestType.MGF_1_SHA_256);
-          if (viewOps.getParameterChoice().equals("Provably Secure")) {
+          if (signatureView.getParameterChoice().equals("Provably Secure")) {
             signatureModel.setProvablySecure(true);
           } else {
-            viewOps.setHashOutputSizeFieldVisibility(true);
+            signatureView.setHashOutputSizeFieldVisibility(true);
           }
           break;
         case "SHA-512":
@@ -408,31 +411,31 @@ public abstract class SignatureBaseController {
    */
   class ParameterChoiceChangeObserver implements ChangeListener<Toggle> {
 
-    private ViewUpdate viewOps;
+    private SignatureBaseView signatureView;
 
-    public ParameterChoiceChangeObserver(ViewUpdate viewOps) {
-      this.viewOps = viewOps;
+    public ParameterChoiceChangeObserver(SignatureBaseView signatureView) {
+      this.signatureView = signatureView;
     }
 
     @Override
     public void changed(ObservableValue<? extends Toggle> observable, Toggle oldValue,
         Toggle newValue) {
-      viewOps.setSelectedHashFunction("");
+      signatureView.setSelectedHashFunction("");
       if (newValue != null) {
         RadioButton selectedRadioButton = (RadioButton) newValue;
         String radioButtonText = selectedRadioButton.getText();
         switch (radioButtonText) {
           case "Provably Secure":
-            viewOps.setHashOutputSizeFieldVisibility(false);
-            viewOps.updateHashFunctionDropdownForCustomOrProvablySecure();
+            signatureView.setHashOutputSizeFieldVisibility(false);
+            signatureView.updateHashFunctionDropdownForCustomOrProvablySecure();
             break;
           case "Custom":
-            viewOps.updateHashFunctionDropdownForCustomOrProvablySecure();
+            signatureView.updateHashFunctionDropdownForCustomOrProvablySecure();
             break;
           case "Standard":
           default:
-            viewOps.setHashOutputSizeFieldVisibility(false);
-            viewOps.updateHashFunctionDropdownForStandard();
+            signatureView.setHashOutputSizeFieldVisibility(false);
+            signatureView.updateHashFunctionDropdownForStandard();
             break;
 
         }
@@ -490,19 +493,19 @@ public abstract class SignatureBaseController {
    */
   class CancelImportTextButtonObserver implements EventHandler<ActionEvent> {
 
-    private ViewUpdate viewOps;
+    private SignatureBaseView signatureView;
 
-    public CancelImportTextButtonObserver(ViewUpdate viewOps) {
-      this.viewOps = viewOps;
+    public CancelImportTextButtonObserver(SignatureBaseView signatureView) {
+      this.signatureView = signatureView;
     }
 
     @Override
     public void handle(ActionEvent event) {
-      viewOps.setTextFileNameLabel("");
-      viewOps.setTextInputVisibility(true);
-      viewOps.setTextInputHBoxVisibility(false);
-      viewOps.setCancelImportTextButtonVisibility(false);
-      viewOps.setImportTextButtonVisibility(true);
+      signatureView.setTextFileNameLabel("");
+      signatureView.setTextInputVisibility(true);
+      signatureView.setTextInputHBoxVisibility(false);
+      signatureView.setCancelImportTextButtonVisibility(false);
+      signatureView.setImportTextButtonVisibility(true);
 
     }
   }
@@ -545,26 +548,30 @@ public abstract class SignatureBaseController {
    */
   class CancelImportKeyBatchButtonObserver implements EventHandler<ActionEvent> {
 
-    private ViewUpdate viewOps;
+    private SignatureBaseView signatureView;
 
-    public CancelImportKeyBatchButtonObserver(ViewUpdate viewOps) {
-      this.viewOps = viewOps;
+    public CancelImportKeyBatchButtonObserver(SignatureBaseView signatureView) {
+      this.signatureView = signatureView;
     }
 
     @Override
     public void handle(ActionEvent event) {
       resetPreLoadedKeyParams();
-      viewOps.setProvableParamsHboxVisibility(false);
-      viewOps.setCustomParametersRadioVisibility(true);
-      viewOps.setStandardParametersRadioVisibility(true);
+      signatureView.setProvableParamsHboxVisibility(false);
+      signatureView.setCustomParametersRadioVisibility(true);
+      signatureView.setStandardParametersRadioVisibility(true);
       isKeyBatchImportCancelled = true;
-      viewOps.setSelectedCrossParameterToggleObserver(false);
-      viewOps.setCheckmarkVisibility(false);
-      viewOps.setFixedKeyName();
+      signatureView.setSelectedCrossParameterToggleObserver(false);
+      signatureView.setCheckmarkImageVisibility(false);
+      if (signatureView instanceof SignView) {
+        signatureView.setKey("Please Import a private key batch");
+      } else {
+        signatureView.setKey("Please Import a public key batch");
+      }
       signatureModel.clearPrivateKeyBatch();
       signatureModel.clearPublicKeyBatch();
-      viewOps.setCancelImportKeyBatchButtonVisibility(false);
-      viewOps.setImportKeyBatchButtonVisibility(true);
+      signatureView.setCancelImportKeyButtonVisibility(false);
+      signatureView.setImportKeyBatchButtonVisibility(true);
 
     }
   }
@@ -575,23 +582,27 @@ public abstract class SignatureBaseController {
    */
   class CancelImportKeyButtonObserver implements EventHandler<ActionEvent> {
 
-    private ViewUpdate viewOps;
+    private SignatureBaseView signatureView;
 
-    public CancelImportKeyButtonObserver(ViewUpdate viewOps) {
-      this.viewOps = viewOps;
+    public CancelImportKeyButtonObserver(SignatureBaseView signatureView) {
+      this.signatureView = signatureView;
     }
 
     @Override
     public void handle(ActionEvent event) {
       resetPreLoadedKeyParams();
-      viewOps.setCustomParametersRadioVisibility(true);
-      viewOps.setStandardParametersRadioVisibility(true);
-      viewOps.setSelectedCrossParameterToggleObserver(false);
-      viewOps.setProvableParamsHboxVisibility(false);
-      viewOps.setCheckmarkVisibility(false);
-      viewOps.setKeyName("Please Import a key");
-      viewOps.setCancelImportSingleKeyButtonVisibility(false);
-      viewOps.setImportKeyButtonVisibility(true);
+      signatureView.setCustomParametersRadioVisibility(true);
+      signatureView.setStandardParametersRadioVisibility(true);
+      signatureView.setSelectedCrossParameterToggleObserver(false);
+      signatureView.setProvableParamsHboxVisibility(false);
+      signatureView.setCheckmarkImageVisibility(false);
+      if (signatureView instanceof SignView) {
+        signatureView.setKey("Please Import a private key");
+      } else {
+        signatureView.setKey("Please Import a public key");
+      }
+      signatureView.setCancelImportSingleKeyButtonVisibility(false);
+      signatureView.setImportKeyButtonVisibility(true);
 
     }
   }
@@ -602,10 +613,10 @@ public abstract class SignatureBaseController {
    * comma delimited positive integers and updates the view based on the result of the key
    * validation.
    *
-   * @param file    The file selected by the user containing a batch of keys.
-   * @param viewOps The {@code ViewUpdate} operations that will update the view.
+   * @param file          The file selected by the user containing a batch of keys.
+   * @param signatureView The signature view that will be updated based on the imported key batch.
    */
-  public boolean handleKeyBatch(File file, ViewUpdate viewOps) {
+  public boolean handleKeyBatch(File file, SignatureBaseView signatureView) {
     try (BufferedReader keyReader = new BufferedReader(new FileReader(file))) {
       String keyContent;
       while ((keyContent = keyReader.readLine()) != null) {
@@ -621,10 +632,10 @@ public abstract class SignatureBaseController {
           } else {
             signatureModel.addPublicKeyToBatch(keyContent);
           }
-          viewOps.setKeyName(file.getName());
-          viewOps.updateCheckmarkImage();
-          viewOps.setCheckmarkVisibility(true);
-          viewOps.setKeyVisibility(true);
+          signatureView.setKey(file.getName());
+          signatureView.setCheckmarkImage();
+          signatureView.setCheckmarkImageVisibility(true);
+          signatureView.setKeyVisibility(true);
         }
       }
 
@@ -633,6 +644,9 @@ public abstract class SignatureBaseController {
           "Invalid key batch. Please make sure the file contains new line separated contiguous sequence of valid keys.");
       return false;
     }
+
+    signatureView.setImportKeyBatchButtonVisibility(false);
+    signatureView.setCancelImportKeyButtonVisibility(true);
     return true;
   }
 
@@ -681,19 +695,19 @@ public abstract class SignatureBaseController {
    * Validates the hash output size input by the user. Ensures that it is a non-negative integer and
    * that it is provided when required based on the view's visibility settings.
    *
-   * @param viewOps The {@code ViewUpdate} operations that will update the view.
    * @return true if the hash output size is valid, false otherwise.
    */
-  public boolean handleHashOutputSize(ViewUpdate viewOps) {
+  public boolean handleHashOutputSize(SignatureBaseView signatureView) {
     try {
-      if (Integer.parseInt(hashOutputSize) < 0 && viewOps.getHashOutputSizeFieldVisibility()) {
+      if (Integer.parseInt(hashOutputSize) < 0
+          && signatureView.getHashOutputSizeFieldVisibility()) {
         uk.msci.project.rsa.DisplayUtility.showErrorAlert(
             "You must provide a non-negative integer for the hash output size. Please try again.");
         return false;
       }
     } catch (NumberFormatException e) {
       // Show an error alert if the input is not a valid integer
-      if (viewOps.getHashOutputSizeFieldVisibility()) {
+      if (signatureView.getHashOutputSizeFieldVisibility()) {
         uk.msci.project.rsa.DisplayUtility.showErrorAlert(
             "You must provide a non-negative integer for the hash output size. Please try again.");
       }
@@ -708,9 +722,9 @@ public abstract class SignatureBaseController {
    * model with the key content and to update the view to reflect that a key has been imported. It
    * processes the imported key batch line by line to add keys to the signature model.
    *
-   * @param viewOps The {@code ViewUpdate} operations that will update the view.
+   * @param signatureView The signature view to be updated with the imported key batch.
    */
-  public void updateWithImportedKeyBatch(ViewUpdate viewOps) {
+  public void updateWithImportedKeyBatch(SignatureBaseView signatureView) {
     try (BufferedReader reader = new BufferedReader(new StringReader(this.importedKeyBatch))) {
       String keyContent;
       while ((keyContent = reader.readLine()) != null) {
@@ -723,19 +737,19 @@ public abstract class SignatureBaseController {
     } catch (IOException e) {
       e.printStackTrace();
     }
-    if (viewOps.isBenchmarkingModeEnabled()) {
+    if (signatureView.isBenchmarkingModeEnabled()) {
       if (isCrossParameterBenchmarkingEnabled) {
-        viewOps.setKeyName("Keys were loaded for cross-parameter comparison");
+        signatureView.setKey("Keys were loaded for cross-parameter comparison");
       } else {
-        viewOps.setKeyName("A provably-secure key batch was loaded");
+        signatureView.setKey("A provably-secure key batch was loaded");
       }
 
     } else {
-      viewOps.setKeyName("A provably-secure key was loaded");
+      signatureView.setKey("A provably-secure key was loaded");
     }
-    viewOps.updateCheckmarkImage();
-    viewOps.setCheckmarkVisibility(true);
-    viewOps.setKeyVisibility(true);
+    signatureView.setCheckmarkImage();
+    signatureView.setCheckmarkImageVisibility(true);
+    signatureView.setKeyVisibility(true);
   }
 
   /**
@@ -743,19 +757,19 @@ public abstract class SignatureBaseController {
    * model with the key content and to update the view to reflect that a key has been imported in
    * non benchmarking mode.
    *
-   * @param viewOps The {@code ViewUpdate} operations that will update the view.
+   * @param signatureView The signature view to be updated with the imported key.
    */
-  public void updateWithImportedKey(ViewUpdate viewOps) {
+  public void updateWithImportedKey(SignatureBaseView signatureView) {
     if (this instanceof SignatureCreationController) {
       signatureModel.setKey(new PrivateKey(importedKeyBatch));
     } else {
       signatureModel.setKey(new PublicKey(importedKeyBatch));
     }
 
-    viewOps.setKeyName("A provably-secure key was loaded");
-    viewOps.updateCheckmarkImage();
-    viewOps.setCheckmarkVisibility(true);
-    viewOps.setKeyVisibility(true);
+    signatureView.setKey("A provably-secure key was loaded");
+    signatureView.setCheckmarkImage();
+    signatureView.setCheckmarkImageVisibility(true);
+    signatureView.setKeyVisibility(true);
   }
 
   /**
@@ -767,7 +781,7 @@ public abstract class SignatureBaseController {
    */
   class CrossBenchmarkingModeChangeObserver implements ChangeListener<Boolean> {
 
-    private ViewUpdate viewOps;
+    private SignatureBaseView signatureView;
     private final Runnable onCrossBenchmarkingMode;
     private final Runnable onBenchmarkingMode;
 
@@ -781,10 +795,10 @@ public abstract class SignatureBaseController {
      * @param onBenchmarkingMode      The action to perform when switching to benchmarking mode.
      */
     public CrossBenchmarkingModeChangeObserver(Runnable onCrossBenchmarkingMode,
-        Runnable onBenchmarkingMode, ViewUpdate viewOps) {
+        Runnable onBenchmarkingMode, SignatureBaseView signatureView) {
       this.onCrossBenchmarkingMode = onCrossBenchmarkingMode;
       this.onBenchmarkingMode = onBenchmarkingMode;
-      this.viewOps = viewOps;
+      this.signatureView = signatureView;
     }
 
     @Override
@@ -793,7 +807,7 @@ public abstract class SignatureBaseController {
       if (Boolean.TRUE.equals(newValue) && Boolean.FALSE.equals(oldValue)) {
         if ((!isCrossParameterBenchmarkingEnabled && importedKeyBatch == null)
             || !isKeyForComparisonMode) {
-          viewOps.setSelectedCrossParameterToggleObserver(false);
+          signatureView.setSelectedCrossParameterToggleObserver(false);
           uk.msci.project.rsa.DisplayUtility.showErrorAlert(
               "Cross parameter benchmarking cannot be enabled without an initial cross parameter generation of keys.");
         } else {
@@ -819,10 +833,10 @@ public abstract class SignatureBaseController {
    */
   class ProvableParamsChangeObserver implements ChangeListener<Toggle> {
 
-    private ViewUpdate viewOps;
+    private SignatureBaseView signatureView;
 
-    public ProvableParamsChangeObserver(ViewUpdate viewOps) {
-      this.viewOps = viewOps;
+    public ProvableParamsChangeObserver(SignatureBaseView signatureView) {
+      this.signatureView = signatureView;
     }
 
     @Override
@@ -834,16 +848,16 @@ public abstract class SignatureBaseController {
         switch (radioButtonText) {
           case "Yes":
             if (isKeyProvablySecure || isSingleKeyProvablySecure) {
-              viewOps.setProvablySecureParametersRadioSelected(true);
-              viewOps.setCustomParametersRadioVisibility(false);
-              viewOps.setStandardParametersRadioVisibility(false);
+              signatureView.setProvablySecureParametersRadioSelected(true);
+              signatureView.setCustomParametersRadioVisibility(false);
+              signatureView.setStandardParametersRadioVisibility(false);
             }
             break;
           case "No":
           default:
-            viewOps.setProvablySecureParametersRadioSelected(false);
-            viewOps.setCustomParametersRadioVisibility(true);
-            viewOps.setStandardParametersRadioVisibility(true);
+            signatureView.setProvablySecureParametersRadioSelected(false);
+            signatureView.setCustomParametersRadioVisibility(true);
+            signatureView.setStandardParametersRadioVisibility(true);
             break;
 
         }
@@ -954,15 +968,15 @@ public abstract class SignatureBaseController {
    * for the selected hash function), the method will not update the model and will return false.
    * This method is crucial for maintaining the consistency of the signature model state with the
    * user's input on the view.
+   * <p>
    *
-   * @param viewOps The {@code ViewUpdate} operations that will update the view based on the
-   *                validation of the hash output size.
+   * @param signatureView The signature view that provides context for hash size setting.
    * @return Boolean value indicating if validation failed.
    */
-  boolean setHashSizeInModel(ViewUpdate viewOps) {
-    if (!handleHashOutputSize(viewOps) && viewOps.getHashOutputSizeFieldVisibility()) {
+  boolean setHashSizeInModel(SignatureBaseView signatureView) {
+    if (!handleHashOutputSize(signatureView) && signatureView.getHashOutputSizeFieldVisibility()) {
       return false;
-    } else if (viewOps.getHashOutputSizeFieldVisibility()) {
+    } else if (signatureView.getHashOutputSizeFieldVisibility()) {
       signatureModel.setHashSize((Integer.parseInt(hashOutputSize) + 7) / 8);
     }
     return true;

@@ -40,8 +40,8 @@ public class SignatureCreationController extends SignatureBaseController {
   /**
    * An instance of the BenchmarkingUtility class used to manage benchmarking tasks. This utility
    * facilitates the execution and monitoring of tasks related to the benchmarking of signature
-   * creation processes. It provides methods to initiate benchmarking tasks, update progress,
-   * and handle task completion.
+   * creation processes. It provides methods to initiate benchmarking tasks, update progress, and
+   * handle task completion.
    */
   private BenchmarkingUtility benchmarkingUtility;
 
@@ -101,7 +101,7 @@ public class SignatureCreationController extends SignatureBaseController {
     loadSignView("/SignView.fxml", () -> setupSignObserversBenchmarking(primaryStage), () -> {
       if (isSingleKeyProvablySecure && this.importedKeyBatch != null
           && !isCrossParameterBenchmarkingEnabled) {
-        updateWithImportedKeyBatch(new SignViewUpdateOperations(signView));
+        updateWithImportedKeyBatch(signView);
         signView.setImportKeyBatchButtonVisibility(false);
         signView.setCancelImportKeyButtonVisibility(true);
         signView.setProvableParamsHboxVisibility(true);
@@ -124,7 +124,7 @@ public class SignatureCreationController extends SignatureBaseController {
     loadSignView("/SignViewStandardMode.fxml", () -> setupSignObserversStandard(primaryStage),
         () -> {
           if (isSingleKeyProvablySecure && this.importedKeyBatch != null) {
-            updateWithImportedKey(new SignViewUpdateOperations(signView));
+            updateWithImportedKey(signView);
             signView.setImportKeyButtonVisibility(false);
             signView.setCancelImportSingleKeyButtonVisibility(true);
             signView.setProvableParamsHboxVisibility(true);
@@ -146,7 +146,7 @@ public class SignatureCreationController extends SignatureBaseController {
   public void showSignViewCrossBenchmarkingMode(Stage primaryStage) {
     loadSignView("/SignViewCrossBenchmarkingMode.fxml",
         () -> setupSignObserversCrossBenchmarking(primaryStage), () -> {
-          updateWithImportedKeyBatch(new SignViewUpdateOperations(signView));
+          updateWithImportedKeyBatch(signView);
           signatureModel.setNumKeysPerKeySizeComparisonMode(keyConfigurationStrings.size());
           signatureModel.setKeyConfigurationStrings(keyConfigurationStrings);
           if (isCrossParameterBenchmarkingEnabled && this.importedKeyBatch != null) {
@@ -164,11 +164,11 @@ public class SignatureCreationController extends SignatureBaseController {
    */
   private void setupNonCrossBenchmarkingObservers() {
     signView.addParameterChoiceChangeObserver(
-        new ParameterChoiceChangeObserver(new SignViewUpdateOperations(signView)));
+        new ParameterChoiceChangeObserver(signView));
     signView.addHashFunctionChangeObserver(
-        new HashFunctionChangeObserver(new SignViewUpdateOperations(signView)));
+        new HashFunctionChangeObserver(signView));
     signView.addProvableSchemeChangeObserver(
-        new ProvableParamsChangeObserver(new SignViewUpdateOperations(signView)));
+        new ProvableParamsChangeObserver(signView));
   }
 
   /**
@@ -194,18 +194,17 @@ public class SignatureCreationController extends SignatureBaseController {
    */
   private void setupBenchmarkingObservers(Stage primaryStage) {
     signView.addImportTextBatchBtnObserver(
-        new ImportObserver(primaryStage, new SignViewUpdateOperations(signView),
-            this::handleMessageBatch, "*.txt"));
+        new ImportObserver(primaryStage, signView, this::handleMessageBatch, "*.txt"));
     signView.addImportKeyBatchButtonObserver(
-        new ImportObserver(primaryStage, new SignViewUpdateOperations(signView),
+        new ImportObserver(primaryStage, signView,
             this::handleKeyBatch, "*.rsa"));
     signView.addCancelImportKeyButtonObserver(
-        new CancelImportKeyBatchButtonObserver(new SignViewUpdateOperations(signView)));
+        new CancelImportKeyBatchButtonObserver(signView));
     signView.addSigBenchmarkButtonObserver(
         new SignatureBenchmarkObserver());
     signView.addCrossParameterToggleObserver(new CrossBenchmarkingModeChangeObserver(
         () -> showSignViewCrossBenchmarkingMode(primaryStage),
-        () -> showSignView(primaryStage), new SignViewUpdateOperations(signView)));
+        () -> showSignView(primaryStage), signView));
   }
 
 
@@ -218,18 +217,18 @@ public class SignatureCreationController extends SignatureBaseController {
    */
   private void setupSignObserversStandard(Stage primaryStage) {
     signView.addImportTextObserver(
-        new ImportObserver(primaryStage, new SignViewUpdateOperations(signView),
+        new ImportObserver(primaryStage, signView,
             this::handleMessageFile, "*.txt"));
     signView.addImportKeyObserver(
-        new ImportObserver(primaryStage, new SignViewUpdateOperations(signView),
+        new ImportObserver(primaryStage, signView,
             this::handleKey, "*.rsa"));
     signView.addCancelImportSingleKeyButtonObserver(
-        new CancelImportKeyButtonObserver(new SignViewUpdateOperations(signView)));
+        new CancelImportKeyButtonObserver(signView));
     signView.addCreateSignatureObserver(
         new CreateSignatureObserver());
     signView.addCloseNotificationObserver(new BackToMainMenuObserver(signView));
     signView.addCancelImportTextButtonObserver(
-        new CancelImportTextButtonObserver(new SignViewUpdateOperations(signView)));
+        new CancelImportTextButtonObserver(signView));
     setupNonCrossBenchmarkingObservers();
     setupCommonToAllObservers(primaryStage);
 
@@ -296,7 +295,7 @@ public class SignatureCreationController extends SignatureBaseController {
         return;
       }
 
-      if (!setHashSizeInModel(new SignViewUpdateOperations(signView))) {
+      if (!setHashSizeInModel(signView)) {
         return;
       }
 
@@ -358,7 +357,7 @@ public class SignatureCreationController extends SignatureBaseController {
         return;
       }
 
-      if (!setHashSizeInModel(new SignViewUpdateOperations(signView))) {
+      if (!setHashSizeInModel(signView)) {
         return;
       }
       benchmarkingUtility = new BenchmarkingUtility();
@@ -387,7 +386,7 @@ public class SignatureCreationController extends SignatureBaseController {
       return;
     }
 
-    if (!setHashSizeInModel(new SignViewUpdateOperations(signView))) {
+    if (!setHashSizeInModel(signView)) {
       return;
     }
     benchmarkingUtility = new BenchmarkingUtility();
@@ -482,10 +481,10 @@ public class SignatureCreationController extends SignatureBaseController {
    * the file format is correct i.e., no empty lines apart from the end of the file) and contains
    * the expected number of messages.
    *
-   * @param file    The file containing messages to be signed.
-   * @param viewOps Operations to update the view based on file processing.
+   * @param file          The file containing messages to be signed.
+   * @param signatureView The signature view to be updated with the imported batch.
    */
-  public void handleMessageBatch(File file, ViewUpdate viewOps) {
+  public void handleMessageBatch(File file, SignatureBaseView signatureView) {
     int numMessages = checkFileForNonEmptyLines(file, "message");
     try {
       if (numMessages > 0) {
@@ -499,15 +498,15 @@ public class SignatureCreationController extends SignatureBaseController {
           return;
         } else {
           signatureModel.setNumTrials(numMessages);
-          viewOps.setMessageBatchName(file.getName());
-          viewOps.setTextFileCheckmarkImage();
-          viewOps.setTextFileCheckmarkVisibility(true);
-          viewOps.setBatchMessageVisibility(true);
-          signView.setNumMessageFieldEditable(false);
-          viewOps.setImportTextBatchBtnVisibility(false);
-          viewOps.setCancelImportTextBatchButtonVisibility(true);
-          signView.addCancelImportTextBatchButtonObserver(
-              new CancelImportTextBatchButtonObserver(new SignViewUpdateOperations(signView)));
+          signatureView.setMessageBatch(file.getName());
+          signatureView.setTextFileCheckmarkImage();
+          signatureView.setTextFieldCheckmarkImageVisibility(true);
+          signatureView.setMessageBatchFieldVisibility(true);
+          signatureView.setNumMessageFieldEditable(false);
+          signatureView.setImportTextBatchBtnVisibility(false);
+          signatureView.setCancelImportTextBatchButtonVisibility(true);
+          signatureView.addCancelImportTextBatchButtonObserver(
+              new CancelImportTextBatchButtonObserver());
         }
       }
     } catch (NumberFormatException e) {
@@ -520,62 +519,22 @@ public class SignatureCreationController extends SignatureBaseController {
 
 
   /**
-   * Handles the file selected by the user for a batch of keys. It validates the keys and updates
-   * the model and view accordingly. It expects the key file to contain a line separated text of
-   * comma delimited positive integers (with length 2 i.e., modulus and exponent) and updates the
-   * view based on the result of the key validation.
-   *
-   * @param file    The file selected by the user containing a batch of keys.
-   * @param viewOps The {@code ViewUpdate} operations that will update the view.
-   */
-  public boolean handleKeyBatch(File file, ViewUpdate viewOps) {
-    if (super.handleKeyBatch(file, viewOps)) {
-      signView.setImportKeyBatchButtonVisibility(false);
-      signView.setCancelImportKeyButtonVisibility(true);
-    }
-    return true;
-  }
-
-  /**
-   * Handles the file selected by the user for a single key (non-benchmarking mode). It validates
-   * the keys and updates the model and view accordingly. It expects the key file to contain a
-   * single line with comma delimited positive integers (with length 2 i.e., modulus and exponent)
-   * and updates the view based on the result of the key validation.
-   *
-   * @param file    The file selected by the user containing a batch of keys.
-   * @param viewOps The {@code ViewUpdate} operations that will update the view.
-   */
-  public boolean handleKey(File file, ViewUpdate viewOps) {
-    if (super.handleKeyBatch(file, viewOps)) {
-      signView.setImportKeyButtonVisibility(false);
-      signView.setCancelImportSingleKeyButtonVisibility(true);
-    }
-    return true;
-  }
-
-
-  /**
    * Observer for canceling the import of a text batch. Handles the event when the user decides to
    * cancel the import of a batch of messages by replacing the cancel button with the original
    * import button and resetting corresponding text field that display the name of the file.
    */
   class CancelImportTextBatchButtonObserver implements EventHandler<ActionEvent> {
 
-    private ViewUpdate viewOps;
-
-    public CancelImportTextBatchButtonObserver(ViewUpdate viewOps) {
-      this.viewOps = viewOps;
-    }
 
     @Override
     public void handle(ActionEvent event) {
-      viewOps.setTextFileCheckmarkVisibility(false);
-      viewOps.setMessageBatchName("Please Import a message batch");
+      signView.setTextFieldCheckmarkImageVisibility(false);
+      signView.setMessageBatch("Please Import a message batch");
       signView.clearNumMessageField();
       signatureModel.setNumTrials(0);
       messageBatchFile = null;
-      viewOps.setImportTextBatchBtnVisibility(true);
-      viewOps.setCancelImportTextBatchButtonVisibility(false);
+      signView.setImportTextBatchBtnVisibility(true);
+      signView.setCancelImportTextBatchButtonVisibility(false);
     }
   }
 
