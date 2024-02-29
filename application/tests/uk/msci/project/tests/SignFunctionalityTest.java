@@ -39,11 +39,9 @@ import uk.msci.project.rsa.GenRSA;
 import uk.msci.project.rsa.KeyPair;
 import uk.msci.project.rsa.MainController;
 import uk.msci.project.rsa.SignView;
-import uk.msci.project.rsa.SignViewUpdateOperations;
 import uk.msci.project.rsa.SignatureCreationController;
 import uk.msci.project.rsa.SignatureModel;
 import uk.msci.project.rsa.SignatureType;
-import uk.msci.project.rsa.SignatureCreationController;
 
 
 /**
@@ -162,7 +160,7 @@ public class SignFunctionalityTest {
     // Simulate invoking the file import method directly
     Platform.runLater(() -> {
       mainController.getSignatureCreationController()
-          .handleMessageFile(privateKeyFile.get(), new SignViewUpdateOperations(signViewVal));
+          .handleMessageFile(privateKeyFile.get(), signViewVal);
     });
 
     // Give some time for the UI to update and for the file to be processed
@@ -213,7 +211,7 @@ public class SignFunctionalityTest {
     // Simulate invoking the file import method directly
     Platform.runLater(() -> {
       mainController.getSignatureCreationController()
-          .handleKey(privateKeyFile.get(), new SignViewUpdateOperations(signViewVal));
+          .handleKey(privateKeyFile.get(), signViewVal);
     });
 
     WaitForAsyncUtils.waitForFxEvents();
@@ -258,7 +256,7 @@ public class SignFunctionalityTest {
     // Simulate invoking the file import method directly
     Platform.runLater(() -> {
       mainController.getSignatureCreationController()
-          .handleKey(corruptKey.get(), new SignViewUpdateOperations(signViewVal));
+          .handleKey(corruptKey.get(), signViewVal);
     });
 
     WaitForAsyncUtils.waitForFxEvents();
@@ -302,7 +300,7 @@ public class SignFunctionalityTest {
     // Simulate invoking the file import method directly
     Platform.runLater(() -> {
       mainController.getSignatureCreationController()
-          .handleKey(privateKeyFile.get(), new SignViewUpdateOperations(signViewVal));
+          .handleKey(privateKeyFile.get(), signViewVal);
     });
 
     WaitForAsyncUtils.waitForFxEvents();
@@ -356,7 +354,7 @@ public class SignFunctionalityTest {
     // Simulate invoking the file import method directly
     Platform.runLater(() -> {
       mainController.getSignatureCreationController()
-          .handleKey(privateKeyFile.get(), new SignViewUpdateOperations(signViewVal));
+          .handleKey(privateKeyFile.get(), signViewVal);
     });
 
     WaitForAsyncUtils.waitForFxEvents();
@@ -411,7 +409,7 @@ public class SignFunctionalityTest {
     // Simulate invoking the file import method directly
     Platform.runLater(() -> {
       mainController.getSignatureCreationController()
-          .handleKey(privateKeyFile.get(), new SignViewUpdateOperations(signViewVal));
+          .handleKey(privateKeyFile.get(), signViewVal);
     });
 
     WaitForAsyncUtils.waitForFxEvents();
@@ -491,7 +489,7 @@ public class SignFunctionalityTest {
     SignView signViewVal = (SignView) signView.get(mainController.getSignatureCreationController());
     Platform.runLater(() -> {
       mainController.getSignatureCreationController()
-          .handleMessageFile(testFile.get(), new SignViewUpdateOperations(signViewVal));
+          .handleMessageFile(testFile.get(), signViewVal);
     });
     WaitForAsyncUtils.waitForFxEvents();
 
@@ -527,7 +525,7 @@ public class SignFunctionalityTest {
         getFile("key", ".rsa");
     Platform.runLater(() -> {
       mainController.getSignatureCreationController()
-          .handleKey(privateKeyFile.get(), new SignViewUpdateOperations(signViewVal));
+          .handleKey(privateKeyFile.get(), signViewVal);
     });
     WaitForAsyncUtils.waitForFxEvents();
     ImageView importSuccessImage = robot.lookup("#checkmarkImage").queryAs(ImageView.class);

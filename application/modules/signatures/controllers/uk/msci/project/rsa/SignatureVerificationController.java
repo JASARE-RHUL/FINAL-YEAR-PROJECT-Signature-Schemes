@@ -107,7 +107,7 @@ public class SignatureVerificationController extends SignatureBaseController {
         () -> {
           if (isSingleKeyProvablySecure && this.importedKeyBatch != null
               && !isCrossParameterBenchmarkingEnabled) {
-            updateWithImportedKeyBatch(new VerifyViewUpdateOperations(verifyView));
+            updateWithImportedKeyBatch(verifyView);
             verifyView.setImportKeyBatchButtonVisibility(false);
             verifyView.setCancelImportKeyButtonVisibility(true);
             verifyView.setProvableParamsHboxVisibility(true);
@@ -130,7 +130,7 @@ public class SignatureVerificationController extends SignatureBaseController {
         () -> setupVerificationObserversStandard(primaryStage),
         () -> {
           if (isSingleKeyProvablySecure && this.importedKeyBatch != null) {
-            updateWithImportedKey(new VerifyViewUpdateOperations(verifyView));
+            updateWithImportedKey(verifyView);
             verifyView.setImportKeyButtonVisibility(false);
             verifyView.setCancelImportSingleKeyButtonVisibility(true);
             verifyView.setProvableParamsHboxVisibility(true);
@@ -154,7 +154,7 @@ public class SignatureVerificationController extends SignatureBaseController {
     loadVerifyView("/VerifyViewCrossBenchmarkingMode.fxml",
         () -> setupVerificationObserversCrossBenchmarking(primaryStage),
         () -> {
-          updateWithImportedKeyBatch(new VerifyViewUpdateOperations(verifyView));
+          updateWithImportedKeyBatch(verifyView);
           signatureModel.setNumKeysPerKeySizeComparisonMode(keyConfigurationStrings.size());
           signatureModel.setKeyConfigurationStrings(keyConfigurationStrings);
           if (isCrossParameterBenchmarkingEnabled && this.importedKeyBatch != null) {
@@ -172,11 +172,11 @@ public class SignatureVerificationController extends SignatureBaseController {
    */
   private void setupNonCrossBenchmarkingObservers() {
     verifyView.addParameterChoiceChangeObserver(
-        new ParameterChoiceChangeObserver(new VerifyViewUpdateOperations(verifyView)));
+        new ParameterChoiceChangeObserver(verifyView));
     verifyView.addHashFunctionChangeObserver(
-        new HashFunctionChangeObserver(new VerifyViewUpdateOperations(verifyView)));
+        new HashFunctionChangeObserver(verifyView));
     verifyView.addProvableSchemeChangeObserver(
-        new ProvableParamsChangeObserver(new VerifyViewUpdateOperations(verifyView)));
+        new ProvableParamsChangeObserver(verifyView));
   }
 
   /**
@@ -202,18 +202,18 @@ public class SignatureVerificationController extends SignatureBaseController {
    */
   private void setupBenchmarkingObservers(Stage primaryStage) {
     verifyView.addImportTextBatchBtnObserver(
-        new ImportObserver(primaryStage, new VerifyViewUpdateOperations(verifyView),
+        new ImportObserver(primaryStage, verifyView,
             this::handleMessageBatch, "*.txt"));
     verifyView.addImportKeyBatchButtonObserver(
-        new ImportObserver(primaryStage, new VerifyViewUpdateOperations(verifyView),
+        new ImportObserver(primaryStage, verifyView,
             this::handleKeyBatch, "*.rsa"));
     verifyView.addCancelImportKeyButtonObserver(
-        new CancelImportKeyBatchButtonObserver(new VerifyViewUpdateOperations(verifyView)));
+        new CancelImportKeyBatchButtonObserver(verifyView));
     verifyView.addCrossParameterToggleObserver(new CrossBenchmarkingModeChangeObserver(
         () -> showVerifyViewCrossBenchmarkingMode(primaryStage),
-        () -> showVerifyView(primaryStage), new VerifyViewUpdateOperations(verifyView)));
+        () -> showVerifyView(primaryStage), verifyView));
     verifyView.addImportSigBatchButtonObserver(
-        new ImportObserver(primaryStage, new VerifyViewUpdateOperations(verifyView),
+        new ImportObserver(primaryStage, verifyView,
             this::handleSignatureBatch, "*.rsa"));
     verifyView.addVerificationBenchmarkButtonObserver(
         new VerificationBenchmarkButtonObserver());
@@ -228,20 +228,20 @@ public class SignatureVerificationController extends SignatureBaseController {
    */
   public void setupVerificationObserversStandard(Stage primaryStage) {
     verifyView.addImportTextObserver(
-        new ImportObserver(primaryStage, new VerifyViewUpdateOperations(verifyView),
+        new ImportObserver(primaryStage, verifyView,
             this::handleMessageFile, "*.txt"));
     verifyView.addImportKeyObserver(
-        new ImportObserver(primaryStage, new VerifyViewUpdateOperations(verifyView),
+        new ImportObserver(primaryStage, verifyView,
             this::handleKey, "*.rsa"));
     verifyView.addCancelImportSingleKeyButtonObserver(
-        new CancelImportKeyButtonObserver(new VerifyViewUpdateOperations(verifyView)));
+        new CancelImportKeyButtonObserver(verifyView));
     verifyView.addImportSigButtonObserver(
-        new ImportObserver(primaryStage, null, this::handleSig, "*.rsa"));
+        new ImportObserver(primaryStage, verifyView, this::handleSig, "*.rsa"));
     verifyView.addVerifyBtnObserver(
-        new VerifyBtnObserver(new VerifyViewUpdateOperations(verifyView)));
+        new VerifyBtnObserver());
     verifyView.addCloseNotificationObserver(new BackToMainMenuObserver(verifyView));
     verifyView.addCancelImportTextButtonObserver(
-        new CancelImportTextButtonObserver(new VerifyViewUpdateOperations(verifyView)));
+        new CancelImportTextButtonObserver(verifyView));
     verifyView.addCancelImportSignatureButtonObserver(
         new CancelImportSignatureButtonObserver());
     setupNonCrossBenchmarkingObservers();
@@ -295,10 +295,10 @@ public class SignatureVerificationController extends SignatureBaseController {
    * Handles the importing of a signature file. It updates the signature model with the content of
    * the file and updates the view to reflect the signature has been loaded.
    *
-   * @param file    The signature file selected by the user.
-   * @param viewOps Not applicable for importing of a signature.
+   * @param file          The signature file selected by the user.
+   * @param signatureView The signature view to be updated with the imported signature.
    */
-  public void handleSig(File file, ViewUpdate viewOps) {
+  public void handleSig(File file, SignatureBaseView signatureView) {
     String content = "";
     try {
       content = FileHandle.importFromFile(file);
@@ -323,12 +323,6 @@ public class SignatureVerificationController extends SignatureBaseController {
    */
   class VerifyBtnObserver implements EventHandler<ActionEvent> {
 
-    private ViewUpdate viewOps;
-
-    public VerifyBtnObserver(ViewUpdate viewOps) {
-      this.viewOps = viewOps;
-    }
-
     @Override
     public void handle(ActionEvent event) {
       hashOutputSize = verifyView.getHashOutputSize();
@@ -339,7 +333,7 @@ public class SignatureVerificationController extends SignatureBaseController {
           return;
         }
       }
-      if (!setHashSizeInModel(new VerifyViewUpdateOperations(verifyView))) {
+      if (!setHashSizeInModel(verifyView)) {
         return;
       }
       if (signatureModel.getKey() == null
@@ -418,7 +412,7 @@ public class SignatureVerificationController extends SignatureBaseController {
         return;
       }
 
-      if (!setHashSizeInModel(new VerifyViewUpdateOperations(verifyView))) {
+      if (!setHashSizeInModel(verifyView)) {
         return;
       }
       // Show the progress dialog
@@ -449,7 +443,7 @@ public class SignatureVerificationController extends SignatureBaseController {
       return;
     }
 
-    if (!setHashSizeInModel(new VerifyViewUpdateOperations(verifyView))) {
+    if (!setHashSizeInModel(verifyView)) {
       return;
     }
     benchmarkingUtility = new BenchmarkingUtility();
@@ -552,16 +546,10 @@ public class SignatureVerificationController extends SignatureBaseController {
    */
   class CancelImportTextBatchButtonObserver implements EventHandler<ActionEvent> {
 
-    private ViewUpdate viewOps;
-
-    public CancelImportTextBatchButtonObserver(ViewUpdate viewOps) {
-      this.viewOps = viewOps;
-    }
-
     @Override
     public void handle(ActionEvent event) {
-      viewOps.setTextFileCheckmarkVisibility(false);
-      viewOps.setMessageBatchName("Please Import a message batch");
+      verifyView.setTextFieldCheckmarkImageVisibility(false);
+      verifyView.setMessageBatch("Please Import a message batch");
       messageBatchFile = null;
       verifyView.setImportTextBatchBtnVisibility(true);
       verifyView.setCancelImportTextBatchButtonVisibility(false);
@@ -590,40 +578,23 @@ public class SignatureVerificationController extends SignatureBaseController {
    * file's content and updates the model and UI accordingly. Ensures the file format is correct
    * (Ensures the file format is correct i.e., no empty lines apart from the end of the file).
    *
-   * @param file    The file containing messages to be signed.
-   * @param viewOps Operations to update the view based on file processing.
+   * @param file          The file containing messages to be signed.
+   * @param signatureView The signature view to be updated with the imported message batch.
    */
-  public void handleMessageBatch(File file, ViewUpdate viewOps) {
+  public void handleMessageBatch(File file, SignatureBaseView signatureView) {
     int numTrials = checkFileForNonEmptyLines(file, "message");
     if (numTrials > 0) {
       messageBatchFile = file;
       signatureModel.setNumTrials(numTrials);
-      viewOps.setMessageBatchName(file.getName());
-      viewOps.setTextFileCheckmarkImage();
-      viewOps.setTextFileCheckmarkVisibility(true);
-      viewOps.setBatchMessageVisibility(true);
-      viewOps.setImportTextBatchBtnVisibility(false);
-      viewOps.setCancelImportTextButtonVisibility(true);
+      verifyView.setMessageBatch(file.getName());
+      verifyView.setTextFileCheckmarkImage();
+      verifyView.setTextFieldCheckmarkImageVisibility(true);
+      verifyView.setMessageBatchFieldVisibility(true);
+      verifyView.setImportTextBatchBtnVisibility(false);
+      verifyView.setCancelImportTextButtonVisibility(true);
       verifyView.addCancelImportTextButtonObserver(
-          new CancelImportTextBatchButtonObserver(new VerifyViewUpdateOperations(verifyView)));
+          new CancelImportTextBatchButtonObserver());
     }
-  }
-
-  /**
-   * Handles the file selected by the user for a batch of keys. It validates the keys and updates
-   * the model and view accordingly. It expects the key file to contain a line separated text of
-   * comma delimited positive integers and updates the view based on the result of the key
-   * validation.
-   *
-   * @param file    The file selected by the user containing a batch of keys.
-   * @param viewOps The {@code ViewUpdate} operations that will update the view.
-   */
-  public boolean handleKeyBatch(File file, ViewUpdate viewOps) {
-    if (super.handleKeyBatch(file, viewOps)) {
-      verifyView.setImportKeyBatchButtonVisibility(false);
-      verifyView.setCancelImportKeyButtonVisibility(true);
-    }
-    return true;
   }
 
 
@@ -632,10 +603,10 @@ public class SignatureVerificationController extends SignatureBaseController {
    * file's content and updates the model and UI accordingly. Ensures the file format is correct
    * (Ensures the file format is correct i.e., no empty lines apart from the end of the file).
    *
-   * @param file    The file containing messages to be signed.
-   * @param viewOps Operations to update the view based on file processing.
+   * @param file          The file containing messages to be signed.
+   * @param signatureView The signature view to be updated with the imported signature batch.
    */
-  public void handleSignatureBatch(File file, ViewUpdate viewOps) {
+  public void handleSignatureBatch(File file, SignatureBaseView signatureView) {
     numSignatures = checkFileForNonEmptyLines(file, "signature");
     if (numSignatures > 0) {
       signatureBatchFile = file;
