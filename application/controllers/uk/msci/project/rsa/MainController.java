@@ -131,9 +131,9 @@ public class MainController {
     @Override
     public void handle(ActionEvent event) {
       if (signatureCreationController.getIsSingleKeyProvablySecure()) {
-        signatureCreationController.showSignViewStandardMode(primaryStage);
+        signatureCreationController.showStandardMode(primaryStage);
       } else {
-        signatureCreationController.showSignView(primaryStage);
+        signatureCreationController.showBenchmarkingView(primaryStage);
       }
     }
   }
@@ -148,9 +148,9 @@ public class MainController {
     @Override
     public void handle(ActionEvent event) {
       if (signatureVerificationController.getIsSingleKeyProvablySecure()) {
-        signatureVerificationController.showVerifyViewStandardMode(primaryStage);
+        signatureVerificationController.showStandardMode(primaryStage);
       } else {
-        signatureVerificationController.showVerifyView(primaryStage);
+        signatureVerificationController.showBenchmarkingView(primaryStage);
       }
     }
   }

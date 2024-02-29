@@ -112,6 +112,199 @@ public abstract class SignatureBaseController {
   }
 
   /**
+   * Sets up observers common to all modes of  a signature view. This includes observers for
+   * benchmarking mode toggle, back to main menu actions, and other common functionalities.
+   *
+   * @param primaryStage The primary stage of the application where the view will be displayed.
+   */
+  private void setupCommonToAllObservers(Stage primaryStage, SignatureBaseView signatureView) {
+    signatureView.addSignatureSchemeChangeObserver(new SignatureSchemeChangeObserver());
+    signatureView.addBenchmarkingModeToggleObserver(new ApplicationModeChangeObserver(
+        () -> showStandardMode(primaryStage),
+        () -> showBenchmarkingView(primaryStage)
+    ));
+    signatureView.addBackToMainMenuObserver(new BackToMainMenuObserver(signatureView));
+  }
+
+  /**
+   * Sets up observers specific to non-cross-benchmarking mode. This includes observers for handling
+   * signature scheme changes, parameter choice changes, hash function changes, and provable scheme
+   * changes.
+   */
+  private void setupNonCrossBenchmarkingObservers(SignatureBaseView signatureView) {
+    signatureView.addParameterChoiceChangeObserver(
+        new ParameterChoiceChangeObserver(signatureView));
+    signatureView.addHashFunctionChangeObserver(
+        new HashFunctionChangeObserver(signatureView));
+    signatureView.addProvableSchemeChangeObserver(
+        new ProvableParamsChangeObserver(signatureView));
+  }
+
+  /**
+   * Sets up observers specific to benchmarking mode. This includes observers for importing text
+   * batches, key batches, canceling key batch import, and starting the benchmarking process.
+   *
+   * @param primaryStage The primary stage of the application where the view will be displayed.
+   */
+  void setupBenchmarkingObservers(Stage primaryStage, SignatureBaseView signatureView) {
+    signatureView.addImportTextBatchBtnObserver(
+        new ImportObserver(primaryStage, signatureView, this::handleMessageBatch, "*.txt"));
+    signatureView.addImportKeyBatchButtonObserver(
+        new ImportObserver(primaryStage, signatureView,
+            this::handleKeyBatch, "*.rsa"));
+    signatureView.addCancelImportKeyButtonObserver(
+        new CancelImportKeyBatchButtonObserver(signatureView));
+    signatureView.addCrossParameterToggleObserver(new CrossBenchmarkingModeChangeObserver(
+        () -> showCrossBenchmarkingView(primaryStage),
+        () -> showBenchmarkingView(primaryStage), signatureView));
+  }
+
+  /**
+   * Sets up observers for a signature view in the standard (non-benchmarking) mode. This method
+   * initialises observers for importing text, keys, canceling imports, creating signatures, and
+   * other standard mode functionalities.
+   *
+   * @param primaryStage The primary stage of the application where the view will be displayed.
+   */
+  void setupObserversStandardMode(Stage primaryStage, SignatureBaseView signatureView) {
+    signatureView.addImportTextObserver(
+        new ImportObserver(primaryStage, signatureView,
+            this::handleMessageFile, "*.txt"));
+    signatureView.addImportKeyObserver(
+        new ImportObserver(primaryStage, signatureView,
+            this::handleKey, "*.rsa"));
+    signatureView.addCancelImportSingleKeyButtonObserver(
+        new CancelImportKeyButtonObserver(signatureView));
+    signatureView.addCloseNotificationObserver(new BackToMainMenuObserver(signatureView));
+    signatureView.addCancelImportTextButtonObserver(
+        new CancelImportTextButtonObserver(signatureView));
+    setupNonCrossBenchmarkingObservers(signatureView);
+    setupCommonToAllObservers(primaryStage, signatureView);
+
+  }
+
+  /**
+   * Sets up observers for a signature view in benchmarking mode. This method initialises observers
+   * specific to benchmarking, including text batch imports, key batch imports, benchmarking
+   * initiation, and additional benchmarking-specific functionalities.
+   *
+   * @param primaryStage The primary stage of the application where the view will be displayed.
+   */
+  void setupObserversBenchmarkingMode(Stage primaryStage, SignatureBaseView signatureView) {
+    setupCommonToAllObservers(primaryStage, signatureView);
+    setupBenchmarkingObservers(primaryStage, signatureView);
+    setupNonCrossBenchmarkingObservers(signatureView);
+  }
+
+  /**
+   * Sets up observers for the SignView in cross-parameter benchmarking mode. This method
+   * initialises observers specific to cross-parameter benchmarking, including standard and provable
+   * hash function changes, and other functionalities specific to this mode.
+   *
+   * @param primaryStage The primary stage of the application where the view will be displayed.
+   */
+  void setupObserversCrossBenchmarking(Stage primaryStage, SignatureBaseView signatureView) {
+    setupCommonToAllObservers(primaryStage, signatureView);
+    setupBenchmarkingObservers(primaryStage, signatureView);
+    signatureView.addStandardHashFunctionChangeObserver(new StandardHashFunctionChangeObserver());
+    signatureView.addProvableHashFunctionChangeObserver(new ProvableHashFunctionChangeObserver());
+  }
+
+  /**
+   * Handles a batch of messages for signature processing. This method is invoked when a file
+   * containing multiple messages is imported for either signature creation or verification in
+   * benchmarking mode. The implementation of this method should process each message in the batch
+   * accordingly.
+   *
+   * @param file          The file containing a batch of messages.
+   * @param signatureView The view associated with this controller.
+   */
+  abstract void handleMessageBatch(File file, SignatureBaseView signatureView);
+
+  /**
+   * Displays the signature view in standard mode. This method should transition the user interface
+   * to a state that supports standard signature operations without benchmarking or cross-parameter
+   * functionalities.
+   *
+   * @param primaryStage The primary stage of the application where the view will be displayed.
+   */
+  abstract void showStandardMode(Stage primaryStage);
+
+  /**
+   * Displays the signature view in cross-parameter benchmarking mode. This method should transition
+   * the user interface to a state that supports benchmarking of signature operations across
+   * different key parameters.
+   *
+   * @param primaryStage The primary stage of the application where the view will be displayed.
+   */
+  abstract void showCrossBenchmarkingView(Stage primaryStage);
+
+  /**
+   * Displays the signature view in benchmarking mode. This method should transition the user
+   * interface to a state that supports benchmarking functionalities for signature operations.
+   *
+   * @param primaryStage The primary stage of the application where the view will be displayed.
+   */
+  abstract void showBenchmarkingView(Stage primaryStage);
+
+  /**
+   * Preloads a provably secure key into the signature view. This method is used to set up the view
+   * with a provably secure key, typically in a standard mode where a single key is generated using
+   * a small e is used for the signature process.
+   *
+   * @param signatureView The signature view to be updated with the preloaded key.
+   */
+  void preloadProvablySecureKey(SignatureBaseView signatureView) {
+    if (isSingleKeyProvablySecure && this.importedKeyBatch != null) {
+      updateWithImportedKey(signatureView);
+      signatureView.setImportKeyButtonVisibility(false);
+      signatureView.setCancelImportSingleKeyButtonVisibility(true);
+      signatureView.setProvableParamsHboxVisibility(true);
+      signatureView.setProvablySecureParametersRadioSelected(true);
+      signatureView.setCustomParametersRadioVisibility(false);
+      signatureView.setStandardParametersRadioVisibility(false);
+    }
+  }
+
+  /**
+   * Preloads a batch of provably secure (small e) keys into the signature view. This method is used
+   * in benchmarking mode to set up the view with a batch of provably secure keys for batch
+   * operations.
+   *
+   * @param signatureView The signature view to be updated with the preloaded key batch.
+   */
+  void preloadProvablySecureKeyBatch(SignatureBaseView signatureView) {
+    if (isSingleKeyProvablySecure && this.importedKeyBatch != null
+        && !isCrossParameterBenchmarkingEnabled) {
+      updateWithImportedKeyBatch(signatureView);
+      signatureView.setImportKeyBatchButtonVisibility(false);
+      signatureView.setCancelImportKeyButtonVisibility(true);
+      signatureView.setProvableParamsHboxVisibility(true);
+      signatureView.setProvablySecureParametersRadioSelected(true);
+      signatureView.setCustomParametersRadioVisibility(false);
+      signatureView.setStandardParametersRadioVisibility(false);
+    }
+  }
+
+  /**
+   * Preloads a batch of keys for cross-parameter benchmarking into the signature view. This method
+   * sets up the view with a batch of keys that are compatible for cross parameter benchmarking
+   * mode.
+   *
+   * @param signatureView The signature view to be updated with the cross-parameter key batch.
+   */
+  void preloadCrossParameterKeyBatch(SignatureBaseView signatureView) {
+    updateWithImportedKeyBatch(signatureView);
+    signatureModel.setNumKeysPerKeySizeComparisonMode(keyConfigurationStrings.size());
+    signatureModel.setKeyConfigurationStrings(keyConfigurationStrings);
+    if (isCrossParameterBenchmarkingEnabled && this.importedKeyBatch != null) {
+      signatureView.setImportKeyBatchButtonVisibility(false);
+      signatureView.setCancelImportKeyButtonVisibility(true);
+    }
+
+  }
+
+  /**
    * Handles the importing of a key file. Validates the key and updates the model and view
    * accordingly. It expects the key file to contain a specific format and updates the view based on
    * the result of the key validation.
