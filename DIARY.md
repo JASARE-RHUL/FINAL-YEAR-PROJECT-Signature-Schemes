@@ -257,3 +257,32 @@ switched to sequential batch methods, ensuring precise timing. The week ended wi
 results controller for managing per-key results and refactoring the signature schemes with a new
 getHashID method for more efficient operations (as alluded to previously). I also added a consistent
 footer across all application screens to unify the user interface.
+
+## Diary Entry - Week of 19th February - 25th February 2024
+This week, my project saw substantial enhancements in both functionality and user interface. I
+introduced a toggle switch across the application screens to switch between standard and
+benchmarking modes, offering users more flexibility. To address the challenges with concurrent
+execution in benchmarking, I reverted to synchronous methods for key generation, signature creation,
+and verification. 
+
+A significant development was the initiation of a cross-parameter comparison
+benchmarking mode. This involved upgrading the ResultsView for displaying results for multiple
+parameter types/keys in one table for comparison and extensively refactoring the ResultsController
+for this new mode, along with integrating support into the GenController. 
+
+In the latter part of the week, I focused on finalising the cross-parameter benchmarking implementation. This required
+adapting the Key generation controller to preload keys pre-load keys into signature related
+controllers if the generated key batches/individual key pairs are all provably secure or keys were
+generated using cross parameters comparison mode. I then refactored the signature controller
+assembly to support this new mode. Functionalities for resetting preloaded key parameters and
+exporting verification results for cross-parameter benchmarking were also developed. 
+
+Additionally, I enhanced the non benchmarking mode for key generation so that user is presented with an option on
+whether to use a small e in the generation of key and then refined the SignatureController to
+include functionality for preloading a single key for non benchmarking mode if key chosen is
+provably secure i.e., small was used to generate it.
+
+Over the weekend, I concentrated on resolving errors and bugs emerging from the integration of the
+new benchmarking mode, such as fixing crashes in signature views. I also dedicated time to
+refactoring, streamlining the initialisation process for the different modes to enhance the
+application's efficiency and user experience.
