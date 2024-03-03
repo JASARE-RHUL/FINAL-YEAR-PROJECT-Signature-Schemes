@@ -152,6 +152,27 @@ public class SignatureModel {
    */
   private int keysPerGroup = 2;
 
+  /**
+   * An array storing the number of trials per key for each group in the comparison mode. This array
+   * is used to keep track of how many trials are conducted for each key within a group,
+   * facilitating accurate benchmarking and result analysis.
+   */
+  private int[] trialsPerKeyByGroup;
+
+  /**
+   * The total number of hash functions used across all groups in the comparison mode. This field
+   * aggregates the count of all distinct hash functions applied across different key
+   * configurations, providing a quantitative measure of the diversity in hash function usage.
+   */
+  private int totalHashFunctions;
+
+  /**
+   * The total number of groups in the comparison mode. This field reflects the number of distinct
+   * groups formed based on different key configurations or hash functions, enabling structured
+   * benchmarking across varying cryptographic parameters.
+   */
+  private int totalGroups;
+
 
   /**
    * Constructs a new {@code SignatureModel} without requiring an initial key representative of the
@@ -498,10 +519,6 @@ public class SignatureModel {
 
       int completedWork = 0;
 
-      int totalHashFunctions = 0;
-      for (List<Pair<DigestType, Boolean>> hashFunctionsForGroup : keyConfigToHashFunctionsMap.values()) {
-        totalHashFunctions += hashFunctionsForGroup.size();
-      }
       int averageHashFunctionsPerKey = totalHashFunctions / keyConfigToHashFunctionsMap.size();
 
       int totalWork = numTrials * privKeyBatch.size() * averageHashFunctionsPerKey;
@@ -583,6 +600,7 @@ public class SignatureModel {
         }
       }
     }
+    calculateTrialsPerKeyByGroup(privKeyBatch);
   }
 
 
@@ -745,10 +763,7 @@ public class SignatureModel {
 
       String messageLine;
       int messageCounter = 0;
-      int totalHashFunctions = 0;
-      for (List<Pair<DigestType, Boolean>> hashFunctionsForGroup : keyConfigToHashFunctionsMap.values()) {
-        totalHashFunctions += hashFunctionsForGroup.size();
-      }
+
       int averageHashFunctionsPerKey = totalHashFunctions / keyConfigToHashFunctionsMap.size();
       int completedWork = 0;
 
@@ -924,6 +939,7 @@ public class SignatureModel {
         }
       }
     }
+    calculateTrialsPerKeyByGroup(publicKeyBatch);
   }
 
 
@@ -983,68 +999,86 @@ public class SignatureModel {
    * This functionality facilitates detailed analysis and comparison of signature verification
    * performance across different parameter configurations.
    *
-   * @param keyIndex The index of the key size for which results are to be exported. This index
-   *                 corresponds to the position of the key size in the list of all key sizes used
-   *                 during the benchmarking process.
+   * @param keySizeIndex The index of the key size for which results are to be exported. This index
+   *                     corresponds to the position of the key size in the list of all key sizes
+   *                     used during the benchmarking process.
    * @throws IOException If there is an error in writing to the file.
    */
-  public void exportVerificationResultsToCSV_ComparisonMode(int keyIndex) throws IOException {
+  void exportVerificationResultsToCSV_ComparisonMode(int keySizeIndex) throws IOException {
     File file = FileHandle.createUniqueFile(
-        "verificationResults_ComparisonMode_" + getPublicKeyLengths().get(keyIndex) + "bits.csv");
+        "verificationResults_ComparisonMode_" + getPublicKeyLengths().get(keySizeIndex)
+            + "bits.csv");
 
-    // Read original messages from the file
-    List<String> originalMessages = new ArrayList<>();
-    try (BufferedReader messageReader = new BufferedReader(new FileReader(messageFile))) {
-      String line;
-      while ((line = messageReader.readLine()) != null) {
-        originalMessages.add(line);
-      }
-    }
-
+    int currentIndex = 0;
+    int headerStartIndex = 0; // Starting index for the row headers for each group
     try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
       // Write header
       writer.write(
-          "Parameter Type" + " (" + getPublicKeyLengths().get(keyIndex)
+          "Parameter Type" + " (" + getPublicKeyLengths().get(keySizeIndex)
               + "bit key), Hash Function, "
               + "Verification Result, Original Message, Signature, Recovered Message\n");
-      // Iterate over each key
-      for (int ki = 0; ki < numKeysPerKeySizeComparisonMode; ki++) {
-        int actualKeyIndex = keyIndex * numKeysPerKeySizeComparisonMode + ki;
-        int groupIndex =
-            Math.floorDiv(actualKeyIndex, keysPerGroup) % keyConfigToHashFunctionsMap.size();
-        List<Pair<DigestType, Boolean>> hashFunctions = keyConfigToHashFunctionsMap.get(groupIndex);
+      while (currentIndex < clockTimesPerTrial.size()) {
+        for (int groupIndex = 0; groupIndex < keyConfigToHashFunctionsMap.size(); groupIndex++) {
+          List<Pair<DigestType, Boolean>> hashFunctions = keyConfigToHashFunctionsMap.get(
+              groupIndex);
 
-        // Iterate over all hash functions for this group
-        for (int hashFunctionIndex = 0; hashFunctionIndex < hashFunctions.size();
-            hashFunctionIndex++) {
+          for (int hashFunctionIndex = 0; hashFunctionIndex < hashFunctions.size();
+              hashFunctionIndex++) {
+            for (int k = 0; k < keysPerGroup; k++) {
+              int keyIndex = groupIndex * keysPerGroup + k;
+              if (keyIndex >= publicKeyBatch.size()) {
+                break; // Prevent accessing keys beyond the total number of keys
+              }
+              int trialsPerHashFunction = trialsPerKeyByGroup[groupIndex] / hashFunctions.size();
+              String keyConfigString = keyConfigurationStrings.get(
+                  (headerStartIndex + k) % keyConfigurationStrings.size());
+              String hashFunctionName = hashFunctions.get(hashFunctionIndex).getKey().toString();
+              // Read original messages for each key
+              try (BufferedReader reader = new BufferedReader(new FileReader(messageFile))) {
+                String originalMessage;
+                int messageCounter = 0;
+                //numtrials = nummessages
+                while ((originalMessage = reader.readLine()) != null
+                    && messageCounter < numTrials) {
+                  int keySpecificMessageResults = currentIndex + messageCounter;
+                  boolean verificationResult = verificationResults.get(keySpecificMessageResults);
 
-          // Iterate over all messages for each hash function
-          for (int msgIndex = 0; msgIndex < numTrials && msgIndex < originalMessages.size();
-              msgIndex++) {
-            // Calculate the index for retrieving the correct verification result
-            int resultIndex =
-                (actualKeyIndex * numTrials * hashFunctions.size()) + (hashFunctionIndex
-                    * numTrials) + msgIndex;
+                  String signature = new BigInteger(1,
+                      signaturesFromBenchmark.get(keySpecificMessageResults)).toString();
+                  String recoverableMessage =
+                      recoverableMessages.get(keySpecificMessageResults) != null
+                          && recoverableMessages.get(keySpecificMessageResults).length > 0 ?
+                          new String(recoverableMessages.get(keySpecificMessageResults)) : "";
 
-            // Retrieve the verification result and associated data
-            boolean verificationResult = verificationResults.get(resultIndex);
-            String signature = new BigInteger(1,
-                signaturesFromBenchmark.get(resultIndex)).toString();
-            String recoverableMessage = recoverableMessages.get(resultIndex) != null &&
-                recoverableMessages.get(resultIndex).length > 0 ?
-                new String(recoverableMessages.get(resultIndex)) : "";
-            String originalMessage = originalMessages.get(msgIndex);
+                  writer.write(keyConfigString + ", "
+                      + hashFunctionName + ", " +
+                      verificationResult + ", " +
+                      "\"" + originalMessage + "\", " +
+                      signature + ", " + recoverableMessage + "\n");
 
-            writer.write(keyConfigurationStrings.get(ki % keyConfigurationStrings.size()) + ", "
-                + hashFunctions.get(
-                hashFunctionIndex).getKey().getDigestName() + ", " +
-                verificationResult + ", " +
-                "\"" + originalMessage + "\", " +
-                signature + ", " + recoverableMessage + "\n");
+                  messageCounter++;
+                }
+              }
 
+              currentIndex += trialsPerHashFunction;
+            }
           }
+          headerStartIndex += keysPerGroup; // Move to the next set of headers for the next group
         }
       }
+    }
+  }
+
+  private void calculateTrialsPerKeyByGroup(List<? extends Key> keyBatch) {
+    trialsPerKeyByGroup = new int[totalGroups];
+    int finalGroupStartIndex = keysPerGroup * totalGroups;
+    for (int i = 0; i < finalGroupStartIndex; i += keysPerGroup) {
+      int groupIndex = Math.floorDiv(i, keysPerGroup) % totalGroups;
+      int numHashFunctionsInGroup = keyConfigToHashFunctionsMap.get(groupIndex).size();
+      int totalTrialsCurrentGroup =
+          (clockTimesPerTrial.size() / totalHashFunctions) * numHashFunctionsInGroup;
+      int totalTrialsCurrentKey = totalTrialsCurrentGroup / (keyBatch.size() / keysPerGroup);
+      trialsPerKeyByGroup[groupIndex] = totalTrialsCurrentKey;
     }
   }
 
@@ -1173,7 +1207,7 @@ public class SignatureModel {
     keyConfigToHashFunctionsMap = new HashMap<>();
 
     // Calculate the total number of groups
-    int totalGroups = numKeysPerKeySizeComparisonMode / keysPerGroup;
+    totalGroups = numKeysPerKeySizeComparisonMode / keysPerGroup;
 
     for (int groupIndex = 0; groupIndex < totalGroups; groupIndex++) {
       // Determine the hash function list for the current group
@@ -1187,6 +1221,7 @@ public class SignatureModel {
       // Assign the hash function list to the group
       keyConfigToHashFunctionsMap.put(groupIndex, new ArrayList<>(hashFunctionsForGroup));
     }
+    calculateTotalHashFunctions();
   }
 
   /**
@@ -1223,6 +1258,7 @@ public class SignatureModel {
    */
   public void setKeyConfigurationStrings(List<String> keyConfigurationStrings) {
     this.keyConfigurationStrings = keyConfigurationStrings;
+
   }
 
   /**
@@ -1254,6 +1290,8 @@ public class SignatureModel {
   public void setKeyConfigToHashFunctionsMap(
       Map<Integer, List<Pair<DigestType, Boolean>>> keyConfigToHashFunctionsMap) {
     this.keyConfigToHashFunctionsMap = keyConfigToHashFunctionsMap;
+    this.totalGroups = this.keyConfigToHashFunctionsMap.size();
+    calculateTotalHashFunctions();
   }
 
   /**
@@ -1264,5 +1302,50 @@ public class SignatureModel {
    */
   public Map<Integer, List<Pair<DigestType, Boolean>>> getKeyConfigToHashFunctionsMap() {
     return keyConfigToHashFunctionsMap;
+  }
+
+  /**
+   * Retrieves the number of trials assigned to each key by group in the comparison mode. This
+   * method is essential for accessing the specific number of trials conducted for each key, which
+   * is crucial for accurate performance analysis and benchmarking in comparison mode.
+   *
+   * @return An array of integers, each representing the number of trials for a key in each group.
+   */
+  public int[] getTrialsPerKeyByGroup() {
+    return trialsPerKeyByGroup;
+  }
+
+  /**
+   * Calculates the total number of hash functions used across all groups in the comparison mode.
+   * This method iterates through the hash functions mapped to each group and aggregates their
+   * count, providing a comprehensive view of the hash function diversity in the benchmarking
+   * process.
+   */
+  public void calculateTotalHashFunctions() {
+    totalHashFunctions = 0;
+    for (List<Pair<DigestType, Boolean>> hashFunctionsForGroup : keyConfigToHashFunctionsMap.values()) {
+      totalHashFunctions += hashFunctionsForGroup.size();
+    }
+  }
+
+  /**
+   * Calculates the total number of hash functions used across all groups in the comparison mode.
+   * This method iterates through the hash functions mapped to each group and aggregates their
+   * count, providing a comprehensive view of the hash function diversity in the benchmarking
+   * process.
+   */
+  public int getTotalHashFunctions() {
+    return totalHashFunctions;
+  }
+
+  /**
+   * Retrieves the total number of groups formed in the comparison mode. This method is important
+   * for understanding the structural organization of keys and hash functions in the benchmarking
+   * process, reflecting how different configurations are grouped for comparison.
+   *
+   * @return The total number of groups.
+   */
+  public int getTotalGroups() {
+    return totalGroups;
   }
 }
