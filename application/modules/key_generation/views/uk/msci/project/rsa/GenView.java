@@ -1,14 +1,18 @@
 package uk.msci.project.rsa;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Optional;
+import java.util.Map;
 import java.util.regex.Pattern;
-import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBar.ButtonData;
@@ -17,7 +21,6 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.DialogPane;
 import javafx.scene.control.Label;
-import javafx.scene.control.ProgressBar;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ScrollPane.ScrollBarPolicy;
@@ -31,6 +34,7 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.Pair;
+import org.controlsfx.control.CheckComboBox;
 import org.controlsfx.control.ToggleSwitch;
 
 
@@ -219,6 +223,22 @@ public class GenView {
    * Toggle group for small e options.
    */
   private ToggleGroup smallEToggleGroup;
+
+  /**
+   * Maps each key configuration group to a list of hash function selections. Each entry in this map
+   * associates a group index (representing a key configuration) with a list of pairs, where each
+   * pair contains a DigestType (representing a hash function) and a boolean indicating whether the
+   * hash function is provably secure.
+   */
+  private Map<Integer, List<Pair<DigestType, Boolean>>> keyConfigToHashFunctionsMap = new HashMap<>();
+
+  /**
+   * Specifies the number of keys per group in a custom cross-parameter benchmarking session. This
+   * value is used to determine how many keys are processed together with the same set of hash
+   * functions, allowing for batch processing and comparison under similar cryptographic
+   * conditions.
+   */
+  private int keysPerGroup;
 
   /**
    * Initialises the domain object class. This method is automatically called after the FXML file
@@ -416,17 +436,6 @@ public class GenView {
   }
 
   /**
-   * Functional interface defining a validator for input fields. It takes a VBox containing
-   * dynamically generated input fields and validates their contents.
-   */
-  @FunctionalInterface
-  public interface InputValidator {
-
-    boolean validate(VBox inputs);
-  }
-
-
-  /**
    * Displays a dialog for dynamic field generation based on the number of fields specified. This
    * method allows users to enter multiple key sizes and small e selections.
    *
@@ -435,40 +444,8 @@ public class GenView {
    * @return boolean indicating if the dialog submission was completed successfully.
    */
   boolean showDynamicFieldsDialog(int numberOfFields, Stage primaryStage) {
-    return showGenericDynamicFieldsDialog(numberOfFields, primaryStage, "Individual Key Fields",
-        "Enter multiple bit sizes, separated by commas", this::isValidInput);
-  }
-
-  /**
-   * Displays a dialog for entering key configurations. This method is used for specifying multiple
-   * fractions in the RSA key generation process.
-   *
-   * @param numberOfFields The number of key configuration fields to be generated in the dialog.
-   * @param primaryStage   The primary stage of the application.
-   * @return A boolean indicating if the dialog submission was completed successfully.
-   */
-  boolean showKeyConfigurationsDialog(int numberOfFields, Stage primaryStage) {
-    return showGenericDynamicFieldsDialog(numberOfFields, primaryStage, "Key Configurations",
-        "Enter multiples fractions, separated by commas)",
-        this::isValidInputMultiPrime);
-  }
-
-
-  /**
-   * Displays a generic dialog for dynamic field generation based on the specified number of fields.
-   * This method allows for flexible input based on user requirements.
-   *
-   * @param numberOfFields The number of fields to be generated in the dialog.
-   * @param primaryStage   The primary stage of the application.
-   * @param title          The title of the dialog.
-   * @param promptText     The prompt text for the input fields.
-   * @param validator      The validator to be used for validating input.
-   * @return A boolean indicating if the dialog submission was completed successfully.
-   */
-  boolean showGenericDynamicFieldsDialog(int numberOfFields, Stage primaryStage, String title,
-      String promptText, InputValidator validator) {
     Dialog<Void> dialog = new Dialog<>();
-    dialog.setTitle(title);
+    dialog.setTitle("Individual Key Fields");
     dialog.initModality(Modality.APPLICATION_MODAL);
     dialog.initOwner(primaryStage);
 
@@ -478,7 +455,7 @@ public class GenView {
     // Generate the dynamic fields
     for (int i = 0; i < numberOfFields; i++) {
       TextField textField = new TextField();
-      textField.setPromptText(promptText);
+      textField.setPromptText("Enter multiple bit sizes, separated by commas");
       textField.setPrefWidth(300);
       CheckBox checkBox = new CheckBox("Small e?");
       HBox hbox = new HBox(10, textField, checkBox);
@@ -502,7 +479,7 @@ public class GenView {
 
     Button okButton = (Button) dialogPane.lookupButton(okButtonType);
     okButton.addEventFilter(ActionEvent.ACTION, event -> {
-      if (validator.validate(content)) {
+      if (isValidInput(content)) {
         isCompleted[0] = true;
         dialog.close();
       } else {
@@ -512,6 +489,99 @@ public class GenView {
 
     primaryStage.getScene().getRoot().setEffect(new GaussianBlur());
 
+    dialog.setOnHidden(e -> primaryStage.getScene().getRoot().setEffect(null));
+    dialog.showAndWait();
+
+    return isCompleted[0];
+  }
+
+
+  /**
+   * Shows a dialog for dynamic configuration of key parameters, such as key sizes and hash
+   * functions. This method is used for setting up the benchmarking mode where each key group can
+   * have different key configurations, associated with sets of hash functions.
+   *
+   * @param numberOfFields The number of configuration fields to generate in the dialog.
+   * @param primaryStage   The primary stage of the application.
+   * @return boolean indicating if the dialog submission was completed successfully.
+   */
+  boolean showKeyConfigurationsDialog(int numberOfFields, Stage primaryStage) {
+
+    Dialog<Void> dialog = new Dialog<>();
+    dialog.setTitle("Key Configurations");
+    dialog.initModality(Modality.APPLICATION_MODAL);
+    dialog.initOwner(primaryStage);
+
+    VBox content = new VBox(10); // Main container for all groups
+    VBox currentGroup = null; // Current group container
+
+    // Generate the dynamic fields
+    for (int i = 0; i < numberOfFields; i++) {
+      if (i % keysPerGroup == 0 || currentGroup == null) {
+        currentGroup = new VBox(5);
+        currentGroup.setStyle("-fx-padding: 10; -fx-border-style: solid inside; " +
+            "-fx-border-width: 2; -fx-border-insets: 5; " +
+            "-fx-border-radius: 5; -fx-border-color: blue;");
+        content.getChildren().add(currentGroup);
+      }
+
+      TextField textField = new TextField();
+      textField.setPrefWidth(450);
+      textField.minWidth(450);
+      textField.setPromptText("Enter multiples fractions, separated by commas");
+
+      CheckBox checkBox = new CheckBox("Small e?");
+      checkBox.setMinWidth(75);
+
+      HBox hbox = new HBox(8, textField, checkBox);
+
+      currentGroup.getChildren().add(hbox);
+
+      // Enable hash function selection only for every keysPerGroupth entry
+      if ((i + 1) % keysPerGroup == 0) {
+        Label label = new Label("Group Hash Function(s):");
+        label.setMinWidth(100);
+
+        List<String> hashFunctionOptions = Arrays.asList(
+            "SHA-256", "SHA-512",
+            "SHA-256 with MGF1 (Provably Secure)", "SHA-512 with MGF1 (Provably Secure)",
+            "SHAKE-128 (Provably Secure)", "SHAKE-256 (Provably Secure)");
+
+        CheckComboBox<String> hashFunctionCheckComboBox = new CheckComboBox<>(
+            FXCollections.observableArrayList(hashFunctionOptions));
+        hashFunctionCheckComboBox.setPrefWidth(150);
+        hashFunctionCheckComboBox.setMaxWidth(150);
+        HBox hashHbox = new HBox(4, label, hashFunctionCheckComboBox);
+        currentGroup.getChildren().add(hashHbox);
+      }
+    }
+
+    ScrollPane scrollPane = new ScrollPane(content);
+    scrollPane.setVbarPolicy(ScrollBarPolicy.AS_NEEDED);
+    scrollPane.setHbarPolicy(ScrollBarPolicy.AS_NEEDED);
+    scrollPane.setFitToWidth(true);
+
+    ButtonType okButtonType = new ButtonType("Submit", ButtonData.OK_DONE);
+    ButtonType cancelButtonType = new ButtonType("Cancel", ButtonData.CANCEL_CLOSE);
+    dialog.getDialogPane().getButtonTypes().addAll(okButtonType, cancelButtonType);
+    dialog.getDialogPane().setContent(scrollPane);
+    dialog.getDialogPane().setPrefSize(550, 250);
+
+    final boolean[] isCompleted = {false};
+
+    Button okButton = (Button) dialog.getDialogPane().lookupButton(okButtonType);
+    okButton.addEventFilter(ActionEvent.ACTION, event -> {
+      if (isValidInputMultiPrime(content)) {
+        isCompleted[0] = true;
+        dialog.close();
+      } else {
+        event.consume(); // Prevent dialog from closing
+        uk.msci.project.rsa.DisplayUtility.showErrorAlert(
+            "You must provide valid input for all required fields, please try again.");
+      }
+    });
+
+    primaryStage.getScene().getRoot().setEffect(new GaussianBlur());
     dialog.setOnHidden(e -> primaryStage.getScene().getRoot().setEffect(null));
     dialog.showAndWait();
 
@@ -615,63 +685,106 @@ public class GenView {
     return !invalidField;
   }
 
+
   /**
-   * Validates the input for multi-prime RSA key configurations. It checks if the text fields
-   * contain a valid sequence of fractions that sum up to 1 and updates the
-   * dynamicKeyConfigurationsData list accordingly.
+   * Validates the user input for multi-prime configurations. This method checks the validity of
+   * input in the dynamic fields generated for specifying key configurations and hash functions in
+   * the cross-parameter benchmarking mode.
    *
    * @param content The VBox containing dynamically generated text fields and checkboxes.
-   * @return A boolean indicating whether the input in all text fields is valid.
+   * @return boolean indicating whether the input in all text fields is valid.
    */
-
   private boolean isValidInputMultiPrime(VBox content) {
     dynamicKeyConfigurationsData.clear();
+    keyConfigToHashFunctionsMap.clear();
 
     boolean invalidField = false;
+    //  Track the index of each group
+    int groupIndex = 0;
 
-    for (Node node : content.getChildren()) {
-      if (node instanceof HBox) {
-        HBox hbox = (HBox) node;
-        TextField textField = (TextField) hbox.getChildren().get(0);
-        CheckBox checkBox = (CheckBox) hbox.getChildren().get(1);
+    // Iterate through each group (VBox)
+    for (Node groupNode : content.getChildren()) {
+      if (groupNode instanceof VBox) {
+        VBox currentGroup = (VBox) groupNode;
+        List<Pair<DigestType, Boolean>> currentGroupHashFunctionSelections = new ArrayList<>();
 
-        textField.setStyle("");
+        // Iterate through each configuration (HBox) in the group
+        for (int configIndex = 0; configIndex < currentGroup.getChildren().size(); configIndex++) {
+          Node configNode = currentGroup.getChildren().get(configIndex);
+          HBox hbox = null;
+          if (configNode instanceof HBox) {
+            hbox = (HBox) configNode;
+          }
+          // Check if this is the last configuration in the group for hash function selections
+          if (configIndex == currentGroup.getChildren().size() - 1) {
+            Node hashFunctionNode = hbox.getChildren().get(hbox.getChildren().size() - 1);
+            if (hashFunctionNode instanceof HBox) {
+              HBox hashFunctionHbox = (HBox) hashFunctionNode;
+              if (hashFunctionHbox.getChildren().size() > 1 && hashFunctionHbox.getChildren()
+                  .get(1) instanceof CheckComboBox) {
+                CheckComboBox<String> hashFunctionCheckComboBox = (CheckComboBox<String>) hashFunctionHbox.getChildren()
+                    .get(1);
 
-        // Pattern to match a full string of comma-separated fractions
-        String inputText = textField.getText().trim();
-        if (!inputText.isEmpty() && Pattern.compile("^\\s*(\\d+/\\d+\\s*)(,\\s*\\d+/\\d+\\s*)*$")
-            .matcher(inputText).matches()) {
-          String[] fractionStrings = inputText.split(",");
-          double totalSum = 0;
-          for (String fraction : fractionStrings) {
-            String[] parts = fraction.trim().split("/");
-            int numerator = Integer.parseInt(parts[0]);
-            int denominator = Integer.parseInt(parts[1]);
-            double fractionValue = (double) numerator / denominator;
-            totalSum += fractionValue;
+                ObservableList<String> checkedItems = hashFunctionCheckComboBox.getCheckModel()
+                    .getCheckedItems();
+                if (checkedItems.isEmpty()) {
+                  invalidField = true;
+                  hashFunctionCheckComboBox.setStyle("-fx-border-color: red;");
+                } else {
+                  for (String selection : checkedItems) {
+                    boolean isProvablySecure = selection.contains("Provably Secure");
+                    DigestType digestType = DigestType.getDigestTypeFromCustomString(
+                        selection.replace(" (Provably Secure)", ""));
+                    currentGroupHashFunctionSelections.add(
+                        new Pair<>(digestType, isProvablySecure));
+                  }
+                  keyConfigToHashFunctionsMap.put(groupIndex,
+                      new ArrayList<>(currentGroupHashFunctionSelections));
+                }
+              }
+            }
+          } else {
+
+            TextField textField = (TextField) hbox.getChildren().get(0);
+            CheckBox checkBox = (CheckBox) hbox.getChildren().get(1);
+
+            textField.setStyle("");
+
+            // Validate the text field input
+            String inputText = textField.getText().trim();
+            if (!inputText.isEmpty() && inputText.matches(
+                "^\\s*(\\d+/\\d+\\s*)(,\\s*\\d+/\\d+\\s*)*$")) {
+              String[] fractionStrings = inputText.split(",");
+              double totalSum = 0;
+              for (String fraction : fractionStrings) {
+                String[] parts = fraction.trim().split("/");
+                int numerator = Integer.parseInt(parts[0]);
+                int denominator = Integer.parseInt(parts[1]);
+                totalSum += (double) numerator / denominator;
+              }
+
+              if (Math.abs(totalSum - 1.0) > 0.00001) {
+                invalidField = true;
+                textField.setStyle("-fx-control-inner-background: #FFDDDD;");
+              } else {
+                boolean checkBoxValue = checkBox.isSelected();
+                int[] fractionsArray = new int[fractionStrings.length * 2];
+                for (int i = 0; i < fractionStrings.length; i++) {
+                  String[] parts = fractionStrings[i].trim().split("/");
+                  fractionsArray[i * 2] = Integer.parseInt(parts[0]);
+                  fractionsArray[i * 2 + 1] = Integer.parseInt(parts[1]);
+                }
+                dynamicKeyConfigurationsData.add(new Pair<>(fractionsArray, checkBoxValue));
+              }
+            } else {
+              invalidField = true;
+              textField.setStyle("-fx-control-inner-background: #FFDDDD;");
+            }
           }
 
-          if (Math.abs(totalSum - 1.0) > 0.00001) {
-            invalidField = true;
-            textField.setStyle("-fx-control-inner-background: #FFDDDD;");
-            continue;
-          }
 
-          boolean checkBoxValue = checkBox.isSelected();
-          // Convert and store each fraction in an array
-          int[] fractionsArray = new int[fractionStrings.length * 2];
-          for (int i = 0; i < fractionStrings.length; i++) {
-            String[] parts = fractionStrings[i].trim().split("/");
-            fractionsArray[i * 2] = Integer.parseInt(parts[0]);
-            fractionsArray[i * 2 + 1] = Integer.parseInt(parts[1]);
-          }
-          dynamicKeyConfigurationsData.add(new Pair<>(fractionsArray, checkBoxValue));
-
-
-        } else {
-          invalidField = true;
-          textField.setStyle("-fx-control-inner-background: #FFDDDD;");
         }
+        groupIndex++;
       }
     }
 
@@ -778,7 +891,6 @@ public class GenView {
     return isCompleted[0];
   }
 
-
   /**
    * Displays a dialog for entering the number of trials for key generation. This method allows
    * users to input the number of trials for benchmarking.
@@ -787,13 +899,148 @@ public class GenView {
    * @return boolean indicating if the dialog submission was completed successfully.
    */
   boolean showTrialsDialog(Stage primaryStage) {
-    return showGenericNumberPromptDialog(primaryStage, "Number of Trials",
-        "Enter number of trials", true);
+    Dialog<Void> dialog = new Dialog<>();
+    dialog.setTitle("Number of Trials");
+    dialog.initModality(Modality.APPLICATION_MODAL);
+    dialog.initOwner(primaryStage);
+
+    // Create TextField for user input
+    TextField trialsField = new TextField();
+    trialsField.setPromptText("Enter number of trials");
+
+    // Create and set the dialog content
+    DialogPane dialogPane = dialog.getDialogPane();
+    dialogPane.setContent(new VBox(10, trialsField));
+    dialogPane.setPrefSize(300, 150);
+
+    // Add OK and Cancel buttons
+    ButtonType okButtonType = new ButtonType("OK", ButtonData.OK_DONE);
+    ButtonType cancelButtonType = new ButtonType("Cancel", ButtonData.CANCEL_CLOSE);
+    dialogPane.getButtonTypes().addAll(okButtonType, cancelButtonType);
+
+    // Event handling
+    final boolean[] isCompleted = {false};
+    final int[] numFieldTemp = {0};
+    Button okButton = (Button) dialogPane.lookupButton(okButtonType);
+    okButton.addEventFilter(ActionEvent.ACTION, event -> {
+      try {
+
+        numTrials = Integer.parseInt(trialsField.getText());
+
+        numFieldTemp[0] = Integer.parseInt(trialsField.getText());
+        isCompleted[0] = true;
+      } catch (NumberFormatException e) {
+        // Show an error alert if the input is not a valid integer
+
+        uk.msci.project.rsa.DisplayUtility.showErrorAlert(
+            "You must provide a valid number of trials. Please try again.");
+        event.consume(); // Prevent the dialog from closing
+      }
+    });
+
+    // Apply a blur effect on the primary stage
+    primaryStage.getScene().getRoot().setEffect(new GaussianBlur());
+    dialog.setOnHidden(e -> primaryStage.getScene().getRoot().setEffect(null));
+
+    dialog.showAndWait();
+
+    return isCompleted[0];
   }
 
+  /**
+   * Displays a dialog for configuring the number of key configurations and the number of keys per
+   * group. This dialog allows the user to specify how many different key configurations (i.e., sets
+   * of keys with unique properties or parameters) will be used, as well as how many keys are
+   * included in each group for batch processing.
+   * <p>
+   * If the user enters invalid data (e.g., non-integer values, mismatched group sizes), the dialog
+   * will display an error message and prompt for correction.
+   *
+   * @param primaryStage The primary stage of the application, used to set the owner of the dialog.
+   * @return boolean indicating whether the user successfully completed the dialog. Returns true if
+   * the user entered valid data and confirmed their choices, false if the dialog was cancelled or
+   * closed without valid input.
+   */
   boolean showNumKeyConfigsDialog(Stage primaryStage) {
-    return showGenericNumberPromptDialog(primaryStage, "Number of Key Configurations",
-        "Enter number of key configurations", false);
+    Dialog<Void> dialog = new Dialog<>();
+    dialog.setTitle("Number of Key Configurations");
+    dialog.initModality(Modality.APPLICATION_MODAL);
+    dialog.initOwner(primaryStage);
+
+    // Create TextFields for user input
+    TextField keyConfigsField = new TextField();
+    keyConfigsField.setPromptText("Enter number of key configurations");
+    keyConfigsField.setMaxWidth(250);
+    keyConfigsField.setPrefWidth(250);
+
+    TextField keysPerGroupField = new TextField();
+    keysPerGroupField.setPromptText("Enter number of keys per group");
+    keysPerGroupField.setMaxWidth(200);
+    keysPerGroupField.setPrefWidth(200);
+
+    // Information label with concise explanation
+    Label infoLabel = new Label("Keys per group:");
+    infoLabel.setWrapText(true);
+
+    Label infoTooltip = new Label(
+        "Configure batch processing of keys with unique hash function sets:\n\n" +
+            "- Enter the total number of key configurations required.\n" +
+            "- Specify the number of keys per group for batch processing.\n" +
+            "For instance, with 5 keys per group and 10 key configurations:\n" +
+            "- The first batch of 5 keys uses one set of hash functions.\n" +
+            "- The second batch of 5 keys uses a different set.\n" +
+            "Each batch is processed sequentially"
+    );
+    infoTooltip.setWrapText(true);
+
+    // Group keysPerGroupField and infoLabel together
+    HBox keysPerGroupContainer = new HBox(5, keysPerGroupField);
+    keysPerGroupContainer.setAlignment(Pos.CENTER_LEFT);
+
+    // Create and set the dialog content
+    DialogPane dialogPane = dialog.getDialogPane();
+    VBox content = new VBox(10, keyConfigsField, keysPerGroupContainer, infoLabel, infoTooltip);
+    dialogPane.setContent(content);
+    dialogPane.setPrefSize(350, 390);
+
+    // Add OK and Cancel buttons
+    ButtonType okButtonType = new ButtonType("OK", ButtonData.OK_DONE);
+    ButtonType cancelButtonType = new ButtonType("Cancel", ButtonData.CANCEL_CLOSE);
+    dialogPane.getButtonTypes().addAll(okButtonType, cancelButtonType);
+
+    // Event handling
+    final boolean[] isCompleted = {false};
+    Button okButton = (Button) dialogPane.lookupButton(okButtonType);
+    okButton.addEventFilter(ActionEvent.ACTION, event -> {
+      try {
+        int numKeyConfigs = Integer.parseInt(keyConfigsField.getText());
+        int keysPerGroup = Integer.parseInt(keysPerGroupField.getText());
+
+        if (numKeyConfigs % keysPerGroup != 0) {
+          throw new IllegalArgumentException(
+              "The number of keys per group must evenly divide the total number of key configurations.");
+        }
+
+        this.numKeyConfigs = numKeyConfigs;
+        this.keysPerGroup = keysPerGroup;
+        isCompleted[0] = true;
+      } catch (NumberFormatException e) {
+        uk.msci.project.rsa.DisplayUtility.showErrorAlert(
+            "The number of keys per group must evenly divide the total number of key configurations.");
+        event.consume();
+      } catch (IllegalArgumentException e) {
+        uk.msci.project.rsa.DisplayUtility.showErrorAlert(e.getMessage());
+        event.consume();
+      }
+    });
+
+    // Apply a blur effect on the primary stage
+    primaryStage.getScene().getRoot().setEffect(new GaussianBlur());
+    dialog.setOnHidden(e -> primaryStage.getScene().getRoot().setEffect(null));
+
+    dialog.showAndWait();
+
+    return isCompleted[0];
   }
 
   /**
@@ -852,7 +1099,6 @@ public class GenView {
     standardModeVBox.setManaged(visible);
   }
 
-
   /**
    * Sets the visibility of the benchmarkingModeVBox.
    *
@@ -862,7 +1108,6 @@ public class GenView {
     benchmarkingModeVBox.setVisible(visible);
     benchmarkingModeVBox.setManaged(visible);
   }
-
 
   /**
    * Sets the visibility of the numKeysButton.
@@ -874,7 +1119,6 @@ public class GenView {
     numKeysButton.setManaged(visible);
   }
 
-
   /**
    * Sets the visibility of the generateButton.
    *
@@ -884,7 +1128,6 @@ public class GenView {
     generateButton.setVisible(visible);
     generateButton.setManaged(visible);
   }
-
 
   /**
    * Sets the visibility of the label displaying the number of key sizes.
@@ -950,5 +1193,28 @@ public class GenView {
    */
   public int getNumKeyConfigs() {
     return numKeyConfigs;
+  }
+
+  /**
+   * Retrieves the mapping of key configuration groups to their respective hash functions. This
+   * method is used to obtain the configured hash functions for each group of keys in the
+   * cross-parameter benchmarking mode.
+   *
+   * @return A map where each key is a group index and the value is a list of hash function
+   * selections.
+   */
+  public Map<Integer, List<Pair<DigestType, Boolean>>> getKeyConfigToHashFunctionsMap() {
+    return keyConfigToHashFunctionsMap;
+  }
+
+  /**
+   * Gets the number of keys per group in the cross-parameter benchmarking mode. This value is
+   * essential for organising the key groups and associating them with their respective hash
+   * function selections.
+   *
+   * @return int representing the number of keys per group.
+   */
+  public int getKeysPerGroup() {
+    return keysPerGroup;
   }
 }
