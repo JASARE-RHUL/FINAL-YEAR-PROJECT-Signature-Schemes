@@ -132,7 +132,10 @@ public class SignatureVerificationController extends SignatureBaseController {
   public void showCrossBenchmarkingView(Stage primaryStage) {
     loadVerifyView("/VerifyViewCrossBenchmarkingMode.fxml",
         () -> setupObserversCrossBenchmarking(primaryStage, verifyView),
-        () -> preloadCrossParameterKeyBatch(verifyView));
+        () -> {
+          preloadCrossParameterKeyBatch(verifyView);
+          preloadCustomCrossParameterHashFunctions(verifyView);
+        });
   }
 
 
@@ -332,8 +335,10 @@ public class SignatureVerificationController extends SignatureBaseController {
     if ((signatureModel.getNumTrials() == 0)
         || signatureModel.getPublicKeyBatchLength() == 0
         || signatureModel.getSignatureType() == null || numSignatures == 0
-        || signatureModel.getCurrentFixedHashType_ComparisonMode() == null
-        || signatureModel.getCurrentProvableHashType_ComparisonMode() == null) {
+        || (signatureModel.getCurrentFixedHashTypeList_ComparisonMode().size() == 0
+        && !isCustomCrossParameterBenchmarkingMode)
+        || signatureModel.getCurrentProvableHashTypeList_ComparisonMode().size() == 0
+        && !isCustomCrossParameterBenchmarkingMode) {
       uk.msci.project.rsa.DisplayUtility.showErrorAlert(
           "You must provide an input for all fields. Please try again.");
       return;
@@ -342,6 +347,7 @@ public class SignatureVerificationController extends SignatureBaseController {
     if (!setHashSizeInModel(verifyView)) {
       return;
     }
+    signatureModel.createDefaultKeyConfigToHashFunctionsMap();
     benchmarkingUtility = new BenchmarkingUtility();
     Task<Void> benchmarkingTask = createBenchmarkingTaskComparisonMode(messageBatchFile,
         signatureBatchFile);

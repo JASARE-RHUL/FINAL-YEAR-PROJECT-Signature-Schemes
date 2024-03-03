@@ -99,8 +99,9 @@ public class SignatureCreationController extends SignatureBaseController {
       return;
     }
     loadSignView("/SignView.fxml", () -> setupObserversBenchmarkingMode(primaryStage, signView),
-        () -> preloadProvablySecureKeyBatch(signView));
-
+        () -> {
+          preloadProvablySecureKeyBatch(signView);
+        });
   }
 
   /**
@@ -111,7 +112,8 @@ public class SignatureCreationController extends SignatureBaseController {
    * @param primaryStage The primary stage of the application where the view will be displayed.
    */
   public void showStandardMode(Stage primaryStage) {
-    loadSignView("/SignViewStandardMode.fxml", () -> setupObserversStandardMode(primaryStage, signView),
+    loadSignView("/SignViewStandardMode.fxml",
+        () -> setupObserversStandardMode(primaryStage, signView),
         () -> preloadProvablySecureKey(signView));
   }
 
@@ -126,7 +128,10 @@ public class SignatureCreationController extends SignatureBaseController {
   public void showCrossBenchmarkingView(Stage primaryStage) {
     loadSignView("/SignViewCrossBenchmarkingMode.fxml",
         () -> setupObserversCrossBenchmarking(primaryStage, signView),
-        () -> preloadCrossParameterKeyBatch(signView));
+        () -> {
+          preloadCrossParameterKeyBatch(signView);
+          preloadCustomCrossParameterHashFunctions(signView);
+        });
   }
 
   /**
@@ -150,7 +155,7 @@ public class SignatureCreationController extends SignatureBaseController {
    * @param primaryStage The primary stage of the application where the view will be displayed.
    */
   @Override
-   void setupObserversStandardMode(Stage primaryStage, SignatureBaseView signatureView) {
+  void setupObserversStandardMode(Stage primaryStage, SignatureBaseView signatureView) {
     super.setupObserversStandardMode(primaryStage, signView);
     signView.addCreateSignatureObserver(
         new CreateSignatureObserver());
@@ -273,16 +278,19 @@ public class SignatureCreationController extends SignatureBaseController {
     if ((signatureModel.getNumTrials() == 0)
         || signatureModel.getPrivateKeyBatchLength() == 0
         || signatureModel.getSignatureType() == null
-        || signatureModel.getCurrentFixedHashType_ComparisonMode() == null
-        || signatureModel.getCurrentProvableHashType_ComparisonMode() == null) {
+        || (signatureModel.getCurrentFixedHashTypeList_ComparisonMode().size() == 0
+        && !isCustomCrossParameterBenchmarkingMode)
+        || signatureModel.getCurrentProvableHashTypeList_ComparisonMode().size() == 0
+        && !isCustomCrossParameterBenchmarkingMode) {
       uk.msci.project.rsa.DisplayUtility.showErrorAlert(
           "You must provide an input for all fields. Please try again.");
       return;
     }
 
-    if (!setHashSizeInModel(signView)) {
+    if (!setHashSizeInModel(signView) && !isCustomCrossParameterBenchmarkingMode) {
       return;
     }
+    signatureModel.createDefaultKeyConfigToHashFunctionsMap();
     benchmarkingUtility = new BenchmarkingUtility();
     Task<Void> benchmarkingTask = createBenchmarkingTaskComparisonMode(messageBatchFile);
     BenchmarkingUtility.beginBenchmarkWithUtility(benchmarkingUtility, "Signature Generation",

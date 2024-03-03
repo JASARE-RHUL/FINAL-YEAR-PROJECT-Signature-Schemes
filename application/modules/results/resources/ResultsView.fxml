@@ -91,7 +91,7 @@
               <Button text="Show Histogram" fx:id="histogramButton"/>
               <Button text="Show Box Plot" fx:id="boxPlotButton"/>
               <Button text="Show Line Graph (Mean)" fx:id="lineGraphButtonMean"/>
-              <Button text="Show Line Graph (Individual Times)" fx:id="lineGraphButtonAllTimes"/>
+              <Button text="Show Line Graph (Individual Times)" fx:id="lineGraphButtonAllTimes" managed="false" visible="false"/>
             </HBox>
             <AnchorPane fx:id="graphArea" prefWidth="300" prefHeight="300">
               <!-- The graph will be added here -->

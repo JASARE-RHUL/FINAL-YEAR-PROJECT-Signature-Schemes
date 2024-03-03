@@ -5,16 +5,20 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.regex.Pattern;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.ListChangeListener;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.Toggle;
 import javafx.stage.Stage;
+import javafx.util.Pair;
 
 
 /**
@@ -99,6 +103,27 @@ public abstract class SignatureBaseController {
    * specific configuration used in the key generation process.
    */
   List<String> keyConfigurationStrings;
+
+  /**
+   * Maps each key configuration group to a list of hash function selections for custom comparison
+   * mode. The key is an integer representing the group index, and the value is a list of pairs.
+   * Each pair contains a DigestType representing the hash function and a Boolean indicating if the
+   * hash function is provably secure.
+   */
+  Map<Integer, List<Pair<DigestType, Boolean>>> keyConfigToHashFunctionsMap = new HashMap<>();
+
+  /**
+   * Specifies the number of keys per group in a custom cross-parameter benchmarking session. This
+   * value determines how many keys are processed together with the same set of hash functions.
+   */
+  int keysPerGroup = 2;
+
+  /**
+   * Flag indicating whether the controller is operating in custom cross-parameter benchmarking
+   * mode. When set to true, the controller uses the custom configurations specified in
+   * keyConfigToHashFunctionsMap.
+   */
+  boolean isCustomCrossParameterBenchmarkingMode;
 
 
   /**
@@ -301,7 +326,24 @@ public abstract class SignatureBaseController {
       signatureView.setImportKeyBatchButtonVisibility(false);
       signatureView.setCancelImportKeyButtonVisibility(true);
     }
+  }
 
+  /**
+   * Preloads hash function configurations for custom cross-parameter benchmarking mode. This method
+   * is invoked to set up the signature model with the predefined hash function mappings and the
+   * number of keys per group for batch processing.
+   *
+   * @param signatureView The signature view to be updated with hash function configurations.
+   */
+  void preloadCustomCrossParameterHashFunctions(SignatureBaseView signatureView) {
+    if (keyConfigToHashFunctionsMap != null && isCustomCrossParameterBenchmarkingMode) {
+      signatureModel.setKeyConfigToHashFunctionsMap(keyConfigToHashFunctionsMap);
+      signatureModel.setKeysPerGroup(keysPerGroup);
+      signatureView.setProvableHashChoiceComparisonModeHboxVisibility(false);
+      signatureView.setStandardHashChoiceComparisonModeHboxVisibility(false);
+    } else {
+      signatureModel.setKeysPerGroup(2);
+    }
   }
 
   /**
@@ -1018,11 +1060,10 @@ public abstract class SignatureBaseController {
   }
 
   /**
-   * Observer for changes in the selection of provable parameters in benchmarking mode. This
-   * observer reacts to change in the provable parameters toggle group and updates the view
-   * accordingly. It only appears if a key in the format expected for the mode and been pre-loaded
-   * implicitly through the prior key generation process where all keys generated were provably
-   * secure.
+   * Observer for changes in the selection of standard hash functions in cross-parameter
+   * benchmarking mode. Reacts to the addition or removal of hash function choices in the UI and
+   * updates the signature model to reflect these changes for standard (non-provably secure) hash
+   * functions.
    */
   class ProvableParamsChangeObserver implements ChangeListener<Toggle> {
 
@@ -1059,37 +1100,27 @@ public abstract class SignatureBaseController {
   }
 
   /**
-   * Observer for changes in the selection of a provably secure hash function in cross parameter
-   * benchmarking mode. This observer responds to change in hash function selection when in cross
-   * parameter benchmarking mode and updates the signature model accordingly. It sets the
-   * appropriate provably secure hash function type in the signature model to be used in comparison
-   * mode.
+   * Observer for changes in the selection of provably secure hash functions in cross-parameter
+   * benchmarking mode. Handles the addition or removal of provably secure hash function choices in
+   * the UI and updates the signature model accordingly.
    */
-  class ProvableHashFunctionChangeObserver implements ChangeListener<String> {
+  class ProvableHashFunctionChangeObserver implements ListChangeListener<String> {
 
-    public void changed(ObservableValue<? extends String> observable, String oldValue,
-        String newValue) {
-      if (newValue == null) {
-        return;
-      }
-      switch (newValue) {
-        case "SHAKE-256":
-          signatureModel.setCurrentProvableHashType_ComparisonMode(DigestType.SHAKE_256);
-          signatureModel.setProvablySecure(true);
-          break;
-        case "SHAKE-128":
-          signatureModel.setCurrentProvableHashType_ComparisonMode(DigestType.SHAKE_128);
-          signatureModel.setProvablySecure(true);
-          break;
-        case "SHA-512 with MGF1":
-          signatureModel.setCurrentProvableHashType_ComparisonMode(DigestType.MGF_1_SHA_512);
-          signatureModel.setProvablySecure(true);
-          break;
-        case "SHA-256 with MGF1":
-        default:
-          signatureModel.setCurrentProvableHashType_ComparisonMode(DigestType.MGF_1_SHA_256);
-          signatureModel.setProvablySecure(true);
-          break;
+    @Override
+    public void onChanged(ListChangeListener.Change<? extends String> c) {
+      while (c.next()) {
+        if (c.wasAdded()) {
+          for (String addedType : c.getAddedSubList()) {
+            signatureModel.getCurrentProvableHashTypeList_ComparisonMode()
+                .add(new Pair<>(DigestType.getDigestTypeFromCustomString(addedType), true));
+          }
+        } else if (c.wasRemoved()) {
+          for (String removedType : c.getRemoved()) {
+            signatureModel.getCurrentProvableHashTypeList_ComparisonMode()
+                .remove((new Pair<>(DigestType.getDigestTypeFromCustomString(removedType), true)));
+          }
+        }
+
       }
     }
 
@@ -1098,29 +1129,27 @@ public abstract class SignatureBaseController {
   /**
    * Observer for changes in the selection of standard hash function. This observer responds to
    * change in hash function selection when in cross parameter benchmarking mode and updates the
-   * signature model accordingly. It sets the appropriate standard hash function type in the
-   * signature model to be used in comparison mode.
+   * signature model accordingly. It sets...
    */
-  class StandardHashFunctionChangeObserver implements ChangeListener<String> {
+  class StandardHashFunctionChangeObserver implements ListChangeListener<String> {
 
-    public void changed(ObservableValue<? extends String> observable, String oldValue,
-        String newValue) {
-      if (newValue == null) {
-        return;
-      }
-      switch (newValue) {
-        case "SHA-512":
-          signatureModel.setCurrentFixedHashType_ComparisonMode(DigestType.SHA_512);
-          signatureModel.setProvablySecure(false);
-          break;
-        case "SHA-256":
-        default:
-          signatureModel.setCurrentFixedHashType_ComparisonMode(DigestType.SHA_256);
-          signatureModel.setProvablySecure(false);
-          break;
+    @Override
+    public void onChanged(ListChangeListener.Change<? extends String> c) {
+      while (c.next()) {
+        if (c.wasAdded()) {
+          for (String addedType : c.getAddedSubList()) {
+            signatureModel.getCurrentFixedHashTypeList_ComparisonMode()
+                .add((new Pair<>(DigestType.getDigestTypeFromCustomString(addedType), false)));
+          }
+        } else if (c.wasRemoved()) {
+          for (String removedType : c.getRemoved()) {
+            signatureModel.getCurrentFixedHashTypeList_ComparisonMode()
+                .remove((new Pair<>(DigestType.getDigestTypeFromCustomString(removedType), false)));
+          }
+        }
+
       }
     }
-
   }
 
   /**
@@ -1184,6 +1213,9 @@ public abstract class SignatureBaseController {
    */
   void resetPreLoadedKeyParams() {
     isCrossParameterBenchmarkingEnabled = false;
+    isCustomCrossParameterBenchmarkingMode = false;
+    keyConfigToHashFunctionsMap = null;
+    keysPerGroup = 2;
     this.isKeyForComparisonMode = false;
     this.importedKeyBatch = null;
     this.isKeyProvablySecure = false;
@@ -1206,5 +1238,34 @@ public abstract class SignatureBaseController {
    */
   public void setKeyConfigurationStrings(List<String> keyConfigurationStrings) {
     this.keyConfigurationStrings = keyConfigurationStrings;
+  }
+
+  /**
+   * Sets the mapping of key configurations to hash functions for custom comparison benchmarking
+   * mode. This method updates the controller's state with the specified mapping and the number of
+   * keys per group, enabling detailed comparative analysis of signature processes under various
+   * cryptographic conditions.
+   *
+   * @param keyConfigToHashFunctionsMap The mapping of key configurations to their respective hash
+   *                                    functions.
+   * @param keysPerGroup                The number of keys in each group for batch processing.
+   */
+  public void setKeyConfigToHashFunctionsMap(
+      Map<Integer, List<Pair<DigestType, Boolean>>> keyConfigToHashFunctionsMap, int keysPerGroup) {
+    this.keyConfigToHashFunctionsMap = keyConfigToHashFunctionsMap;
+    this.keysPerGroup = keysPerGroup;
+  }
+
+  /**
+   * Sets the flag to indicate whether the controller is operating in custom cross-parameter
+   * benchmarking mode. When this mode is enabled, the controller uses the custom hash function
+   * mappings and key configurations specified for detailed comparison.
+   *
+   * @param isCustomCrossParameterBenchmarkingMode Flag indicating the custom cross-parameter
+   *                                               benchmarking mode.
+   */
+  public void setIsCustomCrossParameterBenchmarkingMode(
+      boolean isCustomCrossParameterBenchmarkingMode) {
+    this.isCustomCrossParameterBenchmarkingMode = isCustomCrossParameterBenchmarkingMode;
   }
 }

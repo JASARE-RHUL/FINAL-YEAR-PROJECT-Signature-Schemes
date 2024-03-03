@@ -8,8 +8,8 @@ package uk.msci.project.rsa;
 public enum DigestType {
 
   /**
-   * SHA-256 hash function. Provides a standard cryptographic hash function with a fixed output
-   * size of 256 bits.
+   * SHA-256 hash function. Provides a standard cryptographic hash function with a fixed output size
+   * of 256 bits.
    */
   SHA_256("SHA_256"),
 
@@ -33,7 +33,8 @@ public enum DigestType {
 
   /**
    * MGF1 with SHA-256 hash function. Represents a mask generation function using SHA-256. It's
-   * often used in cryptographic protocols requiring data masking with a hash function like SHA-256.
+   * often used in cryptographic protocols requiring data masking with a hash function like
+   * SHA-256.
    */
   MGF_1_SHA_256("MGF_1_SHA_256"),
 
@@ -76,5 +77,31 @@ public enum DigestType {
   @Override
   public String toString() {
     return digestName;
+  }
+
+  /**
+   * Converts a custom string representation of a hash function into its corresponding {@link
+   * DigestType} enum value. This method is particularly useful for parsing string inputs (such as
+   * from a configuration file or user input) into the defined hash function types.
+   *
+   * @param s The string representation of the digest type. Expected values include "SHA-256",
+   *          "SHA-512", "SHAKE-128", "SHAKE-256", "SHA-256 with MGF1", and "SHA-512 with MGF1".
+   * @return The corresponding {@link DigestType} enum value if the input string matches any known
+   * digest type, or {@code null} if there is no match.
+   */
+  public static DigestType getDigestTypeFromCustomString(String s) {
+    if (s == null) {
+      return null;
+    }
+
+    return switch (s) {
+      case "SHA-256" -> SHA_256;
+      case "SHA-512" -> SHA_512;
+      case "SHAKE-128" -> SHAKE_128;
+      case "SHAKE-256" -> SHAKE_256;
+      case "SHA-256 with MGF1" -> MGF_1_SHA_256;
+      case "SHA-512 with MGF1" -> MGF_1_SHA_512;
+      default -> null;
+    };
   }
 }

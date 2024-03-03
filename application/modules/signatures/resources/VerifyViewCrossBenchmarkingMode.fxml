@@ -7,6 +7,7 @@
 <?import java.lang.String?>
 <?import org.controlsfx.control.ToggleSwitch?>
 
+<?import org.controlsfx.control.CheckComboBox?>
 <BorderPane xmlns:fx="http://javafx.com/fxml" fx:controller="uk.msci.project.rsa.VerifyView"
   prefHeight="650.0" prefWidth="800.0" fx:id="root" stylesheets="SignatureView.css" >
 
@@ -113,28 +114,18 @@
 
           <HBox spacing="10" fx:id="standardHashChoiceComparisonModeHbox">
             <Label text="Hash Function for instantiations with Standard parameters:" styleClass="bold-label"/>
-            <ComboBox fx:id="fixedHashFunctionComboBox" prefWidth="200">
+            <CheckComboBox fx:id="fixedHashFunctionComboBox" prefWidth="200">
               <items>
-                <FXCollections fx:factory="observableArrayList">
-                  <String fx:value="SHA-256"/>
-                  <String fx:value="SHA-512"/>
-                </FXCollections>
               </items>
-            </ComboBox>
+            </CheckComboBox>
           </HBox>
 
           <HBox spacing="10" fx:id="provableHashChoiceComparisonModeHbox">
             <Label text="Hash Function for instantiations with Provable parameters:" styleClass="bold-label"/>
-            <ComboBox fx:id="provableHashFunctionComboBox" prefWidth="200">
+            <CheckComboBox fx:id="provableHashFunctionComboBox" prefWidth="200">
               <items>
-                <FXCollections fx:factory="observableArrayList">
-                  <String fx:value="SHA-256 with MGF1"/>
-                  <String fx:value="SHA-512 with MGF1"/>
-                  <String fx:value="SHAKE-128"/>
-                  <String fx:value="SHAKE-256"/>
-                </FXCollections>
               </items>
-            </ComboBox>
+            </CheckComboBox>
           </HBox>
 
           <HBox fx:id="provableParamsHbox" spacing="6" managed="false" visible="false">

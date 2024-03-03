@@ -7,6 +7,7 @@
 <?import java.lang.String?>
 <?import org.controlsfx.control.ToggleSwitch?>
 
+<?import org.controlsfx.control.CheckComboBox?>
 <BorderPane xmlns:fx="http://javafx.com/fxml" fx:controller="uk.msci.project.rsa.VerifyView"
   prefHeight="650.0" prefWidth="800.0" fx:id="root" stylesheets="SignatureView.css" >
 
@@ -185,4 +186,19 @@
       <Button fx:id="closeNotificationButton" text="Close" alignment="CENTER"/>
     </VBox>
   </StackPane>
+  <HBox spacing="10" fx:id="standardHashChoiceComparisonModeHbox" managed="false" visible="false">
+    <Label text="Hash Function(s) for instantiations with Standard parameters:" styleClass="bold-label"/>
+    <CheckComboBox fx:id="fixedHashFunctionComboBox" prefWidth="200">
+      <items>
+      </items>
+    </CheckComboBox>
+  </HBox>
+
+  <HBox spacing="10" fx:id="provableHashChoiceComparisonModeHbox" managed="false" visible="false">
+    <Label text="Hash Function(s) for instantiations with Provable parameters:" styleClass="bold-label"/>
+    <CheckComboBox fx:id="provableHashFunctionComboBox" prefWidth="200">
+      <items>
+      </items>
+    </CheckComboBox>
+  </HBox>
 </BorderPane>

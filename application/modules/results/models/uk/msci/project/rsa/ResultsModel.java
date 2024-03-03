@@ -79,12 +79,75 @@ public class ResultsModel {
   private double maxTimeData;
 
   /**
+   * A  string representing the specific key configuration/parameter type for the key that the
+   * benchmarking run relates to.
+   */
+  private String configString;
+
+  /**
+   * The name of the hash function used in the benchmarking run.
+   */
+  private String hashFunctionName;
+
+  /**
+   * The length of the key used in the benchmarking run, measured in bits.
+   */
+  private int keyLength;
+
+  /**
    * Constructs a {@code ResultsModel} with a list of time measurements from a benchmarking run.
    *
    * @param results The list of time measurements.
    */
   public ResultsModel(List<Long> results) {
     this.results = results;
+  }
+
+  /**
+   * Constructs a {@code ResultsModel} with a list of time measurements from a benchmarking run,
+   * along with additional parameters including the configuration string, hash function name, and
+   * key length.
+   *
+   * @param results          The list of time measurements.
+   * @param configString     The specific key configuration used for the key benchmarking results
+   *                         wer generated based on.
+   * @param hashFunctionName The name of the hash function used.
+   * @param keyLength        The length of the key used, in bits.
+   */
+  public ResultsModel(List<Long> results, String configString, String hashFunctionName,
+      int keyLength) {
+    this.keyLength = keyLength;
+    this.results = results;
+    this.configString = configString;
+    this.hashFunctionName = hashFunctionName;
+  }
+
+  /**
+   * Retrieves the key length used in the benchmarking run.
+   *
+   * @return The key length in bits.
+   */
+  public int getKeyLength() {
+    return keyLength;
+  }
+
+  /**
+   * Retrieves the configuration string representing the specific key configuration/parameter type
+   * for the key that the benchmarking run relates to.
+   *
+   * @return The configuration string.
+   */
+  public String getConfigString() {
+    return configString;
+  }
+
+  /**
+   * Retrieves the name of the hash function used in the benchmarking run.
+   *
+   * @return The hash function name.
+   */
+  public String getHashFunctionName() {
+    return hashFunctionName;
   }
 
   /**
@@ -228,6 +291,7 @@ public class ResultsModel {
   public double getMaxTimeData() {
     return maxTimeData;
   }
+
   /**
    * Exports statistical data to a CSV file.
    *
@@ -245,12 +309,17 @@ public class ResultsModel {
       writeStatisticLine(statsWriter, "Number of Trials", String.valueOf(numTrials));
       writeStatisticLine(statsWriter, "Overall Time", String.format("%.5f ms", overallData));
       writeStatisticLine(statsWriter, "Mean", String.format("%.5f ms", meanData));
-      writeStatisticLine(statsWriter, "Confidence Interval", "95% with bounds " + String.format("%.5f ms - %.5f ms", confidenceInterval[0], confidenceInterval[1]));
-      writeStatisticLine(statsWriter, "25th Percentile", String.format("%.5f ms", percentile25Data));
+      writeStatisticLine(statsWriter, "Confidence Interval",
+          "95% with bounds " + String.format("%.5f ms - %.5f ms", confidenceInterval[0],
+              confidenceInterval[1]));
+      writeStatisticLine(statsWriter, "25th Percentile",
+          String.format("%.5f ms", percentile25Data));
       writeStatisticLine(statsWriter, "Median", String.format("%.5f ms", medianData));
-      writeStatisticLine(statsWriter, "75th Percentile", String.format("%.5f ms", percentile75Data));
+      writeStatisticLine(statsWriter, "75th Percentile",
+          String.format("%.5f ms", percentile75Data));
       writeStatisticLine(statsWriter, "Range", String.format("%.5f ms", rangeData));
-      writeStatisticLine(statsWriter, "Standard Deviation", String.format("%.5f ms", stdDeviationData));
+      writeStatisticLine(statsWriter, "Standard Deviation",
+          String.format("%.5f ms", stdDeviationData));
       writeStatisticLine(statsWriter, "Variance", String.format("%.5f ms", varianceData));
       writeStatisticLine(statsWriter, "Minimum Time", String.format("%.5f ms", minTimeData));
       writeStatisticLine(statsWriter, "Maximum Time", String.format("%.5f ms", maxTimeData));
@@ -260,12 +329,13 @@ public class ResultsModel {
   /**
    * Writes a line of statistic and its value to the BufferedWriter.
    *
-   * @param writer The BufferedWriter to write to.
+   * @param writer        The BufferedWriter to write to.
    * @param statisticName The name of the statistic.
-   * @param value The value of the statistic.
+   * @param value         The value of the statistic.
    * @throws IOException If there is an issue in writing to the file.
    */
-  private void writeStatisticLine(BufferedWriter writer, String statisticName, String value) throws IOException {
+  private void writeStatisticLine(BufferedWriter writer, String statisticName, String value)
+      throws IOException {
     writer.write(statisticName + "," + value + "\n");
   }
 
