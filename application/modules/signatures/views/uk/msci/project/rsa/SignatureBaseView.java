@@ -1,8 +1,11 @@
 package uk.msci.project.rsa;
 
 
+import java.util.HashMap;
+import java.util.Map;
 import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -21,6 +24,8 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.util.StringConverter;
+import org.controlsfx.control.CheckComboBox;
 import org.controlsfx.control.ToggleSwitch;
 
 /**
@@ -332,18 +337,18 @@ public abstract class SignatureBaseView implements SignatureViewInterface {
   private HBox generalHashFunctionHbox;
 
   /**
-   * Combo Box for selecting a hash function to be used under provably secure parameters in the
+   * Check ComboBox for selecting a hash function to be used under provably secure parameters in the
    * cross-parameter benchmarking/comparison mode.
    */
   @FXML
-  private ComboBox<String> provableHashFunctionComboBox;
+  private CheckComboBox<String> provableHashFunctionComboBox;
 
   /**
-   * Combo Box for selecting a hash function to be used under standard parameters in the
+   * Check ComboBox for selecting a hash function to be used under standard parameters in the
    * cross-parameter benchmarking/comparison mode.
    */
   @FXML
-  private ComboBox<String> fixedHashFunctionComboBox;
+  private CheckComboBox<String> fixedHashFunctionComboBox;
 
 
   /**
@@ -359,8 +364,14 @@ public abstract class SignatureBaseView implements SignatureViewInterface {
     provableParamsToggleGroup = new ToggleGroup();
     noCrossParameterRadio.setToggleGroup(provableParamsToggleGroup);
     yesCrossParameterRadio.setToggleGroup(provableParamsToggleGroup);
+    // Populate the CheckComboBox for standard parameters
+    fixedHashFunctionComboBox.getItems().addAll("SHA-256", "SHA-512");
+
+    // Populate the CheckComboBox for provable parameters
+    provableHashFunctionComboBox.getItems().addAll("SHA-256 with MGF1", "SHA-512 with MGF1", "SHAKE-128", "SHAKE-256");
 
   }
+
 
   /**
    * Retrieves the parameter choice selected by the user, which relates to the potential hash size
@@ -1202,41 +1213,21 @@ public abstract class SignatureBaseView implements SignatureViewInterface {
   }
 
   /**
-   * Gets the currently selected provable hash function from the combo box.
-   *
-   * @return The selected provable hash function.
-   */
-  public String getCurrentProvableHashFunction() {
-    return provableHashFunctionComboBox.getValue();
-  }
-
-  /**
-   * Gets the currently selected standard hash function from the combo box.
-   *
-   * @return The selected standard hash function.
-   */
-  public String getCurrentStandardHashFunction() {
-    return fixedHashFunctionComboBox.getValue();
-  }
-
-  /**
-   * Registers an observer for when the standard parameter instantiation dropdown value (cross
-   * benchmarking mode) changes.
+   * Registers an observer for when the standard parameter instantiation CheckComboBox values change.
    *
    * @param observer The change listener to register.
    */
-  public void addStandardHashFunctionChangeObserver(ChangeListener<String> observer) {
-    fixedHashFunctionComboBox.valueProperty().addListener(observer);
+  public void addStandardHashFunctionChangeObserver(ListChangeListener<String> observer) {
+    fixedHashFunctionComboBox.getCheckModel().getCheckedItems().addListener(observer);
   }
 
   /**
-   * Registers an observer for when the provably secure parameter instantiation dropdown value
-   * (cross benchmarking mode) changes.
+   * Registers an observer for when the provably secure parameter instantiation CheckComboBox values change.
    *
    * @param observer The change listener to register.
    */
-  public void addProvableHashFunctionChangeObserver(ChangeListener<String> observer) {
-    provableHashFunctionComboBox.valueProperty().addListener(observer);
+  public void addProvableHashFunctionChangeObserver(ListChangeListener<String> observer) {
+    provableHashFunctionComboBox.getCheckModel().getCheckedItems().addListener(observer);
   }
 
 }
