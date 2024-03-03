@@ -17,6 +17,8 @@ import javafx.scene.control.RadioButton;
 import javafx.scene.control.Toggle;
 import javafx.stage.Stage;
 import javafx.util.Pair;
+import uk.msci.project.rsa.SignatureBaseController.ApplicationModeChangeObserver;
+import uk.msci.project.rsa.SignatureBaseController.CrossBenchmarkingModeChangeObserver;
 
 /**
  * Controller class for the key generation view in the digital signature application. It handles
@@ -278,14 +280,14 @@ public class GenController {
    * the ResultsController with the appropriate context and displays the results view with the
    * gathered benchmarking data.
    */
-  private void handleBenchmarkingCompletionComparisonMode(List<String> keyConfigurationsString) {
+  private void handleBenchmarkingCompletionComparisonMode(List<String> keyConfigurationsString, boolean isCustomComparisonMode) {
 
     ResultsController resultsController = new ResultsController(mainController);
     BenchmarkingContext context = new KeyGenerationContext(genModel);
     resultsController.setContext(context);
     genModel.generateKeyBatch();
-    mainController.setProvableKeyBatchForSigning(genModel.getPrivateKeyBatch(), true);
-    mainController.setProvableKeyBatchForVerification(genModel.getPublicKeyBatch(), true);
+    mainController.setProvableKeyBatchForSigning(genModel.getPrivateKeyBatch(), true, isCustomComparisonMode);
+    mainController.setProvableKeyBatchForVerification(genModel.getPublicKeyBatch(), true, isCustomComparisonMode);
     mainController.setKeyConfigurationStringsForComparisonMode(keyConfigurationsString);
     resultsController.showResultsView(mainController.getPrimaryStage(), keyConfigurationsString,
         genModel.getClockTimesPerTrial(), genModel.summedKeySizes(genModel.getKeyParams()), true,
@@ -313,7 +315,7 @@ public class GenController {
             genView.getDynamicKeySizeData(), numTrials);
         BenchmarkingUtility.beginBenchmarkWithUtility(benchmarkingUtility, "Key Generation",
             benchmarkingTask, () -> handleBenchmarkingCompletionComparisonMode(
-                genModel.formatDefaultKeyConfigurations()),
+                genModel.formatDefaultKeyConfigurations(), false),
             mainController.getPrimaryStage());
       }
     }
@@ -352,9 +354,13 @@ public class GenController {
                 genView.getDynamicKeyConfigurationsData(),
                 genView.getDynamicKeySizeData(), numTrials);
             BenchmarkingUtility.beginBenchmarkWithUtility(benchmarkingUtility, "Key Generation",
-                benchmarkingTask, () -> handleBenchmarkingCompletionComparisonMode(
-                    genModel.formatCustomKeyConfigurations(
-                        genView.getDynamicKeyConfigurationsData())),
+                benchmarkingTask, () -> {
+                  handleBenchmarkingCompletionComparisonMode(
+                      genModel.formatCustomKeyConfigurations(
+                          genView.getDynamicKeyConfigurationsData()), true);
+                  mainController.setKeyConfigToHashFunctionsMapForCustomComparisonMode(
+                      genView.getKeyConfigToHashFunctionsMap(),genView.getKeysPerGroup());
+                },
                 mainController.getPrimaryStage());
 
           }
@@ -376,8 +382,8 @@ public class GenController {
     resultsController.setContext(context);
     genModel.generateKeyBatch();
     if (genModel.generateKeyBatch()) {
-      mainController.setProvableKeyBatchForSigning(genModel.getPrivateKeyBatch(), false);
-      mainController.setProvableKeyBatchForVerification(genModel.getPublicKeyBatch(), false);
+      mainController.setProvableKeyBatchForSigning(genModel.getPrivateKeyBatch(), false, false);
+      mainController.setProvableKeyBatchForVerification(genModel.getPublicKeyBatch(), false, false);
     }
     resultsController.showResultsView(mainController.getPrimaryStage(),
         genModel.getClockTimesPerTrial(), genModel.summedKeySizes(genModel.getKeyParams()));
