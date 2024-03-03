@@ -189,36 +189,43 @@ public class MainController {
   }
 
   /**
-   * Sets a batch of private keys for signing operations. This method is used to provide the
-   * SignatureCreationController with a batch of provably secure generated (small e ) private keys
-   * to allow for later instantiation of  a signature scheme with provably secure parameters. The
-   * keys can be set in comparison mode for production of results that enables provably secure
-   * instantiations of scheme to be compared with standard instantiations.
+   * Sets a batch of private keys for signing operations with an optional comparison mode. This
+   * method is updated to allow for comparison between standard and provably secure signing
+   * operations using a batch of keys. It also supports setting keys specifically for custom
+   * comparison benchmarking mode.
    *
-   * @param privateKeyBatch        The batch of private keys to be used for signing.
-   * @param isKeyForComparisonMode If true, the keys are used in comparison mode for signing
-   *                               operations.
+   * @param privateKeyBatch              The batch of private keys to be used for signing.
+   * @param isKeyForComparisonMode       If true, the keys are used in comparison mode for signing
+   *                                     operations.
+   * @param isKeyForCustomComparisonMode If true, sets the keys for custom comparison mode, enabling
+   *                                     detailed comparative analysis with custom configurations.
    */
   public void setProvableKeyBatchForSigning(String privateKeyBatch,
       boolean isKeyForComparisonMode, boolean isKeyForCustomComparisonMode) {
     signatureCreationController.importKeyFromKeyGeneration(privateKeyBatch, isKeyForComparisonMode);
+    signatureCreationController.setIsCustomCrossParameterBenchmarkingMode(
+        isKeyForCustomComparisonMode);
   }
 
   /**
-   * Sets a batch of public keys for verification operations. This method is used to provide the
-   * signatureVerificationController with a batch of provably secure generated (small e ) public
-   * keys to allow for later instantiation of a signature scheme with provably secure parameters.
-   * The keys can be set in comparison mode for production of results that enables provably secure
-   * instantiations of scheme to be compared with standard instantiations.
+   * Sets a batch of public keys for verification operations with an optional comparison mode. This
+   * method is updated to support comparison between standard and provably secure verification
+   * operations using a batch of keys. Additionally, it includes support for custom comparison
+   * benchmarking mode.
    *
-   * @param publicKeyBatch         The batch of public keys to be used for signature verification.
-   * @param isKeyForComparisonMode If true, the keys are used in comparison mode for verification
-   *                               operations.
+   * @param publicKeyBatch               The batch of public keys to be used for signature
+   *                                     verification.
+   * @param isKeyForComparisonMode       If true, the keys are used in comparison mode for
+   *                                     verification operations.
+   * @param isKeyForCustomComparisonMode If true, sets the keys for custom comparison mode, enabling
+   *                                     detailed comparative analysis with custom configurations.
    */
   public void setProvableKeyBatchForVerification(String publicKeyBatch,
       boolean isKeyForComparisonMode, boolean isKeyForCustomComparisonMode) {
     signatureVerificationController.importKeyFromKeyGeneration(publicKeyBatch,
         isKeyForComparisonMode);
+    signatureVerificationController.setIsCustomCrossParameterBenchmarkingMode(
+        isKeyForCustomComparisonMode);
   }
 
 
