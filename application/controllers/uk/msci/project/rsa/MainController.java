@@ -2,6 +2,7 @@ package uk.msci.project.rsa;
 
 
 import java.util.List;
+import java.util.Map;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
@@ -10,6 +11,7 @@ import javafx.scene.Scene;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 import java.io.IOException;
+import javafx.util.Pair;
 
 /**
  * This class serves as the central controller for the application, managing navigation between
@@ -198,7 +200,7 @@ public class MainController {
    *                               operations.
    */
   public void setProvableKeyBatchForSigning(String privateKeyBatch,
-      boolean isKeyForComparisonMode) {
+      boolean isKeyForComparisonMode, boolean isKeyForCustomComparisonMode) {
     signatureCreationController.importKeyFromKeyGeneration(privateKeyBatch, isKeyForComparisonMode);
   }
 
@@ -214,7 +216,7 @@ public class MainController {
    *                               operations.
    */
   public void setProvableKeyBatchForVerification(String publicKeyBatch,
-      boolean isKeyForComparisonMode) {
+      boolean isKeyForComparisonMode, boolean isKeyForCustomComparisonMode) {
     signatureVerificationController.importKeyFromKeyGeneration(publicKeyBatch,
         isKeyForComparisonMode);
   }
@@ -249,6 +251,24 @@ public class MainController {
         keyConfigurationStringsForComparisonMode);
     signatureVerificationController.setKeyConfigurationStrings(
         keyConfigurationStringsForComparisonMode);
+  }
+
+  /**
+   * Sets the mapping of key configurations to hash functions for the custom comparison mode in
+   * signature creation and verification controllers. This method allows for specifying different
+   * hash functions for each group of key configurations.
+   *
+   * @param keyConfigToHashFunctionsMap The map linking each key configuration group to its hash
+   *                                    function selections.
+   * @param keyPerGroup                 The number of keys per group, determining how many keys are
+   *                                    processed together.
+   */
+  public void setKeyConfigToHashFunctionsMapForCustomComparisonMode(
+      Map<Integer, List<Pair<DigestType, Boolean>>> keyConfigToHashFunctionsMap, int keyPerGroup) {
+    signatureCreationController.setKeyConfigToHashFunctionsMap(keyConfigToHashFunctionsMap,
+        keyPerGroup);
+    signatureVerificationController.setKeyConfigToHashFunctionsMap(keyConfigToHashFunctionsMap,
+        keyPerGroup);
   }
 
 
