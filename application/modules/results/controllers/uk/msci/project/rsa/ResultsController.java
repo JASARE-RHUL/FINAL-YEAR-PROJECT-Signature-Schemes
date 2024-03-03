@@ -1,9 +1,9 @@
 package uk.msci.project.rsa;
 
 import java.awt.Color;
+import java.awt.Font;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,7 +32,6 @@ import org.jfree.chart.fx.ChartViewer;
 import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
-import org.jfree.chart.renderer.category.BoxAndWhiskerRenderer;
 import org.jfree.chart.renderer.category.StackedBarRenderer;
 import org.jfree.chart.renderer.xy.XYErrorRenderer;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
@@ -40,7 +39,6 @@ import org.jfree.data.category.CategoryDataset;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.data.statistics.BoxAndWhiskerItem;
 import org.jfree.data.statistics.DefaultBoxAndWhiskerCategoryDataset;
-import org.jfree.data.statistics.HistogramDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.data.xy.YIntervalSeries;
@@ -85,10 +83,6 @@ public class ResultsController {
    */
   private int totalTrials;
 
-  /**
-   * The number of trials conducted per key in the benchmarking process.
-   */
-  private int trialsPerKey;
 
   /**
    * The total number of keys used in the benchmarking process.
@@ -133,8 +127,42 @@ public class ResultsController {
    */
   private Button lastSelectedGraphButton;
 
+  /**
+   * A list of row headers used in comparison mode, each representing a distinct parameter type.
+   */
   private List<String> comparisonModeRowHeaders = new ArrayList<>();
 
+  /**
+   * Flag indicating whether the current results are from a signature operation.
+   */
+  private boolean isSignatureOperationResults;
+
+  /**
+   * A mapping between key configurations and associated hash functions used in the benchmarking
+   * run.
+   */
+  private Map<Integer, List<Pair<DigestType, Boolean>>> keyConfigToHashFunctionsMap = new HashMap<>();
+
+  /**
+   * The total number of distinct groups of keys used in the benchmarking process.
+   */
+  private int totalGroups;
+
+  /**
+   * The number of keys per each distinct group in the benchmarking process.
+   */
+  private int keysPerGroup;
+
+  /**
+   * An array representing the number of trials conducted per key for each group in the benchmarking
+   * process.
+   */
+  private int[] trialsPerKeyByGroup;
+
+  /**
+   * The total number of hash functions used across all groups in the benchmarking process.
+   */
+  private int totalHashFunctions = 0;
 
   /**
    * Constructs a new ResultsController with a reference to the MainController.
@@ -169,9 +197,8 @@ public class ResultsController {
       this.totalKeys = this.keyLengths.size();
       this.results = results;
       this.totalTrials = results.size();
-      this.trialsPerKey = totalTrials / totalKeys;
       this.keyIndex = 0;
-      splitResultsByKeys();
+
       displayCurrentContextButtons();
 
       observerSetup.run();
@@ -261,11 +288,24 @@ public class ResultsController {
     this.numKeySizesForComparisonMode = numKeySizesForComparisonMode;
     loadResultsView(keyLengths, results, this::setupComparisonModeGraphObservers,
         () -> {
-          initialiseKeySwitchButtonsComparisonMode();
-          precomputeGraphsComparisonMode();
           resultsView.removeValueColumn();
-          resultsView.addValueColumns(createComparisonModeColumnHeaders());
           resultsView.setNameColumnText("Parameter Type");
+          if (currentContext.getKeyConfigToHashFunctionsMap() != null) {
+            isSignatureOperationResults = true;
+            keyConfigToHashFunctionsMap = currentContext.getKeyConfigToHashFunctionsMap();
+            totalGroups = currentContext.getTotalGroups();
+            keysPerGroup = currentContext.getKeysPerGroup();
+            totalHashFunctions = currentContext.getTotalHashFunctions();
+            trialsPerKeyByGroup = currentContext.getTrialsPerKeyByGroup();
+            splitResultsByKeysSignatures();
+          } else {
+            splitResultsByKeys();
+          }
+          initialiseKeySwitchButtonsComparisonMode();
+          resultsView.addValueColumns(createComparisonModeColumnHeaders());
+
+          precomputeGraphsComparisonMode();
+
         });
   }
 
@@ -277,12 +317,6 @@ public class ResultsController {
       // Precompute and store each type of graph for each key
       String histogramKey = "Histogram_" + keyIndex;
       precomputedGraphs.put(histogramKey, displayHistogramForKey(keyIndex));
-
-      String lineChartKey = "LineChartAllTimes_" + keyIndex;
-      ChartViewer lineChartViewer = displayLineChartAllTimes(keyIndex,
-          "Line Graph (All Trials) for " + "Key " + (keyIndex + 1) + " (" + keyLengths.get(
-              keyIndex) + "bit)");
-      precomputedGraphs.put(lineChartKey, lineChartViewer);
 
       String boxPlotKey = "BoxPlot_" + keyIndex;
       ChartViewer boxPlotViewer = displayBoxPlotForKey(keyIndex);
@@ -301,13 +335,6 @@ public class ResultsController {
       String histogramKey = "Histogram_" + keySizeIndex;
       precomputedGraphs.put(histogramKey, displayStackedHistogram(keySizeIndex));
 
-      String lineChartAllTimesKey = "LineChartAllTimes_" + keySizeIndex;
-      ChartViewer lineChartAllTimesViewer = displayLineChartAllTimesComparisonMode(keySizeIndex,
-          "Line Graph (All Trials) for " + "Key Size " + (keySizeIndex + 1) + " (" + keyLengths.get(
-              keySizeIndex * (resultsModels.size() / numKeySizesForComparisonMode)) + "bit)");
-
-      precomputedGraphs.put(lineChartAllTimesKey, lineChartAllTimesViewer);
-
       String lineChartMeanKey = "LineChartMeanTimes_" + keySizeIndex;
       ChartViewer lineChartMeanViewer = displayLineGraphMeanForComparisonMode(keySizeIndex);
       precomputedGraphs.put(lineChartMeanKey, lineChartMeanViewer);
@@ -321,13 +348,17 @@ public class ResultsController {
 
 
   /**
-   * Creates headers for the columns in the comparison mode table view. These headers correspond to
-   * different statistics that will be compared.
+   * Updates the column headers (These headers correspond to different statistics that will be
+   * compared) for the benchmarking results table view in comparison mode. Adds a specific column
+   * for 'Hash Function' if the current results are from a signature operation.
    *
    * @return A list of ResultsTableColumn objects initialized with header titles.
    */
   private List<ResultsTableColumn> createComparisonModeColumnHeaders() {
     List<ResultsTableColumn> resultsTableColumnList = new ArrayList<>();
+    if (isSignatureOperationResults) {
+      resultsTableColumnList.add(new ResultsTableColumn("Hash Function"));
+    }
     resultsTableColumnList.add(new ResultsTableColumn("Trials"));
     resultsTableColumnList.add(new ResultsTableColumn("Overall time"));
     resultsTableColumnList.add(new ResultsTableColumn("Mean"));
@@ -345,11 +376,55 @@ public class ResultsController {
 
 
   /**
+   * Splits the benchmarking results by keys and associated hash functions, creating a ResultsModel
+   * for each unique combination. This method is used when benchmarking signature operations.
+   */
+  private void splitResultsByKeysSignatures() {
+    resultsModels.clear();
+    int currentIndex = 0;
+    int headerStartIndex = 0; // Starting index for the row headers for each group
+
+    while (currentIndex < results.size()) {
+      for (int groupIndex = 0; groupIndex < totalGroups; groupIndex++) {
+        List<Pair<DigestType, Boolean>> hashFunctions = keyConfigToHashFunctionsMap.get(groupIndex);
+
+        for (int hashFunctionIndex = 0; hashFunctionIndex < hashFunctions.size();
+            hashFunctionIndex++) {
+          for (int k = 0; k < keysPerGroup; k++) {
+            int keyIndex = groupIndex * keysPerGroup + k;
+            if (keyIndex >= totalKeys) {
+              break; // Prevent accessing keys beyond the total number of keys
+            }
+
+            int trialsPerHashFunction = trialsPerKeyByGroup[groupIndex] / hashFunctions.size();
+            List<Long> keySpecificResults = results.subList(currentIndex,
+                currentIndex + trialsPerHashFunction);
+
+            String keyConfigString = comparisonModeRowHeaders.get(
+                (headerStartIndex + k) % comparisonModeRowHeaders.size());
+            int keyLength = keyLengths.get(keyIndex); // Retrieve the key length
+            ResultsModel resultsModel = new ResultsModel(keySpecificResults, keyConfigString,
+                hashFunctions.get(hashFunctionIndex).getKey().toString(), keyLength);
+            resultsModel.calculateStatistics();
+            resultsModels.add(resultsModel);
+
+            currentIndex += trialsPerHashFunction;
+          }
+        }
+        headerStartIndex += keysPerGroup; // Move to the next set of headers for the next group
+      }
+    }
+  }
+
+
+  /**
    * Splits the results into groups based on keys and creates a ResultsModel for each group.
    */
   private void splitResultsByKeys() {
     for (int keyIndex = 0; keyIndex < totalKeys; keyIndex++) {
-      List<Long> keySpecificResults = extractKeySpecificResults(keyIndex);
+      int startIndex = keyIndex * (this.totalTrials / totalKeys);
+      int endIndex = startIndex + (this.totalTrials / totalKeys);
+      List<Long> keySpecificResults = results.subList(startIndex, endIndex);
       ResultsModel resultsModel = new ResultsModel(keySpecificResults);
       resultsModel.calculateStatistics();
       resultsModels.add(resultsModel);
@@ -420,7 +495,6 @@ public class ResultsController {
    */
   public void setupCommonGraphObservers() {
     resultsView.addHistogramButtonObserver(new HistogramButtonObserver());
-    resultsView.addLineGraphButtonAllTimesObserver(new LineGraphButtonAllTimesObserver());
     resultsView.addBoxPlotButtonObserver(new BoxPlotButtonObserver());
   }
 
@@ -472,59 +546,55 @@ public class ResultsController {
 
 
   /**
-   * Prepares the data for display in comparison mode by aggregating the statistics for each
-   * parameter set into a list of StatisticData objects.
+   * Prepares the comparison mode data for display in the results view. The method organises data
+   * based on the key index and formats it for the comparison table.
    *
-   * @param keyIndex The index of the key for which the comparison data is being prepared.
-   * @return A list of StatisticData objects, each representing the aggregated statistics for a
-   * parameter set.
+   * @param keyIndex The index of the key size for which the data is prepared.
+   * @return A list of StatisticData objects containing the formatted data for comparison mode.
    */
   private List<StatisticData> prepareComparisonData(int keyIndex) {
     List<StatisticData> comparisonData = new ArrayList<>();
 
-    // Collecting data from each ResultsModel
-    for (int i = keyIndex * (resultsModels.size() / numKeySizesForComparisonMode);
-        i < keyIndex * (resultsModels.size() / numKeySizesForComparisonMode)
-            + numRowsComparisonMode; i++) {
+    // Calculate start and end index for the range of models related to this key size
+    int startKeyIndex = keyIndex * (resultsModels.size() / numKeySizesForComparisonMode);
+    int endKeyIndex = (keyIndex + 1) * (resultsModels.size() / numKeySizesForComparisonMode);
+
+    for (int modelIndex = startKeyIndex; modelIndex < endKeyIndex; modelIndex++) {
+      ResultsModel model = resultsModels.get(modelIndex);
       List<String> parameterRow = new ArrayList<>();
-      parameterRow.add(String.valueOf(resultsModels.get(i).getNumTrials()));
-      parameterRow.add(String.format("%.5f ms", resultsModels.get(i).getOverallData()));
-      parameterRow.add(String.format("%.5f ms", resultsModels.get(i).getMeanData()));
-      parameterRow.add(
-          String.format("%.5f ms", resultsModels.get(i).getStdDeviationData()));
-      parameterRow.add(String.format("%.5f ms²", resultsModels.get(i).getVarianceData()));
-      double[] confidenceInterval = resultsModels.get(i).getConfidenceInterval();
+
+      String rowHeader;
+      if (isSignatureOperationResults) {
+        rowHeader = model.getConfigString();
+        parameterRow.add(model.getHashFunctionName());
+      } else {
+        // Use the regular comparison row headers if not a signature operation
+        rowHeader = comparisonModeRowHeaders.get(modelIndex % comparisonModeRowHeaders.size());
+      }
+
+      // Add statistics data to the parameter row
+      parameterRow.add(String.valueOf(model.getNumTrials()));
+      parameterRow.add(String.format("%.5f ms", model.getOverallData()));
+      parameterRow.add(String.format("%.5f ms", model.getMeanData()));
+      parameterRow.add(String.format("%.5f ms", model.getStdDeviationData()));
+      parameterRow.add(String.format("%.5f ms²", model.getVarianceData()));
+      double[] confidenceInterval = model.getConfidenceInterval();
       parameterRow.add(
           String.format("95%% with bounds [%.5f, %.5f]", confidenceInterval[0],
               confidenceInterval[1])
       );
-      parameterRow.add(
-          String.format("%.5f ms", resultsModels.get(i).getPercentile25Data()));
-      parameterRow.add(String.format("%.5f ms", resultsModels.get(i).getMedianData()));
-      parameterRow.add(
-          String.format("%.5f ms", resultsModels.get(i).getPercentile75Data()));
-      parameterRow.add(String.format("%.5f ms", resultsModels.get(i).getRangeData()));
-      parameterRow.add(String.format("%.5f ms", resultsModels.get(i).getMinTimeData()));
-      parameterRow.add(String.format("%.5f ms", resultsModels.get(i).getMaxTimeData()));
-      comparisonData.add(
-          new StatisticData(comparisonModeRowHeaders.get(i % numRowsComparisonMode),
-              parameterRow));
+      parameterRow.add(String.format("%.5f ms", model.getPercentile25Data()));
+      parameterRow.add(String.format("%.5f ms", model.getMedianData()));
+      parameterRow.add(String.format("%.5f ms", model.getPercentile75Data()));
+      parameterRow.add(String.format("%.5f ms", model.getRangeData()));
+      parameterRow.add(String.format("%.5f ms", model.getMinTimeData()));
+      parameterRow.add(String.format("%.5f ms", model.getMaxTimeData()));
+
+      // Add this row of data to the comparison data list
+      comparisonData.add(new StatisticData(rowHeader, parameterRow));
     }
 
     return comparisonData;
-  }
-
-
-  /**
-   * Extracts results specific to a key from the overall benchmarking results.
-   *
-   * @param keyIndex The index of the key for which to extract results.
-   * @return A list of long values representing the results for the specified key.
-   */
-  private List<Long> extractKeySpecificResults(int keyIndex) {
-    int startIndex = keyIndex * trialsPerKey;
-    int endIndex = startIndex + trialsPerKey;
-    return results.subList(startIndex, endIndex);
   }
 
 
@@ -544,11 +614,15 @@ public class ResultsController {
       imageView.setFitWidth(90);
       imageView.setPickOnBounds(true);
       imageView.setPreserveRatio(true);
+      // Calculate the starting model index for this key size
+      int startModelIndex = keySizeIndex * (resultsModels.size() / numKeySizesForComparisonMode);
+
+      // Get the key length from the first model in this key size range
+      int keyLength = resultsModels.get(startModelIndex).getKeyLength();
 
       // Create the label with the key number
       Label keyLabel = new Label(
-          "Key Size " + (keySizeIndex + 1) + " (" + keyLengths.get(
-              keySizeIndex * (resultsModels.size() / numKeySizesForComparisonMode)) + "bit)");
+          "Key Size " + (keySizeIndex + 1) + " (" + keyLength + "bit)");
 
       // Create a VBox to hold the ImageView and Label
       VBox graphicBox = new VBox(imageView, keyLabel);
@@ -608,20 +682,6 @@ public class ResultsController {
     }
   }
 
-  /**
-   * Observer for displaying a line graph view with all individual times from the results for the
-   * current key/key size.
-   */
-  class LineGraphButtonAllTimesObserver implements EventHandler<ActionEvent> {
-
-    @Override
-    public void handle(ActionEvent event) {
-      String lineChartAllTimesKey = "LineChartAllTimes_" + keyIndex;
-      ChartViewer viewer = precomputedGraphs.get(lineChartAllTimesKey);
-      resultsView.updateGraphArea(viewer);
-      lastSelectedGraphButton = resultsView.getLineGraphButtonAllTimes();
-    }
-  }
 
   /**
    * Observer for displaying a box plot graph view composed of relevant statistical averages from
@@ -833,6 +893,64 @@ public class ResultsController {
   }
 
   /**
+   * Creates a dataset for a stacked histogram, specific to signature operations, given a key size
+   * index.
+   *
+   * @param keySizeIndex Index of the key for which the dataset is prepared.
+   * @return A CategoryDataset suitable for creating a stacked histogram.
+   */
+  private CategoryDataset createStackedHistogramDatasetSignatures(int keySizeIndex) {
+    DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+
+    // Calculate the range of model indices for the specified key size
+    int startModelIndex = keySizeIndex * (resultsModels.size() / numKeySizesForComparisonMode);
+    int endModelIndex = (keySizeIndex + 1) * (resultsModels.size() / numKeySizesForComparisonMode);
+
+    // Calculate minimum, bin width, and number of bins for all combined results
+    List<Long> allCombinedResults = new ArrayList<>();
+    for (int modelIndex = startModelIndex; modelIndex < endModelIndex; modelIndex++) {
+      allCombinedResults.addAll(resultsModels.get(modelIndex).getResults());
+    }
+    double min = BenchmarkingUtility.getMin(allCombinedResults) / 1E6;
+    double binWidth = calculateFreedmanDiaconisBinWidth(keySizeIndex, allCombinedResults);
+    int numBins = calculateNumberOfBins(keySizeIndex, allCombinedResults);
+
+    // Initialize bin counts for each series
+    Map<String, int[]> seriesBinCounts = new HashMap<>();
+
+    // Iterate over each key and hash function combination
+    for (int modelIndex = startModelIndex; modelIndex < endModelIndex; modelIndex++) {
+      ResultsModel model = resultsModels.get(modelIndex);
+
+      // Retrieve the hash function for the current combination
+      String hashFunctionName = model.getHashFunctionName();
+      String keyConfigString = model.getConfigString();
+      String seriesName =
+          modelIndex + ". " + keyConfigString + " - " + hashFunctionName;
+
+      double[] values = model.getResults().stream().mapToDouble(ns -> ns / 1_000_000.0).toArray();
+
+      // Populate bin counts
+      seriesBinCounts.putIfAbsent(seriesName, new int[numBins]);
+      for (double value : values) {
+        int bin = (int) ((value - min) / binWidth);
+        bin = Math.min(Math.max(bin, 0), numBins - 1);
+        seriesBinCounts.get(seriesName)[bin]++;
+      }
+    }
+
+    // Add the bin counts to the dataset
+    for (Map.Entry<String, int[]> entry : seriesBinCounts.entrySet()) {
+      String seriesName = entry.getKey();
+      int[] binCounts = entry.getValue();
+      addBinCountDataset(dataset, min, binWidth, numBins, seriesName, binCounts);
+    }
+
+    return dataset;
+  }
+
+
+  /**
    * Creates a dataset for a stacked histogram given a key size index.
    *
    * @param keyIndex Index of the key for which the dataset is prepared.
@@ -844,9 +962,9 @@ public class ResultsController {
 
     // Determine the combined range and bin width
     List<Long> combinedResults = results.subList(
-        keyIndex * trialsPerKey * numRowsComparisonMode,
-        (keyIndex * trialsPerKey * numRowsComparisonMode)
-            + trialsPerKey * numRowsComparisonMode
+        keyIndex * (this.totalTrials / totalKeys) * numRowsComparisonMode,
+        (keyIndex * (this.totalTrials / totalKeys) * numRowsComparisonMode)
+            + (this.totalTrials / totalKeys) * numRowsComparisonMode
     );
     double min = BenchmarkingUtility.getMin(combinedResults) / 1E6;
     double binWidth = calculateFreedmanDiaconisBinWidth(keyIndex, combinedResults);
@@ -885,6 +1003,7 @@ public class ResultsController {
 
     return dataset;
   }
+
 
   /**
    * Prepares a histogram dataset for a given key index for use in non-comparison mode.
@@ -1044,12 +1163,35 @@ public class ResultsController {
   }
 
   /**
-   * Prepares a dataset for the box plot in comparison mode, collecting statistics from multiple
-   * results models.
+   * Prepares a dataset for the box plot in comparison mode (in the context of signature
+   * operations), collecting statistics from multiple results models.
    *
-   * @param keyIndex Index of the key for which the dataset is prepared.
+   * @param keySizeIndex Index of the key size for which the dataset is prepared.
    * @return A dataset ready for generating a box plot.
    */
+  private DefaultBoxAndWhiskerCategoryDataset prepareBoxPlotDatasetForComparisonModeSignatures(
+      int keySizeIndex) {
+    DefaultBoxAndWhiskerCategoryDataset dataset = new DefaultBoxAndWhiskerCategoryDataset();
+
+    int startModelIndex = keySizeIndex * (resultsModels.size() / numKeySizesForComparisonMode);
+    int endModelIndex = (keySizeIndex + 1) * (resultsModels.size() / numKeySizesForComparisonMode);
+
+    for (int modelIndex = startModelIndex; modelIndex < endModelIndex; modelIndex++) {
+      ResultsModel model = resultsModels.get(modelIndex);
+
+      // Retrieve the hash function for the current combination
+      String hashFunctionName = model.getHashFunctionName();
+      String keyConfigString = model.getConfigString();
+      String seriesName =
+          modelIndex + ". " + keyConfigString + " - " + hashFunctionName;
+
+      dataset.add(createBoxAndWhiskerItem(model), seriesName, seriesName);
+
+    }
+
+    return dataset;
+  }
+
   private DefaultBoxAndWhiskerCategoryDataset prepareBoxPlotDatasetForComparisonMode(
       int keyIndex) {
     DefaultBoxAndWhiskerCategoryDataset dataset = new DefaultBoxAndWhiskerCategoryDataset();
@@ -1069,84 +1211,45 @@ public class ResultsController {
     return dataset;
   }
 
+
   /**
-   * Prepares a line chart dataset for a specific key using all time data.
+   * Prepares datasets for the line chart displaying mean times for signature operations in
+   * comparison mode.
    *
-   * @param keyIndex Index of the key for which the dataset is prepared.
-   * @return An XYSeriesCollection for the line chart.
+   * @param keySizeIndex Index of the key size for which the datasets are prepared.
+   * @return A pair containing two datasets: one for the mean times and one for the error intervals.
    */
-  private XYSeriesCollection prepareLineChartAllTimesDataset(int keyIndex) {
-    XYSeriesCollection dataset = new XYSeriesCollection();
+  private Pair<XYSeriesCollection, YIntervalSeriesCollection> prepareLineChartMeanDatasetForComparisonModeSignatures(
+      int keySizeIndex) {
+    XYSeriesCollection meanDataset = new XYSeriesCollection();
+    YIntervalSeriesCollection errorDataset = new YIntervalSeriesCollection();
 
-    ResultsModel model = resultsModels.get(keyIndex);
-    String seriesName = "Key " + keyIndex + 1;
-    XYSeries series = new XYSeries(seriesName);
+    XYSeries meanSeries = new XYSeries("Mean Times");
+    YIntervalSeries errorSeries = new YIntervalSeries("Error Bars");
 
-    for (int trial = 0; trial < model.getResults().size(); trial++) {
-      double time = model.getResults().get(trial) / 1_000_000.0; // Convert to milliseconds
-      series.add(trial, time);
+    int startModelIndex = keySizeIndex * (resultsModels.size() / numKeySizesForComparisonMode);
+    int endModelIndex = (keySizeIndex + 1) * (resultsModels.size() / numKeySizesForComparisonMode);
+
+    // Iterate over each key within the key size range
+    for (int modelIndex = startModelIndex; modelIndex < endModelIndex; modelIndex++) {
+      ResultsModel model = resultsModels.get(modelIndex);
+
+      double mean = model.getMeanData();
+      double stdDev = model.getStdDeviationData();
+
+      // X-value for the series should be based on the group index
+      int xValue = (modelIndex % (resultsModels.size() / numKeySizesForComparisonMode));
+
+      meanSeries.add(xValue, mean);
+      errorSeries.add(xValue, mean, mean - stdDev, mean + stdDev);
     }
 
-    dataset.addSeries(series);
+    meanDataset.addSeries(meanSeries);
+    errorDataset.addSeries(errorSeries);
 
-    return dataset;
+    return new Pair<>(meanDataset, errorDataset);
   }
 
-  /**
-   * Prepares a line chart dataset for comparison mode using all time data.
-   *
-   * @param keyIndex Index of the key for which the dataset is prepared.
-   * @return An XYSeriesCollection for the line chart.
-   */
-  private XYSeriesCollection prepareLineChartAllTimesDatasetComparisonMode(int keyIndex) {
-    XYSeriesCollection dataset = new XYSeriesCollection();
-
-    for (int i = keyIndex * (resultsModels.size() / numKeySizesForComparisonMode);
-        i < keyIndex * (resultsModels.size() / numKeySizesForComparisonMode)
-            + numRowsComparisonMode;
-        i++) {
-
-      ResultsModel model = resultsModels.get(i);
-      String seriesName = i + ". " + comparisonModeRowHeaders.get(i % numRowsComparisonMode);
-      XYSeries series = new XYSeries(seriesName);
-
-      // Assuming each trial is a point on the x-axis
-      for (int trial = 0; trial < model.getResults().size(); trial++) {
-        double time = model.getResults().get(trial) / 1_000_000.0; // Convert to milliseconds
-        series.add(trial, time);
-      }
-
-      dataset.addSeries(series);
-    }
-
-    return dataset;
-  }
-
-  /**
-   * Creates a line chart from the given dataset.
-   *
-   * @param dataset The dataset for the line chart.
-   * @param title   The title for the chart.
-   * @return A JFreeChart object representing the line chart.
-   */
-  private JFreeChart createLineChartAllTimes(XYSeriesCollection dataset, String title) {
-    JFreeChart lineChart = ChartFactory.createXYLineChart(
-        title,
-        "Trial",
-        "Time (ms)",
-        dataset,
-        PlotOrientation.VERTICAL,
-        true,
-        true,
-        false
-    );
-
-    XYPlot plot = lineChart.getXYPlot();
-    XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
-    plot.setRenderer(renderer);
-
-    return lineChart;
-  }
 
   /**
    * Prepares datasets for the mean times line chart in comparison mode.
@@ -1182,6 +1285,7 @@ public class ResultsController {
     return new Pair<>(meanDataset, errorDataset);
   }
 
+
   /**
    * Configures the renderers for the line chart displaying mean times.
    *
@@ -1204,14 +1308,6 @@ public class ResultsController {
     plot.setRenderer(1, errorRenderer);
   }
 
-  /**
-   * Creates a line chart for mean times with error bars for standard deviation.
-   *
-   * @param meanDataset  The dataset containing the mean times.
-   * @param errorDataset The dataset containing the error bars.
-   * @param title        The title for the chart.
-   * @return A JFreeChart object representing the line chart.
-   */
   private JFreeChart createLineChartMeanForComparisonMode(XYSeriesCollection meanDataset,
       YIntervalSeriesCollection errorDataset, String title) {
 
@@ -1237,10 +1333,58 @@ public class ResultsController {
 
     SymbolAxis xAxis = new SymbolAxis("Parameter Type", paramTypeLabels);
     xAxis.setTickLabelsVisible(true);
+    xAxis.setTickLabelFont(new Font("SansSerif", Font.PLAIN, 7));
     plot.setDomainAxis(xAxis);
 
     return lineChart;
   }
+
+
+  /**
+   * Creates a line chart for mean times, specific to signature operations in comparison mode.
+   *
+   * @param meanDataset  The dataset for mean times.
+   * @param errorDataset The dataset for error intervals.
+   * @param title        The title of the chart.
+   * @param keySizeIndex Index of the key size used in the chart.
+   * @return A JFreeChart object representing the line chart.
+   */
+  private JFreeChart createLineChartMeanForComparisonModeSignatures(XYSeriesCollection meanDataset,
+      YIntervalSeriesCollection errorDataset, String title, int keySizeIndex) {
+
+    JFreeChart lineChart = ChartFactory.createXYLineChart(
+        title,
+        "Parameter Type",
+        "Mean Time (ms)",
+        meanDataset,
+        PlotOrientation.VERTICAL,
+        true,
+        true,
+        false
+    );
+
+    XYPlot plot = lineChart.getXYPlot();
+    plot.setDataset(1, errorDataset); // Set error dataset as secondary dataset
+    configureLineChartMeanRenderers(plot);
+
+    int modelsPerKeySize = resultsModels.size() / numKeySizesForComparisonMode;
+    String[] paramTypeLabels = new String[resultsModels.size() / numKeySizesForComparisonMode];
+    for (int i = 0; i < modelsPerKeySize; i++) {
+      ResultsModel model = resultsModels.get(i);
+      String hashFunctionName = model.getHashFunctionName();
+      String keyConfigString = model.getConfigString();
+      paramTypeLabels[i] = i + ". " + keyConfigString + " - " + hashFunctionName;
+    }
+
+    SymbolAxis xAxis = new SymbolAxis("Parameter Type", paramTypeLabels);
+    xAxis.setTickLabelsVisible(true);
+    xAxis.setTickLabelFont(new Font("SansSerif", Font.PLAIN, 7));
+
+    plot.setDomainAxis(xAxis);
+
+    return lineChart;
+  }
+
 
   /**
    * Displays a histogram for a specific key size which contains results for multiple keys
@@ -1250,10 +1394,16 @@ public class ResultsController {
    * @return A ChartViewer containing the stacked histogram.
    */
   public ChartViewer displayStackedHistogram(int keyIndex) {
-    CategoryDataset dataset = createStackedHistogramDataset(keyIndex);
+    CategoryDataset dataset;
+    if (isSignatureOperationResults) {
+      dataset = createStackedHistogramDatasetSignatures(keyIndex);
+    } else {
+      dataset = createStackedHistogramDataset(keyIndex);
+    }
+    int startModelIndex = keyIndex * (resultsModels.size() / numKeySizesForComparisonMode);
+    int keyLength = resultsModels.get(startModelIndex).getKeyLength();
     JFreeChart chart = createStackedHistogramChart(dataset,
-        "Stacked Histogram for " + "Key Size " + (keyIndex + 1) + " (" + keyLengths.get(
-            keyIndex * (resultsModels.size() / numKeySizesForComparisonMode)) + "bit)");
+        "Stacked Histogram for " + "Key Size " + (keyIndex + 1) + " (" + keyLength + "bit)");
     return new ChartViewer(chart);
   }
 
@@ -1265,7 +1415,6 @@ public class ResultsController {
    */
   public ChartViewer displayHistogramForKey(int keyIndex) {
     CategoryDataset dataset = prepareHistogramForKey(keyIndex);
-
     JFreeChart chart = createHistogramFromDataset(dataset,
         "Histogram for " + "Key " + (keyIndex + 1) + " (" + keyLengths.get(keyIndex) + "bit)");
     return new ChartViewer(chart);
@@ -1317,62 +1466,48 @@ public class ResultsController {
   }
 
 
-  /**
-   * Prepares and displays a box plot for comparison mode.
-   *
-   * @param keyIndex Index of the key for which the box plot is prepared.
-   * @return A ChartViewer containing the box plot.
-   */
   private ChartViewer displayBoxPlotForComparisonMode(int keyIndex) {
-    DefaultBoxAndWhiskerCategoryDataset dataset = prepareBoxPlotDatasetForComparisonMode(
-        keyIndex);
+    DefaultBoxAndWhiskerCategoryDataset dataset;
+    if (isSignatureOperationResults) {
+      dataset = prepareBoxPlotDatasetForComparisonModeSignatures(keyIndex);
+    } else {
+      dataset = prepareBoxPlotDatasetForComparisonMode(keyIndex);
+    }
+    int startModelIndex = keyIndex * (resultsModels.size() / numKeySizesForComparisonMode);
+    int keyLength = resultsModels.get(startModelIndex).getKeyLength();
     return displayBoxPlot(dataset,
-        "Box Plot for " + "Key Size " + (keyIndex + 1) + " (" + keyLengths.get(
-            keyIndex * (resultsModels.size() / numKeySizesForComparisonMode)) + "bit)",
+        "Box Plot for " + "Key Size " + (keyIndex + 1) + " (" + keyLength + "bit)",
         "Parameter Type");
   }
 
-  /**
-   * Displays a line chart for all times for a specific key.
-   *
-   * @param keyIndex Index of the key for which the line chart is displayed.
-   * @param title    The title for the chart.
-   * @return A ChartViewer containing the line chart.
-   */
-  private ChartViewer displayLineChartAllTimes(int keyIndex, String title) {
-    XYSeriesCollection dataset = prepareLineChartAllTimesDataset(keyIndex);
-    JFreeChart chart = createLineChartAllTimes(dataset, title);
-    return new ChartViewer(chart);
-  }
 
   /**
-   * Displays a line chart for all times in comparison mode.
+   * Displays a line graph for mean times in comparison mode.
    *
-   * @param keyIndex Index of the key for which the line chart is displayed.
-   * @param title    The title for the chart.
-   * @return A ChartViewer containing the line chart.
-   */
-  private ChartViewer displayLineChartAllTimesComparisonMode(int keyIndex, String title) {
-    XYSeriesCollection dataset = prepareLineChartAllTimesDatasetComparisonMode(keyIndex);
-    JFreeChart chart = createLineChartAllTimes(dataset, title);
-    return new ChartViewer(chart);
-  }
-
-  /**
-   * Prepares and displays a line chart for mean times in comparison mode.
-   *
-   * @param keyIndex Index of the key for which the line chart is displayed.
-   * @return A ChartViewer containing the line chart.
+   * @param keyIndex Index of the key size for which the line graph is displayed.
+   * @return A ChartViewer containing the line graph.
    */
   private ChartViewer displayLineGraphMeanForComparisonMode(int keyIndex) {
-    Pair<XYSeriesCollection, YIntervalSeriesCollection> datasets = prepareLineChartMeanDatasetForComparisonMode(
-        keyIndex);
+    Pair<XYSeriesCollection, YIntervalSeriesCollection> datasets;
+    int keyLength = 0;
+    if (isSignatureOperationResults) {
+      datasets = prepareLineChartMeanDatasetForComparisonModeSignatures(keyIndex);
+      int startModelIndex = keyIndex * (resultsModels.size() / numKeySizesForComparisonMode);
+      keyLength = resultsModels.get(startModelIndex).getKeyLength();
+    } else {
+      datasets = prepareLineChartMeanDatasetForComparisonMode(keyIndex);
+    }
+
     XYSeriesCollection meanDataset = datasets.getKey();
     YIntervalSeriesCollection errorDataset = datasets.getValue();
-    return new ChartViewer(
-        createLineChartMeanForComparisonMode(meanDataset, errorDataset,
-            "Line Graph (Mean) for " + "Key Size " + (keyIndex + 1) + " (" + keyLengths.get(
-                keyIndex * (resultsModels.size() / numKeySizesForComparisonMode)) + "bit)"));
+    return isSignatureOperationResults ? new ChartViewer(
+        createLineChartMeanForComparisonModeSignatures(meanDataset, errorDataset,
+            "Line Graph (Mean) for " + "Key Size " + (keyIndex + 1) + " (" + keyLength + "bit)",
+            keyIndex))
+        : new ChartViewer(
+            createLineChartMeanForComparisonMode(meanDataset, errorDataset,
+                "Line Graph (Mean) for " + "Key Size " + (keyIndex + 1) + " (" + keyLengths.get(
+                    keyIndex * (resultsModels.size() / numKeySizesForComparisonMode)) + "bit)"));
 
   }
 
