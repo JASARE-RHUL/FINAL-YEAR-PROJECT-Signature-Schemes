@@ -1329,19 +1329,18 @@ public class SignatureModel {
   }
 
   /**
-   * Calculates the total number of hash functions used across all groups in the comparison mode.
-   * This method iterates through the hash functions mapped to each group and aggregates their
-   * count, providing a comprehensive view of the hash function diversity in the benchmarking
-   * process.
+   * Retrieves the total number of hash functions used across all groups in the comparison mode
+   * benchmarking.
+   *
+   * @return The total number of hash functions used in the benchmarking process.
    */
   public int getTotalHashFunctions() {
     return totalHashFunctions;
   }
 
   /**
-   * Retrieves the total number of groups formed in the comparison mode. This method is important
-   * for understanding the structural organization of keys and hash functions in the benchmarking
-   * process, reflecting how different configurations are grouped for comparison.
+   * Retrieves the total number of groups formed in the comparison mode. Each group represents a
+   * unique combination of key configurations or hash * functions.
    *
    * @return The total number of groups.
    */
