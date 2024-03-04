@@ -600,7 +600,7 @@ public class SignatureModel {
         }
       }
     }
-    calculateTrialsPerKeyByGroup(privKeyBatch);
+    calculateTrialsPerKeyByGroup();
   }
 
 
@@ -939,7 +939,7 @@ public class SignatureModel {
         }
       }
     }
-    calculateTrialsPerKeyByGroup(publicKeyBatch);
+    calculateTrialsPerKeyByGroup();
   }
 
 
@@ -1069,16 +1069,21 @@ public class SignatureModel {
     }
   }
 
-  private void calculateTrialsPerKeyByGroup(List<? extends Key> keyBatch) {
+  private void calculateTrialsPerKeyByGroup() {
     trialsPerKeyByGroup = new int[totalGroups];
-    int finalGroupStartIndex = keysPerGroup * totalGroups;
-    for (int i = 0; i < finalGroupStartIndex; i += keysPerGroup) {
-      int groupIndex = Math.floorDiv(i, keysPerGroup) % totalGroups;
+
+    for (int groupIndex = 0; groupIndex < totalGroups; groupIndex++) {
       int numHashFunctionsInGroup = keyConfigToHashFunctionsMap.get(groupIndex).size();
+
+      // Calculate the total number of trials for the current group
       int totalTrialsCurrentGroup =
-          (clockTimesPerTrial.size() / totalHashFunctions) * numHashFunctionsInGroup;
-      int totalTrialsCurrentKey = totalTrialsCurrentGroup / (keyBatch.size() / keysPerGroup);
-      trialsPerKeyByGroup[groupIndex] = totalTrialsCurrentKey;
+          ((clockTimesPerTrial.size() / numKeySizesForComparisonMode) / totalHashFunctions)
+              * numHashFunctionsInGroup;
+
+      // Distribute these trials among the keys in the current group
+      int totalTrialsPerKeyInGroup = totalTrialsCurrentGroup / keysPerGroup;
+
+      trialsPerKeyByGroup[groupIndex] = totalTrialsPerKeyInGroup;
     }
   }
 
