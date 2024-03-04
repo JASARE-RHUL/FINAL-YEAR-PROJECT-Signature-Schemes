@@ -718,31 +718,27 @@ public class GenView {
           // Check if this is the last configuration in the group for hash function selections
           if (configIndex == currentGroup.getChildren().size() - 1) {
             Node hashFunctionNode = hbox.getChildren().get(hbox.getChildren().size() - 1);
-            if (hashFunctionNode instanceof HBox) {
-              HBox hashFunctionHbox = (HBox) hashFunctionNode;
-              if (hashFunctionHbox.getChildren().size() > 1 && hashFunctionHbox.getChildren()
-                  .get(1) instanceof CheckComboBox) {
-                CheckComboBox<String> hashFunctionCheckComboBox = (CheckComboBox<String>) hashFunctionHbox.getChildren()
-                    .get(1);
 
-                ObservableList<String> checkedItems = hashFunctionCheckComboBox.getCheckModel()
-                    .getCheckedItems();
-                if (checkedItems.isEmpty()) {
-                  invalidField = true;
-                  hashFunctionCheckComboBox.setStyle("-fx-border-color: red;");
-                } else {
-                  for (String selection : checkedItems) {
-                    boolean isProvablySecure = selection.contains("Provably Secure");
-                    DigestType digestType = DigestType.getDigestTypeFromCustomString(
-                        selection.replace(" (Provably Secure)", ""));
-                    currentGroupHashFunctionSelections.add(
-                        new Pair<>(digestType, isProvablySecure));
-                  }
-                  keyConfigToHashFunctionsMap.put(groupIndex,
-                      new ArrayList<>(currentGroupHashFunctionSelections));
-                }
+            CheckComboBox<String> hashFunctionCheckComboBox = (CheckComboBox<String>) hashFunctionNode;
+
+            ObservableList<String> checkedItems = hashFunctionCheckComboBox.getCheckModel()
+                .getCheckedItems();
+            if (checkedItems.isEmpty()) {
+              invalidField = true;
+              hashFunctionCheckComboBox.setStyle("-fx-border-color: red;");
+            } else {
+              for (String selection : checkedItems) {
+                boolean isProvablySecure = selection.contains("Provably Secure");
+                DigestType digestType = DigestType.getDigestTypeFromCustomString(
+                    selection.replace(" (Provably Secure)", ""));
+                currentGroupHashFunctionSelections.add(
+                    new Pair<>(digestType, isProvablySecure));
               }
+              keyConfigToHashFunctionsMap.put(groupIndex,
+                  new ArrayList<>(currentGroupHashFunctionSelections));
             }
+
+
           } else {
 
             TextField textField = (TextField) hbox.getChildren().get(0);
