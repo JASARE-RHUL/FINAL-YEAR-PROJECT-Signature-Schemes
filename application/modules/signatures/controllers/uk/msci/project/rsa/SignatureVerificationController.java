@@ -347,7 +347,9 @@ public class SignatureVerificationController extends SignatureBaseController {
     if (!setHashSizeInModel(verifyView)) {
       return;
     }
-    signatureModel.createDefaultKeyConfigToHashFunctionsMap();
+    if (!isCustomCrossParameterBenchmarkingMode) {
+      signatureModel.createDefaultKeyConfigToHashFunctionsMap();
+    }
     benchmarkingUtility = new BenchmarkingUtility();
     Task<Void> benchmarkingTask = createBenchmarkingTaskComparisonMode(messageBatchFile,
         signatureBatchFile);

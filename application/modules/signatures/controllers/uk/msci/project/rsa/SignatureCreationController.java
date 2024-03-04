@@ -290,7 +290,9 @@ public class SignatureCreationController extends SignatureBaseController {
     if (!setHashSizeInModel(signView) && !isCustomCrossParameterBenchmarkingMode) {
       return;
     }
-    signatureModel.createDefaultKeyConfigToHashFunctionsMap();
+    if (!isCustomCrossParameterBenchmarkingMode) {
+      signatureModel.createDefaultKeyConfigToHashFunctionsMap();
+    }
     benchmarkingUtility = new BenchmarkingUtility();
     Task<Void> benchmarkingTask = createBenchmarkingTaskComparisonMode(messageBatchFile);
     BenchmarkingUtility.beginBenchmarkWithUtility(benchmarkingUtility, "Signature Generation",
