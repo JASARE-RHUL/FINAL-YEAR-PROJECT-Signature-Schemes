@@ -13,6 +13,7 @@ import javafx.scene.control.ProgressBar;
 import javafx.stage.Stage;
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.distribution.TDistribution;
+import org.apache.commons.math3.exception.NotStrictlyPositiveException;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 
 
@@ -224,8 +225,13 @@ public class BenchmarkingUtility {
           1.0 - (1 - confidenceLevel) / 2);
     } else {
       // Use the t-distribution for small sample sizes
-      TDistribution tDistribution = new TDistribution(n - 1);
-      criticalValue = tDistribution.inverseCumulativeProbability(1.0 - (1 - confidenceLevel) / 2);
+      try {
+        TDistribution tDistribution = new TDistribution(n - 1);
+        criticalValue = tDistribution.inverseCumulativeProbability(1.0 - (1 - confidenceLevel) / 2);
+      } catch (NotStrictlyPositiveException e) {
+        return new double[]{0, 0};
+      }
+
     }
 
     double marginOfError = criticalValue * standardDeviation / Math.sqrt(n);
