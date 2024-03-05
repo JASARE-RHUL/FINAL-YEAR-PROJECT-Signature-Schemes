@@ -617,12 +617,10 @@ public class ResultsController {
       // Calculate the starting model index for this key size
       int startModelIndex = keySizeIndex * (resultsModels.size() / numKeySizesForComparisonMode);
 
-      // Get the key length from the first model in this key size range
-      int keyLength = resultsModels.get(startModelIndex).getKeyLength();
-
       // Create the label with the key number
       Label keyLabel = new Label(
-          "Key Size " + (keySizeIndex + 1) + " (" + keyLength + "bit)");
+          "Key Size " + (keySizeIndex + 1) + " (" + keyLengths.get(
+              startModelIndex % keyLengths.size()) + "bit)");
 
       // Create a VBox to hold the ImageView and Label
       VBox graphicBox = new VBox(imageView, keyLabel);
@@ -1401,9 +1399,9 @@ public class ResultsController {
       dataset = createStackedHistogramDataset(keyIndex);
     }
     int startModelIndex = keyIndex * (resultsModels.size() / numKeySizesForComparisonMode);
-    int keyLength = resultsModels.get(startModelIndex).getKeyLength();
     JFreeChart chart = createStackedHistogramChart(dataset,
-        "Stacked Histogram for " + "Key Size " + (keyIndex + 1) + " (" + keyLength + "bit)");
+        "Stacked Histogram for " + "Key Size " + (keyIndex + 1) + " (" + keyLengths.get(
+            startModelIndex % keyLengths.size()) + "bit)");
     return new ChartViewer(chart);
   }
 
@@ -1474,9 +1472,9 @@ public class ResultsController {
       dataset = prepareBoxPlotDatasetForComparisonMode(keyIndex);
     }
     int startModelIndex = keyIndex * (resultsModels.size() / numKeySizesForComparisonMode);
-    int keyLength = resultsModels.get(startModelIndex).getKeyLength();
     return displayBoxPlot(dataset,
-        "Box Plot for " + "Key Size " + (keyIndex + 1) + " (" + keyLength + "bit)",
+        "Box Plot for " + "Key Size " + (keyIndex + 1) + " (" + keyLengths.get(
+            startModelIndex % keyLengths.size()) + "bit)",
         "Parameter Type");
   }
 
