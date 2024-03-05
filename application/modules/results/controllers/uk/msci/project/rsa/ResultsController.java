@@ -246,6 +246,7 @@ public class ResultsController {
           resultsView.setupTableView();
           resultsView.populateTableView();
           initialiseKeySwitchButtons();
+          splitResultsByKeys();
           precomputeGraphs();
           resultsView.setLineGraphButtonMeanVisibility(false);
         });

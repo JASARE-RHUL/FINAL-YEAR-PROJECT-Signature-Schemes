@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.DoubleConsumer;
+import java.util.stream.Collectors;
 import java.util.zip.DataFormatException;
 import javafx.util.Pair;
 import uk.msci.project.rsa.exceptions.InvalidDigestException;
@@ -473,7 +474,8 @@ public class SignatureModel {
       }
 
       // Combine results into final lists
-      combineResultsIntoFinalLists(timesPerKey, signaturesPerKey, nonRecoverableMessagesPerKey);
+      combineResultsIntoFinalLists(timesPerKey, signaturesPerKey,
+          nonRecoverableMessagesPerKey);
     }
   }
 
@@ -571,20 +573,22 @@ public class SignatureModel {
       }
 
       // Combine results into final lists
-      combineResultsIntoFinalLists(timesPerKey, signaturesPerKey, nonRecoverableMessagesPerKey);
+      combineResultsIntoFinalListsComparisonMode(timesPerKey, signaturesPerKey,
+          nonRecoverableMessagesPerKey);
     }
   }
 
 
   /**
-   * Combines the results of batch signature creation into final lists for analysis and export. It
-   * aggregates times, signatures, and non-recoverable message parts from all keys.
+   * Combines the results of batch signature creation into final lists for analysis and export in
+   * comparison mode. It aggregates times, signatures, and non-recoverable message parts from all
+   * keys.
    *
    * @param timesPerKey                  Times for each key.
    * @param signaturesPerKey             Signatures for each key.
    * @param nonRecoverableMessagesPerKey Non-recoverable message parts for each key.
    */
-  private void combineResultsIntoFinalLists(List<List<Long>> timesPerKey,
+  private void combineResultsIntoFinalListsComparisonMode(List<List<Long>> timesPerKey,
       List<List<byte[]>> signaturesPerKey,
       List<List<byte[]>> nonRecoverableMessagesPerKey) {
 
@@ -826,7 +830,7 @@ public class SignatureModel {
       }
 
       // Combine results into final lists
-      combineVerificationResultsIntoFinalLists(timesPerKey, verificationResultsPerKey,
+      combineVerificationResultsIntoFinalListsComparisonMode(timesPerKey, verificationResultsPerKey,
           signaturesPerKey, recoveredMessagesPerKey);
     }
   }
@@ -915,16 +919,16 @@ public class SignatureModel {
 
 
   /**
-   * Aggregates the results of batch signature verification into final lists for analysis and
-   * export. It combines verification results, signatures, and recovered messages from each public
-   * key.
+   * Aggregates the results of batch signature verification into final lists for analysis and export
+   * in comparison mode. It combines verification results, signatures, and recovered messages from
+   * each public key.
    *
    * @param timesPerKey               Times for each public key.
    * @param verificationResultsPerKey Verification results for each public key.
    * @param signaturesPerKey          Signatures for each public key.
    * @param recoveredMessagesPerKey   Recovered messages for each public key.
    */
-  private void combineVerificationResultsIntoFinalLists(List<List<Long>> timesPerKey,
+  private void combineVerificationResultsIntoFinalListsComparisonMode(List<List<Long>> timesPerKey,
       List<List<Boolean>> verificationResultsPerKey,
       List<List<byte[]>> signaturesPerKey, List<List<byte[]>> recoveredMessagesPerKey) {
 
@@ -949,6 +953,55 @@ public class SignatureModel {
       }
     }
     calculateTrialsPerKeyByGroup();
+  }
+
+  /**
+   * Aggregates the results from all verification trials into final lists. This method combines the
+   * times, verification results, signatures, and recovered messages from each public key into
+   * single lists for streamlined access and analysis.
+   *
+   * @param timesPerKey               The list of times for each public key and message.
+   * @param verificationResultsPerKey The list of verification results for each public key and
+   *                                  message.
+   * @param signaturesPerKey          The list of signatures for each public key and message.
+   * @param recoveredMessagesPerKey   The list of recovered message parts for each public key and
+   *                                  message.
+   */
+  private void combineVerificationResultsIntoFinalLists(List<List<Long>> timesPerKey,
+      List<List<Boolean>> verificationResultsPerKey,
+      List<List<byte[]>> signaturesPerKey, List<List<byte[]>> recoveredMessagesPerKey) {
+    verificationResults = verificationResultsPerKey.stream().flatMap(List::stream)
+        .collect(Collectors.toList());
+    signaturesFromBenchmark = signaturesPerKey.stream().flatMap(List::stream)
+        .collect(Collectors.toList());
+    recoverableMessages = recoveredMessagesPerKey.stream().flatMap(List::stream)
+        .collect(Collectors.toList());
+    clockTimesPerTrial = timesPerKey.stream().flatMap(List::stream).collect(Collectors.toList());
+  }
+
+
+
+  /**
+   * Combines the results from the batch signature creation into final lists. It aggregates the
+   * times, signatures, and non-recoverable message parts from all keys into single lists for easy
+   * access.
+   *
+   * @param timesPerKey                  The list of times for each key and message.
+   * @param signaturesPerKey             The list of signatures for each key and message.
+   * @param nonRecoverableMessagesPerKey The list of non-recoverable message parts for each key and
+   *                                     message.
+   */
+  private void combineResultsIntoFinalLists(List<List<Long>> timesPerKey,
+      List<List<byte[]>> signaturesPerKey,
+      List<List<byte[]>> nonRecoverableMessagesPerKey) {
+
+    for (int msgIndex = 0; msgIndex < this.numTrials; msgIndex++) {
+      for (int keyIndex = 0; keyIndex < privKeyBatch.size(); keyIndex++) {
+        signaturesFromBenchmark.add(signaturesPerKey.get(keyIndex).get(msgIndex));
+        nonRecoverableMessages.add(nonRecoverableMessagesPerKey.get(keyIndex).get(msgIndex));
+        clockTimesPerTrial.add(timesPerKey.get(keyIndex).get(msgIndex));
+      }
+    }
   }
 
 
