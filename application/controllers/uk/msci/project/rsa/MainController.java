@@ -271,12 +271,10 @@ public class MainController {
    *                                    processed together.
    */
   public void setKeyConfigToHashFunctionsMapForCustomComparisonMode(
-      Map<Integer, List<Pair<DigestType, Boolean>>> keyConfigToHashFunctionsMap, int keyPerGroup) {
+      Map<Integer, List<HashFunctionSelection>> keyConfigToHashFunctionsMap, int keyPerGroup) {
     signatureCreationController.setKeyConfigToHashFunctionsMap(keyConfigToHashFunctionsMap,
         keyPerGroup);
     signatureVerificationController.setKeyConfigToHashFunctionsMap(keyConfigToHashFunctionsMap,
         keyPerGroup);
   }
-
-
 }
