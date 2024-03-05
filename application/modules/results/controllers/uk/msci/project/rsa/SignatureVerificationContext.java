@@ -3,7 +3,6 @@ package uk.msci.project.rsa;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import javafx.util.Pair;
 
 /**
  * This class is a specialised context for the benchmarking of signature verification operations. It
@@ -65,7 +64,7 @@ public class SignatureVerificationContext extends BenchmarkingContext {
    * DigestType} and a boolean indicating if it's provably secure.
    */
   @Override
-  public Map<Integer, List<Pair<DigestType, Boolean>>> getKeyConfigToHashFunctionsMap() {
+  public Map<Integer, List<HashFunctionSelection>> getKeyConfigToHashFunctionsMap() {
     return signatureModel.getKeyConfigToHashFunctionsMap();
   }
 

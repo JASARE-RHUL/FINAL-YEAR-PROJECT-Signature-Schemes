@@ -110,7 +110,7 @@ public abstract class SignatureBaseController {
    * Each pair contains a DigestType representing the hash function and a Boolean indicating if the
    * hash function is provably secure.
    */
-  Map<Integer, List<Pair<DigestType, Boolean>>> keyConfigToHashFunctionsMap = new HashMap<>();
+  Map<Integer, List<HashFunctionSelection>> keyConfigToHashFunctionsMap = new HashMap<>();
 
   /**
    * Specifies the number of keys per group in a custom cross-parameter benchmarking session. This
@@ -1112,12 +1112,14 @@ public abstract class SignatureBaseController {
         if (c.wasAdded()) {
           for (String addedType : c.getAddedSubList()) {
             signatureModel.getCurrentProvableHashTypeList_ComparisonMode()
-                .add(new Pair<>(DigestType.getDigestTypeFromCustomString(addedType), true));
+                .add(new HashFunctionSelection(DigestType.getDigestTypeFromCustomString(addedType),
+                    true, null));
           }
         } else if (c.wasRemoved()) {
           for (String removedType : c.getRemoved()) {
             signatureModel.getCurrentProvableHashTypeList_ComparisonMode()
-                .remove((new Pair<>(DigestType.getDigestTypeFromCustomString(removedType), true)));
+                .remove((new HashFunctionSelection(
+                    DigestType.getDigestTypeFromCustomString(removedType), true, null)));
           }
         }
 
@@ -1139,12 +1141,12 @@ public abstract class SignatureBaseController {
         if (c.wasAdded()) {
           for (String addedType : c.getAddedSubList()) {
             signatureModel.getCurrentFixedHashTypeList_ComparisonMode()
-                .add((new Pair<>(DigestType.getDigestTypeFromCustomString(addedType), false)));
+                .add((new HashFunctionSelection(DigestType.getDigestTypeFromCustomString(addedType), false, null)));
           }
         } else if (c.wasRemoved()) {
           for (String removedType : c.getRemoved()) {
             signatureModel.getCurrentFixedHashTypeList_ComparisonMode()
-                .remove((new Pair<>(DigestType.getDigestTypeFromCustomString(removedType), false)));
+                .remove((new HashFunctionSelection(DigestType.getDigestTypeFromCustomString(removedType), false, null)));
           }
         }
 
@@ -1251,7 +1253,7 @@ public abstract class SignatureBaseController {
    * @param keysPerGroup                The number of keys in each group for batch processing.
    */
   public void setKeyConfigToHashFunctionsMap(
-      Map<Integer, List<Pair<DigestType, Boolean>>> keyConfigToHashFunctionsMap, int keysPerGroup) {
+      Map<Integer, List<HashFunctionSelection>> keyConfigToHashFunctionsMap, int keysPerGroup) {
     this.keyConfigToHashFunctionsMap = keyConfigToHashFunctionsMap;
     this.keysPerGroup = keysPerGroup;
   }

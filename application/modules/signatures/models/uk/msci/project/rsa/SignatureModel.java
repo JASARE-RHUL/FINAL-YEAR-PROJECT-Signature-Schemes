@@ -112,13 +112,13 @@ public class SignatureModel {
    * list representing the hash types used under standard parameters in the cross-parameter
    * benchmarking/comparison mode.
    */
-  private List<Pair<DigestType, Boolean>> currentFixedHashTypeList_ComparisonMode = new ArrayList<>();
+  private List<HashFunctionSelection> currentFixedHashTypeList_ComparisonMode = new ArrayList<>();
 
   /**
    * list representing the hash types used under provably secure parameters in the cross-parameter
    * benchmarking/comparison mode.
    */
-  private List<Pair<DigestType, Boolean>> currentProvableHashTypeList_ComparisonMode = new ArrayList<>();
+  private List<HashFunctionSelection> currentProvableHashTypeList_ComparisonMode = new ArrayList<>();
 
   /**
    * The number of different key sizes that will be used for generating signatures in the comparison
@@ -144,7 +144,7 @@ public class SignatureModel {
    * provably secure. This map is used in comparison mode to keep track of the hash functions used
    * for each key configuration group.
    */
-  private Map<Integer, List<Pair<DigestType, Boolean>>> keyConfigToHashFunctionsMap = new HashMap<>();
+  private Map<Integer, List<HashFunctionSelection>> keyConfigToHashFunctionsMap = new HashMap<>();
 
   /**
    * The number of keys in each group for the comparison mode. This determines how many keys are
@@ -529,18 +529,23 @@ public class SignatureModel {
         for (int i = 0; i < privKeyBatch.size(); i += numKeysPerKeySizeComparisonMode) {
           for (int keyGroupIndex = 0; keyGroupIndex < numKeysPerKeySizeComparisonMode;
               keyGroupIndex += keysPerGroup) {
-            List<Pair<DigestType, Boolean>> hashFunctionTypesForGroup = keyConfigToHashFunctionsMap.get(
+            List<HashFunctionSelection> hashFunctionTypesForGroup = keyConfigToHashFunctionsMap.get(
                 keyGroupIndex / keysPerGroup);
 
             if (hashFunctionTypesForGroup != null) {
-              for (Pair<DigestType, Boolean> hashFunctionType : hashFunctionTypesForGroup) {
+              for (HashFunctionSelection hashFunctionType : hashFunctionTypesForGroup) {
                 for (int j = keyGroupIndex;
                     j < keyGroupIndex + keysPerGroup && j < numKeysPerKeySizeComparisonMode; j++) {
                   int actualKeyIndex = i + j;
                   PrivateKey privateKey = privKeyBatch.get(actualKeyIndex);
+                  int keyLength = getPrivKeyLengths().get(actualKeyIndex);
                   SigScheme sigScheme = SignatureFactory.getSignatureScheme(currentType, privateKey,
-                      hashFunctionType.getValue());
-                  sigScheme.setDigest(hashFunctionType.getKey());
+                      hashFunctionType.isProvablySecure());
+                  int digestSize = hashFunctionType.getCustomSize() == null ? 0
+                      : (int) Math.round((keyLength * hashFunctionType.getCustomSize()[0])
+                          / (double) hashFunctionType.getCustomSize()[1]);
+                  digestSize = Math.floorDiv(digestSize + 7, 8);
+                  sigScheme.setDigest(hashFunctionType.getDigestType(), digestSize);
 
                   long startTime = System.nanoTime();
                   byte[] signature = sigScheme.sign(message.getBytes());
@@ -587,7 +592,7 @@ public class SignatureModel {
 
     for (int keyIndex = 0; keyIndex < privKeyBatch.size(); keyIndex++) {
       int groupIndex = (keyIndex / keysPerGroup) % totalGroups;
-      List<Pair<DigestType, Boolean>> hashFunctionsForCurrentKey = keyConfigToHashFunctionsMap.get(
+      List<HashFunctionSelection> hashFunctionsForCurrentKey = keyConfigToHashFunctionsMap.get(
           groupIndex);
 
       for (int hashIndex = 0; hashIndex < hashFunctionsForCurrentKey.size(); hashIndex++) {
@@ -774,11 +779,11 @@ public class SignatureModel {
           for (int keyGroupIndex = 0; keyGroupIndex < numKeysPerKeySizeComparisonMode;
               keyGroupIndex += keysPerGroup) {
 
-            List<Pair<DigestType, Boolean>> hashFunctionTypesForGroup = keyConfigToHashFunctionsMap.get(
+            List<HashFunctionSelection> hashFunctionTypesForGroup = keyConfigToHashFunctionsMap.get(
                 keyGroupIndex / keysPerGroup);
 
             if (hashFunctionTypesForGroup != null) {
-              for (Pair<DigestType, Boolean> hashFunctionType : hashFunctionTypesForGroup) {
+              for (HashFunctionSelection hashFunctionType : hashFunctionTypesForGroup) {
                 for (int j = keyGroupIndex;
                     j < keyGroupIndex + keysPerGroup && j < numKeysPerKeySizeComparisonMode; j++) {
                   int actualKeyIndex = i + j;
@@ -789,9 +794,13 @@ public class SignatureModel {
 
                   PublicKey publicKey = publicKeyBatch.get(actualKeyIndex);
                   SigScheme sigScheme = SignatureFactory.getSignatureScheme(currentType, publicKey,
-                      hashFunctionType.getValue());
-                  sigScheme.setDigest(hashFunctionType.getKey());
-
+                      hashFunctionType.isProvablySecure());
+                  int keyLength = getPrivKeyLengths().get(actualKeyIndex);
+                  int digestSize = hashFunctionType.getCustomSize() == null ? 0
+                      : (int) Math.round((keyLength * hashFunctionType.getCustomSize()[0])
+                          / (double) hashFunctionType.getCustomSize()[1]);
+                  digestSize = Math.floorDiv(digestSize + 7, 8);
+                  sigScheme.setDigest(hashFunctionType.getDigestType(), digestSize);
                   // Synchronous verification
                   Pair<Boolean, Pair<Long, List<byte[]>>> result = verifySignature_ComparisonMode(
                       sigScheme, messageLine, signatureBytes);
@@ -925,7 +934,7 @@ public class SignatureModel {
     clockTimesPerTrial.clear();
 
     for (int keyIndex = 0; keyIndex < publicKeyBatch.size(); keyIndex++) {
-      List<Pair<DigestType, Boolean>> hashFunctionsForCurrentKey = keyConfigToHashFunctionsMap.get(
+      List<HashFunctionSelection> hashFunctionsForCurrentKey = keyConfigToHashFunctionsMap.get(
           keyIndex / keysPerGroup);
 
       for (int hashIndex = 0; hashIndex < hashFunctionsForCurrentKey.size(); hashIndex++) {
@@ -1019,7 +1028,7 @@ public class SignatureModel {
               + "Verification Result, Original Message, Signature, Recovered Message\n");
       while (currentIndex < clockTimesPerTrial.size()) {
         for (int groupIndex = 0; groupIndex < keyConfigToHashFunctionsMap.size(); groupIndex++) {
-          List<Pair<DigestType, Boolean>> hashFunctions = keyConfigToHashFunctionsMap.get(
+          List<HashFunctionSelection> hashFunctions = keyConfigToHashFunctionsMap.get(
               groupIndex);
 
           for (int hashFunctionIndex = 0; hashFunctionIndex < hashFunctions.size();
@@ -1032,7 +1041,8 @@ public class SignatureModel {
               int trialsPerHashFunction = trialsPerKeyByGroup[groupIndex] / hashFunctions.size();
               String keyConfigString = keyConfigurationStrings.get(
                   (headerStartIndex + k) % keyConfigurationStrings.size());
-              String hashFunctionName = hashFunctions.get(hashFunctionIndex).getKey().toString();
+              String hashFunctionName = hashFunctions.get(hashFunctionIndex).getDigestType()
+                  .toString();
               // Read original messages for each key
               try (BufferedReader reader = new BufferedReader(new FileReader(messageFile))) {
                 String originalMessage;
@@ -1189,7 +1199,7 @@ public class SignatureModel {
    *
    * @return List of pairs of DigestType and Boolean indicating provable security.
    */
-  public List<Pair<DigestType, Boolean>> getCurrentFixedHashTypeList_ComparisonMode() {
+  public List<HashFunctionSelection> getCurrentFixedHashTypeList_ComparisonMode() {
     return currentFixedHashTypeList_ComparisonMode;
   }
 
@@ -1199,7 +1209,7 @@ public class SignatureModel {
    *
    * @return List of pairs of DigestType and Boolean indicating provable security.
    */
-  public List<Pair<DigestType, Boolean>> getCurrentProvableHashTypeList_ComparisonMode() {
+  public List<HashFunctionSelection> getCurrentProvableHashTypeList_ComparisonMode() {
     return currentProvableHashTypeList_ComparisonMode;
   }
 
@@ -1216,7 +1226,7 @@ public class SignatureModel {
 
     for (int groupIndex = 0; groupIndex < totalGroups; groupIndex++) {
       // Determine the hash function list for the current group
-      List<Pair<DigestType, Boolean>> hashFunctionsForGroup;
+      List<HashFunctionSelection> hashFunctionsForGroup;
       if (groupIndex % 2 == 0) {
         hashFunctionsForGroup = getCurrentFixedHashTypeList_ComparisonMode();
       } else {
@@ -1293,7 +1303,7 @@ public class SignatureModel {
    * @param keyConfigToHashFunctionsMap The map linking key configurations to hash functions.
    */
   public void setKeyConfigToHashFunctionsMap(
-      Map<Integer, List<Pair<DigestType, Boolean>>> keyConfigToHashFunctionsMap) {
+      Map<Integer, List<HashFunctionSelection>> keyConfigToHashFunctionsMap) {
     this.keyConfigToHashFunctionsMap = keyConfigToHashFunctionsMap;
     this.totalGroups = this.keyConfigToHashFunctionsMap.size();
     calculateTotalHashFunctions();
@@ -1305,7 +1315,7 @@ public class SignatureModel {
    *
    * @return The map linking key configurations to hash functions.
    */
-  public Map<Integer, List<Pair<DigestType, Boolean>>> getKeyConfigToHashFunctionsMap() {
+  public Map<Integer, List<HashFunctionSelection>> getKeyConfigToHashFunctionsMap() {
     return keyConfigToHashFunctionsMap;
   }
 
@@ -1328,7 +1338,7 @@ public class SignatureModel {
    */
   public void calculateTotalHashFunctions() {
     totalHashFunctions = 0;
-    for (List<Pair<DigestType, Boolean>> hashFunctionsForGroup : keyConfigToHashFunctionsMap.values()) {
+    for (List<HashFunctionSelection> hashFunctionsForGroup : keyConfigToHashFunctionsMap.values()) {
       totalHashFunctions += hashFunctionsForGroup.size();
     }
   }
