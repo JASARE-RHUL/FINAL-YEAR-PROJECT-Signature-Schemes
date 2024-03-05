@@ -455,8 +455,9 @@ public class SignatureVerificationController extends SignatureBaseController {
       verifyView.setTextFieldCheckmarkImageVisibility(false);
       verifyView.setMessageBatch("Please Import a message batch");
       messageBatchFile = null;
-      verifyView.setImportTextBatchBtnVisibility(true);
       verifyView.setCancelImportTextBatchButtonVisibility(false);
+      verifyView.setImportTextBatchBtnVisibility(true);
+
     }
   }
 
@@ -495,8 +496,8 @@ public class SignatureVerificationController extends SignatureBaseController {
       verifyView.setTextFieldCheckmarkImageVisibility(true);
       verifyView.setMessageBatchFieldVisibility(true);
       verifyView.setImportTextBatchBtnVisibility(false);
-      verifyView.setCancelImportTextButtonVisibility(true);
-      verifyView.addCancelImportTextButtonObserver(
+      verifyView.setCancelImportTextBatchButtonVisibility(true);
+      verifyView.addCancelImportTextBatchButtonObserver(
           new CancelImportTextBatchButtonObserver());
     }
   }

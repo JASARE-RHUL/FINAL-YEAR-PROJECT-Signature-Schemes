@@ -67,7 +67,7 @@
                 visible="false"/>
               <Button fx:id="importTextButton" text="Import Text" visible="false" managed="false"/>
               <Button fx:id="importTextBatchBtn" text="Import Text"/>
-              <Button fx:id="cancelImportTextButton" text="Cancel Import" visible="false"
+              <Button fx:id="cancelImportTextBatchButton" text="Cancel Import" visible="false"
                 managed="false"/>
             </HBox>
           </VBox>
