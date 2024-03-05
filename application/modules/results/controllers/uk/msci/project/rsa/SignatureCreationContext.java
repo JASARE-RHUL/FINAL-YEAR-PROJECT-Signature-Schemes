@@ -72,7 +72,7 @@ public class SignatureCreationContext extends BenchmarkingContext {
    */
   @Override
   public String getResultsLabel() {
-    return "Benchmarking Results for Signature Generation";
+    return "Benchmarking Results for Signature Generation (" + signatureModel.getSignatureType() + ")";
   }
 
   /**

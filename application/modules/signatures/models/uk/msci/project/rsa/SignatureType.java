@@ -9,17 +9,17 @@ public enum SignatureType {
   /**
    * Signature scheme RSASSA PKCS1 v1.5.
    */
-  RSASSA_PKCS1_v1_5("RSASSA_PKCS1_v1_5"),
+  RSASSA_PKCS1_v1_5("PKCS#1 v1.5 Signature Scheme"),
 
   /**
    * Signature scheme ANSI X9.31 for RSA Digital Signatures.
    */
-  ANSI_X9_31_RDSA("ANSI_X9_31_RDSA"),
+  ANSI_X9_31_RDSA("ANSI X9.31 rDSA"),
 
   /**
    * Signature scheme ISO/IEC 9796-2 Scheme 1.
    */
-  ISO_IEC_9796_2_SCHEME_1("ISO_IEC_9796_2_SCHEME_1");
+  ISO_IEC_9796_2_SCHEME_1("ISO/IEC 9796-2 Scheme 1");
 
   private final String schemeName;
 
