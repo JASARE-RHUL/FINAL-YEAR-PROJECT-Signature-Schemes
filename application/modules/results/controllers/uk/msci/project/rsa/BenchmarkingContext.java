@@ -3,7 +3,6 @@ package uk.msci.project.rsa;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import javafx.util.Pair;
 
 /**
  * This abstract class that provides a framework for specialised functionality within the results
@@ -141,7 +140,7 @@ public abstract class BenchmarkingContext {
    * DigestType} and a boolean indicating if it's provably secure. Returns null in the default
    * implementation.
    */
-  public Map<Integer, List<Pair<DigestType, Boolean>>> getKeyConfigToHashFunctionsMap() {
+  public Map<Integer, List<HashFunctionSelection>> getKeyConfigToHashFunctionsMap() {
     return null;
   }
 

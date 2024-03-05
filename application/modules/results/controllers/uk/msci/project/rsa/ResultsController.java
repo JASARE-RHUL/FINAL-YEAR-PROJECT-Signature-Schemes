@@ -141,7 +141,7 @@ public class ResultsController {
    * A mapping between key configurations and associated hash functions used in the benchmarking
    * run.
    */
-  private Map<Integer, List<Pair<DigestType, Boolean>>> keyConfigToHashFunctionsMap = new HashMap<>();
+  private Map<Integer, List<HashFunctionSelection>> keyConfigToHashFunctionsMap = new HashMap<>();
 
   /**
    * The total number of distinct groups of keys used in the benchmarking process.
@@ -386,7 +386,7 @@ public class ResultsController {
 
     while (currentIndex < results.size()) {
       for (int groupIndex = 0; groupIndex < totalGroups; groupIndex++) {
-        List<Pair<DigestType, Boolean>> hashFunctions = keyConfigToHashFunctionsMap.get(groupIndex);
+        List<HashFunctionSelection> hashFunctions = keyConfigToHashFunctionsMap.get(groupIndex);
 
         for (int hashFunctionIndex = 0; hashFunctionIndex < hashFunctions.size();
             hashFunctionIndex++) {
@@ -403,8 +403,20 @@ public class ResultsController {
             String keyConfigString = comparisonModeRowHeaders.get(
                 (headerStartIndex + k) % comparisonModeRowHeaders.size());
             int keyLength = keyLengths.get(keyIndex); // Retrieve the key length
+            HashFunctionSelection currentHashFunction = hashFunctions.get(hashFunctionIndex);
+            int[] hashSizeFractions = currentHashFunction.getCustomSize();
+            if (currentHashFunction.isProvablySecure()) {
+              hashSizeFractions = new int[]{1, 2};
+            }
+            int digestSize = hashSizeFractions == null ? 0
+                : (int) Math.round((keyLength * hashSizeFractions[0])
+                    / (double) hashSizeFractions[1]);
+
+            String hashFunctionName =
+                digestSize != 0 ? currentHashFunction.getDigestType().toString()
+                    + " (" + digestSize + "bit" + ")" : currentHashFunction.getDigestType().toString();
             ResultsModel resultsModel = new ResultsModel(keySpecificResults, keyConfigString,
-                hashFunctions.get(hashFunctionIndex).getKey().toString(), keyLength);
+                hashFunctionName, keyLength);
             resultsModel.calculateStatistics();
             resultsModels.add(resultsModel);
 
