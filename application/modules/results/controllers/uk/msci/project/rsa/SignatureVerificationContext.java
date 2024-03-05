@@ -53,7 +53,8 @@ public class SignatureVerificationContext extends BenchmarkingContext {
    */
   @Override
   public String getResultsLabel() {
-    return "Benchmarking Results for Signature Verification" + "(" + signatureModel.getSignatureType() + ")" ;
+    return "Benchmarking Results for Signature Verification" + "("
+        + signatureModel.getSignatureType() + "-" + signatureModel.getHashType()  + ")";
   }
 
   /**
