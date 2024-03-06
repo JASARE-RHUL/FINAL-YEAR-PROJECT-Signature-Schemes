@@ -361,4 +361,26 @@ public class ResultsModel {
       }
     }
   }
+
+  /**
+   * Sets the name of the hash function used in the benchmarking run. This method updates the model
+   * with the specified hash function name, allowing for the identification and categorisation of
+   * benchmarking results based on the hash function used.
+   *
+   * @param hashFunctionName The name of the hash function used in the benchmarking process.
+   */
+  public void setHashFunctionName(String hashFunctionName) {
+    this.hashFunctionName = hashFunctionName;
+  }
+
+  /**
+   * Sets the length of the key used in the benchmarking run. This method updates the model with the
+   * specified key length, measured in bits.
+   *
+   * @param keyLength The length of the key used in the benchmarking process, in bits.
+   */
+  public void setKeyLength(int keyLength) {
+    this.keyLength = keyLength;
+  }
+
 }
