@@ -17,8 +17,6 @@ import javafx.scene.control.RadioButton;
 import javafx.scene.control.Toggle;
 import javafx.stage.Stage;
 import javafx.util.Pair;
-import uk.msci.project.rsa.SignatureBaseController.ApplicationModeChangeObserver;
-import uk.msci.project.rsa.SignatureBaseController.CrossBenchmarkingModeChangeObserver;
 
 /**
  * Controller class for the key generation view in the digital signature application. It handles
@@ -156,6 +154,7 @@ public class GenController {
 
     @Override
     public void handle(ActionEvent event) {
+      boolean isSmallE;
       String keyBitSizes = genView.getKeySize();
       if (!(Pattern.compile("^\\s*\\d+(?:\\s*,\\s*\\d+)+\\s*$").matcher(genView.getKeySize())
           .matches())) {
@@ -167,7 +166,7 @@ public class GenController {
       } else {
         int[] intArray = convertStringToIntArray(keyBitSizes);
         int k = intArray.length;
-        boolean isSmallE;
+
         genModel.setKeyParameters(k, convertStringToIntArray(keyBitSizes));
         try {
           isSmallE = genView.getSmallEToggle().equals("Yes");
@@ -180,9 +179,11 @@ public class GenController {
           return;
         }
         genModel.generateKey();
-        mainController.setProvableKeyForSignatureProcesses(
-            genModel.getGeneratedKeyPair().getPrivateKey().getKeyValue(),
-            genModel.getGeneratedKeyPair().getPublicKey().getKeyValue());
+        if (isSmallE) {
+          mainController.setProvableKeyForSignatureProcesses(
+              genModel.getGeneratedKeyPair().getPrivateKey().getKeyValue(),
+              genModel.getGeneratedKeyPair().getPublicKey().getKeyValue());
+        }
         genView.setFailurePopupVisible(false);
         genView.setSuccessPopupVisible(true);
         genView.addExportPublicKeyObserver(new ExportPublicKeyObserver());
@@ -280,14 +281,17 @@ public class GenController {
    * the ResultsController with the appropriate context and displays the results view with the
    * gathered benchmarking data.
    */
-  private void handleBenchmarkingCompletionComparisonMode(List<String> keyConfigurationsString, boolean isCustomComparisonMode) {
+  private void handleBenchmarkingCompletionComparisonMode(List<String> keyConfigurationsString,
+      boolean isCustomComparisonMode) {
 
     ResultsController resultsController = new ResultsController(mainController);
     BenchmarkingContext context = new KeyGenerationContext(genModel);
     resultsController.setContext(context);
     genModel.generateKeyBatch();
-    mainController.setProvableKeyBatchForSigning(genModel.getPrivateKeyBatch(), true, isCustomComparisonMode);
-    mainController.setProvableKeyBatchForVerification(genModel.getPublicKeyBatch(), true, isCustomComparisonMode);
+    mainController.setProvableKeyBatchForSigning(genModel.getPrivateKeyBatch(), true,
+        isCustomComparisonMode);
+    mainController.setProvableKeyBatchForVerification(genModel.getPublicKeyBatch(), true,
+        isCustomComparisonMode);
     mainController.setKeyConfigurationStringsForComparisonMode(keyConfigurationsString);
     resultsController.showResultsView(mainController.getPrimaryStage(), keyConfigurationsString,
         genModel.getClockTimesPerTrial(), genModel.summedKeySizes(genModel.getKeyParams()), true,
@@ -359,7 +363,7 @@ public class GenController {
                       genModel.formatCustomKeyConfigurations(
                           genView.getDynamicKeyConfigurationsData()), true);
                   mainController.setKeyConfigToHashFunctionsMapForCustomComparisonMode(
-                      genView.getKeyConfigToHashFunctionsMap(),genView.getKeysPerGroup());
+                      genView.getKeyConfigToHashFunctionsMap(), genView.getKeysPerGroup());
                 },
                 mainController.getPrimaryStage());
 
