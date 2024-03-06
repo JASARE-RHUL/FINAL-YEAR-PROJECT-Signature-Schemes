@@ -323,6 +323,9 @@ public class ResultsModel {
       writeStatisticLine(statsWriter, "Variance", String.format("%.5f ms", varianceData));
       writeStatisticLine(statsWriter, "Minimum Time", String.format("%.5f ms", minTimeData));
       writeStatisticLine(statsWriter, "Maximum Time", String.format("%.5f ms", maxTimeData));
+      if (hashFunctionName.length() != 0) {
+        writeStatisticLine(statsWriter, "Hash Function", hashFunctionName);
+      }
     }
   }
 
