@@ -598,15 +598,14 @@ public abstract class SignatureBaseController {
           if (signatureView.getParameterChoice().equals("Provably Secure")) {
             signatureModel.setProvablySecure(true);
           } else {
-            showCustomHashTextOption(signatureView);
+            setCustomHashTextOptionVisibility(signatureView, true);
           }
           break;
         case "SHAKE-128":
           signatureModel.setHashType(DigestType.SHAKE_128);
           if (signatureView.getParameterChoice().equals("Provably Secure")) {
             signatureModel.setProvablySecure(true);
-          } else {
-            showCustomHashTextOption(signatureView);
+            setCustomHashTextOptionVisibility(signatureView, true);
           }
           break;
         case "SHA-512 with MGF1":
@@ -614,7 +613,7 @@ public abstract class SignatureBaseController {
           if (signatureView.getParameterChoice().equals("Provably Secure")) {
             signatureModel.setProvablySecure(true);
           } else {
-            showCustomHashTextOption(signatureView);
+            setCustomHashTextOptionVisibility(signatureView, true);
           }
           break;
         case "SHA-256 with MGF1":
@@ -622,7 +621,7 @@ public abstract class SignatureBaseController {
           if (signatureView.getParameterChoice().equals("Provably Secure")) {
             signatureModel.setProvablySecure(true);
           } else {
-            showCustomHashTextOption(signatureView);
+            setCustomHashTextOptionVisibility(signatureView, true);
           }
           break;
         case "SHA-512":
@@ -639,25 +638,29 @@ public abstract class SignatureBaseController {
   }
 
   /**
-   * Displays the option for the user to enter a custom hash output size. This method is called when
-   * the user selects a hash function that supports variable output size. It controls the visibility
-   * of the UI element (either a text field or text area) where the user can specify the desired
-   * size of the hash output.
+   * Controls the visibility of the input field for the custom hash output size in the signature
+   * view. This method is invoked when the hash function selection changes, particularly when a hash
+   * function supporting variable output size is chosen.
    * <p>
-   * In benchmarking mode, a text area is made visible to allow the user to specify hash output size
-   * as a single fraction that will be used to set the hash size relative to the modulus for each
-   * key in the batch. In standard mode, a text field is shown for individual hash output size
-   * specification.
+   * In benchmarking mode, a text area is displayed for the user to enter a fractional value
+   * representing the hash output size relative to the modulus for each key in a batch. In standard
+   * mode, a text field is shown, enabling the user to enter an individual hash output size for the
+   * selected operation. The method ensures the correct UI component is visible based on the current
+   * application mode and the selected hash function type.
+   * </p>
    *
    * @param signatureView The signature view where the hash output size option is to be displayed.
+   * @param visible       A boolean value indicating whether to show (true) or hide (false) the hash
+   *                      output size input field.
    */
-  public void showCustomHashTextOption(SignatureBaseView signatureView) {
+  public void setCustomHashTextOptionVisibility(SignatureBaseView signatureView, boolean visible) {
     if (isBenchmarkingMode) {
-      signatureView.setHashOutputSizeAreaVisibility(true);
+      signatureView.setHashOutputSizeAreaVisibility(visible);
     } else {
-      signatureView.setHashOutputSizeFieldVisibility(true);
+      signatureView.setHashOutputSizeFieldVisibility(visible);
     }
   }
+
 
   /**
    * The observer for changes in parameter choice (standard vs. provably secure vs. custom). This
@@ -687,7 +690,7 @@ public abstract class SignatureBaseController {
         String radioButtonText = selectedRadioButton.getText();
         switch (radioButtonText) {
           case "Provably Secure":
-            signatureView.setHashOutputSizeFieldVisibility(false);
+            setCustomHashTextOptionVisibility(signatureView, false);
             signatureView.updateHashFunctionDropdownForCustomOrProvablySecure();
             break;
           case "Custom":
@@ -695,7 +698,7 @@ public abstract class SignatureBaseController {
             break;
           case "Standard":
           default:
-            signatureView.setHashOutputSizeFieldVisibility(false);
+            setCustomHashTextOptionVisibility(signatureView, false);
             signatureView.updateHashFunctionDropdownForStandard();
             break;
 
