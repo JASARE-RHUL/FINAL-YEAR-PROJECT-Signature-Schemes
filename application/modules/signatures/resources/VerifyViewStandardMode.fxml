@@ -82,7 +82,7 @@
                   editable="false"/>
                 <ImageView fx:id="checkmarkImage" fitWidth="20" fitHeight="20" preserveRatio="true"
                   visible="false"/>
-                <Button fx:id="importKeyButton" text="Import Private Key"/>
+                <Button fx:id="importKeyButton" text="Import Public Key"/>
                 <Button fx:id="cancelImportSingleKeyButton" text="Cancel Import" managed="false"
                   visible="true"/>
               </HBox>
