@@ -198,6 +198,9 @@ public class ResultsController {
       this.results = results;
       this.totalTrials = results.size();
       this.keyIndex = 0;
+      if (!(currentContext instanceof KeyGenerationContext)) {
+        isSignatureOperationResults = true;
+      }
 
       displayCurrentContextButtons();
 
@@ -247,8 +250,7 @@ public class ResultsController {
           resultsView.populateTableView();
           initialiseKeySwitchButtons();
           splitResultsByKeys();
-          if (currentContext.getKeyConfigToHashFunctionsMap() != null) {
-            isSignatureOperationResults = true;
+          if (isSignatureOperationResults) {
             resultsView.addStatisticData(
                 new StatisticData("Hash Function:", resultsModels.get(0).getHashFunctionName()));
           }
@@ -297,8 +299,7 @@ public class ResultsController {
         () -> {
           resultsView.removeValueColumn();
           resultsView.setNameColumnText("Parameter Type");
-          if (currentContext.getKeyConfigToHashFunctionsMap() != null) {
-            isSignatureOperationResults = true;
+          if (isSignatureOperationResults) {
             keyConfigToHashFunctionsMap = currentContext.getKeyConfigToHashFunctionsMap();
             totalGroups = currentContext.getTotalGroups();
             keysPerGroup = currentContext.getKeysPerGroup();
