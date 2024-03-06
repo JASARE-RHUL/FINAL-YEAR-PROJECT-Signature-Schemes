@@ -219,8 +219,8 @@ public class KeyConfigurationsDialog {
       @Override
       protected void updateItem(HashFunctionItem item, boolean empty) {
         super.updateItem(item, empty);
-        customTextField.setPromptText("Enter Fraction of Modulus Length");
-        customTextField.setMinWidth(160);
+        customTextField.setPromptText("Enter hash size as a fraction of each key size (e.g., 1/2)");
+        customTextField.setMinWidth(260);
 
         // Resetting the setup for reuse
         checkBox.setOnAction(null);
