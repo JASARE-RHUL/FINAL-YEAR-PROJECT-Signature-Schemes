@@ -174,6 +174,21 @@ public class SignatureModel {
    */
   private int totalGroups;
 
+  /**
+   * An array storing the fraction used to determine the custom hash size based on the key length.
+   * The first element of the array represents the numerator, and the second element represents the
+   * denominator of the fraction. This array is used in the calculation of custom hash sizes for
+   * arbitrary length hash functions in signature operations.
+   */
+  private int[] customHashSizeFraction;
+
+
+  /**
+   * A list storing the lengths of the keys in the current key batch in bits. This list is used to
+   * keep track of key sizes.
+   */
+  private List<Integer> keyLengths;
+
 
   /**
    * Constructs a new {@code SignatureModel} without requiring an initial key representative of the
@@ -436,6 +451,7 @@ public class SignatureModel {
       List<List<Long>> timesPerKey = new ArrayList<>();
       List<List<byte[]>> signaturesPerKey = new ArrayList<>();
       List<List<byte[]>> nonRecoverableMessagesPerKey = new ArrayList<>();
+      setKeyLengths(privKeyBatch);
 
       for (int k = 0; k < privKeyBatch.size(); k++) {
         timesPerKey.add(new ArrayList<>());
@@ -450,11 +466,16 @@ public class SignatureModel {
       while ((message = messageReader.readLine()) != null && messageCounter < this.numTrials) {
         int keyIndex = 0;
         for (PrivateKey key : privKeyBatch) {
+          int keyLength = keyLengths.get(keyIndex);
+          int digestSize = customHashSizeFraction == null ? 0
+              : (int) Math.round((keyLength * customHashSizeFraction[0])
+                  / (double) customHashSizeFraction[1]);
+          digestSize = Math.floorDiv(digestSize + 7, 8);
 
           // Synchronous signature creation
           SigScheme sigScheme = SignatureFactory.getSignatureScheme(currentType, key,
               isProvablySecure);
-          sigScheme.setDigest(currentHashType, hashSize);
+          sigScheme.setDigest(currentHashType, digestSize);
           long startTime = System.nanoTime();
           byte[] signature = sigScheme.sign(message.getBytes());
           long endTime = System.nanoTime() - startTime;
@@ -504,6 +525,7 @@ public class SignatureModel {
 
     this.messageFile = batchMessageFile;
     this.numKeySizesForComparisonMode = privKeyBatch.size() / numKeysPerKeySizeComparisonMode;
+    setKeyLengths(privKeyBatch);
 
     try (BufferedReader messageReader = new BufferedReader(new FileReader(batchMessageFile))) {
       // Initialize lists to store times and results for each key
@@ -540,7 +562,7 @@ public class SignatureModel {
                     j < keyGroupIndex + keysPerGroup && j < numKeysPerKeySizeComparisonMode; j++) {
                   int actualKeyIndex = i + j;
                   PrivateKey privateKey = privKeyBatch.get(actualKeyIndex);
-                  int keyLength = getPrivKeyLengths().get(actualKeyIndex);
+                  int keyLength = keyLengths.get(actualKeyIndex);
                   SigScheme sigScheme = SignatureFactory.getSignatureScheme(currentType, privateKey,
                       hashFunctionType.isProvablySecure());
                   int digestSize = hashFunctionType.getCustomSize() == null ? 0
@@ -681,6 +703,7 @@ public class SignatureModel {
     List<List<Boolean>> verificationResultsPerKey = new ArrayList<>();
     List<List<byte[]>> signaturesPerKey = new ArrayList<>();
     List<List<byte[]>> recoveredMessagesPerKey = new ArrayList<>();
+    setKeyLengths(publicKeyBatch);
     for (int k = 0; k < publicKeyBatch.size(); k++) {
       timesPerKey.add(new ArrayList<>());
       verificationResultsPerKey.add(new ArrayList<>());
@@ -699,13 +722,19 @@ public class SignatureModel {
           && messageCounter < this.numTrials) {
         int keyIndex = 0;
         for (PublicKey key : publicKeyBatch) {
+          int keyLength = keyLengths.get(keyIndex);
+          int digestSize = customHashSizeFraction == null ? 0
+              : (int) Math.round((keyLength * customHashSizeFraction[0])
+                  / (double) customHashSizeFraction[1]);
+          digestSize = Math.floorDiv(digestSize + 7, 8);
+
           // Read signature for each message
           String signatureLine = signatureReader.readLine();
           byte[] signatureBytes = new BigInteger(signatureLine).toByteArray();
 
           // Synchronous verification
           Pair<Boolean, Pair<Long, List<byte[]>>> result = verifySignature(key, messageLine,
-              signatureBytes);
+              signatureBytes, digestSize);
 
           long endTime = result.getValue().getKey();
 
@@ -759,6 +788,7 @@ public class SignatureModel {
     List<List<Boolean>> verificationResultsPerKey = new ArrayList<>();
     List<List<byte[]>> signaturesPerKey = new ArrayList<>();
     List<List<byte[]>> recoveredMessagesPerKey = new ArrayList<>();
+    setKeyLengths(publicKeyBatch);
 
     for (int k = 0; k < publicKeyBatch.size(); k++) {
       timesPerKey.add(new ArrayList<>());
@@ -799,7 +829,7 @@ public class SignatureModel {
                   PublicKey publicKey = publicKeyBatch.get(actualKeyIndex);
                   SigScheme sigScheme = SignatureFactory.getSignatureScheme(currentType, publicKey,
                       hashFunctionType.isProvablySecure());
-                  int keyLength = getPrivKeyLengths().get(actualKeyIndex);
+                  int keyLength = keyLengths.get(actualKeyIndex);
                   int digestSize = hashFunctionType.getCustomSize() == null ? 0
                       : (int) Math.round((keyLength * hashFunctionType.getCustomSize()[0])
                           / (double) hashFunctionType.getCustomSize()[1]);
@@ -882,6 +912,7 @@ public class SignatureModel {
    * @param publicKey      The public key used for signature verification.
    * @param messageLine    The message to be verified against the signature.
    * @param signatureBytes The signature to be verified.
+   * @param digestSize     The size of the digest to be used in the verification process.
    * @return A Pair containing the result of verification and the relevant data (original message,
    * signature, and recovered message if applicable).
    * @throws InvalidSignatureTypeException If the signature type is invalid.
@@ -889,12 +920,12 @@ public class SignatureModel {
    */
   private Pair<Boolean, Pair<Long, List<byte[]>>> verifySignature(
       PublicKey publicKey,
-      String messageLine, byte[] signatureBytes)
+      String messageLine, byte[] signatureBytes, int digestSize)
       throws
       InvalidSignatureTypeException, DataFormatException, NoSuchAlgorithmException, InvalidDigestException, NoSuchProviderException {
     SigScheme sigScheme = SignatureFactory.getSignatureScheme(currentType, publicKey,
         isProvablySecure);
-    sigScheme.setDigest(currentHashType, hashSize);
+    sigScheme.setDigest(currentHashType, digestSize);
     boolean verificationResult;
     byte[] recoveredMessage = new byte[]{};
     long endTime = 0;
@@ -980,7 +1011,6 @@ public class SignatureModel {
   }
 
 
-
   /**
    * Combines the results from the batch signature creation into final lists. It aggregates the
    * times, signatures, and non-recoverable message parts from all keys into single lists for easy
@@ -1014,12 +1044,12 @@ public class SignatureModel {
    */
   public void exportVerificationResultsToCSV(int keyIndex) throws IOException {
     File file = FileHandle.createUniqueFile(
-        "verificationResults_" + getPublicKeyLengths().get(keyIndex) + "bits.csv");
+        "verificationResults_" + getKeyLengths().get(keyIndex) + "bits.csv");
 
     try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
       // Write header
       writer.write(
-          "KeyIndex" + " (" + getPublicKeyLengths().get(keyIndex) + "bit), "
+          "KeyIndex" + " (" + getKeyLengths().get(keyIndex) + "bit), "
               + "Verification Result, Original Message, Signature, Recovered Message\n");
 
       int numKeys = publicKeyBatch.size();
@@ -1068,7 +1098,7 @@ public class SignatureModel {
    */
   void exportVerificationResultsToCSV_ComparisonMode(int keySizeIndex) throws IOException {
     File file = FileHandle.createUniqueFile(
-        "verificationResults_ComparisonMode_" + getPublicKeyLengths().get(keySizeIndex)
+        "verificationResults_ComparisonMode_" + getKeyLengths().get(keySizeIndex)
             + "bits.csv");
 
     int currentIndex = 0;
@@ -1076,7 +1106,7 @@ public class SignatureModel {
     try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
       // Write header
       writer.write(
-          "Parameter Type" + " (" + getPublicKeyLengths().get(keySizeIndex)
+          "Parameter Type" + " (" + getKeyLengths().get(keySizeIndex)
               + "bit key), Hash Function, "
               + "Verification Result, Original Message, Signature, Recovered Message\n");
       while (currentIndex < clockTimesPerTrial.size()) {
@@ -1210,13 +1240,8 @@ public class SignatureModel {
     this.isProvablySecure = isProvablySecure;
   }
 
-  /**
-   * Retrieves the lengths of the keys in bits. This method is useful for identifying the strength
-   * of the keys used in the signature process.
-   *
-   * @return A list of integer values, each representing the bit length of a key in the batch.
-   */
-  public List<Integer> getKeyLengths(List<? extends Key> keyBatch) {
+
+  public List<Integer> computeKeyLengths(List<? extends Key> keyBatch) {
     List<Integer> result = new ArrayList<>();
     for (Key key : keyBatch) {
       result.add(((key.getModulus().bitLength() + 7) / 8) * 8);
@@ -1225,26 +1250,26 @@ public class SignatureModel {
   }
 
   /**
-   * Retrieves the lengths of the private keys in bits. This method provides insight into the
-   * strength of the keys used in the signature process.
+   * Sets the list of key lengths based on the provided key batch. Each key's length is calculated
+   * and stored in the 'keyLengths' list.
+   *
+   * @param keyBatch A list of keys whose lengths are to be calculated and stored.
+   */
+  public void setKeyLengths(List<? extends Key> keyBatch) {
+    keyLengths = computeKeyLengths(keyBatch);
+  }
+
+  /**
+   * Retrieves the lengths of alls from the current key batch in bits. This method provides insight
+   * into the strength of the keys used in the signature process.
    *
    * @return A list of integer values, each representing the bit length of a private key in the
    * batch.
    */
-  public List<Integer> getPrivKeyLengths() {
-    return getKeyLengths(privKeyBatch);
+  public List<Integer> getKeyLengths() {
+    return keyLengths;
   }
 
-  /**
-   * Retrieves the lengths of the public keys in bits. This method is useful for identifying the
-   * strength of the keys used in the signature process.
-   *
-   * @return A list of integer values, each representing the bit length of a public key in the
-   * batch.
-   */
-  public List<Integer> getPublicKeyLengths() {
-    return getKeyLengths(publicKeyBatch);
-  }
 
   /**
    * Retrieves the current list of fixed hash types set for the comparison mode, representing hash
@@ -1414,5 +1439,19 @@ public class SignatureModel {
    */
   public int getTotalGroups() {
     return totalGroups;
+  }
+
+  /**
+   * Sets the fraction used to calculate the custom hash size based on the key length. The array
+   * should contain two elements: the first element represents the numerator, and the second element
+   * represents the denominator of the fraction. This method is crucial for configuring the model to
+   * use custom hash sizes for signature operations when a variable length hash function is
+   * specified in benchmarking mode.
+   *
+   * @param customHashSizeFraction An array representing the fraction for custom hash size
+   *                               calculation.
+   */
+  public void setCustomHashSizeFraction(int[] customHashSizeFraction) {
+    this.customHashSizeFraction = customHashSizeFraction;
   }
 }
