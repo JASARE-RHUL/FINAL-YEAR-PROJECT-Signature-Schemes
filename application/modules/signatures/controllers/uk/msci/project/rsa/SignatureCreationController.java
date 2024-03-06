@@ -209,7 +209,7 @@ public class SignatureCreationController extends SignatureBaseController {
 
         signature = new BigInteger(1, signatureModel.sign(message)).toString();
         setupPostGenerationObservers();
-        if (signatureModel.getNonRecoverableM().length == 0) {
+        if (signatureModel.getNonRecoverableM().length != 0) {
           signView.addExportNonRecoverableMessageObserver(
               new ExportObserver("nonRecoverableMessage.txt",
                   new String(signatureModel.getNonRecoverableM()),
