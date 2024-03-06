@@ -811,4 +811,17 @@ public class ResultsView implements Initializable {
   }
 
 
+  /**
+   * Removes the last row from the results table view. This method is used to manage the dynamic
+   * nature of the results displayed in the table. The method is typically called prior to adding
+   * new data to the table to remove any outdated or no longer relevant information.
+   */
+  public void removeLastRow() {
+    if (!tableView.getItems().isEmpty()) {
+      int lastRowIndex = tableView.getItems().size() - 1;
+      tableView.getItems().remove(lastRowIndex);
+    }
+  }
+
+
 }
