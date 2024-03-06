@@ -1454,4 +1454,14 @@ public class SignatureModel {
   public void setCustomHashSizeFraction(int[] customHashSizeFraction) {
     this.customHashSizeFraction = customHashSizeFraction;
   }
+
+  /**
+   * Retrieves the fraction used to calculate the custom hash size based on provided key lengths in
+   * normal benchmarking mode.
+   *
+   * @return corresponding fraction represented as an int list
+   */
+  public int[] getCustomHashSizeFraction() {
+    return customHashSizeFraction;
+  }
 }
