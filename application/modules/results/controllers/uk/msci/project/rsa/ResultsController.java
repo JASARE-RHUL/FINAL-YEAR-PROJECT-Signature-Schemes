@@ -247,6 +247,12 @@ public class ResultsController {
           resultsView.populateTableView();
           initialiseKeySwitchButtons();
           splitResultsByKeys();
+          if (currentContext.getKeyConfigToHashFunctionsMap() != null) {
+            isSignatureOperationResults = true;
+            resultsView.addStatisticData(
+                new StatisticData("Hash Function:", resultsModels.get(0).getHashFunctionName()));
+          }
+          resultsView.refreshResults();
           precomputeGraphs();
           resultsView.setLineGraphButtonMeanVisibility(false);
         });
@@ -415,7 +421,8 @@ public class ResultsController {
 
             String hashFunctionName =
                 digestSize != 0 ? currentHashFunction.getDigestType().toString()
-                    + " (" + digestSize + "bit" + ")" : currentHashFunction.getDigestType().toString();
+                    + " (" + digestSize + "bit" + ")"
+                    : currentHashFunction.getDigestType().toString();
             ResultsModel resultsModel = new ResultsModel(keySpecificResults, keyConfigString,
                 hashFunctionName, keyLength);
             resultsModel.calculateStatistics();
@@ -439,6 +446,21 @@ public class ResultsController {
       int endIndex = startIndex + (this.totalTrials / totalKeys);
       List<Long> keySpecificResults = results.subList(startIndex, endIndex);
       ResultsModel resultsModel = new ResultsModel(keySpecificResults);
+      if (isSignatureOperationResults) {
+        int keyLength = keyLengths.get(keyIndex);
+        resultsModel.setKeyLength(keyLength);
+        int[] hashSizeFractions = currentContext.getCustomHashSizeFraction();
+        if (currentContext.getProvablySecure()) {
+          hashSizeFractions = new int[]{1, 2};
+        }
+        int digestSize = hashSizeFractions == null ? 0
+            : (int) Math.round((keyLength * hashSizeFractions[0])
+                / (double) hashSizeFractions[1]);
+        String hashFunctionName =
+            digestSize != 0 ? currentContext.getHashType().toString()
+                + " (" + digestSize + "bit" + ")" : currentContext.getHashType().toString();
+        resultsModel.setHashFunctionName(hashFunctionName);
+      }
       resultsModel.calculateStatistics();
       resultsModels.add(resultsModel);
     }
@@ -453,6 +475,9 @@ public class ResultsController {
   public void displayResultsForKey(int keyIndex) {
     this.keyIndex = keyIndex;
     resultsModel = resultsModels.get(keyIndex);
+    resultsView.removeLastRow();
+    resultsView.addStatisticData(
+        new StatisticData("Hash Function:", resultsModel.getHashFunctionName()));
     setStatsResultsView(resultsModel, keyIndex);
   }
 

@@ -133,4 +133,35 @@ public class SignatureCreationContext extends BenchmarkingContext {
   public int getTotalGroups() {
     return signatureModel.getTotalGroups();
   }
+
+  /**
+   * Retrieves the fraction used to calculate the custom hash size based on provided key lengths in
+   * normal benchmarking mode.
+   *
+   * @return corresponding fraction represented as an int list
+   */
+  @Override
+  public int[] getCustomHashSizeFraction() {
+    return signatureModel.getCustomHashSizeFraction();
+  }
+
+  /**
+   * Retrieves the type of hash function currently set in the model.
+   *
+   * @return The current hash function type.
+   */
+  @Override
+  public DigestType getHashType() {
+    return signatureModel.getHashType();
+  }
+
+  /**
+   * Indicates whether the signature scheme operates in provably secure mode.
+   *
+   * @return {@code true} if the signature scheme is operating in provably secure mode, {@code
+   * false} otherwise.
+   */
+  public boolean getProvablySecure() {
+    return signatureModel.getProvablySecure();
+  }
 }

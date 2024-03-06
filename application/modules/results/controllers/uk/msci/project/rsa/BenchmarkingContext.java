@@ -186,5 +186,34 @@ public abstract class BenchmarkingContext {
     return 0;
   }
 
+  /**
+   * Retrieves the fraction used to calculate the custom hash size based on provided key lengths in
+   * normal benchmarking mode.
+   *
+   * @return corresponding fraction represented as an int list
+   */
+  public int[] getCustomHashSizeFraction() {
+    return null;
+  }
+
+  /**
+   * Retrieves the type of hash function currently set in the model.
+   *
+   * @return The current hash function type.
+   */
+  public DigestType getHashType() {
+    return null;
+  }
+
+  /**
+   * Indicates whether the signature scheme operates in provably secure mode.
+   *
+   * @return {@code true} if the signature scheme is operating in provably secure mode, {@code
+   * false} otherwise.
+   */
+  public boolean getProvablySecure() {
+    return false;
+  }
+
 
 }
