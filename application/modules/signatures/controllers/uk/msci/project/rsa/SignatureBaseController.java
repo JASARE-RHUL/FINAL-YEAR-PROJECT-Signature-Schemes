@@ -18,8 +18,6 @@ import javafx.event.EventHandler;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.Toggle;
 import javafx.stage.Stage;
-import javafx.util.Pair;
-import uk.msci.project.rsa.GenController.CrossBenchmarkingModeChangeObserver;
 
 
 /**
@@ -125,6 +123,12 @@ public abstract class SignatureBaseController {
    * keyConfigToHashFunctionsMap.
    */
   boolean isCustomCrossParameterBenchmarkingMode;
+
+  /**
+   * Flag indicating whether the controller is operating in benchmarking mode. When set to true, the
+   * controller displays specialised custom hash options.
+   */
+  boolean isBenchmarkingMode;
 
 
   /**
@@ -594,7 +598,7 @@ public abstract class SignatureBaseController {
           if (signatureView.getParameterChoice().equals("Provably Secure")) {
             signatureModel.setProvablySecure(true);
           } else {
-            signatureView.setHashOutputSizeFieldVisibility(true);
+            showCustomHashTextOption(signatureView);
           }
           break;
         case "SHAKE-128":
@@ -602,7 +606,7 @@ public abstract class SignatureBaseController {
           if (signatureView.getParameterChoice().equals("Provably Secure")) {
             signatureModel.setProvablySecure(true);
           } else {
-            signatureView.setHashOutputSizeFieldVisibility(true);
+            showCustomHashTextOption(signatureView);
           }
           break;
         case "SHA-512 with MGF1":
@@ -610,7 +614,7 @@ public abstract class SignatureBaseController {
           if (signatureView.getParameterChoice().equals("Provably Secure")) {
             signatureModel.setProvablySecure(true);
           } else {
-            signatureView.setHashOutputSizeFieldVisibility(true);
+            showCustomHashTextOption(signatureView);
           }
           break;
         case "SHA-256 with MGF1":
@@ -618,7 +622,7 @@ public abstract class SignatureBaseController {
           if (signatureView.getParameterChoice().equals("Provably Secure")) {
             signatureModel.setProvablySecure(true);
           } else {
-            signatureView.setHashOutputSizeFieldVisibility(true);
+            showCustomHashTextOption(signatureView);
           }
           break;
         case "SHA-512":
@@ -631,6 +635,27 @@ public abstract class SignatureBaseController {
           signatureModel.setProvablySecure(false);
           break;
       }
+    }
+  }
+
+  /**
+   * Displays the option for the user to enter a custom hash output size. This method is called when
+   * the user selects a hash function that supports variable output size. It controls the visibility
+   * of the UI element (either a text field or text area) where the user can specify the desired
+   * size of the hash output.
+   * <p>
+   * In benchmarking mode, a text area is made visible to allow the user to specify hash output size
+   * as a single fraction that will be used to set the hash size relative to the modulus for each
+   * key in the batch. In standard mode, a text field is shown for individual hash output size
+   * specification.
+   *
+   * @param signatureView The signature view where the hash output size option is to be displayed.
+   */
+  public void showCustomHashTextOption(SignatureBaseView signatureView) {
+    if (isBenchmarkingMode) {
+      signatureView.setHashOutputSizeAreaVisibility(true);
+    } else {
+      signatureView.setHashOutputSizeFieldVisibility(true);
     }
   }
 
@@ -928,16 +953,17 @@ public abstract class SignatureBaseController {
   }
 
   /**
-   * Handles the input for custom hash output size configuration. This method validates the user input
-   * to ensure it matches a fraction format (e.g., "1/2") and verifies that the numerator is less than
-   * the denominator. The fraction is used to determine the proportion of the modulus size for the
-   * hash output in signature operations in benchmarking mode.
+   * Handles the input for custom hash output size configuration. This method validates the user
+   * input to ensure it matches a fraction format (e.g., "1/2") and verifies that the numerator is
+   * less than the denominator. The fraction is used to determine the proportion of the modulus size
+   * for the hash output in signature operations in benchmarking mode.
+   * <p>
+   * The method updates the model with the calculated fraction if the input is valid. If the input
+   * is invalid, an error alert is displayed to the user, requesting them to provide a valid
+   * fraction.
    *
-   * The method updates the model with the calculated fraction if the input is valid. If the input is
-   * invalid, an error alert is displayed to the user, requesting them to provide a valid fraction.
-   *
-   * @return {@code true} if the hash output size input is valid and successfully processed,
-   * {@code false} otherwise.
+   * @return {@code true} if the hash output size input is valid and successfully processed, {@code
+   * false} otherwise.
    */
   public boolean handleHashOutputSize() {
     boolean invalidField = false;
@@ -945,7 +971,7 @@ public abstract class SignatureBaseController {
     if (hashOutputSize.matches(
         "^\\s*[1-9]\\d*\\/([1-9]\\d*)\\s*$")) {
       String[] parts = hashOutputSize.trim().split("/");
-     fractionsArray = new int[2];
+      fractionsArray = new int[2];
       fractionsArray[0] = Integer.parseInt(parts[0]);
       fractionsArray[1] = Integer.parseInt(parts[1]);
       if (!(fractionsArray[0] < fractionsArray[1])) {
@@ -1213,14 +1239,106 @@ public abstract class SignatureBaseController {
    * @param signatureView The signature view that provides context for hash size setting.
    * @return Boolean value indicating if validation failed.
    */
-  boolean setHashSizeInModel(SignatureBaseView signatureView) {
-    if (signatureView.getHashOutputSizeFieldVisibility()) {
-      if (!handleHashOutputSize()) {
+  boolean setHashSizeInModelBenchmarking(SignatureBaseView signatureView) {
+    if (signatureView.getHashOutputSizeAreaVisibility()) {
+      if (!handleHashOutputSizeBenchmarking()) {
         return false;
       }
     }
     return true;
   }
+
+
+  /**
+   * Sets the hash size in the signature model based on the hash output size specified by the user.
+   * This method is invoked when there is a need to update the model with the hash size, especially
+   * when using variable length hash functions in custom mode. It validates the hash output size
+   * entered by the user to ensure it is a non-negative integer and falls within the acceptable
+   * range. If the validation fails or if the hash output size field is not visible (not required
+   * for the selected hash function), the method will not update the model and will return false.
+   * This method is crucial for maintaining the consistency of the signature model state with the
+   * user's input on the view.
+   * <p>
+   *
+   * @param signatureView The signature view that provides context for hash size setting.
+   * @return Boolean value indicating if validation failed.
+   */
+  boolean setHashSizeInModel(SignatureBaseView signatureView) {
+    if (!handleHashOutputSize(signatureView) && signatureView.getHashOutputSizeFieldVisibility()) {
+      return false;
+    } else if (signatureView.getHashOutputSizeFieldVisibility()) {
+      signatureModel.setHashSize((Integer.parseInt(hashOutputSize) + 7) / 8);
+    }
+    return true;
+  }
+
+
+  /**
+   * Validates the hash output size input by the user. Ensures that it is a non-negative integer and
+   * that it is provided when required based on the view's visibility settings.
+   *
+   * @return true if the hash output size is valid, false otherwise.
+   */
+  public boolean handleHashOutputSize(SignatureBaseView signatureView) {
+    try {
+      if (Integer.parseInt(hashOutputSize) < 0
+          && signatureView.getHashOutputSizeFieldVisibility()) {
+        uk.msci.project.rsa.DisplayUtility.showErrorAlert(
+            "You must provide a non-negative integer for the hash output size. Please try again.");
+        return false;
+      }
+    } catch (NumberFormatException e) {
+      // Show an error alert if the input is not a valid integer
+      if (signatureView.getHashOutputSizeFieldVisibility()) {
+        uk.msci.project.rsa.DisplayUtility.showErrorAlert(
+            "You must provide a non-negative integer for the hash output size. Please try again.");
+      }
+      return false;
+
+    }
+    return true;
+  }
+
+  /**
+   * Handles the input for custom hash output size configuration. This method validates the user
+   * input to ensure it matches a fraction format (e.g., "1/2") and verifies that the numerator is
+   * less than the denominator. The fraction is used to determine the proportion of the modulus size
+   * for the hash output in signature operations in benchmarking mode.
+   * <p>
+   * The method updates the model with the calculated fraction if the input is valid. If the input
+   * is invalid, an error alert is displayed to the user, requesting them to provide a valid
+   * fraction.
+   *
+   * @return {@code true} if the hash output size input is valid and successfully processed, {@code
+   * false} otherwise.
+   */
+  public boolean handleHashOutputSizeBenchmarking() {
+    boolean invalidField = false;
+    int[] fractionsArray = new int[2];
+    if (hashOutputSize.matches(
+        "^\\s*[1-9]\\d*\\/([1-9]\\d*)\\s*$")) {
+      String[] parts = hashOutputSize.trim().split("/");
+      fractionsArray = new int[2];
+      fractionsArray[0] = Integer.parseInt(parts[0]);
+      fractionsArray[1] = Integer.parseInt(parts[1]);
+      if (!(fractionsArray[0] < fractionsArray[1])) {
+        invalidField = true;
+      }
+    } else {
+      invalidField = true;
+    }
+
+    if (invalidField) {
+      uk.msci.project.rsa.DisplayUtility.showErrorAlert(
+          "You must provide a fraction representing the proportion of the modulus size for"
+              + " you wish the hash output to be when applied to the various keys submitted. Please try again.");
+    } else {
+      signatureModel.setCustomHashSizeFraction(fractionsArray);
+    }
+
+    return !invalidField;
+  }
+
 
   /**
    * Resets the parameters related to pre-loaded keys in the signature processes. This method is

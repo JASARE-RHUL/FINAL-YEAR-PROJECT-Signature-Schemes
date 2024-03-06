@@ -247,7 +247,10 @@ public abstract class SignatureBaseView implements SignatureViewInterface {
    * hash function.
    */
   @FXML
-  private TextField hashOutputSizeField;
+  private TextArea hashOutputSizeField;
+
+  @FXML
+  private TextField hashOutputSizeStandardMode;
 
   /**
    * VBox containing elements for message input in standard mode. This includes the text area for
@@ -368,7 +371,8 @@ public abstract class SignatureBaseView implements SignatureViewInterface {
     fixedHashFunctionComboBox.getItems().addAll("SHA-256", "SHA-512");
 
     // Populate the CheckComboBox for provable parameters
-    provableHashFunctionComboBox.getItems().addAll("SHA-256 with MGF1", "SHA-512 with MGF1", "SHAKE-128", "SHAKE-256");
+    provableHashFunctionComboBox.getItems()
+        .addAll("SHA-256 with MGF1", "SHA-512 with MGF1", "SHAKE-128", "SHAKE-256");
 
   }
 
@@ -726,13 +730,70 @@ public abstract class SignatureBaseView implements SignatureViewInterface {
   }
 
   /**
-   * Sets the visibility of the hash output size field.
+   * Sets the visibility of the hash output size area.
    *
    * @param visible true to make the field visible, false to hide it.
    */
   public void setHashOutputSizeFieldVisibility(boolean visible) {
     if (visible) {
-      resetHashField();
+      resetHash();
+    }
+    hashOutputSizeStandardMode.setManaged(visible);
+    hashOutputSizeStandardMode.setVisible(visible);
+
+  }
+
+
+  /**
+   * Retrieves the visibility status of the hash output size area.
+   *
+   * @return true if the hash output size field is visible, false otherwise.
+   */
+  public boolean getHashOutputSizeAreaVisibility() {
+    return hashOutputSizeField.isVisible();
+
+  }
+
+  /**
+   * Resets the hash output size area to its initial state with prompt text.
+   */
+  public void resetHashArea() {
+    hashOutputSizeField.setText("");
+  }
+
+  /**
+   * Resets the hash output size field to its initial state with prompt text.
+   */
+  public void resetHash() {
+    hashOutputSizeStandardMode.setText("");
+  }
+
+  /**
+   * Retrieves the entered hash output fraction from the area.
+   *
+   * @return String representing the hash output size.
+   */
+  public String getHashOutputSizeArea() {
+    return hashOutputSizeField.getText();
+  }
+
+  /**
+   * Retrieves the entered hash output size from the field.
+   *
+   * @return String representing the hash output size.
+   */
+  public String getHashOutputSizeField() {
+    return hashOutputSizeStandardMode.getText();
+  }
+
+  /**
+   * Sets the visibility of the hash output size field.
+   *
+   * @param visible true to make the field visible, false to hide it.
+   */
+  public void setHashOutputSizeAreaVisibility(boolean visible) {
+    if (visible) {
+      resetHashArea();
     }
     hashOutputSizeField.setManaged(visible);
     hashOutputSizeField.setVisible(visible);
@@ -746,7 +807,7 @@ public abstract class SignatureBaseView implements SignatureViewInterface {
    * @return true if the hash output size field is visible, false otherwise.
    */
   public boolean getHashOutputSizeFieldVisibility() {
-    return hashOutputSizeField.isVisible();
+    return hashOutputSizeStandardMode.isVisible();
 
   }
 
@@ -754,7 +815,7 @@ public abstract class SignatureBaseView implements SignatureViewInterface {
    * Resets the hash output size field to its initial state with prompt text.
    */
   public void resetHashField() {
-    hashOutputSizeField.setText("");
+    hashOutputSizeStandardMode.setText("");
   }
 
   /**
@@ -763,7 +824,7 @@ public abstract class SignatureBaseView implements SignatureViewInterface {
    * @return String representing the hash output size.
    */
   public String getHashOutputSize() {
-    return hashOutputSizeField.getText();
+    return hashOutputSizeStandardMode.getText();
   }
 
   /**
@@ -1213,7 +1274,8 @@ public abstract class SignatureBaseView implements SignatureViewInterface {
   }
 
   /**
-   * Registers an observer for when the standard parameter instantiation CheckComboBox values change.
+   * Registers an observer for when the standard parameter instantiation CheckComboBox values
+   * change.
    *
    * @param observer The change listener to register.
    */
@@ -1222,7 +1284,8 @@ public abstract class SignatureBaseView implements SignatureViewInterface {
   }
 
   /**
-   * Registers an observer for when the provably secure parameter instantiation CheckComboBox values change.
+   * Registers an observer for when the provably secure parameter instantiation CheckComboBox values
+   * change.
    *
    * @param observer The change listener to register.
    */

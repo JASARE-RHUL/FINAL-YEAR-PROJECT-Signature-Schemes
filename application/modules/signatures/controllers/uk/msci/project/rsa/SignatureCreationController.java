@@ -94,6 +94,7 @@ public class SignatureCreationController extends SignatureBaseController {
    * @param primaryStage The primary stage of the application where the view will be displayed.
    */
   public void showBenchmarkingView(Stage primaryStage) {
+    isBenchmarkingMode = true;
     if (isKeyForComparisonMode && isCrossParameterBenchmarkingEnabled) {
       showCrossBenchmarkingView(primaryStage);
       return;
@@ -112,6 +113,7 @@ public class SignatureCreationController extends SignatureBaseController {
    * @param primaryStage The primary stage of the application where the view will be displayed.
    */
   public void showStandardMode(Stage primaryStage) {
+    isBenchmarkingMode = false;
     loadSignView("/SignViewStandardMode.fxml",
         () -> setupObserversStandardMode(primaryStage, signView),
         () -> preloadProvablySecureKey(signView));
@@ -184,7 +186,7 @@ public class SignatureCreationController extends SignatureBaseController {
 
     @Override
     public void handle(ActionEvent event) {
-      hashOutputSize = signView.getHashOutputSize();
+      hashOutputSize = signView.getHashOutputSizeField();
       if ((signView.getTextInput().equals("") && message == null)
           || signatureModel.getKey() == null
           || signatureModel.getSignatureType() == null
@@ -240,7 +242,7 @@ public class SignatureCreationController extends SignatureBaseController {
 
     @Override
     public void handle(ActionEvent event) {
-      hashOutputSize = signView.getHashOutputSize();
+      hashOutputSize = signView.getHashOutputSizeArea();
 
       if (isCrossParameterBenchmarkingEnabled) {
         handleBenchmarkingInitiationComparisonMode();
@@ -256,7 +258,7 @@ public class SignatureCreationController extends SignatureBaseController {
         return;
       }
 
-      if (!setHashSizeInModel(signView)) {
+      if (!setHashSizeInModelBenchmarking(signView)) {
         return;
       }
       benchmarkingUtility = new BenchmarkingUtility();
@@ -287,7 +289,7 @@ public class SignatureCreationController extends SignatureBaseController {
       return;
     }
 
-    if (!setHashSizeInModel(signView) && !isCustomCrossParameterBenchmarkingMode) {
+    if (!setHashSizeInModelBenchmarking(signView) && !isCustomCrossParameterBenchmarkingMode) {
       return;
     }
     if (!isCustomCrossParameterBenchmarkingMode) {

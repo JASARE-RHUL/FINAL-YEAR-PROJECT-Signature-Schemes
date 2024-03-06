@@ -9,7 +9,7 @@
 
 <?import org.controlsfx.control.CheckComboBox?>
 <BorderPane xmlns:fx="http://javafx.com/fxml" fx:controller="uk.msci.project.rsa.VerifyView"
-  prefHeight="650.0" prefWidth="800.0" fx:id="root" stylesheets="SignatureView.css" >
+  prefHeight="650.0" prefWidth="800.0" fx:id="root" stylesheets="SignatureView.css">
 
   <!-- Header Section -->
   <top>
@@ -28,66 +28,72 @@
   <!-- Main Content -->
   <center>
     <ScrollPane fitToWidth="true" fitToHeight="true">
-    <VBox alignment="CENTER" spacing="20" style="-fx-padding: 10 10 10 10;">
-      <!-- Title and Logo -->
-      <HBox alignment="CENTER" spacing="10">
-        <Label text="Signature Verification" style="-fx-font-weight: bold; -fx-font-size: 24;">
-          <graphic>
-            <ImageView fitHeight="30" fitWidth="30" preserveRatio="true"/>
-          </graphic>
-        </Label>
-      </HBox>
+      <VBox alignment="CENTER" spacing="20" style="-fx-padding: 10 10 10 10;">
+        <!-- Title and Logo -->
+        <HBox alignment="CENTER" spacing="10">
+          <Label text="Signature Verification" style="-fx-font-weight: bold; -fx-font-size: 24;">
+            <graphic>
+              <ImageView fitHeight="30" fitWidth="30" preserveRatio="true"/>
+            </graphic>
+          </Label>
+        </HBox>
 
-      <Separator/>
+        <Separator/>
 
-      <!-- ToggleSwitch for Benchmarking Mode -->
-      <HBox alignment="CENTER_LEFT" spacing="10">
-        <Label text="Benchmarking Mode:" styleClass="bold-label"/>
-        <ToggleSwitch fx:id="benchmarkingModeToggle" selected="false"/>
-      </HBox>
-      <HBox fx:id="crossParameterHbox" alignment="CENTER_LEFT" spacing="10" managed="false" visible="false">
-        <Label text="Cross-Parameter Benchmarking Mode:" styleClass="bold-label"/>
-        <ToggleSwitch fx:id="crossParameterBenchmarkingModeToggle" selected="true"/>
-      </HBox>
-      <Separator/>
+        <!-- ToggleSwitch for Benchmarking Mode -->
+        <HBox alignment="CENTER_LEFT" spacing="10">
+          <Label text="Benchmarking Mode:" styleClass="bold-label"/>
+          <ToggleSwitch fx:id="benchmarkingModeToggle" selected="false"/>
+        </HBox>
+        <HBox fx:id="crossParameterHbox" alignment="CENTER_LEFT" spacing="10" managed="false"
+          visible="false">
+          <Label text="Cross-Parameter Benchmarking Mode:" styleClass="bold-label"/>
+          <ToggleSwitch fx:id="crossParameterBenchmarkingModeToggle" selected="true"/>
+        </HBox>
+        <Separator/>
 
-      <!-- Text Area and Import Text Button -->
-      <HBox spacing="10" alignment="CENTER">
-        <VBox spacing="27">
-          <VBox spacing="11">
-            <HBox spacing="10" alignment="CENTER_LEFT" >
-              <Label text="Enter text to verify:" styleClass="bold-label"/>
-              <Button fx:id="importTextButton" text="Import Text"/>
-              <Button fx:id="cancelImportTextButton" text="Cancel Import" managed="false" visible="false"/>
+        <!-- Text Area and Import Text Button -->
+        <HBox spacing="10" alignment="CENTER">
+          <VBox spacing="27">
+            <VBox spacing="11">
+              <HBox spacing="10" alignment="CENTER_LEFT">
+                <Label text="Enter text to verify:" styleClass="bold-label"/>
+                <Button fx:id="importTextButton" text="Import Text"/>
+                <Button fx:id="cancelImportTextButton" text="Cancel Import" managed="false"
+                  visible="false"/>
+              </HBox>
+
+              <TextArea fx:id="textInput" prefHeight="100" prefWidth="400" wrapText="true"
+                visible="true"/>
+              <HBox alignment="CENTER_LEFT" spacing="5" visible="false" fx:id="textInputHBox">
+                <Label fx:id="textFileNameLabel" text=""/>
+                <ImageView fx:id="checkmarkImageMessageBatch" fitWidth="20" fitHeight="20"
+                  preserveRatio="true"/>
+              </HBox>
+            </VBox>
+
+
+            <!-- Public Key Input and Import Button -->
+            <HBox alignment="CENTER" spacing="10">
+              <Label fx:id="keyFieldLabel" text="Public Key:" styleClass="bold-label"/>
+              <TextField fx:id="keyField" prefWidth="200" text="Please Import a public key"
+                editable="false"/>
+              <ImageView fx:id="checkmarkImage" fitWidth="20" fitHeight="20" preserveRatio="true"
+                visible="false"/>
+              <Button fx:id="importKeyButton" text="Import Private Key"/>
+              <Button fx:id="cancelImportSingleKeyButton" text="Cancel Import" managed="false"
+                visible="true"/>
             </HBox>
 
-            <TextArea fx:id="textInput" prefHeight="100" prefWidth="400" wrapText="true"
-              visible="true"/>
-            <HBox alignment="CENTER_LEFT" spacing="5" visible="false" fx:id="textInputHBox">
-              <Label fx:id="textFileNameLabel" text=""/>
-              <ImageView fx:id="checkmarkImageMessageBatch" fitWidth="20" fitHeight="20"
-                preserveRatio="true"/>
-            </HBox>
-          </VBox>
-
-
-          <!-- Public Key Input and Import Button -->
-          <HBox alignment="CENTER" spacing="10">
-            <Label fx:id="keyFieldLabel" text="Public Key:" styleClass="bold-label"/>
-            <TextField fx:id="keyField" prefWidth="200" text="Please Import a public key" editable="false"/>
-            <ImageView fx:id="checkmarkImage" fitWidth="20" fitHeight="20" preserveRatio="true" visible="false"/>
-            <Button fx:id="importKeyButton" text="Import Private Key"/>
-            <Button fx:id="cancelImportSingleKeyButton" text="Cancel Import" managed="false" visible="true"/>
-          </HBox>
-
-          <!-- Signature -->
+            <!-- Signature -->
 
 
             <VBox spacing="11" fx:id="standardModeSignatureVBox">
               <HBox spacing="10" alignment="CENTER_LEFT">
                 <Label text="Signature:" styleClass="bold-label"/>
                 <Button fx:id="importSigButton" text="Import Signature"/>
-                <Button fx:id="cancelImportSignatureButton" text="Cancel Import" managed="false" visible="false"/>
+                <Button fx:id="cancelImportSignatureButton" text="Cancel Import" managed="false"
+                  visible="false"/>
               </HBox>
 
               <TextArea fx:id="signatureText" prefHeight="100" prefWidth="400" wrapText="true"
@@ -100,56 +106,58 @@
             </VBox>
 
 
-          <!-- Signature Scheme Dropdown -->
-          <HBox spacing="10">
-            <Label text="Signature Scheme:" styleClass="bold-label"/>
-            <ComboBox fx:id="signatureSchemeDropdown" prefWidth="200">
-              <items>
-                <FXCollections fx:factory="observableArrayList">
-                  <String fx:value="PKCS#1 v1.5"/>
-                  <String fx:value="ANSI X9.31 rDSA"/>
-                  <String fx:value="ISO\IEC 9796-2 Scheme 1"/>
-                </FXCollections>
-              </items>
-            </ComboBox>
-          </HBox>
+            <!-- Signature Scheme Dropdown -->
+            <HBox spacing="10">
+              <Label text="Signature Scheme:" styleClass="bold-label"/>
+              <ComboBox fx:id="signatureSchemeDropdown" prefWidth="200">
+                <items>
+                  <FXCollections fx:factory="observableArrayList">
+                    <String fx:value="PKCS#1 v1.5"/>
+                    <String fx:value="ANSI X9.31 rDSA"/>
+                    <String fx:value="ISO\IEC 9796-2 Scheme 1"/>
+                  </FXCollections>
+                </items>
+              </ComboBox>
+            </HBox>
 
-          <HBox fx:id="provableParamsHbox" spacing="6" managed="false" visible="false">
-            <Label text="Instantiate Scheme with Provably Secure Parameters:" styleClass="bold-label"/>
-            <RadioButton fx:id="noCrossParameterRadio" text="No"/>
-            <RadioButton fx:id="yesCrossParameterRadio" text="Yes" selected="true"/>
-          </HBox>
-          <!-- Parameter Choice Radio Buttons -->
-          <HBox spacing="10">
-            <Label text="Hash Function Size:" styleClass="bold-label"/>
-            <RadioButton fx:id="standardParametersRadio" text="Standard" selected="true"/>
-            <RadioButton fx:id="provablySecureParametersRadio" text="Provably Secure"/>
-            <RadioButton fx:id="customParametersRadio" text="Custom"/>
-          </HBox>
+            <HBox fx:id="provableParamsHbox" spacing="6" managed="false" visible="false">
+              <Label text="Instantiate Scheme with Provably Secure Parameters:"
+                styleClass="bold-label"/>
+              <RadioButton fx:id="noCrossParameterRadio" text="No"/>
+              <RadioButton fx:id="yesCrossParameterRadio" text="Yes" selected="true"/>
+            </HBox>
+            <!-- Parameter Choice Radio Buttons -->
+            <HBox spacing="10">
+              <Label text="Hash Function Size:" styleClass="bold-label"/>
+              <RadioButton fx:id="standardParametersRadio" text="Standard" selected="true"/>
+              <RadioButton fx:id="provablySecureParametersRadio" text="Provably Secure"/>
+              <RadioButton fx:id="customParametersRadio" text="Custom"/>
+            </HBox>
 
-          <!-- Hash function Dropdown -->
-          <HBox spacing="10">
-            <Label text="Hash Function:" styleClass="bold-label"/>
-            <ComboBox fx:id="hashFunctionDropdown" prefWidth="200">
-              <items>
-                <FXCollections fx:factory="observableArrayList">
-                  <String fx:value="SHA-256"/>
-                  <String fx:value="SHA-512"/>
-                  <String fx:value="SHA-256 with MGF1"/>
-                  <String fx:value="SHA-512 with MGF1"/>
-                  <String fx:value="SHAKE-128"/>
-                  <String fx:value="SHAKE-256"/>
-                </FXCollections>
-              </items>
-            </ComboBox>
-            <TextField fx:id="hashOutputSizeField" promptText="Enter hash output size" visible="false" managed="false" maxWidth="140"/>
-          </HBox>
-        </VBox>
-      </HBox>
+            <!-- Hash function Dropdown -->
+            <HBox spacing="10">
+              <Label text="Hash Function:" styleClass="bold-label"/>
+              <ComboBox fx:id="hashFunctionDropdown" prefWidth="200">
+                <items>
+                  <FXCollections fx:factory="observableArrayList">
+                    <String fx:value="SHA-256"/>
+                    <String fx:value="SHA-512"/>
+                    <String fx:value="SHA-256 with MGF1"/>
+                    <String fx:value="SHA-512 with MGF1"/>
+                    <String fx:value="SHAKE-128"/>
+                    <String fx:value="SHAKE-256"/>
+                  </FXCollections>
+                </items>
+              </ComboBox>
+              <TextField fx:id="hashOutputSizeStandardMode" promptText="Enter hash output size"
+                visible="false" managed="false" maxWidth="140"/>
+            </HBox>
+          </VBox>
+        </HBox>
 
-      <Button text="Verify Signature" fx:id="verifyBtn" maxWidth="400"/>
+        <Button text="Verify Signature" fx:id="verifyBtn" maxWidth="400"/>
 
-    </VBox>
+      </VBox>
     </ScrollPane>
   </center>
   <bottom>
@@ -185,7 +193,8 @@
   </StackPane>
 
   <HBox spacing="10" fx:id="standardHashChoiceComparisonModeHbox" managed="false" visible="false">
-    <Label text="Hash Function(s) for instantiations with Standard parameters:" styleClass="bold-label"/>
+    <Label text="Hash Function(s) for instantiations with Standard parameters:"
+      styleClass="bold-label"/>
     <CheckComboBox fx:id="fixedHashFunctionComboBox" prefWidth="200">
       <items>
       </items>
@@ -193,7 +202,8 @@
   </HBox>
 
   <HBox spacing="10" fx:id="provableHashChoiceComparisonModeHbox" managed="false" visible="false">
-    <Label text="Hash Function(s) for instantiations with Provable parameters:" styleClass="bold-label"/>
+    <Label text="Hash Function(s) for instantiations with Provable parameters:"
+      styleClass="bold-label"/>
     <CheckComboBox fx:id="provableHashFunctionComboBox" prefWidth="200">
       <items>
       </items>

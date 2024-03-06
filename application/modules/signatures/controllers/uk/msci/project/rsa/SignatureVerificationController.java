@@ -99,6 +99,7 @@ public class SignatureVerificationController extends SignatureBaseController {
    *                     the application.
    */
   public void showBenchmarkingView(Stage primaryStage) {
+    isBenchmarkingMode = true;
     if (isKeyForComparisonMode && isCrossParameterBenchmarkingEnabled) {
       showCrossBenchmarkingView(primaryStage);
       return;
@@ -116,6 +117,7 @@ public class SignatureVerificationController extends SignatureBaseController {
    * @param primaryStage The primary stage of the application where the view will be displayed.
    */
   public void showStandardMode(Stage primaryStage) {
+    isBenchmarkingMode = false;
     loadVerifyView("/VerifyViewStandardMode.fxml",
         () -> setupObserversStandardMode(primaryStage, verifyView),
         () -> preloadProvablySecureKey(verifyView));
@@ -224,7 +226,7 @@ public class SignatureVerificationController extends SignatureBaseController {
 
     @Override
     public void handle(ActionEvent event) {
-      hashOutputSize = verifyView.getHashOutputSize();
+      hashOutputSize = verifyView.getHashOutputSizeField();
       if ((verifyView.getTextInput().equals("") && message == null)) {
         if ((signatureModel.getSignatureType() != SignatureType.ISO_IEC_9796_2_SCHEME_1)) {
           uk.msci.project.rsa.DisplayUtility.showErrorAlert(
@@ -290,7 +292,7 @@ public class SignatureVerificationController extends SignatureBaseController {
 
     @Override
     public void handle(ActionEvent event) {
-      hashOutputSize = verifyView.getHashOutputSize();
+      hashOutputSize = verifyView.getHashOutputSizeArea();
       if (signatureModel.getNumTrials() * signatureModel.getPublicKeyBatchLength()
           != numSignatures) {
         uk.msci.project.rsa.DisplayUtility.showErrorAlert(
@@ -311,7 +313,7 @@ public class SignatureVerificationController extends SignatureBaseController {
         return;
       }
 
-      if (!setHashSizeInModel(verifyView)) {
+      if (!setHashSizeInModelBenchmarking(verifyView)) {
         return;
       }
       // Show the progress dialog
@@ -344,7 +346,7 @@ public class SignatureVerificationController extends SignatureBaseController {
       return;
     }
 
-    if (!setHashSizeInModel(verifyView)) {
+    if (!setHashSizeInModelBenchmarking(verifyView)) {
       return;
     }
     if (!isCustomCrossParameterBenchmarkingMode) {
