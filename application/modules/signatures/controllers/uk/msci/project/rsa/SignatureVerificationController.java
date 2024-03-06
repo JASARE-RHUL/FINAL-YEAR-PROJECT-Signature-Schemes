@@ -226,7 +226,7 @@ public class SignatureVerificationController extends SignatureBaseController {
 
     @Override
     public void handle(ActionEvent event) {
-      hashOutputSize = verifyView.getHashOutputSizeField();
+      hashOutputSize = verifyView.getHashOutputSizeArea();
       if ((verifyView.getTextInput().equals("") && message == null)) {
         if ((signatureModel.getSignatureType() != SignatureType.ISO_IEC_9796_2_SCHEME_1)) {
           uk.msci.project.rsa.DisplayUtility.showErrorAlert(

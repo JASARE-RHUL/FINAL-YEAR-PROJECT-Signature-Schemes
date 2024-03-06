@@ -143,7 +143,6 @@
               <TextArea fx:id="hashOutputSizeField"
                 promptText="Enter hash size as a fraction of each key's modulus (e.g., 1/2)"
                 visible="false" managed="false" prefHeight="63" prefWidth="170"/>
-
             </HBox>
           </VBox>
         </HBox>

@@ -151,8 +151,8 @@
                     </FXCollections>
                   </items>
                 </ComboBox>
-                <TextField fx:id="hashOutputSizeStandardMode" promptText="Enter hash output size"
-                  visible="false" managed="false" maxWidth="140"/>
+                <TextArea fx:id="hashOutputSizeField" promptText="Enter hash output size"
+                  visible="false" managed="false" maxWidth="140" maxHeight="10"/>
               </HBox>
             </VBox>
           </HBox>

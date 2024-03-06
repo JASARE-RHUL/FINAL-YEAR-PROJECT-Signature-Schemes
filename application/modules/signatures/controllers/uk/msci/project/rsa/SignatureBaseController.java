@@ -598,14 +598,14 @@ public abstract class SignatureBaseController {
           if (signatureView.getParameterChoice().equals("Provably Secure")) {
             signatureModel.setProvablySecure(true);
           } else {
-            setCustomHashTextOptionVisibility(signatureView, true);
+            signatureView.setHashOutputSizeAreaVisibility(true);
           }
           break;
         case "SHAKE-128":
           signatureModel.setHashType(DigestType.SHAKE_128);
           if (signatureView.getParameterChoice().equals("Provably Secure")) {
             signatureModel.setProvablySecure(true);
-            setCustomHashTextOptionVisibility(signatureView, true);
+            signatureView.setHashOutputSizeAreaVisibility(true);
           }
           break;
         case "SHA-512 with MGF1":
@@ -613,7 +613,7 @@ public abstract class SignatureBaseController {
           if (signatureView.getParameterChoice().equals("Provably Secure")) {
             signatureModel.setProvablySecure(true);
           } else {
-            setCustomHashTextOptionVisibility(signatureView, true);
+            signatureView.setHashOutputSizeAreaVisibility(true);
           }
           break;
         case "SHA-256 with MGF1":
@@ -621,7 +621,7 @@ public abstract class SignatureBaseController {
           if (signatureView.getParameterChoice().equals("Provably Secure")) {
             signatureModel.setProvablySecure(true);
           } else {
-            setCustomHashTextOptionVisibility(signatureView, true);
+            signatureView.setHashOutputSizeAreaVisibility(true);
           }
           break;
         case "SHA-512":
@@ -634,30 +634,6 @@ public abstract class SignatureBaseController {
           signatureModel.setProvablySecure(false);
           break;
       }
-    }
-  }
-
-  /**
-   * Controls the visibility of the input field for the custom hash output size in the signature
-   * view. This method is invoked when the hash function selection changes, particularly when a hash
-   * function supporting variable output size is chosen.
-   * <p>
-   * In benchmarking mode, a text area is displayed for the user to enter a fractional value
-   * representing the hash output size relative to the modulus for each key in a batch. In standard
-   * mode, a text field is shown, enabling the user to enter an individual hash output size for the
-   * selected operation. The method ensures the correct UI component is visible based on the current
-   * application mode and the selected hash function type.
-   * </p>
-   *
-   * @param signatureView The signature view where the hash output size option is to be displayed.
-   * @param visible       A boolean value indicating whether to show (true) or hide (false) the hash
-   *                      output size input field.
-   */
-  public void setCustomHashTextOptionVisibility(SignatureBaseView signatureView, boolean visible) {
-    if (isBenchmarkingMode) {
-      signatureView.setHashOutputSizeAreaVisibility(visible);
-    } else {
-      signatureView.setHashOutputSizeFieldVisibility(visible);
     }
   }
 
@@ -690,7 +666,7 @@ public abstract class SignatureBaseController {
         String radioButtonText = selectedRadioButton.getText();
         switch (radioButtonText) {
           case "Provably Secure":
-            setCustomHashTextOptionVisibility(signatureView, false);
+            signatureView.setHashOutputSizeAreaVisibility(false);
             signatureView.updateHashFunctionDropdownForCustomOrProvablySecure();
             break;
           case "Custom":
@@ -698,7 +674,7 @@ public abstract class SignatureBaseController {
             break;
           case "Standard":
           default:
-            setCustomHashTextOptionVisibility(signatureView, false);
+            signatureView.setHashOutputSizeAreaVisibility(false);
             signatureView.updateHashFunctionDropdownForStandard();
             break;
 
@@ -1267,9 +1243,9 @@ public abstract class SignatureBaseController {
    * @return Boolean value indicating if validation failed.
    */
   boolean setHashSizeInModel(SignatureBaseView signatureView) {
-    if (!handleHashOutputSize(signatureView) && signatureView.getHashOutputSizeFieldVisibility()) {
+    if (!handleHashOutputSize(signatureView) && signatureView.getHashOutputSizeAreaVisibility()) {
       return false;
-    } else if (signatureView.getHashOutputSizeFieldVisibility()) {
+    } else if (signatureView.getHashOutputSizeAreaVisibility()) {
       signatureModel.setHashSize((Integer.parseInt(hashOutputSize) + 7) / 8);
     }
     return true;
@@ -1285,14 +1261,14 @@ public abstract class SignatureBaseController {
   public boolean handleHashOutputSize(SignatureBaseView signatureView) {
     try {
       if (Integer.parseInt(hashOutputSize) < 0
-          && signatureView.getHashOutputSizeFieldVisibility()) {
+          && signatureView.getHashOutputSizeAreaVisibility()) {
         uk.msci.project.rsa.DisplayUtility.showErrorAlert(
             "You must provide a non-negative integer for the hash output size. Please try again.");
         return false;
       }
     } catch (NumberFormatException e) {
       // Show an error alert if the input is not a valid integer
-      if (signatureView.getHashOutputSizeFieldVisibility()) {
+      if (signatureView.getHashOutputSizeAreaVisibility()) {
         uk.msci.project.rsa.DisplayUtility.showErrorAlert(
             "You must provide a non-negative integer for the hash output size. Please try again.");
       }
@@ -1333,8 +1309,8 @@ public abstract class SignatureBaseController {
 
     if (invalidField) {
       uk.msci.project.rsa.DisplayUtility.showErrorAlert(
-          "You must provide a fraction representing the proportion of the modulus size for"
-              + " you wish the hash output to be when applied to the various keys submitted. Please try again.");
+          "Please enter a fraction that represents the desired proportion of the modulus size for the hash output. This fraction will be applied to each key submitted. Try again.");
+
     } else {
       signatureModel.setCustomHashSizeFraction(fractionsArray);
     }

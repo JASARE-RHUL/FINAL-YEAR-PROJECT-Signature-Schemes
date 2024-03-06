@@ -249,9 +249,6 @@ public abstract class SignatureBaseView implements SignatureViewInterface {
   @FXML
   private TextArea hashOutputSizeField;
 
-  @FXML
-  private TextField hashOutputSizeStandardMode;
-
   /**
    * VBox containing elements for message input in standard mode. This includes the text area for
    * inputting or importing the text to be signed.
@@ -729,19 +726,6 @@ public abstract class SignatureBaseView implements SignatureViewInterface {
     messageBatchField.setText(text);
   }
 
-  /**
-   * Sets the visibility of the hash output size area.
-   *
-   * @param visible true to make the field visible, false to hide it.
-   */
-  public void setHashOutputSizeFieldVisibility(boolean visible) {
-    if (visible) {
-      resetHash();
-    }
-    hashOutputSizeStandardMode.setManaged(visible);
-    hashOutputSizeStandardMode.setVisible(visible);
-
-  }
 
 
   /**
@@ -762,14 +746,7 @@ public abstract class SignatureBaseView implements SignatureViewInterface {
   }
 
   /**
-   * Resets the hash output size field to its initial state with prompt text.
-   */
-  public void resetHash() {
-    hashOutputSizeStandardMode.setText("");
-  }
-
-  /**
-   * Retrieves the entered hash output fraction from the area.
+   * Retrieves the entered hash output sizefraction from the area.
    *
    * @return String representing the hash output size.
    */
@@ -777,14 +754,6 @@ public abstract class SignatureBaseView implements SignatureViewInterface {
     return hashOutputSizeField.getText();
   }
 
-  /**
-   * Retrieves the entered hash output size from the field.
-   *
-   * @return String representing the hash output size.
-   */
-  public String getHashOutputSizeField() {
-    return hashOutputSizeStandardMode.getText();
-  }
 
   /**
    * Sets the visibility of the hash output size field.
@@ -800,32 +769,6 @@ public abstract class SignatureBaseView implements SignatureViewInterface {
 
   }
 
-
-  /**
-   * Retrieves the visibility status of the hash output size field.
-   *
-   * @return true if the hash output size field is visible, false otherwise.
-   */
-  public boolean getHashOutputSizeFieldVisibility() {
-    return hashOutputSizeStandardMode.isVisible();
-
-  }
-
-  /**
-   * Resets the hash output size field to its initial state with prompt text.
-   */
-  public void resetHashField() {
-    hashOutputSizeStandardMode.setText("");
-  }
-
-  /**
-   * Retrieves the entered hash output size from the field.
-   *
-   * @return String representing the hash output size.
-   */
-  public String getHashOutputSize() {
-    return hashOutputSizeStandardMode.getText();
-  }
 
   /**
    * Sets the visibility of the checkmarkImageMessageBatch and manages its properties.

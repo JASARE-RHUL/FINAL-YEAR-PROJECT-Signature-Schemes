@@ -186,7 +186,7 @@ public class SignatureCreationController extends SignatureBaseController {
 
     @Override
     public void handle(ActionEvent event) {
-      hashOutputSize = signView.getHashOutputSizeField();
+      hashOutputSize = signView.getHashOutputSizeArea();
       if ((signView.getTextInput().equals("") && message == null)
           || signatureModel.getKey() == null
           || signatureModel.getSignatureType() == null
