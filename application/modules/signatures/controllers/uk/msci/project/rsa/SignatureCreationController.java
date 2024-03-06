@@ -357,7 +357,7 @@ public class SignatureCreationController extends SignatureBaseController {
     BenchmarkingContext context = new SignatureCreationContext(signatureModel);
     resultsController.setContext(context);
     resultsController.showResultsView(mainController.getPrimaryStage(),
-        signatureModel.getClockTimesPerTrial(), signatureModel.getPrivKeyLengths());
+        signatureModel.getClockTimesPerTrial(), signatureModel.getKeyLengths());
   }
 
   /**
@@ -374,7 +374,7 @@ public class SignatureCreationController extends SignatureBaseController {
     resultsController.setContext(context);
 
     resultsController.showResultsView(mainController.getPrimaryStage(), keyConfigurationStrings,
-        signatureModel.getClockTimesPerTrial(), signatureModel.getPrivKeyLengths(), true,
+        signatureModel.getClockTimesPerTrial(), signatureModel.getKeyLengths(), true,
         signatureModel.getNumKeySizesForComparisonMode());
   }
 

@@ -19,6 +19,7 @@ import javafx.scene.control.RadioButton;
 import javafx.scene.control.Toggle;
 import javafx.stage.Stage;
 import javafx.util.Pair;
+import uk.msci.project.rsa.GenController.CrossBenchmarkingModeChangeObserver;
 
 
 /**
@@ -927,29 +928,42 @@ public abstract class SignatureBaseController {
   }
 
   /**
-   * Validates the hash output size input by the user. Ensures that it is a non-negative integer and
-   * that it is provided when required based on the view's visibility settings.
+   * Handles the input for custom hash output size configuration. This method validates the user input
+   * to ensure it matches a fraction format (e.g., "1/2") and verifies that the numerator is less than
+   * the denominator. The fraction is used to determine the proportion of the modulus size for the
+   * hash output in signature operations in benchmarking mode.
    *
-   * @return true if the hash output size is valid, false otherwise.
+   * The method updates the model with the calculated fraction if the input is valid. If the input is
+   * invalid, an error alert is displayed to the user, requesting them to provide a valid fraction.
+   *
+   * @return {@code true} if the hash output size input is valid and successfully processed,
+   * {@code false} otherwise.
    */
-  public boolean handleHashOutputSize(SignatureBaseView signatureView) {
-    try {
-      if (Integer.parseInt(hashOutputSize) < 0
-          && signatureView.getHashOutputSizeFieldVisibility()) {
-        uk.msci.project.rsa.DisplayUtility.showErrorAlert(
-            "You must provide a non-negative integer for the hash output size. Please try again.");
-        return false;
+  public boolean handleHashOutputSize() {
+    boolean invalidField = false;
+    int[] fractionsArray = new int[2];
+    if (hashOutputSize.matches(
+        "^\\s*[1-9]\\d*\\/([1-9]\\d*)\\s*$")) {
+      String[] parts = hashOutputSize.trim().split("/");
+     fractionsArray = new int[2];
+      fractionsArray[0] = Integer.parseInt(parts[0]);
+      fractionsArray[1] = Integer.parseInt(parts[1]);
+      if (!(fractionsArray[0] < fractionsArray[1])) {
+        invalidField = true;
       }
-    } catch (NumberFormatException e) {
-      // Show an error alert if the input is not a valid integer
-      if (signatureView.getHashOutputSizeFieldVisibility()) {
-        uk.msci.project.rsa.DisplayUtility.showErrorAlert(
-            "You must provide a non-negative integer for the hash output size. Please try again.");
-      }
-      return false;
-
+    } else {
+      invalidField = true;
     }
-    return true;
+
+    if (invalidField) {
+      uk.msci.project.rsa.DisplayUtility.showErrorAlert(
+          "You must provide a fraction representing the proportion of the modulus size for"
+              + " you wish the hash output to be when applied to the various keys submitted. Please try again.");
+    } else {
+      signatureModel.setCustomHashSizeFraction(fractionsArray);
+    }
+
+    return !invalidField;
   }
 
   /**
@@ -1141,12 +1155,14 @@ public abstract class SignatureBaseController {
         if (c.wasAdded()) {
           for (String addedType : c.getAddedSubList()) {
             signatureModel.getCurrentFixedHashTypeList_ComparisonMode()
-                .add((new HashFunctionSelection(DigestType.getDigestTypeFromCustomString(addedType), false, null)));
+                .add((new HashFunctionSelection(DigestType.getDigestTypeFromCustomString(addedType),
+                    false, null)));
           }
         } else if (c.wasRemoved()) {
           for (String removedType : c.getRemoved()) {
             signatureModel.getCurrentFixedHashTypeList_ComparisonMode()
-                .remove((new HashFunctionSelection(DigestType.getDigestTypeFromCustomString(removedType), false, null)));
+                .remove((new HashFunctionSelection(
+                    DigestType.getDigestTypeFromCustomString(removedType), false, null)));
           }
         }
 
@@ -1198,10 +1214,10 @@ public abstract class SignatureBaseController {
    * @return Boolean value indicating if validation failed.
    */
   boolean setHashSizeInModel(SignatureBaseView signatureView) {
-    if (!handleHashOutputSize(signatureView) && signatureView.getHashOutputSizeFieldVisibility()) {
-      return false;
-    } else if (signatureView.getHashOutputSizeFieldVisibility()) {
-      signatureModel.setHashSize((Integer.parseInt(hashOutputSize) + 7) / 8);
+    if (signatureView.getHashOutputSizeFieldVisibility()) {
+      if (!handleHashOutputSize()) {
+        return false;
+      }
     }
     return true;
   }
