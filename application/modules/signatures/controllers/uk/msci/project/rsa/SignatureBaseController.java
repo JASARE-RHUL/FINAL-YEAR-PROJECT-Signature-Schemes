@@ -607,6 +607,7 @@ public abstract class SignatureBaseController {
           signatureModel.setHashType(DigestType.SHAKE_128);
           if (signatureView.getParameterChoice().equals("Provably Secure")) {
             signatureModel.setProvablySecure(true);
+          } else {
             signatureView.setHashOutputSizeAreaVisibility(true);
           }
           break;
