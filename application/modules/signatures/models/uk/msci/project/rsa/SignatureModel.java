@@ -836,7 +836,7 @@ public class SignatureModel {
                   digestSize = Math.floorDiv(digestSize + 7, 8);
                   sigScheme.setDigest(hashFunctionType.getDigestType(), digestSize);
                   // Synchronous verification
-                  Pair<Boolean, Pair<Long, List<byte[]>>> result = verifySignature_ComparisonMode(
+                  Pair<Boolean, Pair<Long, List<byte[]>>> result = getBatchVerificationResult(
                       sigScheme, messageLine, signatureBytes);
 
                   long endTime = result.getValue().getKey();
@@ -865,23 +865,26 @@ public class SignatureModel {
     }
   }
 
-  /**
-   * Verifies a signature against a message using a specified signature scheme in the comparison
-   * mode. This method encapsulates the logic for signature verification, handling different types
-   * of signature schemes, including those with message recovery. It accommodates the alternation
-   * between standard and provably secure modes for each key size in the comparison mode.
-   *
-   * @param sigScheme      The signature scheme used for verification.
-   * @param messageLine    The message to be verified against the signature.
-   * @param signatureBytes The signature to be verified.
-   * @return A Pair containing the result of verification and the relevant data (original message,
-   * signature, and recovered message if applicable).
-   */
-  private Pair<Boolean, Pair<Long, List<byte[]>>> verifySignature_ComparisonMode(
-      SigScheme sigScheme,
-      String messageLine, byte[] signatureBytes)
-      throws DataFormatException {
 
+  /**
+   * Performs a single verification of a signature against corresponding message using a given
+   * signature scheme for utilisation during the batch verification process, where multiple
+   * messages and their respective signatures are verified. It handles different types of signature
+   * schemes, including those with message recovery capabilities.
+   *
+   * @param sigScheme      The signature scheme to be used for verification.
+   * @param messageLine    The message (or non-recoverable part of the message in schemes with
+   *                       message recovery) to be verified against the signature.
+   * @param signatureBytes The byte array representing the signature to be verified.
+   * @return A Pair object where the first element is a Boolean indicating the verification result
+   * (true if verification succeeds, false otherwise), and the second element is a Pair consisting
+   * of the verification duration (in nanoseconds) and a List of byte arrays. The List contains the
+   * original message bytes, the signature bytes, and (if applicable) the recovered message bytes.
+   * @throws DataFormatException if the data format is incorrect or incompatible with the specified
+   *                             signature scheme.
+   */
+  private Pair<Boolean, Pair<Long, List<byte[]>>> getBatchVerificationResult(SigScheme sigScheme,
+      String messageLine, byte[] signatureBytes) throws DataFormatException {
     boolean verificationResult;
     byte[] recoveredMessage = new byte[]{};
     long endTime = 0;
@@ -926,26 +929,7 @@ public class SignatureModel {
     SigScheme sigScheme = SignatureFactory.getSignatureScheme(currentType, publicKey,
         isProvablySecure);
     sigScheme.setDigest(currentHashType, digestSize);
-    boolean verificationResult;
-    byte[] recoveredMessage = new byte[]{};
-    long endTime = 0;
-    long startTime = 0;
-    if (currentType == SignatureType.ISO_IEC_9796_2_SCHEME_1) {
-      String[] nonRecoverableParts = messageLine.split(" ", 2);
-      byte[] nonRecoverableMessage =
-          nonRecoverableParts[0].equals("1") ? nonRecoverableParts[1].getBytes() : null;
-      startTime = System.nanoTime();
-      verificationResult = sigScheme.verify(nonRecoverableMessage, signatureBytes);
-      endTime = System.nanoTime() - startTime;
-      recoveredMessage = verificationResult ? sigScheme.getRecoverableM() : new byte[]{};
-    } else {
-      startTime = System.nanoTime();
-      verificationResult = sigScheme.verify(messageLine.getBytes(), signatureBytes);
-      endTime = System.nanoTime() - startTime;
-    }
-
-    return new Pair<>(verificationResult,
-        new Pair<>(endTime, List.of(messageLine.getBytes(), signatureBytes, recoveredMessage)));
+    return getBatchVerificationResult(sigScheme, messageLine, signatureBytes);
   }
 
 
@@ -1135,7 +1119,6 @@ public class SignatureModel {
                     && messageCounter < numTrials) {
                   int keySpecificMessageResults = currentIndex + messageCounter;
                   boolean verificationResult = verificationResults.get(keySpecificMessageResults);
-
                   String signature = new BigInteger(1,
                       signaturesFromBenchmark.get(keySpecificMessageResults)).toString();
                   String recoverableMessage =
