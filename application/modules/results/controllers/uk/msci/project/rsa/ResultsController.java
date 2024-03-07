@@ -644,6 +644,23 @@ public class ResultsController {
     return comparisonData;
   }
 
+  /**
+   * Retrieves the index of a key length based on the provided key size index. This method
+   * calculates the starting model index for a given key size and then uses it to determine the
+   * corresponding index in the list of key lengths.
+   *
+   * @param keySizeIndex The index of the key size for which the key length index is required. This
+   *                     index is used to find the corresponding key length in the list of key
+   *                     lengths used in the benchmarking process.
+   * @return The index of the key length in the keyLengths list corresponding to the given key size
+   * index.
+   */
+  public int getKeyLengthIndex(int keySizeIndex) {
+    // Calculate the starting model index for this key size
+    int startModelIndex = keySizeIndex * (resultsModels.size() / numKeySizesForComparisonMode);
+    return (int) Math.round(((double) startModelIndex / resultsModels.size()) * keyLengths.size());
+  }
+
 
   /**
    * Initialises the key switch buttons in comparison mode. This method sets up the UI components
@@ -661,13 +678,11 @@ public class ResultsController {
       imageView.setFitWidth(90);
       imageView.setPickOnBounds(true);
       imageView.setPreserveRatio(true);
-      // Calculate the starting model index for this key size
-      int startModelIndex = keySizeIndex * (resultsModels.size() / numKeySizesForComparisonMode);
 
       // Create the label with the key number
       Label keyLabel = new Label(
-          "Key Size " + (keySizeIndex + 1) + " (" + keyLengths.get(
-              startModelIndex % keyLengths.size()) + "bit)");
+          "Key Size " + (keySizeIndex + 1) + " (" + keyLengths.get(getKeyLengthIndex(keySizeIndex))
+              + "bit)");
 
       // Create a VBox to hold the ImageView and Label
       VBox graphicBox = new VBox(imageView, keyLabel);
@@ -772,10 +787,9 @@ public class ResultsController {
           resultsModel.exportStatisticsToCSV(
               currentContext.getResultsLabel(true) + "_" + keyLengths.get(keyIndex) + "bit.csv");
         } else {
-          int startModelIndex = keyIndex * (resultsModels.size() / numKeySizesForComparisonMode);
           resultsView.exportComparisonTableResultsToCSV(
               currentContext.getResultsLabel(false) + "_" + keyLengths.get(
-                  startModelIndex % keyLengths.size()) + "bit_key" + "_comparisonMode.csv");
+                  getKeyLengthIndex(keyIndex)) + "bit_key" + "_comparisonMode.csv");
         }
         uk.msci.project.rsa.DisplayUtility.showInfoAlert("Export",
             "Benchmarking Results were successfully exported!");
@@ -915,11 +929,10 @@ public class ResultsController {
   /**
    * Calculates the bin width using the Freedman-Diaconis rule.
    *
-   * @param keyIndex The index of the key to calculate the bin width for.
-   * @param results  The results to use in the calculation.
+   * @param results The results to use in the calculation.
    * @return The calculated bin width.
    */
-  private double calculateFreedmanDiaconisBinWidth(int keyIndex, List<Long> results) {
+  private double calculateFreedmanDiaconisBinWidth(List<Long> results) {
     double q1 = BenchmarkingUtility.calculatePercentile(results, 0.25);
     double q3 = BenchmarkingUtility.calculatePercentile(results, 0.75);
     double iqr = (q3 - q1) / 1E6;
@@ -929,14 +942,13 @@ public class ResultsController {
   /**
    * Calculates the number of bins for a histogram based on the given results.
    *
-   * @param keyIndex The index of the key to calculate the number of bins for.
-   * @param results  The results to use in the calculation.
+   * @param results The results to use in the calculation.
    * @return The number of bins.
    */
-  private int calculateNumberOfBins(int keyIndex, List<Long> results) {
+  private int calculateNumberOfBins(List<Long> results) {
     double min = BenchmarkingUtility.getMin(results) / 1E6;
     double max = BenchmarkingUtility.getMax(results) / 1E6;
-    return (int) Math.ceil((max - min) / calculateFreedmanDiaconisBinWidth(keyIndex, results));
+    return (int) Math.ceil((max - min) / calculateFreedmanDiaconisBinWidth(results));
   }
 
   /**
@@ -959,8 +971,8 @@ public class ResultsController {
       allCombinedResults.addAll(resultsModels.get(modelIndex).getResults());
     }
     double min = BenchmarkingUtility.getMin(allCombinedResults) / 1E6;
-    double binWidth = calculateFreedmanDiaconisBinWidth(keySizeIndex, allCombinedResults);
-    int numBins = calculateNumberOfBins(keySizeIndex, allCombinedResults);
+    double binWidth = calculateFreedmanDiaconisBinWidth(allCombinedResults);
+    int numBins = calculateNumberOfBins(allCombinedResults);
 
     // Initialize bin counts for each series
     Map<String, int[]> seriesBinCounts = new HashMap<>();
@@ -1014,8 +1026,8 @@ public class ResultsController {
             + (this.totalTrials / totalKeys) * numRowsComparisonMode
     );
     double min = BenchmarkingUtility.getMin(combinedResults) / 1E6;
-    double binWidth = calculateFreedmanDiaconisBinWidth(keyIndex, combinedResults);
-    int numBins = calculateNumberOfBins(keyIndex, combinedResults);
+    double binWidth = calculateFreedmanDiaconisBinWidth(combinedResults);
+    int numBins = calculateNumberOfBins(combinedResults);
 
     // Initialise bin counts for each series
     Map<String, int[]> seriesBinCounts = new HashMap<>();
@@ -1063,8 +1075,8 @@ public class ResultsController {
     ResultsModel model = resultsModels.get(keyIndex);
 
     double min = model.getMinTimeData() / 1_000_000.0; // convert to milliseconds
-    double binWidth = calculateFreedmanDiaconisBinWidth(keyIndex, model.getResults());
-    int numBins = calculateNumberOfBins(keyIndex, model.getResults());
+    double binWidth = calculateFreedmanDiaconisBinWidth(model.getResults());
+    int numBins = calculateNumberOfBins(model.getResults());
     String seriesName = "Key " + (keyIndex + 1);
     int[] binCounts = new int[numBins]; // Array to hold the count of values in each bin
 
@@ -1480,10 +1492,9 @@ public class ResultsController {
     } else {
       dataset = createStackedHistogramDataset(keyIndex);
     }
-    int startModelIndex = keyIndex * (resultsModels.size() / numKeySizesForComparisonMode);
     JFreeChart chart = createStackedHistogramChart(dataset,
-        "Stacked Histogram for " + "Key Size " + (keyIndex + 1) + " (" + keyLengths.get(
-            startModelIndex % keyLengths.size()) + "bit)");
+        "Stacked Histogram for " + "Key Size " + (keyIndex + 1) + " (" +
+            keyLengths.get(getKeyLengthIndex(keyIndex)) + "bit)");
     return new ChartViewer(chart);
   }
 
@@ -1562,10 +1573,9 @@ public class ResultsController {
     } else {
       dataset = prepareBoxPlotDatasetForComparisonMode(keyIndex);
     }
-    int startModelIndex = keyIndex * (resultsModels.size() / numKeySizesForComparisonMode);
     return displayBoxPlot(dataset,
         "Box Plot for " + "Key Size " + (keyIndex + 1) + " (" + keyLengths.get(
-            startModelIndex % keyLengths.size()) + "bit)",
+            getKeyLengthIndex(keyIndex)) + "bit)",
         "Parameter Type");
   }
 
@@ -1578,11 +1588,9 @@ public class ResultsController {
    */
   private ChartViewer displayLineGraphMeanForComparisonMode(int keyIndex) {
     Pair<XYSeriesCollection, YIntervalSeriesCollection> datasets;
-    int keyLength = 0;
+    int keyLength = keyLengths.get(getKeyLengthIndex(keyIndex));
     if (isSignatureOperationResults) {
       datasets = prepareLineChartMeanDatasetForComparisonModeSignatures(keyIndex);
-      int startModelIndex = keyIndex * (resultsModels.size() / numKeySizesForComparisonMode);
-      keyLength = resultsModels.get(startModelIndex).getKeyLength();
     } else {
       datasets = prepareLineChartMeanDatasetForComparisonMode(keyIndex);
     }
@@ -1595,8 +1603,8 @@ public class ResultsController {
             keyIndex))
         : new ChartViewer(
             createLineChartMeanForComparisonMode(meanDataset, errorDataset,
-                "Line Graph (Mean) for " + "Key Size " + (keyIndex + 1) + " (" + keyLengths.get(
-                    keyIndex * (resultsModels.size() / numKeySizesForComparisonMode)) + "bit)"));
+                "Line Graph (Mean) for " + "Key Size " + (keyIndex + 1) + " (" + keyLength
+                    + "bit)"));
 
   }
 
