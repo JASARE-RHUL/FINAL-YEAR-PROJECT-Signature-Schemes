@@ -391,7 +391,7 @@ public class ResultsController {
     resultsModels.clear();
     int currentIndex = 0;
     int headerStartIndex = 0; // Starting index for the row headers for each group
-    int numKeysPerKeySize = totalTrials / numKeySizesForComparisonMode;
+    int resultsPerKeySize = totalTrials / numKeySizesForComparisonMode;
 
     while (currentIndex < results.size()) {
       for (int groupIndex = 0; groupIndex < totalGroups; groupIndex++) {
@@ -403,7 +403,7 @@ public class ResultsController {
             int keyIndex =
                 groupIndex * keysPerGroup + k
                     + (totalGroups * keysPerGroup) * (Math.floorDiv(currentIndex,
-                    numKeysPerKeySize));
+                    resultsPerKeySize));
             if (keyIndex >= totalKeys) {
               break; // Prevent accessing keys beyond the total number of keys
             }
