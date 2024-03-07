@@ -1,5 +1,7 @@
 package uk.msci.project.rsa;
 
+import static uk.msci.project.rsa.HashFunctionSelection.validateFraction;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -466,17 +468,8 @@ public class KeyConfigurationsDialog {
       String comboBoxSelection = item.getComboBoxSelection(); // Retrieve the ComboBox selection
       int[] fractionsArray = new int[2];
       if ("Custom".equals(comboBoxSelection)) {
-        if (!customSize.isEmpty() && customSize.matches(
-            "^\\s*[1-9]\\d*\\/([1-9]\\d*)\\s*$")) {
-          String[] parts = customSize.trim().split("/");
-          fractionsArray[0] = Integer.parseInt(parts[0]);
-          fractionsArray[1] = Integer.parseInt(parts[1]);
-          if (!(fractionsArray[0] < fractionsArray[1])) {
-            invalidField = true;
-          }
-        } else {
-          invalidField = true;
-        }
+        fractionsArray = validateFraction(customSize);
+        invalidField = (fractionsArray == null);
       }
 
       boolean isProvablySecure = "Provably Secure".equals(comboBoxSelection);

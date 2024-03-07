@@ -1,5 +1,7 @@
 package uk.msci.project.rsa;
 
+import static uk.msci.project.rsa.HashFunctionSelection.validateFraction;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -1254,24 +1256,12 @@ public abstract class SignatureBaseController {
    */
   public boolean handleHashOutputSizeBenchmarking() {
     boolean invalidField = false;
-    int[] fractionsArray = new int[2];
-    if (hashOutputSize.matches(
-        "^\\s*[1-9]\\d*\\/([1-9]\\d*)\\s*$")) {
-      String[] parts = hashOutputSize.trim().split("/");
-      fractionsArray = new int[2];
-      fractionsArray[0] = Integer.parseInt(parts[0]);
-      fractionsArray[1] = Integer.parseInt(parts[1]);
-      if (!(fractionsArray[0] < fractionsArray[1])) {
-        invalidField = true;
-      }
-    } else {
+    int[] fractionsArray = validateFraction(hashOutputSize);
+
+    if (fractionsArray == null) {
       invalidField = true;
-    }
-
-    if (invalidField) {
       uk.msci.project.rsa.DisplayUtility.showErrorAlert(
-          "Please enter a fraction that represents the desired proportion of the modulus size for the hash output. This fraction will be applied to each key submitted. Try again.");
-
+          "Please enter a valid fraction representing the desired proportion of the modulus size for the hash output. Try again.");
     } else {
       signatureModel.setCustomHashSizeFraction(fractionsArray);
     }

@@ -68,4 +68,27 @@ public class HashFunctionSelection {
   public int[] getCustomSize() {
     return customSize;
   }
+
+  /**
+   * Validates a given string representing a fractional value. The method checks if the string
+   * correctly represents a fraction in the format 'numerator/denominator' where the numerator is
+   * less than the denominator. The fraction is used to calculate custom hash output sizes as a
+   * proportion of a specified modulus length.
+   *
+   * @param customSize The string representation of the fraction to be validated. The expected
+   *                   format is 'numerator/denominator'.
+   * @return An array of two integers {numerator, denominator} if the fraction is valid, or {@code
+   * null} if the input is invalid or if the numerator is not less than the denominator.
+   */
+  public static int[] validateFraction(String customSize) {
+    if (customSize != null && customSize.matches("^\\s*[1-9]\\d*\\/([1-9]\\d*)\\s*$")) {
+      String[] parts = customSize.trim().split("/");
+      int numerator = Integer.parseInt(parts[0]);
+      int denominator = Integer.parseInt(parts[1]);
+      if (numerator < denominator) {
+        return new int[]{numerator, denominator};
+      }
+    }
+    return null;
+  }
 }
