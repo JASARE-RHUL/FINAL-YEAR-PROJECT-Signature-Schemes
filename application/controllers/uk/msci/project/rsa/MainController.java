@@ -57,7 +57,7 @@ public class MainController {
 
   /**
    * Constructs a MainController with the primary stage of the application. This constructor
-   * initializes the controller with the main application stage and displays the main menu view.
+   * initialises the controller with the main application stage and displays the main menu view.
    *
    * @param primaryStage The primary stage of the application.
    */
@@ -189,45 +189,54 @@ public class MainController {
   }
 
   /**
-   * Sets a batch of private keys for signing operations with an optional comparison mode. This
-   * method is updated to allow for comparison between standard and provably secure signing
-   * operations using a batch of keys. It also supports setting keys specifically for custom
-   * comparison benchmarking mode.
+   * Sets a batch of keys for a signature operation with an optional comparison mode. This method is
+   * updated to allow for comparison between standard and provably secure signature operations using
+   * a batch of keys. It also supports setting keys specifically for custom comparison benchmarking
+   * mode.
    *
-   * @param privateKeyBatch              The batch of private keys to be used for signing.
+   * @param keyBatch                     The batch of keys to be used for signing or verifying.
    * @param isKeyForComparisonMode       If true, the keys are used in comparison mode for signing
    *                                     operations.
    * @param isKeyForCustomComparisonMode If true, sets the keys for custom comparison mode, enabling
    *                                     detailed comparative analysis with custom configurations.
    */
-  public void setProvableKeyBatchForSigning(String privateKeyBatch,
-      boolean isKeyForComparisonMode, boolean isKeyForCustomComparisonMode) {
-    signatureCreationController.importKeyFromKeyGeneration(privateKeyBatch, isKeyForComparisonMode);
-    signatureCreationController.setIsCustomCrossParameterBenchmarkingMode(
+  public void setProvableKeyBatchForSignatureProcess(String keyBatch,
+      boolean isKeyForComparisonMode, boolean isKeyForCustomComparisonMode,
+      SignatureBaseController signatureBaseController) {
+    signatureBaseController.importKeyFromKeyGeneration(keyBatch, isKeyForComparisonMode);
+    signatureBaseController.setIsCustomCrossParameterBenchmarkingMode(
         isKeyForCustomComparisonMode);
   }
+
 
   /**
-   * Sets a batch of public keys for verification operations with an optional comparison mode. This
-   * method is updated to support comparison between standard and provably secure verification
-   * operations using a batch of keys. Additionally, it includes support for custom comparison
-   * benchmarking mode.
+   * Sets the batch of private and public keys for both signature creation and verification
+   * processes. This method is crucial for handling the application's functionality in different
+   * modes, specifically in comparison and custom comparison benchmarking modes. It delegates the
+   * process of setting keys for the signature creation and verification controllers, allowing these
+   * controllers to operate with the specified keys.
+   * <p>
+   * In comparison mode, this method helps in setting up the environment for comparing the standard
+   * vs provably secure parameters. In custom comparison mode, it facilitates a more granular and
+   * detailed analysis with arbitrary user provided key configurations.
    *
-   * @param publicKeyBatch               The batch of public keys to be used for signature
-   *                                     verification.
-   * @param isKeyForComparisonMode       If true, the keys are used in comparison mode for
-   *                                     verification operations.
-   * @param isKeyForCustomComparisonMode If true, sets the keys for custom comparison mode, enabling
-   *                                     detailed comparative analysis with custom configurations.
+   * @param privateKeyBatch              The batch of private keys used in the signature creation
+   *                                     process.
+   * @param publicKeyBatch               The batch of public keys used in the signature verification
+   *                                     process.
+   * @param isKeyForComparisonMode       Indicates if the keys are used in comparison mode, enabling
+   *                                     performance comparison.
+   * @param isKeyForCustomComparisonMode Indicates if the keys are set for custom comparison mode,
+   *                                     enabling detailed analysis with custom configurations.
    */
-  public void setProvableKeyBatchForVerification(String publicKeyBatch,
+  public void setProvableKeyBatchForSignatureProcesses(String privateKeyBatch,
+      String publicKeyBatch,
       boolean isKeyForComparisonMode, boolean isKeyForCustomComparisonMode) {
-    signatureVerificationController.importKeyFromKeyGeneration(publicKeyBatch,
-        isKeyForComparisonMode);
-    signatureVerificationController.setIsCustomCrossParameterBenchmarkingMode(
-        isKeyForCustomComparisonMode);
+    setProvableKeyBatchForSignatureProcess(privateKeyBatch, isKeyForComparisonMode,
+        isKeyForCustomComparisonMode, signatureCreationController);
+    setProvableKeyBatchForSignatureProcess(publicKeyBatch, isKeyForComparisonMode,
+        isKeyForCustomComparisonMode, signatureVerificationController);
   }
-
 
   /**
    * Sets the private/public key for signature verification/creation operations. This method is used
@@ -242,6 +251,7 @@ public class MainController {
     signatureCreationController.importSingleKeyFromKeyGeneration(privateKey);
     signatureVerificationController.importSingleKeyFromKeyGeneration(publicKey);
   }
+
 
   /**
    * Sets the list of key configuration strings for comparison mode across the signature controller
