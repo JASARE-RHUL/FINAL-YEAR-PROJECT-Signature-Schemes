@@ -507,7 +507,11 @@ public class ResultsController {
         currentContext.showExportVerificationResultsButton());
     resultsView.setExportVerificationResultsBtnManaged(
         currentContext.showExportVerificationResultsButton());
-    resultsView.setResultsLabel(currentContext.getResultsLabel());
+    if (isSignatureOperationResults && numKeySizesForComparisonMode > 0) {
+      resultsView.setResultsLabel(currentContext.getResultsLabel(true));
+    } else {
+      resultsView.setResultsLabel(currentContext.getResultsLabel(false));
+    }
 
   }
 
@@ -762,10 +766,12 @@ public class ResultsController {
       try {
         if (numKeySizesForComparisonMode == 0) {
           resultsModel.exportStatisticsToCSV(
-              currentContext.getResultsLabel() + "_" + keyLengths.get(keyIndex) + "bit.csv");
+              currentContext.getResultsLabel(true) + "_" + keyLengths.get(keyIndex) + "bit.csv");
         } else {
+          int startModelIndex = keyIndex * (resultsModels.size() / numKeySizesForComparisonMode);
           resultsView.exportComparisonTableResultsToCSV(
-              currentContext.getResultsLabel() + "_comparisonMode.csv");
+              currentContext.getResultsLabel(false) + "_" + keyLengths.get(
+                  startModelIndex % keyLengths.size()) + "bit_key" + "_comparisonMode.csv");
         }
         uk.msci.project.rsa.DisplayUtility.showInfoAlert("Export",
             "Benchmarking Results were successfully exported!");

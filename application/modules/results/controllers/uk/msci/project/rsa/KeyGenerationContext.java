@@ -3,9 +3,9 @@ package uk.msci.project.rsa;
 import java.io.IOException;
 
 /**
- * This class is a specialised context for the benchmarking of key generation operations.
- * It extends BenchmarkingContext to provide functionality specific to key generation, such as
- * exporting generated public and private key batches on generalised results view.
+ * This class is a specialised context for the benchmarking of key generation operations. It extends
+ * BenchmarkingContext to provide functionality specific to key generation, such as exporting
+ * generated public and private key batches on generalised results view.
  */
 public class KeyGenerationContext extends BenchmarkingContext {
 
@@ -73,8 +73,17 @@ public class KeyGenerationContext extends BenchmarkingContext {
    *
    * @return A string label describing the key generation benchmarking results.
    */
+  /**
+   * Provides a context-specific label for the results view based on the specific signature
+   * operation that was benchmarked. This label is used to display relevant information about the
+   * benchmarking context in the UI, offering users a clear understanding of the results being
+   * presented.
+   *
+   * @param isComparisonMode A boolean flag indicating whether the benchmarking.
+   * @return A string label describing the key generation benchmarking results.
+   */
   @Override
-  public String getResultsLabel() {
+  public String getResultsLabel(boolean isComparisonMode) {
     return "Benchmarking Results for Key Generation";
   }
 }

@@ -91,12 +91,19 @@ public abstract class BenchmarkingContext {
   }
 
   /**
-   * Provides the label text for the results view based on the specific signature operation that was
-   * benchmarked.
+   * Provides a context-specific label for the results view based on the specific operation that was
+   * benchmarked. This label is used to display relevant information about the benchmarking context
+   * in the UI, offering users a clear understanding of the results being presented. The label can
+   * vary depending on whether the benchmarking is conducted in normal benchmarking mode displaying
+   * the single hash function used, differing from comparison mode where multiple hash functions can
+   * potentially be used so the hash function name is omitted from label.
    *
+   * @param isComparisonMode A boolean flag indicating whether the benchmarking is done in
+   *                         comparison mode, which may affect the label content.
    * @return A string representing the specific label for the benchmarking context.
    */
-  public abstract String getResultsLabel();
+  public abstract String getResultsLabel(boolean isComparisonMode);
+
 
   /**
    * Determines if the UI button for exporting the non-recoverable portions of messages generated

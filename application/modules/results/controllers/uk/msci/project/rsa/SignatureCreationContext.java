@@ -65,15 +65,26 @@ public class SignatureCreationContext extends BenchmarkingContext {
     return true;
   }
 
+
   /**
-   * Provides a context-specific results label for signature generation benchmarking.
+   * Provides a context-specific label for the results view based on the specific signature
+   * operation that was benchmarked. This label is used to display relevant information about the
+   * benchmarking context in the UI, offering users a clear understanding of the results being
+   * presented. The label can vary depending on whether the benchmarking is conducted in normal
+   * benchmarking mode displaying the single hash function used, differing from comparison mode
+   * where multiple hash functions can potentially be used so the hash function name is omitted from
+   * label.
    *
+   * @param isComparisonMode A boolean flag indicating whether the benchmarking is done in
+   *                         comparison mode, which may affect the label content.
    * @return A string label describing the benchmarking results for signature generation.
    */
   @Override
-  public String getResultsLabel() {
-    return "Benchmarking Results for Signature Generation ("
-        + signatureModel.getSignatureType() + "-" + signatureModel.getHashType() + ")";
+  public String getResultsLabel(boolean isComparisonMode) {
+    return isComparisonMode ? "Benchmarking Results for Signature Generation ("
+        + signatureModel.getSignatureType() + ")"
+        : "Benchmarking Results for Signature Generation ("
+            + signatureModel.getSignatureType() + "-" + signatureModel.getHashType() + ")";
   }
 
   /**
