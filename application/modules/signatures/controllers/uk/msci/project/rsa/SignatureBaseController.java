@@ -597,35 +597,19 @@ public abstract class SignatureBaseController {
       switch (newValue) {
         case "SHAKE-256":
           signatureModel.setHashType(DigestType.SHAKE_256);
-          if (signatureView.getParameterChoice().equals("Provably Secure")) {
-            signatureModel.setProvablySecure(true);
-          } else {
-            signatureView.setHashOutputSizeAreaVisibility(true);
-          }
+          setProvablySecureHashFunction(signatureView);
           break;
         case "SHAKE-128":
           signatureModel.setHashType(DigestType.SHAKE_128);
-          if (signatureView.getParameterChoice().equals("Provably Secure")) {
-            signatureModel.setProvablySecure(true);
-          } else {
-            signatureView.setHashOutputSizeAreaVisibility(true);
-          }
+          setProvablySecureHashFunction(signatureView);
           break;
         case "SHA-512 with MGF1":
           signatureModel.setHashType(DigestType.MGF_1_SHA_512);
-          if (signatureView.getParameterChoice().equals("Provably Secure")) {
-            signatureModel.setProvablySecure(true);
-          } else {
-            signatureView.setHashOutputSizeAreaVisibility(true);
-          }
+          setProvablySecureHashFunction(signatureView);
           break;
         case "SHA-256 with MGF1":
           signatureModel.setHashType(DigestType.MGF_1_SHA_256);
-          if (signatureView.getParameterChoice().equals("Provably Secure")) {
-            signatureModel.setProvablySecure(true);
-          } else {
-            signatureView.setHashOutputSizeAreaVisibility(true);
-          }
+          setProvablySecureHashFunction(signatureView);
           break;
         case "SHA-512":
           signatureModel.setHashType(DigestType.SHA_512);
@@ -637,6 +621,24 @@ public abstract class SignatureBaseController {
           signatureModel.setProvablySecure(false);
           break;
       }
+    }
+  }
+
+  /**
+   * Sets a variable length hash function to a provably secure configuration (1/2 of the modulus of
+   * the key used for the scheme the hash function is to be used within). If the parameter choice is
+   * "Provably Secure", the method sets the signature model to use a provably secure hash function.
+   * If the parameter choice is anything else e.g., custom and the hash output size area is visible,
+   * it prompts the user to enter the desired hash output size.
+   *
+   * @param signatureView The signature view providing the context and user interface elements for
+   *                      hash function configuration.
+   */
+  public void setProvablySecureHashFunction(SignatureBaseView signatureView) {
+    if (signatureView.getParameterChoice().equals("Provably Secure")) {
+      signatureModel.setProvablySecure(true);
+    } else {
+      signatureView.setHashOutputSizeAreaVisibility(true);
     }
   }
 
