@@ -931,45 +931,6 @@ public abstract class SignatureBaseController {
     return isValidFile ? numMessages : 0;
   }
 
-  /**
-   * Handles the input for custom hash output size configuration. This method validates the user
-   * input to ensure it matches a fraction format (e.g., "1/2") and verifies that the numerator is
-   * less than the denominator. The fraction is used to determine the proportion of the modulus size
-   * for the hash output in signature operations in benchmarking mode.
-   * <p>
-   * The method updates the model with the calculated fraction if the input is valid. If the input
-   * is invalid, an error alert is displayed to the user, requesting them to provide a valid
-   * fraction.
-   *
-   * @return {@code true} if the hash output size input is valid and successfully processed, {@code
-   * false} otherwise.
-   */
-  public boolean handleHashOutputSize() {
-    boolean invalidField = false;
-    int[] fractionsArray = new int[2];
-    if (hashOutputSize.matches(
-        "^\\s*[1-9]\\d*\\/([1-9]\\d*)\\s*$")) {
-      String[] parts = hashOutputSize.trim().split("/");
-      fractionsArray = new int[2];
-      fractionsArray[0] = Integer.parseInt(parts[0]);
-      fractionsArray[1] = Integer.parseInt(parts[1]);
-      if (!(fractionsArray[0] < fractionsArray[1])) {
-        invalidField = true;
-      }
-    } else {
-      invalidField = true;
-    }
-
-    if (invalidField) {
-      uk.msci.project.rsa.DisplayUtility.showErrorAlert(
-          "You must provide a fraction representing the proportion of the modulus size for"
-              + " you wish the hash output to be when applied to the various keys submitted. Please try again.");
-    } else {
-      signatureModel.setCustomHashSizeFraction(fractionsArray);
-    }
-
-    return !invalidField;
-  }
 
   /**
    * Updates the signature model and view with an imported key. This method is used to update the
