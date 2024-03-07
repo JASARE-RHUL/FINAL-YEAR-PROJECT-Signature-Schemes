@@ -1081,6 +1081,18 @@ public class ResultsController {
     return dataset;
   }
 
+  /**
+   * Adds data for bin counts to the given category dataset. This method is used for preparing
+   * datasets for histogram graphs by populating it with frequency data for specific value ranges
+   * (bins).
+   *
+   * @param dataset    The category dataset to which the bin counts will be added.
+   * @param min        The minimum value in the range of data.
+   * @param binWidth   The width of each bin (value range).
+   * @param numBins    The total number of bins.
+   * @param seriesName The name of the series to which this bin data belongs.
+   * @param binCounts  An array of integers representing the count of values in each bin.
+   */
   private void addBinCountDataset(DefaultCategoryDataset dataset, double min, double binWidth,
       int numBins, String seriesName, int[] binCounts) {
     for (int bin = 0; bin < numBins; bin++) {
@@ -1235,6 +1247,16 @@ public class ResultsController {
     return dataset;
   }
 
+  /**
+   * Prepares a dataset for a box plot in comparison mode. This method aggregates the statistical
+   * data from multiple ResultsModel instances to create a dataset suitable for generating box
+   * plots. Each entry in the dataset represents the distribution of benchmarking results for a
+   * particular parameter type or key configuration in the comparison mode.
+   *
+   * @param keyIndex The index of the key size for which the dataset is prepared.
+   * @return A box-and-whisker dataset representing the aggregated results for the specified key
+   * size.
+   */
   private DefaultBoxAndWhiskerCategoryDataset prepareBoxPlotDatasetForComparisonMode(
       int keyIndex) {
     DefaultBoxAndWhiskerCategoryDataset dataset = new DefaultBoxAndWhiskerCategoryDataset();
@@ -1351,6 +1373,17 @@ public class ResultsController {
     plot.setRenderer(1, errorRenderer);
   }
 
+  /**
+   * Creates a line chart for displaying mean times in comparison mode. This chart visually
+   * represents the average performance across different parameter sets or key configurations. It is
+   * particularly useful in comparison mode where multiple configurations are benchmarked against
+   * each other.
+   *
+   * @param meanDataset  A dataset containing the mean times for each configuration.
+   * @param errorDataset A dataset containing error intervals for each mean time.
+   * @param title        The title of the line chart.
+   * @return A JFreeChart object representing the line chart with mean times.
+   */
   private JFreeChart createLineChartMeanForComparisonMode(XYSeriesCollection meanDataset,
       YIntervalSeriesCollection errorDataset, String title) {
 
@@ -1509,6 +1542,15 @@ public class ResultsController {
   }
 
 
+  /**
+   * Displays a box plot for the benchmarking results in comparison mode. This method generates a
+   * box-and-whisker plot that visually represents the distribution of results (like median,
+   * quartiles, etc.) for each parameter set or key configuration. It's used to compare the
+   * performance metrics in a concise and informative way.
+   *
+   * @param keyIndex The index of the key size for which the box plot is displayed.
+   * @return A ChartViewer containing the generated box plot.
+   */
   private ChartViewer displayBoxPlotForComparisonMode(int keyIndex) {
     DefaultBoxAndWhiskerCategoryDataset dataset;
     if (isSignatureOperationResults) {
