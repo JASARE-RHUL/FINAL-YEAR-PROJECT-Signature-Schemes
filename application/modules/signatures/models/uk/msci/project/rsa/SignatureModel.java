@@ -1066,6 +1066,7 @@ public class SignatureModel {
 
     int currentIndex = 0;
     int headerStartIndex = 0; // Starting index for the row headers for each group
+    int numKeysPerKeySize = clockTimesPerTrial.size() / numKeySizesForComparisonMode;
     try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
       // Write header
       writer.write(
@@ -1080,7 +1081,10 @@ public class SignatureModel {
           for (int hashFunctionIndex = 0; hashFunctionIndex < hashFunctions.size();
               hashFunctionIndex++) {
             for (int k = 0; k < keysPerGroup; k++) {
-              int keyIndex = groupIndex * keysPerGroup + k;
+              int keyIndex =
+                  groupIndex * keysPerGroup + k
+                      + (totalGroups * keysPerGroup) * (Math.floorDiv(currentIndex,
+                      numKeysPerKeySize));
               if (keyIndex >= keyBatch.size()) {
                 break; // Prevent accessing keys beyond the total number of keys
               }
