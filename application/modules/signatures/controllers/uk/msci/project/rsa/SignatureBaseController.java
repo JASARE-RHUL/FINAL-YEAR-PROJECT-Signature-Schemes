@@ -767,16 +767,16 @@ public abstract class SignatureBaseController {
    */
   class BackToMainMenuObserver implements EventHandler<ActionEvent> {
 
-    private SignatureViewInterface viewInterface;
+    private SignatureBaseView signatureView;
 
-    public BackToMainMenuObserver(SignatureViewInterface viewInterface) {
-      this.viewInterface = viewInterface;
+    public BackToMainMenuObserver(SignatureBaseView viewInterface) {
+      this.signatureView = viewInterface;
     }
 
     @Override
     public void handle(ActionEvent event) {
       mainController.showMainMenuView();
-      viewInterface = null;
+      signatureView = null;
       signatureModel = null;
     }
 
