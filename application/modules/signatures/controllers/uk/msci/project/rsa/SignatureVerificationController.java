@@ -293,7 +293,7 @@ public class SignatureVerificationController extends SignatureBaseController {
     @Override
     public void handle(ActionEvent event) {
       hashOutputSize = verifyView.getHashOutputSizeArea();
-      if (signatureModel.getNumTrials() * signatureModel.getPublicKeyBatchLength()
+      if (signatureModel.getNumTrials() * signatureModel.getKeyBatchLength()
           != numSignatures) {
         uk.msci.project.rsa.DisplayUtility.showErrorAlert(
             "The numbers of messages and signatures do not match. Please ensure they match for a valid set of verification pairings.");
@@ -305,7 +305,7 @@ public class SignatureVerificationController extends SignatureBaseController {
       }
 
       if ((signatureModel.getNumTrials() == 0)
-          || signatureModel.getPublicKeyBatchLength() == 0
+          || signatureModel.getKeyBatchLength() == 0
           || signatureModel.getSignatureType() == null || numSignatures == 0
           || signatureModel.getHashType() == null) {
         uk.msci.project.rsa.DisplayUtility.showErrorAlert(
@@ -335,7 +335,7 @@ public class SignatureVerificationController extends SignatureBaseController {
   private void handleBenchmarkingInitiationComparisonMode() {
 
     if ((signatureModel.getNumTrials() == 0)
-        || signatureModel.getPublicKeyBatchLength() == 0
+        || signatureModel.getKeyBatchLength() == 0
         || signatureModel.getSignatureType() == null || numSignatures == 0
         || (signatureModel.getCurrentFixedHashTypeList_ComparisonMode().size() == 0
         && !isCustomCrossParameterBenchmarkingMode)

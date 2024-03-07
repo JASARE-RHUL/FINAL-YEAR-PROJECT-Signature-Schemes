@@ -270,8 +270,8 @@ public class SignatureModelTest {
     File testFile = createTestFileWithMessages(10); // 10 messages for example
 
     // Execute the batchCreateSignatures method
-    signatureModel.addPrivKeyToBatch(
-        new GenRSA(2, new int[]{512, 512}).generateKeyPair().getPrivateKey().getKeyValue());
+    signatureModel.addKeyToBatch(
+        new GenRSA(2, new int[]{512, 512}).generateKeyPair().getPrivateKey());
     signatureModel.setNumTrials(10);
     signatureModel.setSignatureType(SignatureType.ANSI_X9_31_RDSA);
     signatureModel.batchCreateSignatures(testFile, progress -> {

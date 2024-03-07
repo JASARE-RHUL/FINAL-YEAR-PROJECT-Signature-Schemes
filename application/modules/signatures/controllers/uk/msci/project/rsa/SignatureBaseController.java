@@ -810,8 +810,8 @@ public abstract class SignatureBaseController {
       } else {
         signatureView.setKey("Please Import a public key batch");
       }
-      signatureModel.clearPrivateKeyBatch();
-      signatureModel.clearPublicKeyBatch();
+      signatureModel.clearKeyBatch();
+      signatureModel.clearKeyBatch();
       signatureView.setCancelImportKeyButtonVisibility(false);
       signatureView.setImportKeyBatchButtonVisibility(true);
 
@@ -870,9 +870,9 @@ public abstract class SignatureBaseController {
         } else {
           resetPreLoadedKeyParams();
           if (this instanceof SignatureCreationController) {
-            signatureModel.addPrivKeyToBatch(keyContent);
+            signatureModel.addKeyToBatch(new PrivateKey(keyContent));
           } else {
-            signatureModel.addPublicKeyToBatch(keyContent);
+            signatureModel.addKeyToBatch(new PublicKey(keyContent));
           }
           signatureView.setKey(file.getName());
           signatureView.setCheckmarkImage();
@@ -946,9 +946,9 @@ public abstract class SignatureBaseController {
       String keyContent;
       while ((keyContent = reader.readLine()) != null) {
         if (this instanceof SignatureCreationController) {
-          signatureModel.addPrivKeyToBatch(keyContent);
+          signatureModel.addKeyToBatch(new PrivateKey(keyContent));
         } else {
-          signatureModel.addPublicKeyToBatch(keyContent);
+          signatureModel.addKeyToBatch(new PublicKey(keyContent));
         }
       }
     } catch (IOException e) {

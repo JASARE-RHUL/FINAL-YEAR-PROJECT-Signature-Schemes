@@ -250,7 +250,7 @@ public class SignatureCreationController extends SignatureBaseController {
       }
 
       if ((signatureModel.getNumTrials() == 0)
-          || signatureModel.getPrivateKeyBatchLength() == 0
+          || signatureModel.getKeyBatchLength() == 0
           || signatureModel.getSignatureType() == null
           || signatureModel.getHashType() == null) {
         uk.msci.project.rsa.DisplayUtility.showErrorAlert(
@@ -278,7 +278,7 @@ public class SignatureCreationController extends SignatureBaseController {
   private void handleBenchmarkingInitiationComparisonMode() {
 
     if ((signatureModel.getNumTrials() == 0)
-        || signatureModel.getPrivateKeyBatchLength() == 0
+        || signatureModel.getKeyBatchLength() == 0
         || signatureModel.getSignatureType() == null
         || (signatureModel.getCurrentFixedHashTypeList_ComparisonMode().size() == 0
         && !isCustomCrossParameterBenchmarkingMode)
