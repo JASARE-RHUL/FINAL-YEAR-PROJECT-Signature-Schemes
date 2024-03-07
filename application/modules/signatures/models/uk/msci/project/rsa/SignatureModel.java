@@ -184,6 +184,8 @@ public class SignatureModel {
    */
   private List<Integer> keyLengths;
 
+  private int totalWork;
+
 
   /**
    * Constructs a new {@code SignatureModel} without requiring an initial key representative of the
@@ -519,9 +521,7 @@ public class SignatureModel {
 
       int completedWork = 0;
 
-      int averageHashFunctionsPerKey = totalHashFunctions / keyConfigToHashFunctionsMap.size();
-
-      int totalWork = numTrials * keyBatch.size() * averageHashFunctionsPerKey;
+      calculateTotalWork();
 
       int messageCounter = 0;
 
@@ -607,7 +607,6 @@ public class SignatureModel {
         }
       }
     }
-    calculateTrialsPerKeyByGroup();
   }
 
 
@@ -780,10 +779,9 @@ public class SignatureModel {
       String messageLine;
       int messageCounter = 0;
 
-      int averageHashFunctionsPerKey = totalHashFunctions / keyConfigToHashFunctionsMap.size();
       int completedWork = 0;
 
-      int totalWork = numTrials * keyBatch.size() * averageHashFunctionsPerKey;
+      calculateTotalWork();
 
       while ((messageLine = messageReader.readLine()) != null && messageCounter < this.numTrials) {
         for (int i = 0; i < keyBatch.size(); i += numKeysPerKeySizeComparisonMode) {
@@ -946,7 +944,6 @@ public class SignatureModel {
         }
       }
     }
-    calculateTrialsPerKeyByGroup();
   }
 
   /**
@@ -1125,24 +1122,6 @@ public class SignatureModel {
           headerStartIndex += keysPerGroup; // Move to the next set of headers for the next group
         }
       }
-    }
-  }
-
-  private void calculateTrialsPerKeyByGroup() {
-    trialsPerKeyByGroup = new int[totalGroups];
-
-    for (int groupIndex = 0; groupIndex < totalGroups; groupIndex++) {
-      int numHashFunctionsInGroup = keyConfigToHashFunctionsMap.get(groupIndex).size();
-
-      // Calculate the total number of trials for the current group
-      int totalTrialsCurrentGroup =
-          ((clockTimesPerTrial.size() / numKeySizesForComparisonMode) / totalHashFunctions)
-              * numHashFunctionsInGroup;
-
-      // Distribute these trials among the keys in the current group
-      int totalTrialsPerKeyInGroup = totalTrialsCurrentGroup / keysPerGroup;
-
-      trialsPerKeyByGroup[groupIndex] = totalTrialsPerKeyInGroup;
     }
   }
 
@@ -1442,5 +1421,25 @@ public class SignatureModel {
    */
   public int[] getCustomHashSizeFraction() {
     return customHashSizeFraction;
+  }
+
+  /**
+   * Calculates the total amount of work (in terms of operations) that needs to be performed during
+   * the signature creation/verification processes in the cross-parameter benchmarking/comparison
+   * mode. This method considers the number of keys in each group, the number of hash functions
+   * applied to each group, and the total number of trials and key sizes specified for the
+   * benchmarking. Additionally, this method initialises and populates the 'trialsPerKeyByGroup'
+   * array, which stores the number of trials to be conducted for each key in a given group.
+   */
+  public void calculateTotalWork() {
+    trialsPerKeyByGroup = new int[totalGroups];
+    for (int groupIndex = 0; groupIndex < totalGroups; groupIndex++) {
+      List<HashFunctionSelection> hashFunctions = keyConfigToHashFunctionsMap.get(groupIndex);
+      int numHashFunctionsInGroup = hashFunctions != null ? hashFunctions.size() : 0;
+      totalWork += keysPerGroup * numHashFunctionsInGroup;
+      trialsPerKeyByGroup[groupIndex] = numTrials * numHashFunctionsInGroup;
+    }
+    // Multiply by the number of trials
+    totalWork = totalWork * numTrials * numKeySizesForComparisonMode;
   }
 }
