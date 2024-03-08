@@ -2,7 +2,6 @@ package uk.msci.project.rsa;
 
 import java.io.File;
 import java.io.IOException;
-import java.math.BigInteger;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
@@ -17,7 +16,8 @@ import javafx.stage.Stage;
  * responsible for handling user interactions for the signature creation process. It also
  * communicates with the Signature Model to perform the actual signature creation logic.
  */
-public class SignatureCreationController extends SignatureBaseController {
+public class SignatureCreationControllerBenchmarking extends
+    AbstractSignatureBaseControllerBenchmarking {
 
   /**
    * The view component of the MVC pattern for the signing functionality. It handles the user
@@ -25,17 +25,6 @@ public class SignatureCreationController extends SignatureBaseController {
    */
   private SignView signView;
 
-  /**
-   * The message to be signed, stored as a byte array.
-   */
-  private byte[] message;
-
-
-  /**
-   * The digital signature generated after signing the message. It is stored as a String for storage
-   * purposes.
-   */
-  private String signature;
 
   /**
    * An instance of the BenchmarkingUtility class used to manage benchmarking tasks. This utility
@@ -45,14 +34,27 @@ public class SignatureCreationController extends SignatureBaseController {
    */
   private BenchmarkingUtility benchmarkingUtility;
 
+
   /**
    * Constructs a SignatureCreationController with a reference to the MainController to be used in
    * the event of the user initiating a switch back to main menu.
    *
    * @param mainController The main controller that this controller is part of.
    */
-  public SignatureCreationController(MainController mainController) {
+  public SignatureCreationControllerBenchmarking(MainController mainController) {
     super(mainController);
+  }
+
+  /**
+   * Transitions the user interface to the standard mode of signature creation. This method is
+   * responsible for loading and displaying the standard mode view of the signature creation
+   * process, to be used when benchmarking features are not required.
+   *
+   * @param primaryStage The primary stage of the application where the view will be displayed.
+   */
+  @Override
+  public void showStandardMode(Stage primaryStage) {
+    mainController.showSignatureCreationStandard();
   }
 
   /**
@@ -72,7 +74,6 @@ public class SignatureCreationController extends SignatureBaseController {
       FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
       Parent root = loader.load();
       signView = loader.getController();
-      this.signatureModel = new SignatureModel();
 
       observerSetup.run();
       additionalSetupBasedOnMode.run();
@@ -99,25 +100,15 @@ public class SignatureCreationController extends SignatureBaseController {
       showCrossBenchmarkingView(primaryStage);
       return;
     }
-    loadSignView("/SignView.fxml", () -> setupObserversBenchmarkingMode(primaryStage, signView),
+    loadSignView("/SignView.fxml", () -> {
+          this.signatureModelBenchmarking = new SignatureModelBenchmarking();
+          setupObserversBenchmarkingMode(primaryStage, signView, signatureModelBenchmarking);
+        },
         () -> {
-          preloadProvablySecureKeyBatch(signView);
+          preloadProvablySecureKeyBatch(signView, signatureModelBenchmarking);
         });
   }
 
-  /**
-   * Displays the SignView in standard mode. This method loads the SignView for the standard
-   * (non-benchmarking) mode. It initialises the view, sets up the required observers for handling
-   * events like text and key import, and displays the view on the provided stage.
-   *
-   * @param primaryStage The primary stage of the application where the view will be displayed.
-   */
-  public void showStandardMode(Stage primaryStage) {
-    isBenchmarkingMode = false;
-    loadSignView("/SignViewStandardMode.fxml",
-        () -> setupObserversStandardMode(primaryStage, signView),
-        () -> preloadProvablySecureKey(signView));
-  }
 
   /**
    * Displays the SignView in cross-parameter benchmarking mode. This method loads the SignView
@@ -129,7 +120,11 @@ public class SignatureCreationController extends SignatureBaseController {
    */
   public void showCrossBenchmarkingView(Stage primaryStage) {
     loadSignView("/SignViewCrossBenchmarkingMode.fxml",
-        () -> setupObserversCrossBenchmarking(primaryStage, signView),
+        () -> {
+          this.signatureModelComparisonBenchmarking = new SignatureModelComparisonBenchmarking();
+          setupObserversCrossBenchmarking(primaryStage, signView,
+              signatureModelComparisonBenchmarking);
+        },
         () -> {
           preloadCrossParameterKeyBatch(signView);
           preloadCustomCrossParameterHashFunctions(signView);
@@ -137,99 +132,25 @@ public class SignatureCreationController extends SignatureBaseController {
   }
 
   /**
-   * Sets up observers specific to benchmarking mode. This includes observers for importing text
-   * batches, key batches, canceling key batch import, and starting the benchmarking process.
+   * Sets up observers specific to benchmarking mode in the context of signature creation. This
+   * includes observers for importing text batches, key batches, cancelling key batch import, and
+   * starting the benchmarking process. These observers are essential for enabling the interactions
+   * required for the effective benchmarking of signature creation processes.
    *
-   * @param primaryStage The primary stage of the application where the view will be displayed.
+   * @param primaryStage               The primary stage of the application where the view will be
+   *                                   displayed.
+   * @param signatureView              The signature view associated with this controller.
+   * @param signatureModelBenchmarking The benchmarking model used for signature creation
+   *                                   processes.
    */
   @Override
-  void setupBenchmarkingObservers(Stage primaryStage, SignatureBaseView signatureView) {
-    super.setupBenchmarkingObservers(primaryStage, signView);
+  void setupBenchmarkingObservers(Stage primaryStage, SignatureBaseView signatureView,
+      AbstractSignatureModelBenchmarking signatureModelBenchmarking) {
+    super.setupBenchmarkingObservers(primaryStage, signView, signatureModelBenchmarking);
     signView.addSigBenchmarkButtonObserver(
         new SignatureBenchmarkObserver());
   }
 
-  /**
-   * Sets up observers for the SignView in the standard (non-benchmarking) mode. This method
-   * initialises observers for importing text, keys, canceling imports, creating signatures, and
-   * other standard mode functionalities.
-   *
-   * @param primaryStage The primary stage of the application where the view will be displayed.
-   */
-  @Override
-  void setupObserversStandardMode(Stage primaryStage, SignatureBaseView signatureView) {
-    super.setupObserversStandardMode(primaryStage, signView);
-    signView.addCreateSignatureObserver(
-        new CreateSignatureObserver());
-  }
-
-  /**
-   * Initialises and sets up the post-generation observers for the SignView. This includes observers
-   * for copying the signature to the clipboard and exporting the signature. This method is called
-   * after a signature has been generated.
-   */
-  public void setupPostGenerationObservers() {
-    signView.addCopySignatureObserver(new CopyToClipboardObserver("signature", signature,
-        "Failed to copy signature to clipboard."));
-    signView.addExportSignatureObserver(
-        new ExportObserver("signature.rsa", signature, "Signature was successfully exported!"));
-
-  }
-
-
-  /**
-   * The observer for creating signatures. This class handles the action event triggered for the
-   * signature generation process. It checks for necessary inputs, generates the signature using the
-   * selected scheme, and updates the view with post-generation options.
-   */
-  class CreateSignatureObserver implements EventHandler<ActionEvent> {
-
-    @Override
-    public void handle(ActionEvent event) {
-      hashOutputSize = signView.getHashOutputSizeArea();
-      if ((signView.getTextInput().equals("") && message == null)
-          || signatureModel.getKey() == null
-          || signatureModel.getSignatureType() == null
-          || signatureModel.getHashType() == null) {
-        uk.msci.project.rsa.DisplayUtility.showErrorAlert(
-            "You must provide an input for all fields. Please try again.");
-        return;
-      }
-
-      if (!setHashSizeInModel(signView)) {
-        return;
-      }
-
-      try {
-        String textToSign = signView.getTextInput();
-        if (!textToSign.equals("")) {
-          message = textToSign.getBytes();
-        }
-        signatureModel.instantiateSignatureScheme();
-
-        signature = new BigInteger(1, signatureModel.sign(message)).toString();
-        setupPostGenerationObservers();
-        if (signatureModel.getNonRecoverableM().length != 0) {
-          signView.addExportNonRecoverableMessageObserver(
-              new ExportObserver("nonRecoverableMessage.txt",
-                  new String(signatureModel.getNonRecoverableM()),
-                  "Non recoverable message was successfully exported!"));
-          signView.addCopyNonRecoverableMessageObserver(
-              new CopyToClipboardObserver("Non-recoverable message",
-                  new String(signatureModel.getNonRecoverableM()),
-                  "Failed to copy non-recoverable message to clipboard."));
-          signView.setRecoveryOptionsVisibility(true);
-        }
-        resetPreLoadedKeyParams();
-        signView.showNotificationPane();
-      } catch (Exception e) {
-        uk.msci.project.rsa.DisplayUtility.showErrorAlert(
-            "There was an error generating a signature. Please try again.");
-        e.printStackTrace();
-
-      }
-    }
-  }
 
   /**
    * Observer for initiating the signature generation benchmark. This class handles the event
@@ -249,10 +170,10 @@ public class SignatureCreationController extends SignatureBaseController {
         return;
       }
 
-      if ((signatureModel.getNumTrials() == 0)
-          || signatureModel.getKeyBatchLength() == 0
-          || signatureModel.getSignatureType() == null
-          || signatureModel.getHashType() == null) {
+      if ((signatureModelBenchmarking.getNumTrials() == 0)
+          || signatureModelBenchmarking.getKeyBatchLength() == 0
+          || signatureModelBenchmarking.getSignatureType() == null
+          || signatureModelBenchmarking.getHashType() == null) {
         uk.msci.project.rsa.DisplayUtility.showErrorAlert(
             "You must provide an input for all fields. Please try again.");
         return;
@@ -264,7 +185,8 @@ public class SignatureCreationController extends SignatureBaseController {
       benchmarkingUtility = new BenchmarkingUtility();
       Task<Void> benchmarkingTask = createBenchmarkingTask(messageBatchFile);
       BenchmarkingUtility.beginBenchmarkWithUtility(benchmarkingUtility, "Signature Generation",
-          benchmarkingTask, SignatureCreationController.this::handleBenchmarkingCompletion,
+          benchmarkingTask,
+          SignatureCreationControllerBenchmarking.this::handleBenchmarkingCompletion,
           mainController.getPrimaryStage());
     }
   }
@@ -277,13 +199,16 @@ public class SignatureCreationController extends SignatureBaseController {
    */
   private void handleBenchmarkingInitiationComparisonMode() {
 
-    if ((signatureModel.getNumTrials() == 0)
-        || signatureModel.getKeyBatchLength() == 0
-        || signatureModel.getSignatureType() == null
-        || (signatureModel.getCurrentFixedHashTypeList_ComparisonMode().size() == 0
+    if ((signatureModelComparisonBenchmarking.getNumTrials() == 0)
+        || signatureModelComparisonBenchmarking.getKeyBatchLength() == 0
+        || signatureModelComparisonBenchmarking.getSignatureType() == null
+        || (signatureModelComparisonBenchmarking.getCurrentFixedHashTypeList_ComparisonMode().size()
+        == 0
         && !isCustomCrossParameterBenchmarkingMode)
-        || signatureModel.getCurrentProvableHashTypeList_ComparisonMode().size() == 0
-        && !isCustomCrossParameterBenchmarkingMode) {
+        ||
+        signatureModelComparisonBenchmarking.getCurrentProvableHashTypeList_ComparisonMode().size()
+            == 0
+            && !isCustomCrossParameterBenchmarkingMode) {
       uk.msci.project.rsa.DisplayUtility.showErrorAlert(
           "You must provide an input for all fields. Please try again.");
       return;
@@ -293,13 +218,13 @@ public class SignatureCreationController extends SignatureBaseController {
       return;
     }
     if (!isCustomCrossParameterBenchmarkingMode) {
-      signatureModel.createDefaultKeyConfigToHashFunctionsMap();
+      signatureModelComparisonBenchmarking.createDefaultKeyConfigToHashFunctionsMap();
     }
     benchmarkingUtility = new BenchmarkingUtility();
     Task<Void> benchmarkingTask = createBenchmarkingTaskComparisonMode(messageBatchFile);
     BenchmarkingUtility.beginBenchmarkWithUtility(benchmarkingUtility, "Signature Generation",
         benchmarkingTask,
-        SignatureCreationController.this::handleBenchmarkingCompletionComparisonMode,
+        SignatureCreationControllerBenchmarking.this::handleBenchmarkingCompletionComparisonMode,
         mainController.getPrimaryStage());
   }
 
@@ -314,10 +239,11 @@ public class SignatureCreationController extends SignatureBaseController {
     return new Task<>() {
       @Override
       protected Void call() throws Exception {
-        signatureModel.batchCreateSignatures(messageFile, progress -> Platform.runLater(() -> {
-          benchmarkingUtility.updateProgress(progress);
-          benchmarkingUtility.updateProgressLabel(String.format("%.0f%%", progress * 100));
-        }));
+        signatureModelBenchmarking.batchCreateSignatures(messageFile,
+            progress -> Platform.runLater(() -> {
+              benchmarkingUtility.updateProgress(progress);
+              benchmarkingUtility.updateProgressLabel(String.format("%.0f%%", progress * 100));
+            }));
         return null;
       }
     };
@@ -336,7 +262,7 @@ public class SignatureCreationController extends SignatureBaseController {
     return new Task<>() {
       @Override
       protected Void call() throws Exception {
-        signatureModel.batchGenerateSignatures_ComparisonMode(messageFile,
+        signatureModelComparisonBenchmarking.batchCreateSignatures(messageFile,
             progress -> Platform.runLater(() -> {
               benchmarkingUtility.updateProgress(progress);
               benchmarkingUtility.updateProgressLabel(String.format("%.0f%%", progress * 100));
@@ -356,10 +282,11 @@ public class SignatureCreationController extends SignatureBaseController {
   private void handleBenchmarkingCompletion() {
     resetPreLoadedKeyParams();
     ResultsController resultsController = new ResultsController(mainController);
-    BenchmarkingContext context = new SignatureCreationContext(signatureModel);
+    BenchmarkingContext context = new SignatureCreationContext(signatureModelBenchmarking);
     resultsController.setContext(context);
     resultsController.showResultsView(mainController.getPrimaryStage(),
-        signatureModel.getClockTimesPerTrial(), signatureModel.getKeyLengths());
+        signatureModelBenchmarking.getClockTimesPerTrial(),
+        signatureModelBenchmarking.getKeyLengths());
   }
 
   /**
@@ -372,25 +299,29 @@ public class SignatureCreationController extends SignatureBaseController {
   private void handleBenchmarkingCompletionComparisonMode() {
     resetPreLoadedKeyParams();
     ResultsController resultsController = new ResultsController(mainController);
-    BenchmarkingContext context = new SignatureCreationContext(signatureModel);
+    BenchmarkingContext context = new SignatureCreationContext(
+        signatureModelComparisonBenchmarking);
     resultsController.setContext(context);
 
     resultsController.showResultsView(mainController.getPrimaryStage(), keyConfigurationStrings,
-        signatureModel.getClockTimesPerTrial(), signatureModel.getKeyLengths(), true,
-        signatureModel.getNumKeySizesForComparisonMode());
+        signatureModelComparisonBenchmarking.getClockTimesPerTrial(),
+        signatureModelComparisonBenchmarking.getKeyLengths(), true,
+        signatureModelComparisonBenchmarking.getNumKeySizesForComparisonMode());
   }
 
 
   /**
-   * Processes a file containing a batch of messages for signature creation. Validates the file's
-   * content and updates the model and UI accordingly. Ensures the file format is correct (Ensures
-   * the file format is correct i.e., no empty lines apart from the end of the file) and contains
-   * the expected number of messages.
+   * Handles the process of importing a batch of messages for signature creation in the benchmarking
+   * mode. This method validates the file's content and updates the model and UI accordingly. It
+   * ensures the file format is correct and contains the expected number of messages, facilitating
+   * batch operations in benchmarking scenarios.
    *
-   * @param file          The file containing messages to be signed.
-   * @param signatureView The signature view to be updated with the imported batch.
+   * @param file           The file containing a batch of messages for signature creation.
+   * @param signatureView  The signature view associated with this controller.
+   * @param signatureModel The benchmarking model used for processing the message batch.
    */
-  public void handleMessageBatch(File file, SignatureBaseView signatureView) {
+  public void handleMessageBatch(File file, SignatureBaseView signatureView,
+      AbstractSignatureModelBenchmarking signatureModel) {
     int numMessages = checkFileForNonEmptyLines(file, "message");
     try {
       if (numMessages > 0) {
@@ -437,23 +368,12 @@ public class SignatureCreationController extends SignatureBaseController {
       signView.setTextFieldCheckmarkImageVisibility(false);
       signView.setMessageBatch("Please Import a message batch");
       signView.clearNumMessageField();
-      signatureModel.setNumTrials(0);
+      signatureModelBenchmarking.setNumTrials(0);
       messageBatchFile = null;
       signView.setImportTextBatchBtnVisibility(true);
       signView.setCancelImportTextBatchButtonVisibility(false);
     }
   }
 
-
-  /**
-   * Sets the message to be signed. This method is used to update the message that will be signed by
-   * the signature model.
-   *
-   * @param message The message to be signed, represented as a byte array.
-   */
-  @Override
-  public void setMessage(byte[] message) {
-    this.message = message;
-  }
 
 }

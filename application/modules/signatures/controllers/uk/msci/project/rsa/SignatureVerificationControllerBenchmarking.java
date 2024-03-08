@@ -2,7 +2,6 @@ package uk.msci.project.rsa;
 
 import java.io.File;
 import java.io.IOException;
-import java.math.BigInteger;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
@@ -17,24 +16,14 @@ import javafx.stage.Stage;
  * responsible for handling user interactions for the signature verification process. It also
  * communicates with the Signature Model to perform the actual signature verification logic.
  */
-public class SignatureVerificationController extends SignatureBaseController {
+public class SignatureVerificationControllerBenchmarking extends
+    AbstractSignatureBaseControllerBenchmarking {
 
   /**
    * The view component of the MVC pattern for the verification functionality. It handles the user
    * interface for the digital signature verification.
    */
   private VerifyView verifyView;
-
-  /**
-   * The message to be verified, stored as a byte array.
-   */
-  private byte[] message;
-
-  /**
-   * The digital signature generated after signing the message. It is stored as a String for storage
-   * purposes.
-   */
-  private String signature;
 
   /**
    * The number of signatures involved in the batch verification process. This field holds the total
@@ -57,8 +46,13 @@ public class SignatureVerificationController extends SignatureBaseController {
    *
    * @param mainController The main controller that this controller is part of.
    */
-  public SignatureVerificationController(MainController mainController) {
+  public SignatureVerificationControllerBenchmarking(MainController mainController) {
     super(mainController);
+  }
+
+  @Override
+  public void showStandardMode(Stage primaryStage) {
+    mainController.showSignatureVerificationStandard();
   }
 
   /**
@@ -78,7 +72,6 @@ public class SignatureVerificationController extends SignatureBaseController {
       FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
       Parent root = loader.load();
       verifyView = loader.getController();
-      this.signatureModel = new SignatureModel();
 
       observerSetup.run();
       additionalSetupBasedOnMode.run();
@@ -105,23 +98,13 @@ public class SignatureVerificationController extends SignatureBaseController {
       return;
     }
     loadVerifyView("/VerifyView.fxml",
-        () -> setupObserversBenchmarkingMode(primaryStage, verifyView),
-        () -> preloadProvablySecureKeyBatch(verifyView));
+        () -> {
+          this.signatureModelBenchmarking = new SignatureModelBenchmarking();
+          setupObserversBenchmarkingMode(primaryStage, verifyView, signatureModelBenchmarking);
+        },
+        () -> preloadProvablySecureKeyBatch(verifyView, signatureModelBenchmarking));
   }
 
-  /**
-   * Displays the VerifyView in standard mode. This method loads the VerifyView for the standard
-   * (non-benchmarking) mode. It initialises the view, sets up the required observers for handling
-   * events like text and key import, and displays the view on the provided stage.
-   *
-   * @param primaryStage The primary stage of the application where the view will be displayed.
-   */
-  public void showStandardMode(Stage primaryStage) {
-    isBenchmarkingMode = false;
-    loadVerifyView("/VerifyViewStandardMode.fxml",
-        () -> setupObserversStandardMode(primaryStage, verifyView),
-        () -> preloadProvablySecureKey(verifyView));
-  }
 
   /**
    * Displays the VerifyView in cross-parameter benchmarking mode. This method loads the VerifyView
@@ -133,7 +116,11 @@ public class SignatureVerificationController extends SignatureBaseController {
    */
   public void showCrossBenchmarkingView(Stage primaryStage) {
     loadVerifyView("/VerifyViewCrossBenchmarkingMode.fxml",
-        () -> setupObserversCrossBenchmarking(primaryStage, verifyView),
+        () -> {
+          this.signatureModelComparisonBenchmarking = new SignatureModelComparisonBenchmarking();
+          setupObserversCrossBenchmarking(primaryStage, verifyView,
+              signatureModelComparisonBenchmarking);
+        },
         () -> {
           preloadCrossParameterKeyBatch(verifyView);
           preloadCustomCrossParameterHashFunctions(verifyView);
@@ -142,147 +129,29 @@ public class SignatureVerificationController extends SignatureBaseController {
 
 
   /**
-   * Sets up observers specific to benchmarking mode. This includes observers for importing text
-   * batches, key batches, canceling key batch import, and starting the benchmarking process.
+   * Sets up observers specific to benchmarking mode for signature verification. This method
+   * includes observers for actions such as importing message and signature batches, canceling
+   * imports, and initiating the benchmarking process. These observers facilitate the user
+   * interactions required for the effective benchmarking of signature verification processes in
+   * various benchmarking scenarios.
    *
-   * @param primaryStage The primary stage of the application where the view will be displayed.
+   * @param primaryStage               The primary stage of the application where the view will be
+   *                                   displayed.
+   * @param signatureView              The signature view associated with this controller.
+   * @param signatureModelBenchmarking The benchmarking model used for signature verification
+   *                                   processes.
    */
   @Override
-  void setupBenchmarkingObservers(Stage primaryStage, SignatureBaseView signatureView) {
-    super.setupBenchmarkingObservers(primaryStage, verifyView);
+  void setupBenchmarkingObservers(Stage primaryStage, SignatureBaseView signatureView,
+      AbstractSignatureModelBenchmarking signatureModelBenchmarking) {
+    super.setupBenchmarkingObservers(primaryStage, verifyView, signatureModelBenchmarking);
     verifyView.addImportSigBatchButtonObserver(
-        new ImportObserver(primaryStage, verifyView,
+        new ImportObserver(primaryStage, verifyView, null,
             this::handleSignatureBatch, "*.rsa"));
     verifyView.addVerificationBenchmarkButtonObserver(
-        new VerificationBenchmarkButtonObserver());
+        new VerificationBenchmarkButtonObserver(signatureModelBenchmarking));
   }
 
-
-  /**
-   * Sets up observers for the VerifyView controls. Observers are added to handle events like text
-   * import, key import, and signature scheme changes.
-   *
-   * @param primaryStage The stage that observers will use for file dialogs.
-   */
-  @Override
-  public void setupObserversStandardMode(Stage primaryStage, SignatureBaseView signatureView) {
-    super.setupObserversStandardMode(primaryStage, verifyView);
-    verifyView.addImportSigButtonObserver(
-        new ImportObserver(primaryStage, verifyView, this::handleSig, "*.rsa"));
-    verifyView.addCancelImportSignatureButtonObserver(
-        new CancelImportSignatureButtonObserver());
-    verifyView.addVerifyBtnObserver(
-        new VerifyBtnObserver());
-  }
-
-
-  /**
-   * Initialises and sets up the post-verification observers for the VerifyView. This includes
-   * observers for exporting and copying the recoverable message (if applicable). This method is
-   * called after a signature has been successfully verified.
-   */
-  public void setupPostVerificationObservers() {
-    verifyView.addExportRecoverableMessageObserver(new ExportObserver("recoverableMessage.txt",
-        new String(signatureModel.getRecoverableM()),
-        "Recoverable message was successfully exported!"));
-    verifyView.addCopyRecoverableMessageObserver(
-        new CopyToClipboardObserver("Recoverable message",
-            new String(signatureModel.getRecoverableM()),
-            "Failed to copy recoverable message to clipboard."));
-  }
-
-
-  /**
-   * Handles the importing of a signature file. It updates the signature model with the content of
-   * the file and updates the view to reflect the signature has been loaded.
-   *
-   * @param file          The signature file selected by the user.
-   * @param signatureView The signature view to be updated with the imported signature.
-   */
-  public void handleSig(File file, SignatureBaseView signatureView) {
-    String content = "";
-    try {
-      content = FileHandle.importFromFile(file);
-    } catch (Exception e) {
-      uk.msci.project.rsa.DisplayUtility.showErrorAlert("Error importing file, please try again.");
-    }
-    signature = content;
-    verifyView.setSignatureText("");
-    verifyView.setSigFileCheckmarkImage();
-    verifyView.setSigFileCheckmarkImageVisibility(true);
-    verifyView.setSigFileNameLabel("Signature imported");
-    verifyView.setSignatureTextVisibility(false);
-    verifyView.setSigFileHBoxVisibility(true);
-    verifyView.setImportSigButtonVisibility(false);
-    verifyView.setCancelImportSignatureButtonVisibility(true);
-  }
-
-  /**
-   * The observer for verifying signatures. This class handles the action event triggered for the
-   * signature verification process. It checks for necessary inputs, verifies the signature using
-   * the selected scheme, and updates the view with the verification result.
-   */
-  class VerifyBtnObserver implements EventHandler<ActionEvent> {
-
-    @Override
-    public void handle(ActionEvent event) {
-      hashOutputSize = verifyView.getHashOutputSizeArea();
-      if ((verifyView.getTextInput().equals("") && message == null)) {
-        if ((signatureModel.getSignatureType() != SignatureType.ISO_IEC_9796_2_SCHEME_1)) {
-          uk.msci.project.rsa.DisplayUtility.showErrorAlert(
-              "You must provide an input for all required fields. Please try again.");
-          return;
-        }
-      }
-      if (!setHashSizeInModel(verifyView)) {
-        return;
-      }
-      if (signatureModel.getKey() == null
-          || signatureModel.getSignatureType() == null
-          || (verifyView.getSigText().equals("") && signature == null)
-          || signatureModel.getHashType() == null) {
-        uk.msci.project.rsa.DisplayUtility.showErrorAlert(
-            "You must provide an input for all required fields. Please try again.");
-        return;
-      }
-      try {
-        String textToVerify = verifyView.getTextInput();
-        if (!textToVerify.equals("")) {
-          message = textToVerify.getBytes();
-        }
-        String signatureInput = verifyView.getSigText();
-        if (!signatureInput.equals("")) {
-          signature = signatureInput;
-        }
-
-        byte[] signatureBytes = new byte[0];
-        try {
-          signatureBytes = new BigInteger(signature).toByteArray();
-        } catch (Exception ignored) {
-        }
-
-        signatureModel.instantiateSignatureScheme();
-        boolean verificationResult = signatureModel.verify(message, signatureBytes);
-        if (verificationResult) {
-          verifyView.setTrueLabelVisibility(true);
-          if (signatureModel.getRecoverableM() != null) {
-            setupPostVerificationObservers();
-            verifyView.setRecoveryOptionsVisibility(true);
-          }
-        } else {
-          verifyView.setFalseLabelVisibility(true);
-        }
-        resetPreLoadedKeyParams();
-        verifyView.showNotificationPane();
-
-      } catch (Exception e) {
-        uk.msci.project.rsa.DisplayUtility.showErrorAlert(
-            "There was an error in the verification process. Please try again.");
-        e.printStackTrace();
-
-      }
-    }
-  }
 
   /**
    * Observer for initiating the signature verification benchmark. Handles the event triggered for
@@ -290,10 +159,17 @@ public class SignatureVerificationController extends SignatureBaseController {
    */
   class VerificationBenchmarkButtonObserver implements EventHandler<ActionEvent> {
 
+    private AbstractSignatureModelBenchmarking signatureModelBenchmarking;
+
+    public VerificationBenchmarkButtonObserver(
+        AbstractSignatureModelBenchmarking signatureModelBenchmarking) {
+      this.signatureModelBenchmarking = signatureModelBenchmarking;
+    }
+
     @Override
     public void handle(ActionEvent event) {
       hashOutputSize = verifyView.getHashOutputSizeArea();
-      if (signatureModel.getNumTrials() * signatureModel.getKeyBatchLength()
+      if (signatureModelBenchmarking.getNumTrials() * signatureModelBenchmarking.getKeyBatchLength()
           != numSignatures) {
         uk.msci.project.rsa.DisplayUtility.showErrorAlert(
             "The numbers of messages and signatures do not match. Please ensure they match for a valid set of verification pairings.");
@@ -304,8 +180,8 @@ public class SignatureVerificationController extends SignatureBaseController {
         return;
       }
 
-      if ((signatureModel.getNumTrials() == 0)
-          || signatureModel.getKeyBatchLength() == 0
+      if ((signatureModelBenchmarking.getNumTrials() == 0)
+          || signatureModelBenchmarking.getKeyBatchLength() == 0
           || signatureModel.getSignatureType() == null || numSignatures == 0
           || signatureModel.getHashType() == null) {
         uk.msci.project.rsa.DisplayUtility.showErrorAlert(
@@ -321,7 +197,7 @@ public class SignatureVerificationController extends SignatureBaseController {
       Task<Void> benchmarkingTask = createBenchmarkingTask(messageBatchFile, signatureBatchFile);
       BenchmarkingUtility.beginBenchmarkWithUtility(benchmarkingUtility, "Signature Verification",
           benchmarkingTask,
-          SignatureVerificationController.this::handleBenchmarkingCompletion,
+          SignatureVerificationControllerBenchmarking.this::handleBenchmarkingCompletion,
           mainController.getPrimaryStage());
     }
   }
@@ -334,13 +210,16 @@ public class SignatureVerificationController extends SignatureBaseController {
    */
   private void handleBenchmarkingInitiationComparisonMode() {
 
-    if ((signatureModel.getNumTrials() == 0)
-        || signatureModel.getKeyBatchLength() == 0
-        || signatureModel.getSignatureType() == null || numSignatures == 0
-        || (signatureModel.getCurrentFixedHashTypeList_ComparisonMode().size() == 0
+    if ((signatureModelComparisonBenchmarking.getNumTrials() == 0)
+        || signatureModelComparisonBenchmarking.getKeyBatchLength() == 0
+        || signatureModelComparisonBenchmarking.getSignatureType() == null || numSignatures == 0
+        || (signatureModelComparisonBenchmarking.getCurrentFixedHashTypeList_ComparisonMode().size()
+        == 0
         && !isCustomCrossParameterBenchmarkingMode)
-        || signatureModel.getCurrentProvableHashTypeList_ComparisonMode().size() == 0
-        && !isCustomCrossParameterBenchmarkingMode) {
+        ||
+        signatureModelComparisonBenchmarking.getCurrentProvableHashTypeList_ComparisonMode().size()
+            == 0
+            && !isCustomCrossParameterBenchmarkingMode) {
       uk.msci.project.rsa.DisplayUtility.showErrorAlert(
           "You must provide an input for all fields. Please try again.");
       return;
@@ -350,14 +229,14 @@ public class SignatureVerificationController extends SignatureBaseController {
       return;
     }
     if (!isCustomCrossParameterBenchmarkingMode) {
-      signatureModel.createDefaultKeyConfigToHashFunctionsMap();
+      signatureModelComparisonBenchmarking.createDefaultKeyConfigToHashFunctionsMap();
     }
     benchmarkingUtility = new BenchmarkingUtility();
     Task<Void> benchmarkingTask = createBenchmarkingTaskComparisonMode(messageBatchFile,
         signatureBatchFile);
     BenchmarkingUtility.beginBenchmarkWithUtility(benchmarkingUtility, "Signature Verification",
         benchmarkingTask,
-        SignatureVerificationController.this::handleBenchmarkingCompletionComparisonMode,
+        SignatureVerificationControllerBenchmarking.this::handleBenchmarkingCompletionComparisonMode,
         mainController.getPrimaryStage());
   }
 
@@ -376,7 +255,7 @@ public class SignatureVerificationController extends SignatureBaseController {
     return new Task<>() {
       @Override
       protected Void call() throws Exception {
-        signatureModel.batchVerifySignatures_ComparisonMode(messageFile, batchSignatureFile,
+        signatureModelBenchmarking.batchVerifySignatures(messageFile, batchSignatureFile,
             progress -> Platform.runLater(() -> {
               benchmarkingUtility.updateProgress(progress);
               benchmarkingUtility.updateProgressLabel(String.format("%.0f%%", progress * 100));
@@ -401,7 +280,7 @@ public class SignatureVerificationController extends SignatureBaseController {
     return new Task<>() {
       @Override
       protected Void call() throws Exception {
-        signatureModel.batchVerifySignatures(messageFile, batchSignatureFile,
+        signatureModelBenchmarking.batchVerifySignatures(messageFile, batchSignatureFile,
             progress -> Platform.runLater(() -> {
               benchmarkingUtility.updateProgress(progress);
               benchmarkingUtility.updateProgressLabel(String.format("%.0f%%", progress * 100));
@@ -422,12 +301,14 @@ public class SignatureVerificationController extends SignatureBaseController {
   private void handleBenchmarkingCompletionComparisonMode() {
     resetPreLoadedKeyParams();
     ResultsController resultsController = new ResultsController(mainController);
-    BenchmarkingContext context = new SignatureVerificationContext(signatureModel);
+    BenchmarkingContext context = new SignatureVerificationContext(
+        signatureModelComparisonBenchmarking);
     resultsController.setContext(context);
 
     resultsController.showResultsView(mainController.getPrimaryStage(), keyConfigurationStrings,
-        signatureModel.getClockTimesPerTrial(), signatureModel.getKeyLengths(), true,
-        signatureModel.getNumKeySizesForComparisonMode());
+        signatureModelComparisonBenchmarking.getClockTimesPerTrial(),
+        signatureModelComparisonBenchmarking.getKeyLengths(), true,
+        signatureModelComparisonBenchmarking.getNumKeySizesForComparisonMode());
   }
 
 
@@ -439,10 +320,11 @@ public class SignatureVerificationController extends SignatureBaseController {
    */
   private void handleBenchmarkingCompletion() {
     ResultsController resultsController = new ResultsController(mainController);
-    BenchmarkingContext context = new SignatureVerificationContext(signatureModel);
+    BenchmarkingContext context = new SignatureVerificationContext(signatureModelBenchmarking);
     resultsController.setContext(context);
     resultsController.showResultsView(mainController.getPrimaryStage(),
-        signatureModel.getClockTimesPerTrial(), signatureModel.getKeyLengths());
+        signatureModelBenchmarking.getClockTimesPerTrial(),
+        signatureModelBenchmarking.getKeyLengths());
   }
 
   /**
@@ -481,18 +363,23 @@ public class SignatureVerificationController extends SignatureBaseController {
   }
 
   /**
-   * Processes a file containing a batch of messages for signature verification. Validates the
-   * file's content and updates the model and UI accordingly. Ensures the file format is correct
-   * (Ensures the file format is correct i.e., no empty lines apart from the end of the file).
+   * Handles the processing of a file containing a batch of messages for signature verification in
+   * benchmarking mode. This method validates the content of the file and updates the model and UI
+   * accordingly. It ensures the file format is correct and contains a valid batch of messages,
+   * facilitating batch operations in the verification benchmarking scenario.
    *
-   * @param file          The file containing messages to be signed.
-   * @param signatureView The signature view to be updated with the imported message batch.
+   * @param file                       The file containing a batch of messages for signature
+   *                                   verification.
+   * @param signatureView              The signature view associated with this controller.
+   * @param signatureModelBenchmarking The benchmarking model used for processing the message
+   *                                   batch.
    */
-  public void handleMessageBatch(File file, SignatureBaseView signatureView) {
+  public void handleMessageBatch(File file, SignatureBaseView signatureView,
+      AbstractSignatureModelBenchmarking signatureModelBenchmarking) {
     int numTrials = checkFileForNonEmptyLines(file, "message");
     if (numTrials > 0) {
       messageBatchFile = file;
-      signatureModel.setNumTrials(numTrials);
+      signatureModelBenchmarking.setNumTrials(numTrials);
       verifyView.setMessageBatch(file.getName());
       verifyView.setTextFileCheckmarkImage();
       verifyView.setTextFieldCheckmarkImageVisibility(true);
@@ -506,14 +393,17 @@ public class SignatureVerificationController extends SignatureBaseController {
 
 
   /**
-   * Processes a file containing a batch of signatures for signature verification. Validates the
-   * file's content and updates the model and UI accordingly. Ensures the file format is correct
-   * (Ensures the file format is correct i.e., no empty lines apart from the end of the file).
+   * Processes a file containing a batch of signatures for signature verification. Validates
+   * the file's content and updates the model and UI accordingly. Ensures the file format is
+   * correct and contains a valid batch of signatures. This method is essential for handling
+   * batch operations in signature verification benchmarking scenarios.
    *
-   * @param file          The file containing messages to be signed.
+   * @param file The file containing a batch of signatures for verification.
    * @param signatureView The signature view to be updated with the imported signature batch.
+   * @param signatureModelBenchmarking The benchmarking model used for processing the signature batch.
    */
-  public void handleSignatureBatch(File file, SignatureBaseView signatureView) {
+  public void handleSignatureBatch(File file, SignatureBaseView signatureView,
+      AbstractSignatureModelBenchmarking signatureModelBenchmarking) {
     numSignatures = checkFileForNonEmptyLines(file, "signature");
     if (numSignatures > 0) {
       signatureBatchFile = file;
@@ -528,37 +418,6 @@ public class SignatureVerificationController extends SignatureBaseController {
     } else {
       uk.msci.project.rsa.DisplayUtility.showErrorAlert(
           "Invalid signature batch. Please make sure the file is not empty.");
-    }
-  }
-
-  /**
-   * Sets the message to be verified. This method is used to update the message that will be
-   * verified by the signature model.
-   *
-   * @param message The message to be verified, represented as a byte array.
-   */
-  @Override
-  public void setMessage(byte[] message) {
-    this.message = message;
-  }
-
-  /**
-   * Observer for canceling the import of a signature in non benchmarking mode. Handles the event
-   * when the user decides to cancel the import of the signature by replacing the cancel button with
-   * the original import button and resetting corresponding text field that display the name of the
-   * file.
-   */
-  class CancelImportSignatureButtonObserver implements EventHandler<ActionEvent> {
-
-    @Override
-    public void handle(ActionEvent event) {
-      verifyView.setSigFileCheckmarkImageVisibility(false);
-      verifyView.setSigFileNameLabel("");
-      verifyView.setSigFileHBoxVisibility(false);
-      verifyView.setSignatureTextVisibility(true);
-      verifyView.setCancelImportSignatureButtonVisibility(false);
-      verifyView.setImportSigButtonVisibility(true);
-
     }
   }
 

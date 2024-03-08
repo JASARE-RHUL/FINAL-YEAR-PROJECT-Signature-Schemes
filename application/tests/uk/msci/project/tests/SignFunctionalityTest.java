@@ -149,7 +149,7 @@ public class SignFunctionalityTest {
     // Import key or simulate importing key
     Field signView = SignatureCreationController.class.getDeclaredField("signView");
     signView.setAccessible(true);
-    SignView signViewVal = (SignView) signView.get(mainController.getSignatureCreationController());
+    SignView signViewVal = (SignView) signView.get(mainController.getSignatureCreationControllerStandard());
     GenRSA genRSA = new GenRSA(2, new int[]{512, 512});
     KeyPair keyPair = genRSA.generateKeyPair();
 
@@ -159,8 +159,8 @@ public class SignFunctionalityTest {
         getFile("key", ".rsa");
     // Simulate invoking the file import method directly
     Platform.runLater(() -> {
-      mainController.getSignatureCreationController()
-          .handleMessageFile(privateKeyFile.get(), signViewVal);
+      mainController.getSignatureCreationControllerStandard()
+          .handleMessageFile(privateKeyFile.get(), signViewVal, null);
     });
 
     // Give some time for the UI to update and for the file to be processed
@@ -200,7 +200,7 @@ public class SignFunctionalityTest {
     // Import key or simulate importing key
     Field signView = SignatureCreationController.class.getDeclaredField("signView");
     signView.setAccessible(true);
-    SignView signViewVal = (SignView) signView.get(mainController.getSignatureCreationController());
+    SignView signViewVal = (SignView) signView.get(mainController.getSignatureCreationControllerStandard());
     GenRSA genRSA = new GenRSA(2, new int[]{512, 512});
     KeyPair keyPair = genRSA.generateKeyPair();
 
@@ -210,8 +210,8 @@ public class SignFunctionalityTest {
         getFile("key", ".rsa");
     // Simulate invoking the file import method directly
     Platform.runLater(() -> {
-      mainController.getSignatureCreationController()
-          .handleKey(privateKeyFile.get(), signViewVal);
+      mainController.getSignatureCreationControllerStandard()
+          .handleKey(privateKeyFile.get(), signViewVal, null);
     });
 
     WaitForAsyncUtils.waitForFxEvents();
@@ -246,7 +246,7 @@ public class SignFunctionalityTest {
     // Import key or simulate importing key
     Field signView = SignatureCreationController.class.getDeclaredField("signView");
     signView.setAccessible(true);
-    SignView signViewVal = (SignView) signView.get(mainController.getSignatureCreationController());
+    SignView signViewVal = (SignView) signView.get(mainController.getSignatureCreationControllerStandard());
     GenRSA genRSA = new GenRSA(2, new int[]{512, 512});
     KeyPair keyPair = genRSA.generateKeyPair();
 
@@ -255,8 +255,8 @@ public class SignFunctionalityTest {
         getFile("corruptKey", ".rsa");
     // Simulate invoking the file import method directly
     Platform.runLater(() -> {
-      mainController.getSignatureCreationController()
-          .handleKey(corruptKey.get(), signViewVal);
+      mainController.getSignatureCreationControllerStandard()
+          .handleKey(corruptKey.get(), signViewVal, null);
     });
 
     WaitForAsyncUtils.waitForFxEvents();
@@ -289,7 +289,7 @@ public class SignFunctionalityTest {
     // Import key or simulate importing key
     Field signView = SignatureCreationController.class.getDeclaredField("signView");
     signView.setAccessible(true);
-    SignView signViewVal = (SignView) signView.get(mainController.getSignatureCreationController());
+    SignView signViewVal = (SignView) signView.get(mainController.getSignatureCreationControllerStandard());
     GenRSA genRSA = new GenRSA(2, new int[]{512, 512});
     KeyPair keyPair = genRSA.generateKeyPair();
 
@@ -299,8 +299,8 @@ public class SignFunctionalityTest {
         getFile("key", ".rsa");
     // Simulate invoking the file import method directly
     Platform.runLater(() -> {
-      mainController.getSignatureCreationController()
-          .handleKey(privateKeyFile.get(), signViewVal);
+      mainController.getSignatureCreationControllerStandard()
+          .handleKey(privateKeyFile.get(), signViewVal, null);
     });
 
     WaitForAsyncUtils.waitForFxEvents();
@@ -343,7 +343,7 @@ public class SignFunctionalityTest {
     // Import key or simulate importing key
     Field signView = SignatureCreationController.class.getDeclaredField("signView");
     signView.setAccessible(true);
-    SignView signViewVal = (SignView) signView.get(mainController.getSignatureCreationController());
+    SignView signViewVal = (SignView) signView.get(mainController.getSignatureCreationControllerStandard());
     GenRSA genRSA = new GenRSA(2, new int[]{512, 512});
     KeyPair keyPair = genRSA.generateKeyPair();
 
@@ -353,8 +353,8 @@ public class SignFunctionalityTest {
         getFile("key", ".rsa");
     // Simulate invoking the file import method directly
     Platform.runLater(() -> {
-      mainController.getSignatureCreationController()
-          .handleKey(privateKeyFile.get(), signViewVal);
+      mainController.getSignatureCreationControllerStandard()
+          .handleKey(privateKeyFile.get(), signViewVal, null);
     });
 
     WaitForAsyncUtils.waitForFxEvents();
@@ -398,7 +398,7 @@ public class SignFunctionalityTest {
     // Import key or simulate importing key
     Field signView = SignatureCreationController.class.getDeclaredField("signView");
     signView.setAccessible(true);
-    SignView signViewVal = (SignView) signView.get(mainController.getSignatureCreationController());
+    SignView signViewVal = (SignView) signView.get(mainController.getSignatureCreationControllerStandard());
     GenRSA genRSA = new GenRSA(2, new int[]{512, 512});
     KeyPair keyPair = genRSA.generateKeyPair();
 
@@ -408,8 +408,8 @@ public class SignFunctionalityTest {
         getFile("key", ".rsa");
     // Simulate invoking the file import method directly
     Platform.runLater(() -> {
-      mainController.getSignatureCreationController()
-          .handleKey(privateKeyFile.get(), signViewVal);
+      mainController.getSignatureCreationControllerStandard()
+          .handleKey(privateKeyFile.get(), signViewVal, null);
     });
 
     WaitForAsyncUtils.waitForFxEvents();
@@ -454,7 +454,7 @@ public class SignFunctionalityTest {
     Field sigModel = SignatureCreationController.class.getDeclaredField("signatureModel");
     sigModel.setAccessible(true);
     SignatureModel sigModelVal = (SignatureModel) sigModel.get(
-        mainController.getSignatureCreationController());
+        mainController.getSignatureCreationControllerStandard());
     ComboBox<String> schemeDropdown = robot.lookup("#signatureSchemeDropdown").queryComboBox();
     assertFalse(schemeDropdown.getItems().isEmpty());
     robot.clickOn(schemeDropdown);
@@ -486,10 +486,10 @@ public class SignFunctionalityTest {
     // Simulate invoking the file import method directly
     Field signView = SignatureCreationController.class.getDeclaredField("signView");
     signView.setAccessible(true);
-    SignView signViewVal = (SignView) signView.get(mainController.getSignatureCreationController());
+    SignView signViewVal = (SignView) signView.get(mainController.getSignatureCreationControllerStandard());
     Platform.runLater(() -> {
-      mainController.getSignatureCreationController()
-          .handleMessageFile(testFile.get(), signViewVal);
+      mainController.getSignatureCreationControllerStandard()
+          .handleMessageFile(testFile.get(), signViewVal, null);
     });
     WaitForAsyncUtils.waitForFxEvents();
 
@@ -515,7 +515,7 @@ public class SignFunctionalityTest {
     // Simulate invoking the file import method directly
     Field signView = SignatureCreationController.class.getDeclaredField("signView");
     signView.setAccessible(true);
-    SignView signViewVal = (SignView) signView.get(mainController.getSignatureCreationController());
+    SignView signViewVal = (SignView) signView.get(mainController.getSignatureCreationControllerStandard());
     GenRSA genRSA = new GenRSA(2, new int[]{512, 512});
     KeyPair keyPair = genRSA.generateKeyPair();
 
@@ -524,8 +524,8 @@ public class SignFunctionalityTest {
     Optional<File> privateKeyFile = MainTestUtility.
         getFile("key", ".rsa");
     Platform.runLater(() -> {
-      mainController.getSignatureCreationController()
-          .handleKey(privateKeyFile.get(), signViewVal);
+      mainController.getSignatureCreationControllerStandard()
+          .handleKey(privateKeyFile.get(), signViewVal, null);
     });
     WaitForAsyncUtils.waitForFxEvents();
     ImageView importSuccessImage = robot.lookup("#checkmarkImage").queryAs(ImageView.class);
