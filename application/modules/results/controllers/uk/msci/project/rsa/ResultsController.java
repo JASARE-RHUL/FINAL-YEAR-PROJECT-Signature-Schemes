@@ -181,6 +181,7 @@ public class ResultsController {
 
       displayCurrentContextButtons();
 
+      graphManager.setLastSelectedGraphButton(resultsView.getHistogramButton());
       observerSetup.run();
       additionalSetupBasedOnMode.run();
 

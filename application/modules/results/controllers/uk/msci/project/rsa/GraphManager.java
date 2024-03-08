@@ -1000,4 +1000,16 @@ public class GraphManager {
   }
 
 
+  /**
+   * Sets the reference to the last selected graph button. This method is used to store the
+   * currently active graph button in the GraphManager. It allows the application to remember the
+   * user's last graph choice and maintain the active state of the corresponding button across
+   * different result sets and key sizes.
+   *
+   * @param lastSelectedGraphButton The button that was last selected by the user.
+   */
+  public void setLastSelectedGraphButton(Button lastSelectedGraphButton) {
+    this.lastSelectedGraphButton = lastSelectedGraphButton;
+  }
+
 }
