@@ -21,16 +21,17 @@ public abstract class SignatureBaseContext extends BenchmarkingContext {
   /**
    * The model associated with signature creation that contains logic and data for the operation.
    */
-  SignatureModel signatureModel;
+  AbstractSignatureModelBenchmarking signatureModel;
 
   /**
    * Constructs a SignatureBaseContext with the specified SignatureModel.
    *
    * @param signatureModel The model containing signature creation or verification logic and data.
    */
-  public SignatureBaseContext(SignatureModel signatureModel) {
+  public SignatureBaseContext(AbstractSignatureModelBenchmarking signatureModel) {
     this.signatureModel = signatureModel;
   }
+
 
   /**
    * Provides a context-specific label for the results view based on the specific signature
@@ -84,63 +85,97 @@ public abstract class SignatureBaseContext extends BenchmarkingContext {
    */
   public abstract String getSignatureResultsLabel(boolean isComparisonMode);
 
-
   /**
-   * Retrieves a map linking each group index to its corresponding list of hash functions and their
-   * provable security status.
+   * Throws an UnsupportedOperationException for methods that are not supported in the current context.
+   * This method is used to indicate that certain operations are not applicable or not implemented
+   * in the standard benchmarking mode, which typically involves a simpler set of functionalities.
    *
-   * @return A map where each key is a group index and each value is a list of pairs of {@code
-   * DigestType} and a boolean indicating if it's provably secure.
+   * @param operation The name of the unsupported operation.
+   * @return Nothing, as this method always throws an exception.
+   * @throws UnsupportedOperationException to indicate that the operation is not supported.
    */
-  @Override
-  public Map<Integer, List<HashFunctionSelection>> getKeyConfigToHashFunctionsMap() {
-    return signatureModel.getKeyConfigToHashFunctionsMap();
+  private <T> T unsupportedOperation(String operation) {
+    throw new UnsupportedOperationException(
+        operation + " is not supported in standard benchmarking mode");
   }
 
   /**
-   * Retrieves the number of keys considered as a group in the signature benchmarking context. This
-   * grouping is relevant for applying different hash functions and parameters during the
-   * benchmarking process.
+   * Retrieves a map linking each group index to its corresponding list of hash functions and their
+   * provable security status. This is applicable in comparison benchmarking mode where multiple
+   * hash function configurations are used across different groups.
+   *
+   * @return A map where each key is a group index and each value is a list of HashFunctionSelection
+   *         objects representing the hash function and its provable security status.
+   * @throws UnsupportedOperationException if the method is called in a context where it's not supported.
+   */
+  @Override
+  public Map<Integer, List<HashFunctionSelection>> getKeyConfigToHashFunctionsMap() {
+    return (signatureModel instanceof SignatureModelComparisonBenchmarking comparisonModel) ?
+        comparisonModel.getKeyConfigToHashFunctionsMap() :
+        unsupportedOperation("getKeyConfigToHashFunctionsMap");
+  }
+
+  /**
+   * Retrieves the number of keys considered as a group in the signature benchmarking context.
+   * This concept is particularly relevant in comparison benchmarking mode, where keys are grouped
+   * to apply different hash functions and parameters during the benchmarking process.
    *
    * @return The number of keys per group used in the benchmarking.
+   * @throws UnsupportedOperationException if the method is called in a context where it's not supported.
    */
+  @Override
   public int getKeysPerGroup() {
-    return signatureModel.getKeysPerGroup();
+    return (signatureModel instanceof SignatureModelComparisonBenchmarking comparisonModel) ?
+        comparisonModel.getKeysPerGroup() :
+        unsupportedOperation("getKeysPerGroup");
   }
 
   /**
    * Provides an array representing the number of trials performed for each key within a group in
-   * the context of signature benchmarking.
+   * the context of signature benchmarking. This is used in comparison benchmarking to evaluate
+   * performance under different configurations.
    *
    * @return An array where each element corresponds to the number of trials for a key in a specific
-   * group.
+   *         group.
+   * @throws UnsupportedOperationException if the method is called in a context where it's not supported.
    */
   @Override
   public int[] getTrialsPerKeyByGroup() {
-    return signatureModel.getTrialsPerKeyByGroup();
+    return (signatureModel instanceof SignatureModelComparisonBenchmarking comparisonModel) ?
+        comparisonModel.getTrialsPerKeyByGroup() :
+        unsupportedOperation("getTrialsPerKeyByGroup");
   }
 
   /**
    * Retrieves the total number of hash functions used across all groups in the signature
-   * benchmarking.
+   * benchmarking process. This is relevant in comparison benchmarking mode, where multiple hash
+   * functions might be used for different groups.
    *
    * @return The total number of hash functions used in the benchmarking process.
+   * @throws UnsupportedOperationException if the method is called in a context where it's not supported.
    */
   @Override
   public int getTotalHashFunctions() {
-    return signatureModel.getTotalHashFunctions();
+    return (signatureModel instanceof SignatureModelComparisonBenchmarking comparisonModel) ?
+        comparisonModel.getTotalHashFunctions() :
+        unsupportedOperation("getTotalHashFunctions");
   }
 
   /**
-   * Gets the total number of distinct groups formed for the purpose of signature benchmarking. Each
-   * group represents a unique combination of key configurations or hash functions.
+   * Gets the total number of distinct groups formed for the purpose of signature benchmarking.
+   * Each group represents a unique combination of key configurations or hash functions, which is
+   * especially relevant in comparison benchmarking mode.
    *
    * @return The total number of groups in the benchmarking process.
+   * @throws UnsupportedOperationException if the method is called in a context where it's not supported.
    */
   @Override
   public int getTotalGroups() {
-    return signatureModel.getTotalGroups();
+    return (signatureModel instanceof SignatureModelComparisonBenchmarking comparisonModel) ?
+        comparisonModel.getTotalGroups() :
+        unsupportedOperation("getTotalGroups");
   }
+
 
   /**
    * Retrieves the fraction used to calculate the custom hash size based on provided key lengths in
