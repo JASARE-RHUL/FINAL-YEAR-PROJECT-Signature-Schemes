@@ -37,6 +37,7 @@ import uk.msci.project.rsa.RSASSA_PKCS1_v1_5;
 import uk.msci.project.rsa.SigScheme;
 import uk.msci.project.rsa.SignatureFactory;
 import uk.msci.project.rsa.SignatureModel;
+import uk.msci.project.rsa.SignatureModelBenchmarking;
 import uk.msci.project.rsa.SignatureType;
 import uk.msci.project.rsa.exceptions.InvalidDigestException;
 import uk.msci.project.rsa.exceptions.InvalidSignatureTypeException;
@@ -44,7 +45,7 @@ import uk.msci.project.rsa.exceptions.InvalidSignatureTypeException;
 
 public class SignatureModelTest {
 
-  private SignatureModel signatureModel;
+  private SignatureModelBenchmarking signatureModel;
 
   private File createTestFileWithMessages(int numMessages) throws IOException {
     File file = new File(System.getProperty("user.dir"), "testMessages.txt");
@@ -82,7 +83,7 @@ public class SignatureModelTest {
     deleteFilesWithSuffix(fileNamePrefix, fileExtension);
     deleteFilesWithSuffix("testNonRecoverableMessages", fileExtension);
 
-    signatureModel = new SignatureModel();
+    signatureModel = new SignatureModelBenchmarking();
 
   }
 
