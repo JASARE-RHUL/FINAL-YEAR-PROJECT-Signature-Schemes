@@ -12,7 +12,7 @@ public class KeyGenerationContext extends BenchmarkingContext {
   /**
    * Model handling the generation of keys.
    */
-  private GenModel genModel;
+  private GenModelBenchmarking genModel;
 
   /**
    * Constructs a KeyGenerationContext with a specified GenModel. Initializes the key generation
@@ -20,7 +20,7 @@ public class KeyGenerationContext extends BenchmarkingContext {
    *
    * @param genModel The GenModel instance responsible for key generation.
    */
-  public KeyGenerationContext(GenModel genModel) {
+  public KeyGenerationContext(GenModelBenchmarking genModel) {
     this.genModel = genModel;
   }
 

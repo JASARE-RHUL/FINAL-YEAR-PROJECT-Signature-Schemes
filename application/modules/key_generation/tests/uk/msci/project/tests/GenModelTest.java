@@ -12,6 +12,7 @@ import javafx.util.Pair;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.msci.project.rsa.GenModel;
+import uk.msci.project.rsa.GenModelComparisonBenchmarking;
 import uk.msci.project.rsa.GenRSA;
 import uk.msci.project.rsa.KeyPair;
 
@@ -103,7 +104,7 @@ public class GenModelTest {
 
   @Test
   public void testFormatCustomKeyConfigurations() {
-    GenModel model = new GenModel();
+    GenModelComparisonBenchmarking model = new GenModelComparisonBenchmarking();
     List<Pair<int[], Boolean>> keyConfigurationsData = new ArrayList<>();
     keyConfigurationsData.add(new Pair<>(new int[]{1, 2, 1, 2}, true));
     keyConfigurationsData.add(new Pair<>(new int[]{1, 4, 1, 4, 1, 2}, false));

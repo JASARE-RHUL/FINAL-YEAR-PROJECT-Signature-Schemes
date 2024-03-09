@@ -34,6 +34,13 @@ public class GenController {
    * generation
    */
   private GenModel genModel;
+
+  /**
+   * The model component of the MVC pattern that handles the data and business logic for RSA key
+   * generation in benchmarking mode.
+   */
+  private GenModelBenchmarking genModelBenchmarking;
+
   /**
    * The main controller that orchestrates the flow between different views of the application.
    */
@@ -100,6 +107,7 @@ public class GenController {
    * @param primaryStage The primary stage of the application where the view will be displayed.
    */
   public void showGenView(Stage primaryStage) {
+    genModelBenchmarking = new GenModelBenchmarking();
     loadGenView("/GenView.fxml", () -> setupBenchmarkingObservers(primaryStage));
   }
 
@@ -113,6 +121,7 @@ public class GenController {
    * @param primaryStage The primary stage of the application where this view is to be displayed.
    */
   public void showGenViewCrossBenchmarkingMode(Stage primaryStage) {
+    genModelBenchmarking = new GenModelComparisonBenchmarking();
     loadGenView("/GenViewCrossBenchmarkingMode.fxml",
         () -> setupBenchmarkingObservers(primaryStage));
   }
@@ -125,6 +134,7 @@ public class GenController {
    * @param primaryStage The primary stage of the application where the view will be displayed.
    */
   public void showGenViewStandardMode(Stage primaryStage) {
+    genModel = new GenModel();
     loadGenView("/GenViewStandardMode.fxml", () -> {
     });
     genView.addGenerateButtonObserver(new GenerateKeyObserver());
@@ -285,16 +295,18 @@ public class GenController {
       boolean isCustomComparisonMode) {
 
     ResultsController resultsController = new ResultsController(mainController);
-    BenchmarkingContext context = new KeyGenerationContext(genModel);
+    BenchmarkingContext context = new KeyGenerationContext(genModelBenchmarking);
     resultsController.setContext(context);
-    genModel.generateKeyBatch();
-    mainController.setProvableKeyBatchForSignatureProcesses(genModel.getPrivateKeyBatch(),
-        genModel.getPublicKeyBatch(), true,
+    genModelBenchmarking.generateKeyBatch();
+    mainController.setProvableKeyBatchForSignatureProcesses(
+        genModelBenchmarking.getPrivateKeyBatch(),
+        genModelBenchmarking.getPublicKeyBatch(), true,
         isCustomComparisonMode);
     mainController.setKeyConfigurationStringsForComparisonMode(keyConfigurationsString);
     resultsController.showResultsView(mainController.getPrimaryStage(), keyConfigurationsString,
-        genModel.getClockTimesPerTrial(), genModel.summedKeySizes(genModel.getKeyParams()), true,
-        genModel.getNumKeySizesForComparisonMode());
+        genModelBenchmarking.getClockTimesPerTrial(),
+        genModelBenchmarking.summedKeySizes(genModelBenchmarking.getKeyParams()), true,
+        genModelBenchmarking.getNumKeySizesForComparisonMode());
   }
 
   /**
@@ -314,11 +326,11 @@ public class GenController {
         numTrials = genView.getNumTrials();
         benchmarkingUtility = new BenchmarkingUtility();
         Task<Void> benchmarkingTask = createBenchmarkingTaskComparisonMode(
-            genModel.getDefaultKeyConfigurationsData(),
+            genModelBenchmarking.getDefaultKeyConfigurationsData(),
             genView.getDynamicKeySizeData(), numTrials);
         BenchmarkingUtility.beginBenchmarkWithUtility(benchmarkingUtility, "Key Generation",
             benchmarkingTask, () -> handleBenchmarkingCompletionComparisonMode(
-                genModel.formatDefaultKeyConfigurations(), false),
+                genModelBenchmarking.formatDefaultKeyConfigurations(), false),
             mainController.getPrimaryStage());
       }
     }
@@ -359,7 +371,7 @@ public class GenController {
             BenchmarkingUtility.beginBenchmarkWithUtility(benchmarkingUtility, "Key Generation",
                 benchmarkingTask, () -> {
                   handleBenchmarkingCompletionComparisonMode(
-                      genModel.formatCustomKeyConfigurations(
+                      genModelBenchmarking.formatCustomKeyConfigurations(
                           genView.getDynamicKeyConfigurationsData()), true);
                   mainController.setKeyConfigToHashFunctionsMapForCustomComparisonMode(
                       genView.getKeyConfigToHashFunctionsMap(), genView.getKeysPerGroup());
@@ -381,16 +393,18 @@ public class GenController {
    */
   private void handleBenchmarkingCompletion() {
     ResultsController resultsController = new ResultsController(mainController);
-    BenchmarkingContext context = new KeyGenerationContext(genModel);
+    BenchmarkingContext context = new KeyGenerationContext(genModelBenchmarking);
     resultsController.setContext(context);
-    genModel.generateKeyBatch();
-    if (genModel.generateKeyBatch()) {
-      mainController.setProvableKeyBatchForSignatureProcesses(genModel.getPrivateKeyBatch(),
-          genModel.getPublicKeyBatch(), false,
+    genModelBenchmarking.generateKeyBatch();
+    if (genModelBenchmarking.generateKeyBatch()) {
+      mainController.setProvableKeyBatchForSignatureProcesses(
+          genModelBenchmarking.getPrivateKeyBatch(),
+          genModelBenchmarking.getPublicKeyBatch(), false,
           false);
     }
     resultsController.showResultsView(mainController.getPrimaryStage(),
-        genModel.getClockTimesPerTrial(), genModel.summedKeySizes(genModel.getKeyParams()));
+        genModelBenchmarking.getClockTimesPerTrial(),
+        genModelBenchmarking.summedKeySizes(genModelBenchmarking.getKeyParams()));
   }
 
   /**
@@ -420,10 +434,11 @@ public class GenController {
     return new Task<>() {
       @Override
       protected Void call() throws Exception {
-        genModel.batchGenerateKeys(numTrials, keyParams, progress -> Platform.runLater(() -> {
-          benchmarkingUtility.updateProgress(progress);
-          benchmarkingUtility.updateProgressLabel(String.format("%.0f%%", progress * 100));
-        }));
+        genModelBenchmarking.batchGenerateKeys(numTrials, keyParams,
+            progress -> Platform.runLater(() -> {
+              benchmarkingUtility.updateProgress(progress);
+              benchmarkingUtility.updateProgressLabel(String.format("%.0f%%", progress * 100));
+            }));
         return null;
       }
     };
@@ -444,10 +459,16 @@ public class GenController {
    */
   private Task<Void> createBenchmarkingTaskComparisonMode(
       List<Pair<int[], Boolean>> keyConfigurationsData, List<Integer> keyParams, int numTrials) {
+    GenModelComparisonBenchmarking genModelComparisonBenchmarking = null;
+    if (genModelBenchmarking instanceof GenModelComparisonBenchmarking comparisonModelCopy) {
+      genModelComparisonBenchmarking = comparisonModelCopy;
+    }
+    GenModelComparisonBenchmarking finalGenModelComparisonBenchmarking = genModelComparisonBenchmarking;
     return new Task<>() {
       @Override
       protected Void call() throws Exception {
-        genModel.batchGenerateInComparisonMode(keyConfigurationsData, keyParams, numTrials,
+        finalGenModelComparisonBenchmarking.batchGenerateKeysInComparisonMode(keyConfigurationsData,
+            keyParams, numTrials,
             progress -> Platform.runLater(() -> {
               benchmarkingUtility.updateProgress(progress);
               benchmarkingUtility.updateProgressLabel(String.format("%.0f%%", progress * 100));
