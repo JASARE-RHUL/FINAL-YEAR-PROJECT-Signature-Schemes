@@ -21,7 +21,7 @@
             <Label id="header-text" text="Digital Signatures"/>
           </left>
           <right>
-            <Label text="Signing" id="header-text"/>
+            <Label text="Verifying" id="header-text"/>
           </right>
         </BorderPane>
       </VBox>
