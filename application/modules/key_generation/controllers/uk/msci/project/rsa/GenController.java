@@ -3,6 +3,7 @@ package uk.msci.project.rsa;
 import static uk.msci.project.rsa.KeyGenUtil.convertStringToIntArray;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
 import javafx.application.Platform;
@@ -294,7 +295,7 @@ public class GenController {
   private void handleBenchmarkingCompletionComparisonMode(List<String> keyConfigurationsString,
       boolean isCustomComparisonMode) {
 
-    ResultsController resultsController = new ResultsController(mainController);
+    ResultsControllerComparisonBenchmarking resultsController = new ResultsControllerComparisonBenchmarking(mainController);
     BenchmarkingContext context = new KeyGenerationContext(genModelBenchmarking);
     resultsController.setContext(context);
     genModelBenchmarking.generateKeyBatch();
@@ -303,7 +304,7 @@ public class GenController {
         genModelBenchmarking.getPublicKeyBatch(), true,
         isCustomComparisonMode);
     mainController.setKeyConfigurationStringsForComparisonMode(keyConfigurationsString);
-    resultsController.showResultsView(mainController.getPrimaryStage(), keyConfigurationsString,
+    resultsController.showResultsView(keyConfigurationsString,
         genModelBenchmarking.getClockTimesPerTrial(),
         genModelBenchmarking.summedKeySizes(genModelBenchmarking.getKeyParams()), true,
         genModelBenchmarking.getNumKeySizesForComparisonMode());
@@ -392,7 +393,8 @@ public class GenController {
    * gathered benchmarking data.
    */
   private void handleBenchmarkingCompletion() {
-    ResultsController resultsController = new ResultsController(mainController);
+    ResultsControllerNormalBenchmarking resultsController = new ResultsControllerNormalBenchmarking(
+        mainController);
     BenchmarkingContext context = new KeyGenerationContext(genModelBenchmarking);
     resultsController.setContext(context);
     genModelBenchmarking.generateKeyBatch();
@@ -402,9 +404,9 @@ public class GenController {
           genModelBenchmarking.getPublicKeyBatch(), false,
           false);
     }
-    resultsController.showResultsView(mainController.getPrimaryStage(),
+    resultsController.showResultsView(Collections.emptyList(),
         genModelBenchmarking.getClockTimesPerTrial(),
-        genModelBenchmarking.summedKeySizes(genModelBenchmarking.getKeyParams()));
+        genModelBenchmarking.summedKeySizes(genModelBenchmarking.getKeyParams()), false, 0);
   }
 
   /**

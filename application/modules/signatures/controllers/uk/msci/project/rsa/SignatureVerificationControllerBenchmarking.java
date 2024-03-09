@@ -300,12 +300,12 @@ public class SignatureVerificationControllerBenchmarking extends
    */
   private void handleBenchmarkingCompletionComparisonMode() {
     resetPreLoadedKeyParams();
-    ResultsController resultsController = new ResultsController(mainController);
+    ResultsControllerComparisonBenchmarking resultsController = new ResultsControllerComparisonBenchmarking(
+        mainController);
     BenchmarkingContext context = new SignatureVerificationContext(
         signatureModelComparisonBenchmarking);
     resultsController.setContext(context);
-
-    resultsController.showResultsView(mainController.getPrimaryStage(), keyConfigurationStrings,
+    resultsController.showResultsView( keyConfigurationStrings,
         signatureModelComparisonBenchmarking.getClockTimesPerTrial(),
         signatureModelComparisonBenchmarking.getKeyLengths(), true,
         signatureModelComparisonBenchmarking.getNumKeySizesForComparisonMode());
@@ -319,12 +319,14 @@ public class SignatureVerificationControllerBenchmarking extends
    * results view with the gathered benchmarking data.
    */
   private void handleBenchmarkingCompletion() {
-    ResultsController resultsController = new ResultsController(mainController);
+    resetPreLoadedKeyParams();
+    ResultsControllerNormalBenchmarking resultsController = new ResultsControllerNormalBenchmarking(
+        mainController);
     BenchmarkingContext context = new SignatureVerificationContext(signatureModelBenchmarking);
     resultsController.setContext(context);
-    resultsController.showResultsView(mainController.getPrimaryStage(),
+    resultsController.showResultsView(null,
         signatureModelBenchmarking.getClockTimesPerTrial(),
-        signatureModelBenchmarking.getKeyLengths());
+        signatureModelBenchmarking.getKeyLengths(), false, 0);
   }
 
   /**
@@ -393,14 +395,16 @@ public class SignatureVerificationControllerBenchmarking extends
 
 
   /**
-   * Processes a file containing a batch of signatures for signature verification. Validates
-   * the file's content and updates the model and UI accordingly. Ensures the file format is
-   * correct and contains a valid batch of signatures. This method is essential for handling
-   * batch operations in signature verification benchmarking scenarios.
+   * Processes a file containing a batch of signatures for signature verification. Validates the
+   * file's content and updates the model and UI accordingly. Ensures the file format is correct and
+   * contains a valid batch of signatures. This method is essential for handling batch operations in
+   * signature verification benchmarking scenarios.
    *
-   * @param file The file containing a batch of signatures for verification.
-   * @param signatureView The signature view to be updated with the imported signature batch.
-   * @param signatureModelBenchmarking The benchmarking model used for processing the signature batch.
+   * @param file                       The file containing a batch of signatures for verification.
+   * @param signatureView              The signature view to be updated with the imported signature
+   *                                   batch.
+   * @param signatureModelBenchmarking The benchmarking model used for processing the signature
+   *                                   batch.
    */
   public void handleSignatureBatch(File file, SignatureBaseView signatureView,
       AbstractSignatureModelBenchmarking signatureModelBenchmarking) {

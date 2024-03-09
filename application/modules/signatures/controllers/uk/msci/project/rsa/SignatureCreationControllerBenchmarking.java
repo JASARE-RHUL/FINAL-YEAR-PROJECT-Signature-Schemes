@@ -281,12 +281,13 @@ public class SignatureCreationControllerBenchmarking extends
    */
   private void handleBenchmarkingCompletion() {
     resetPreLoadedKeyParams();
-    ResultsController resultsController = new ResultsController(mainController);
+    ResultsControllerNormalBenchmarking resultsController = new ResultsControllerNormalBenchmarking(
+        mainController);
     BenchmarkingContext context = new SignatureCreationContext(signatureModelBenchmarking);
     resultsController.setContext(context);
-    resultsController.showResultsView(mainController.getPrimaryStage(),
+    resultsController.showResultsView(null,
         signatureModelBenchmarking.getClockTimesPerTrial(),
-        signatureModelBenchmarking.getKeyLengths());
+        signatureModelBenchmarking.getKeyLengths(), false, 0);
   }
 
   /**
@@ -298,12 +299,13 @@ public class SignatureCreationControllerBenchmarking extends
    */
   private void handleBenchmarkingCompletionComparisonMode() {
     resetPreLoadedKeyParams();
-    ResultsController resultsController = new ResultsController(mainController);
+    ResultsControllerComparisonBenchmarking resultsController = new ResultsControllerComparisonBenchmarking(
+        mainController);
     BenchmarkingContext context = new SignatureCreationContext(
         signatureModelComparisonBenchmarking);
     resultsController.setContext(context);
 
-    resultsController.showResultsView(mainController.getPrimaryStage(), keyConfigurationStrings,
+    resultsController.showResultsView(keyConfigurationStrings,
         signatureModelComparisonBenchmarking.getClockTimesPerTrial(),
         signatureModelComparisonBenchmarking.getKeyLengths(), true,
         signatureModelComparisonBenchmarking.getNumKeySizesForComparisonMode());
