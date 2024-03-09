@@ -38,7 +38,7 @@ import uk.msci.project.rsa.KeyPair;
 import uk.msci.project.rsa.MainController;
 import uk.msci.project.rsa.SignatureModel;
 import uk.msci.project.rsa.SignatureType;
-import uk.msci.project.rsa.SignatureVerificationController;
+import uk.msci.project.rsa.SignatureVerificationControllerStandard;
 import uk.msci.project.rsa.VerifyView;
 import uk.msci.project.rsa.exceptions.InvalidSignatureTypeException;
 
@@ -127,7 +127,7 @@ public class VerifyFunctionalityTest {
     Optional<File> testFile = uk.msci.project.tests.MainTestUtility.
         getFile("testFile", ".txt");
     // Simulate invoking the file import method directly
-    Field verifyView = SignatureVerificationController.class.getDeclaredField("verifyView");
+    Field verifyView = SignatureVerificationControllerStandard.class.getDeclaredField("verifyView");
     verifyView.setAccessible(true);
     VerifyView verifyViewVal = (VerifyView) verifyView.get(mainController.getSignatureVerificationControllerStandard());
     Platform.runLater(() -> {
@@ -156,7 +156,7 @@ public class VerifyFunctionalityTest {
       throws IOException, NoSuchFieldException, IllegalAccessException {
     // Test importing public key functionality.
     // Simulate invoking the file import method directly
-    Field verifyView = SignatureVerificationController.class.getDeclaredField("verifyView");
+    Field verifyView = SignatureVerificationControllerStandard.class.getDeclaredField("verifyView");
     verifyView.setAccessible(true);
     VerifyView verifyViewVal = (VerifyView) verifyView.get(mainController.getSignatureVerificationControllerStandard());
     GenRSA genRSA = new GenRSA(2, new int[]{512, 512});
@@ -190,7 +190,7 @@ public class VerifyFunctionalityTest {
     // Test importing signature functionality.
     // Simulate file chooser action...
     // Simulate invoking the file import method directly
-    Field verifyView = SignatureVerificationController.class.getDeclaredField("verifyView");
+    Field verifyView = SignatureVerificationControllerStandard.class.getDeclaredField("verifyView");
     verifyView.setAccessible(true);
     VerifyView verifyViewVal = (VerifyView) verifyView.get(mainController.getSignatureVerificationControllerStandard());
 
@@ -223,7 +223,7 @@ public class VerifyFunctionalityTest {
     // Import text, public key, and signature...
     TextArea textInput = robot.lookup("#textInput").queryAs(TextArea.class);
     robot.clickOn(textInput).write("text to sign.");
-    Field verifyView = SignatureVerificationController.class.getDeclaredField("verifyView");
+    Field verifyView = SignatureVerificationControllerStandard.class.getDeclaredField("verifyView");
     verifyView.setAccessible(true);
     VerifyView verifyViewVal = (VerifyView) verifyView.get(mainController.getSignatureVerificationControllerStandard());
     GenRSA genRSA = new GenRSA(2, new int[]{512, 512});
@@ -271,7 +271,7 @@ public class VerifyFunctionalityTest {
       throws NoSuchFieldException, IllegalAccessException {
     // Test that the signature scheme dropdown changes the signature when a new option is selected.
 
-    Field sigModel = SignatureVerificationController.class.getDeclaredField("signatureModel");
+    Field sigModel = SignatureVerificationControllerStandard.class.getDeclaredField("signatureModel");
     sigModel.setAccessible(true);
     SignatureModel sigModelVal = (SignatureModel) sigModel.get(
         mainController.getSignatureVerificationControllerStandard());
@@ -299,7 +299,7 @@ public class VerifyFunctionalityTest {
   @Test
   public void shouldHandleErrorWhenNoTextEntered(FxRobot robot)
       throws NoSuchFieldException, IOException, IllegalAccessException {
-    Field verifyView = SignatureVerificationController.class.getDeclaredField("verifyView");
+    Field verifyView = SignatureVerificationControllerStandard.class.getDeclaredField("verifyView");
     verifyView.setAccessible(true);
     VerifyView verifyViewVal = (VerifyView) verifyView.get(mainController.getSignatureVerificationControllerStandard());
     GenRSA genRSA = new GenRSA(2, new int[]{512, 512});
@@ -349,7 +349,7 @@ public class VerifyFunctionalityTest {
     // Import text, public key, and signature...
     TextArea textInput = robot.lookup("#textInput").queryAs(TextArea.class);
     robot.clickOn(textInput).write("text to sign.");
-    Field verifyView = SignatureVerificationController.class.getDeclaredField("verifyView");
+    Field verifyView = SignatureVerificationControllerStandard.class.getDeclaredField("verifyView");
     verifyView.setAccessible(true);
     VerifyView verifyViewVal = (VerifyView) verifyView.get(mainController.getSignatureVerificationControllerStandard());
 
@@ -389,7 +389,7 @@ public class VerifyFunctionalityTest {
 
     TextArea textInput = robot.lookup("#textInput").queryAs(TextArea.class);
     robot.clickOn(textInput).write("text to sign.");
-    Field verifyView = SignatureVerificationController.class.getDeclaredField("verifyView");
+    Field verifyView = SignatureVerificationControllerStandard.class.getDeclaredField("verifyView");
     verifyView.setAccessible(true);
     VerifyView verifyViewVal = (VerifyView) verifyView.get(mainController.getSignatureVerificationControllerStandard());
     GenRSA genRSA = new GenRSA(2, new int[]{512, 512});
@@ -436,7 +436,7 @@ public class VerifyFunctionalityTest {
     // Import text, public key, and signature...
     TextArea textInput = robot.lookup("#textInput").queryAs(TextArea.class);
     robot.clickOn(textInput).write("text to sign.");
-    Field verifyView = SignatureVerificationController.class.getDeclaredField("verifyView");
+    Field verifyView = SignatureVerificationControllerStandard.class.getDeclaredField("verifyView");
     verifyView.setAccessible(true);
     VerifyView verifyViewVal = (VerifyView) verifyView.get(mainController.getSignatureVerificationControllerStandard());
     GenRSA genRSA = new GenRSA(2, new int[]{512, 512});
@@ -494,7 +494,7 @@ public class VerifyFunctionalityTest {
   @Test
   public void shouldHandleErrorWhenCorruptedKey(FxRobot robot)
       throws NoSuchFieldException, IOException, IllegalAccessException {
-    Field verifyView = SignatureVerificationController.class.getDeclaredField("verifyView");
+    Field verifyView = SignatureVerificationControllerStandard.class.getDeclaredField("verifyView");
     verifyView.setAccessible(true);
     VerifyView verifyViewVal = (VerifyView) verifyView.get(mainController.getSignatureVerificationControllerStandard());
     GenRSA genRSA = new GenRSA(2, new int[]{512, 512});
@@ -530,7 +530,7 @@ public class VerifyFunctionalityTest {
   @Test
   public void shouldAllowEmptyMessageWhenISOSelected(FxRobot robot)
       throws NoSuchFieldException, IOException, IllegalAccessException {
-    Field verifyView = SignatureVerificationController.class.getDeclaredField("verifyView");
+    Field verifyView = SignatureVerificationControllerStandard.class.getDeclaredField("verifyView");
     verifyView.setAccessible(true);
     VerifyView verifyViewVal = (VerifyView) verifyView.get(mainController.getSignatureVerificationControllerStandard());
     GenRSA genRSA = new GenRSA(2, new int[]{512, 512});

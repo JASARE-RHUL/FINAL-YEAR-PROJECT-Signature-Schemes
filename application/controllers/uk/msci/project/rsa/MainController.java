@@ -367,6 +367,6 @@ public class MainController {
    * present the interface for signature verification with benchmarking functionalities.
    */
   public void showSignatureVerificationBenchmarking() {
-    signatureCreationControllerBenchmarking.showBenchmarkingView(primaryStage);
+    signatureVerificationControllerBenchmarking.showBenchmarkingView(primaryStage);
   }
 }

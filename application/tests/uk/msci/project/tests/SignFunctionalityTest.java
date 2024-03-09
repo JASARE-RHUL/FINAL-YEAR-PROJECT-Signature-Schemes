@@ -39,7 +39,7 @@ import uk.msci.project.rsa.GenRSA;
 import uk.msci.project.rsa.KeyPair;
 import uk.msci.project.rsa.MainController;
 import uk.msci.project.rsa.SignView;
-import uk.msci.project.rsa.SignatureCreationController;
+import uk.msci.project.rsa.SignatureCreationControllerStandard;
 import uk.msci.project.rsa.SignatureModel;
 import uk.msci.project.rsa.SignatureType;
 
@@ -147,7 +147,7 @@ public class SignFunctionalityTest {
         .queryAs(ComboBox.class);
 
     // Import key or simulate importing key
-    Field signView = SignatureCreationController.class.getDeclaredField("signView");
+    Field signView = SignatureCreationControllerStandard.class.getDeclaredField("signView");
     signView.setAccessible(true);
     SignView signViewVal = (SignView) signView.get(mainController.getSignatureCreationControllerStandard());
     GenRSA genRSA = new GenRSA(2, new int[]{512, 512});
@@ -198,7 +198,7 @@ public class SignFunctionalityTest {
         .queryAs(ComboBox.class);
 
     // Import key or simulate importing key
-    Field signView = SignatureCreationController.class.getDeclaredField("signView");
+    Field signView = SignatureCreationControllerStandard.class.getDeclaredField("signView");
     signView.setAccessible(true);
     SignView signViewVal = (SignView) signView.get(mainController.getSignatureCreationControllerStandard());
     GenRSA genRSA = new GenRSA(2, new int[]{512, 512});
@@ -244,7 +244,7 @@ public class SignFunctionalityTest {
         .queryAs(ComboBox.class);
 
     // Import key or simulate importing key
-    Field signView = SignatureCreationController.class.getDeclaredField("signView");
+    Field signView = SignatureCreationControllerStandard.class.getDeclaredField("signView");
     signView.setAccessible(true);
     SignView signViewVal = (SignView) signView.get(mainController.getSignatureCreationControllerStandard());
     GenRSA genRSA = new GenRSA(2, new int[]{512, 512});
@@ -287,7 +287,7 @@ public class SignFunctionalityTest {
         .queryAs(ComboBox.class);
 
     // Import key or simulate importing key
-    Field signView = SignatureCreationController.class.getDeclaredField("signView");
+    Field signView = SignatureCreationControllerStandard.class.getDeclaredField("signView");
     signView.setAccessible(true);
     SignView signViewVal = (SignView) signView.get(mainController.getSignatureCreationControllerStandard());
     GenRSA genRSA = new GenRSA(2, new int[]{512, 512});
@@ -341,7 +341,7 @@ public class SignFunctionalityTest {
         .queryAs(ComboBox.class);
 
     // Import key or simulate importing key
-    Field signView = SignatureCreationController.class.getDeclaredField("signView");
+    Field signView = SignatureCreationControllerStandard.class.getDeclaredField("signView");
     signView.setAccessible(true);
     SignView signViewVal = (SignView) signView.get(mainController.getSignatureCreationControllerStandard());
     GenRSA genRSA = new GenRSA(2, new int[]{512, 512});
@@ -396,7 +396,7 @@ public class SignFunctionalityTest {
         .queryAs(ComboBox.class);
 
     // Import key or simulate importing key
-    Field signView = SignatureCreationController.class.getDeclaredField("signView");
+    Field signView = SignatureCreationControllerStandard.class.getDeclaredField("signView");
     signView.setAccessible(true);
     SignView signViewVal = (SignView) signView.get(mainController.getSignatureCreationControllerStandard());
     GenRSA genRSA = new GenRSA(2, new int[]{512, 512});
@@ -451,7 +451,7 @@ public class SignFunctionalityTest {
       throws NoSuchFieldException, IllegalAccessException {
     // Test that the signature scheme dropdown changes the signature when a new option is selected.
 
-    Field sigModel = SignatureCreationController.class.getDeclaredField("signatureModel");
+    Field sigModel = SignatureCreationControllerStandard.class.getDeclaredField("signatureModel");
     sigModel.setAccessible(true);
     SignatureModel sigModelVal = (SignatureModel) sigModel.get(
         mainController.getSignatureCreationControllerStandard());
@@ -484,7 +484,7 @@ public class SignFunctionalityTest {
     Optional<File> testFile = MainTestUtility.
         getFile("testFile", ".txt");
     // Simulate invoking the file import method directly
-    Field signView = SignatureCreationController.class.getDeclaredField("signView");
+    Field signView = SignatureCreationControllerStandard.class.getDeclaredField("signView");
     signView.setAccessible(true);
     SignView signViewVal = (SignView) signView.get(mainController.getSignatureCreationControllerStandard());
     Platform.runLater(() -> {
@@ -513,7 +513,7 @@ public class SignFunctionalityTest {
       throws IOException, NoSuchFieldException, IllegalAccessException {
     // Test importing public key functionality.
     // Simulate invoking the file import method directly
-    Field signView = SignatureCreationController.class.getDeclaredField("signView");
+    Field signView = SignatureCreationControllerStandard.class.getDeclaredField("signView");
     signView.setAccessible(true);
     SignView signViewVal = (SignView) signView.get(mainController.getSignatureCreationControllerStandard());
     GenRSA genRSA = new GenRSA(2, new int[]{512, 512});
