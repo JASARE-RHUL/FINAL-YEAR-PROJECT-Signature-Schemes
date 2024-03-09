@@ -38,7 +38,7 @@ import uk.msci.project.rsa.KeyPair;
 import uk.msci.project.rsa.MainController;
 import uk.msci.project.rsa.SignatureModel;
 import uk.msci.project.rsa.SignatureType;
-import uk.msci.project.rsa.SignatureVerificationController;
+import uk.msci.project.rsa.SignatureVerificationControllerStandard;
 import uk.msci.project.rsa.VerifyView;
 import uk.msci.project.rsa.exceptions.InvalidSignatureTypeException;
 
@@ -127,12 +127,12 @@ public class VerifyFunctionalityTest {
     Optional<File> testFile = uk.msci.project.tests.MainTestUtility.
         getFile("testFile", ".txt");
     // Simulate invoking the file import method directly
-    Field verifyView = SignatureVerificationController.class.getDeclaredField("verifyView");
+    Field verifyView = SignatureVerificationControllerStandard.class.getDeclaredField("verifyView");
     verifyView.setAccessible(true);
-    VerifyView verifyViewVal = (VerifyView) verifyView.get(mainController.getSignatureVerificationController());
+    VerifyView verifyViewVal = (VerifyView) verifyView.get(mainController.getSignatureVerificationControllerStandard());
     Platform.runLater(() -> {
-      mainController.getSignatureVerificationController()
-          .handleMessageFile(testFile.get(), verifyViewVal);
+      mainController.getSignatureVerificationControllerStandard()
+          .handleMessageFile(testFile.get(), verifyViewVal, null);
     });
     WaitForAsyncUtils.waitForFxEvents();
 
@@ -156,9 +156,9 @@ public class VerifyFunctionalityTest {
       throws IOException, NoSuchFieldException, IllegalAccessException {
     // Test importing public key functionality.
     // Simulate invoking the file import method directly
-    Field verifyView = SignatureVerificationController.class.getDeclaredField("verifyView");
+    Field verifyView = SignatureVerificationControllerStandard.class.getDeclaredField("verifyView");
     verifyView.setAccessible(true);
-    VerifyView verifyViewVal = (VerifyView) verifyView.get(mainController.getSignatureVerificationController());
+    VerifyView verifyViewVal = (VerifyView) verifyView.get(mainController.getSignatureVerificationControllerStandard());
     GenRSA genRSA = new GenRSA(2, new int[]{512, 512});
     KeyPair keyPair = genRSA.generateKeyPair();
 
@@ -167,8 +167,8 @@ public class VerifyFunctionalityTest {
     Optional<File> publicKeyFile = uk.msci.project.tests.MainTestUtility.
         getFile("publicKey", ".rsa");
     Platform.runLater(() -> {
-      mainController.getSignatureVerificationController()
-          .handleKey(publicKeyFile.get(), verifyViewVal);
+      mainController.getSignatureVerificationControllerStandard()
+          .handleKey(publicKeyFile.get(), verifyViewVal, null);
     });
     WaitForAsyncUtils.waitForFxEvents();
     ImageView importSuccessImage = robot.lookup("#checkmarkImage").queryAs(ImageView.class);
@@ -190,16 +190,16 @@ public class VerifyFunctionalityTest {
     // Test importing signature functionality.
     // Simulate file chooser action...
     // Simulate invoking the file import method directly
-    Field verifyView = SignatureVerificationController.class.getDeclaredField("verifyView");
+    Field verifyView = SignatureVerificationControllerStandard.class.getDeclaredField("verifyView");
     verifyView.setAccessible(true);
-    VerifyView verifyViewVal = (VerifyView) verifyView.get(mainController.getSignatureVerificationController());
+    VerifyView verifyViewVal = (VerifyView) verifyView.get(mainController.getSignatureVerificationControllerStandard());
 
     FileHandle.exportToFile("signature.rsa", "mock signature");
     Optional<File> signatureFile = uk.msci.project.tests.MainTestUtility.
         getFile("signature", ".rsa");
     Platform.runLater(() -> {
-      mainController.getSignatureVerificationController()
-          .handleSig(signatureFile.get(), verifyViewVal);
+      mainController.getSignatureVerificationControllerStandard()
+          .handleSig(signatureFile.get(), verifyViewVal, null);
     });
     WaitForAsyncUtils.waitForFxEvents();
     HBox importSuccessBox = robot.lookup("#sigFileHBox").queryAs(HBox.class);
@@ -223,9 +223,9 @@ public class VerifyFunctionalityTest {
     // Import text, public key, and signature...
     TextArea textInput = robot.lookup("#textInput").queryAs(TextArea.class);
     robot.clickOn(textInput).write("text to sign.");
-    Field verifyView = SignatureVerificationController.class.getDeclaredField("verifyView");
+    Field verifyView = SignatureVerificationControllerStandard.class.getDeclaredField("verifyView");
     verifyView.setAccessible(true);
-    VerifyView verifyViewVal = (VerifyView) verifyView.get(mainController.getSignatureVerificationController());
+    VerifyView verifyViewVal = (VerifyView) verifyView.get(mainController.getSignatureVerificationControllerStandard());
     GenRSA genRSA = new GenRSA(2, new int[]{512, 512});
     KeyPair keyPair = genRSA.generateKeyPair();
 
@@ -233,16 +233,16 @@ public class VerifyFunctionalityTest {
     Optional<File> publicKeyFile = uk.msci.project.tests.MainTestUtility.
         getFile("publicKey", ".rsa");
     Platform.runLater(() -> {
-      mainController.getSignatureVerificationController()
-          .handleKey(publicKeyFile.get(), verifyViewVal);
+      mainController.getSignatureVerificationControllerStandard()
+          .handleKey(publicKeyFile.get(), verifyViewVal, null);
     });
     WaitForAsyncUtils.waitForFxEvents();
     FileHandle.exportToFile("signature.rsa", "mock signature");
     Optional<File> signatureFile = uk.msci.project.tests.MainTestUtility.
         getFile("signature", ".rsa");
     Platform.runLater(() -> {
-      mainController.getSignatureVerificationController()
-          .handleSig(signatureFile.get(), verifyViewVal);
+      mainController.getSignatureVerificationControllerStandard()
+          .handleSig(signatureFile.get(), verifyViewVal, null);
     });
 
     // Select a valid signature scheme
@@ -271,10 +271,10 @@ public class VerifyFunctionalityTest {
       throws NoSuchFieldException, IllegalAccessException {
     // Test that the signature scheme dropdown changes the signature when a new option is selected.
 
-    Field sigModel = SignatureVerificationController.class.getDeclaredField("signatureModel");
+    Field sigModel = SignatureVerificationControllerStandard.class.getDeclaredField("signatureModel");
     sigModel.setAccessible(true);
     SignatureModel sigModelVal = (SignatureModel) sigModel.get(
-        mainController.getSignatureVerificationController());
+        mainController.getSignatureVerificationControllerStandard());
     ComboBox<String> schemeDropdown = robot.lookup("#signatureSchemeDropdown").queryComboBox();
     assertFalse(schemeDropdown.getItems().isEmpty());
     robot.clickOn(schemeDropdown);
@@ -299,9 +299,9 @@ public class VerifyFunctionalityTest {
   @Test
   public void shouldHandleErrorWhenNoTextEntered(FxRobot robot)
       throws NoSuchFieldException, IOException, IllegalAccessException {
-    Field verifyView = SignatureVerificationController.class.getDeclaredField("verifyView");
+    Field verifyView = SignatureVerificationControllerStandard.class.getDeclaredField("verifyView");
     verifyView.setAccessible(true);
-    VerifyView verifyViewVal = (VerifyView) verifyView.get(mainController.getSignatureVerificationController());
+    VerifyView verifyViewVal = (VerifyView) verifyView.get(mainController.getSignatureVerificationControllerStandard());
     GenRSA genRSA = new GenRSA(2, new int[]{512, 512});
     KeyPair keyPair = genRSA.generateKeyPair();
 
@@ -309,16 +309,16 @@ public class VerifyFunctionalityTest {
     Optional<File> publicKeyFile = uk.msci.project.tests.MainTestUtility.
         getFile("publicKey", ".rsa");
     Platform.runLater(() -> {
-      mainController.getSignatureVerificationController()
-          .handleKey(publicKeyFile.get(), verifyViewVal);
+      mainController.getSignatureVerificationControllerStandard()
+          .handleKey(publicKeyFile.get(), verifyViewVal, null);
     });
     WaitForAsyncUtils.waitForFxEvents();
     FileHandle.exportToFile("signature.rsa", "mock signature");
     Optional<File> signatureFile = uk.msci.project.tests.MainTestUtility.
         getFile("signature", ".rsa");
     Platform.runLater(() -> {
-      mainController.getSignatureVerificationController()
-          .handleSig(signatureFile.get(), verifyViewVal);
+      mainController.getSignatureVerificationControllerStandard()
+          .handleSig(signatureFile.get(), verifyViewVal, null);
     });
 
     // Select a valid signature scheme
@@ -349,16 +349,16 @@ public class VerifyFunctionalityTest {
     // Import text, public key, and signature...
     TextArea textInput = robot.lookup("#textInput").queryAs(TextArea.class);
     robot.clickOn(textInput).write("text to sign.");
-    Field verifyView = SignatureVerificationController.class.getDeclaredField("verifyView");
+    Field verifyView = SignatureVerificationControllerStandard.class.getDeclaredField("verifyView");
     verifyView.setAccessible(true);
-    VerifyView verifyViewVal = (VerifyView) verifyView.get(mainController.getSignatureVerificationController());
+    VerifyView verifyViewVal = (VerifyView) verifyView.get(mainController.getSignatureVerificationControllerStandard());
 
     FileHandle.exportToFile("signature.rsa", "mock signature");
     Optional<File> signatureFile = uk.msci.project.tests.MainTestUtility.
         getFile("signature", ".rsa");
     Platform.runLater(() -> {
-      mainController.getSignatureVerificationController()
-          .handleSig(signatureFile.get(), verifyViewVal);
+      mainController.getSignatureVerificationControllerStandard()
+          .handleSig(signatureFile.get(), verifyViewVal, null);
     });
 
     // Select a valid signature scheme
@@ -389,9 +389,9 @@ public class VerifyFunctionalityTest {
 
     TextArea textInput = robot.lookup("#textInput").queryAs(TextArea.class);
     robot.clickOn(textInput).write("text to sign.");
-    Field verifyView = SignatureVerificationController.class.getDeclaredField("verifyView");
+    Field verifyView = SignatureVerificationControllerStandard.class.getDeclaredField("verifyView");
     verifyView.setAccessible(true);
-    VerifyView verifyViewVal = (VerifyView) verifyView.get(mainController.getSignatureVerificationController());
+    VerifyView verifyViewVal = (VerifyView) verifyView.get(mainController.getSignatureVerificationControllerStandard());
     GenRSA genRSA = new GenRSA(2, new int[]{512, 512});
     KeyPair keyPair = genRSA.generateKeyPair();
 
@@ -399,8 +399,8 @@ public class VerifyFunctionalityTest {
     Optional<File> publicKeyFile = uk.msci.project.tests.MainTestUtility.
         getFile("publicKey", ".rsa");
     Platform.runLater(() -> {
-      mainController.getSignatureVerificationController()
-          .handleKey(publicKeyFile.get(), verifyViewVal);
+      mainController.getSignatureVerificationControllerStandard()
+          .handleKey(publicKeyFile.get(), verifyViewVal, null);
     });
     WaitForAsyncUtils.waitForFxEvents();
 
@@ -436,9 +436,9 @@ public class VerifyFunctionalityTest {
     // Import text, public key, and signature...
     TextArea textInput = robot.lookup("#textInput").queryAs(TextArea.class);
     robot.clickOn(textInput).write("text to sign.");
-    Field verifyView = SignatureVerificationController.class.getDeclaredField("verifyView");
+    Field verifyView = SignatureVerificationControllerStandard.class.getDeclaredField("verifyView");
     verifyView.setAccessible(true);
-    VerifyView verifyViewVal = (VerifyView) verifyView.get(mainController.getSignatureVerificationController());
+    VerifyView verifyViewVal = (VerifyView) verifyView.get(mainController.getSignatureVerificationControllerStandard());
     GenRSA genRSA = new GenRSA(2, new int[]{512, 512});
     KeyPair keyPair = genRSA.generateKeyPair();
 
@@ -446,16 +446,16 @@ public class VerifyFunctionalityTest {
     Optional<File> publicKeyFile = uk.msci.project.tests.MainTestUtility.
         getFile("publicKey", ".rsa");
     Platform.runLater(() -> {
-      mainController.getSignatureVerificationController()
-          .handleKey(publicKeyFile.get(), verifyViewVal);
+      mainController.getSignatureVerificationControllerStandard()
+          .handleKey(publicKeyFile.get(), verifyViewVal, null);
     });
     WaitForAsyncUtils.waitForFxEvents();
     FileHandle.exportToFile("signature.rsa", "mock signature");
     Optional<File> signatureFile = uk.msci.project.tests.MainTestUtility.
         getFile("signature", ".rsa");
     Platform.runLater(() -> {
-      mainController.getSignatureVerificationController()
-          .handleSig(signatureFile.get(), verifyViewVal);
+      mainController.getSignatureVerificationControllerStandard()
+          .handleSig(signatureFile.get(), verifyViewVal, null);
     });
 
     robot.clickOn("#verifyBtn");
@@ -494,9 +494,9 @@ public class VerifyFunctionalityTest {
   @Test
   public void shouldHandleErrorWhenCorruptedKey(FxRobot robot)
       throws NoSuchFieldException, IOException, IllegalAccessException {
-    Field verifyView = SignatureVerificationController.class.getDeclaredField("verifyView");
+    Field verifyView = SignatureVerificationControllerStandard.class.getDeclaredField("verifyView");
     verifyView.setAccessible(true);
-    VerifyView verifyViewVal = (VerifyView) verifyView.get(mainController.getSignatureVerificationController());
+    VerifyView verifyViewVal = (VerifyView) verifyView.get(mainController.getSignatureVerificationControllerStandard());
     GenRSA genRSA = new GenRSA(2, new int[]{512, 512});
     KeyPair keyPair = genRSA.generateKeyPair();
 
@@ -506,8 +506,8 @@ public class VerifyFunctionalityTest {
         getFile("corruptKey", ".rsa");
     // Simulate invoking the file import method directly
     Platform.runLater(() -> {
-      mainController.getSignatureVerificationController()
-          .handleKey(corruptKey.get(), verifyViewVal);
+      mainController.getSignatureVerificationControllerStandard()
+          .handleKey(corruptKey.get(), verifyViewVal, null);
     });
     WaitForAsyncUtils.waitForFxEvents();
 
@@ -530,9 +530,9 @@ public class VerifyFunctionalityTest {
   @Test
   public void shouldAllowEmptyMessageWhenISOSelected(FxRobot robot)
       throws NoSuchFieldException, IOException, IllegalAccessException {
-    Field verifyView = SignatureVerificationController.class.getDeclaredField("verifyView");
+    Field verifyView = SignatureVerificationControllerStandard.class.getDeclaredField("verifyView");
     verifyView.setAccessible(true);
-    VerifyView verifyViewVal = (VerifyView) verifyView.get(mainController.getSignatureVerificationController());
+    VerifyView verifyViewVal = (VerifyView) verifyView.get(mainController.getSignatureVerificationControllerStandard());
     GenRSA genRSA = new GenRSA(2, new int[]{512, 512});
     KeyPair keyPair = genRSA.generateKeyPair();
 
@@ -540,16 +540,16 @@ public class VerifyFunctionalityTest {
     Optional<File> publicKeyFile = uk.msci.project.tests.MainTestUtility.
         getFile("publicKey", ".rsa");
     Platform.runLater(() -> {
-      mainController.getSignatureVerificationController()
-          .handleKey(publicKeyFile.get(), verifyViewVal);
+      mainController.getSignatureVerificationControllerStandard()
+          .handleKey(publicKeyFile.get(), verifyViewVal, null);
     });
     WaitForAsyncUtils.waitForFxEvents();
     FileHandle.exportToFile("signature.rsa", "mock signature");
     Optional<File> signatureFile = uk.msci.project.tests.MainTestUtility.
         getFile("signature", ".rsa");
     Platform.runLater(() -> {
-      mainController.getSignatureVerificationController()
-          .handleSig(signatureFile.get(), verifyViewVal);
+      mainController.getSignatureVerificationControllerStandard()
+          .handleSig(signatureFile.get(), verifyViewVal, null);
     });
 
     // Select a valid signature scheme

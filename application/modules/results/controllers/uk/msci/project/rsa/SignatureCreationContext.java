@@ -14,7 +14,7 @@ public class SignatureCreationContext extends SignatureBaseContext {
    *
    * @param signatureModel The model containing signature creation logic and data.
    */
-  public SignatureCreationContext(SignatureModel signatureModel) {
+  public SignatureCreationContext(AbstractSignatureModelBenchmarking signatureModel) {
     super(signatureModel);
   }
 

@@ -14,7 +14,7 @@ public class SignatureVerificationContext extends SignatureBaseContext {
    *
    * @param signatureModel The SignatureModel associated with this context.
    */
-  public SignatureVerificationContext(SignatureModel signatureModel) {
+  public SignatureVerificationContext(AbstractSignatureModelBenchmarking signatureModel) {
     super(signatureModel);
   }
 
@@ -35,11 +35,7 @@ public class SignatureVerificationContext extends SignatureBaseContext {
    */
   @Override
   public void exportVerificationResults(int keyIndex) throws IOException {
-    if (signatureModel.getNumKeySizesForComparisonMode() > 0) {
-      signatureModel.exportVerificationResultsToCSV_ComparisonMode(keyIndex);
-    } else {
       signatureModel.exportVerificationResultsToCSV(keyIndex);
-    }
   }
 
   /**
