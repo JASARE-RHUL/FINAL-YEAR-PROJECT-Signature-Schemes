@@ -3,14 +3,8 @@ package uk.msci.project.rsa;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.function.DoubleConsumer;
-import java.util.stream.Collectors;
 import javafx.util.Pair;
 
 
@@ -55,10 +49,26 @@ public class GenModel {
    */
   private List<Pair<int[], Boolean>> keyParams;
 
+  /**
+   * The number of different key sizes used in comparison benchmarking mode. This field tracks the
+   * quantity of distinct key sizes for comparing various sets of key configurations, particularly
+   * in standard versus provably secure parameters (default mode) and in user-defined custom
+   * configurations (custom mode).
+   */
   private int numKeySizesForComparisonMode;
 
+  /**
+   * A String representing a batch of public keys. These keys are typically used in signature
+   * verification processes within the benchmarking mode. The batch facilitates comparisons and
+   * analysis across different key configurations and parameters.
+   */
   private String publicKeyBatch;
 
+  /**
+   * A String representing a batch of private keys. These keys are primarily used in the signature
+   * creation process during benchmarking mode. The batch enables efficient handling of multiple
+   * keys for performance analysis and comparative evaluations of different key configurations.
+   */
   private String privateKeyBatch;
 
   static final String FIRST_ROW_COMPARISON_MODE = "Standard Parameters (2 Primes (1/2N+1/2N) with arbitrary e selection):";
@@ -383,14 +393,32 @@ public class GenModel {
     return keyParams;
   }
 
+  /**
+   * Retrieves the batch of private keys generated for use in benchmarking mode.
+   *
+   * @return A String representing the batch of private keys.
+   */
   public String getPrivateKeyBatch() {
     return privateKeyBatch;
   }
 
+  /**
+   * Retrieves the batch of public keys generated for use in benchmarking mode. The public keys are
+   * used in signature verification processes.
+   *
+   * @return A String representing the batch of public keys.
+   */
   public String getPublicKeyBatch() {
     return publicKeyBatch;
   }
 
+
+  /**
+   * Sums the key sizes for each configuration within a provided list of key parameter pairs.
+   *
+   * @param pairs A List of Pair objects representing key configurations.
+   * @return A List of Integer values representing the total key sizes for each configuration.
+   */
   public List<Integer> summedKeySizes(List<Pair<int[], Boolean>> pairs) {
     List<Integer> summedArrays = new ArrayList<>();
 
@@ -407,6 +435,14 @@ public class GenModel {
     return summedArrays;
   }
 
+  /**
+   * Retrieves the number of different key sizes used in comparison benchmarking mode. This count is
+   * important for managing comparisons across various key configurations in both default and custom
+   * comparison modes. In the default mode, it refers to comparing standard versus provably secure
+   * parameters, while in the custom mode, it applies to user-defined configurations.
+   *
+   * @return The number of different key sizes used in comparison benchmarking mode.
+   */
   public int getNumKeySizesForComparisonMode() {
     return numKeySizesForComparisonMode;
   }
