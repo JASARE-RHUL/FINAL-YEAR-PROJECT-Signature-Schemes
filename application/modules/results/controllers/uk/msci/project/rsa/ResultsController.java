@@ -172,12 +172,13 @@ public class ResultsController {
       this.totalTrials = results.size();
       this.keyIndex = 0;
       numRowsComparisonMode = this.comparisonModeRowHeaders.size();
-      this.graphManager = new GraphManager(totalTrials, totalKeys, numRowsComparisonMode,
-          numKeySizesForComparisonMode,
-          isSignatureOperationResults);
       if (!(currentContext instanceof KeyGenerationContext)) {
         isSignatureOperationResults = true;
       }
+      this.graphManager = new GraphManager(totalTrials, totalKeys, numRowsComparisonMode,
+          numKeySizesForComparisonMode,
+          isSignatureOperationResults);
+
 
       displayCurrentContextButtons();
 
