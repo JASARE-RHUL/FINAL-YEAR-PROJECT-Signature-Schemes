@@ -220,7 +220,7 @@ public abstract class AbstractSignatureBaseControllerBenchmarking extends
    */
   void preloadProvablySecureKeyBatch(SignatureBaseView signatureView,
       AbstractSignatureModelBenchmarking signatureModelBenchmarking) {
-    if (isSingleKeyProvablySecure && this.importedKeyBatch != null
+    if (this.importedKeyBatch != null
         && !isCrossParameterBenchmarkingEnabled) {
       updateWithImportedKeyBatch(signatureView, signatureModelBenchmarking);
       signatureView.setImportKeyBatchButtonVisibility(false);
@@ -541,45 +541,7 @@ public abstract class AbstractSignatureBaseControllerBenchmarking extends
     }
   }
 
-  /**
-   * Observer for changes in the selection of standard hash functions in cross-parameter
-   * benchmarking mode. Reacts to the addition or removal of hash function choices in the UI and
-   * updates the signature model to reflect these changes for standard (non-provably secure) hash
-   * functions.
-   */
-  class ProvableParamsChangeObserver implements ChangeListener<Toggle> {
 
-    private SignatureBaseView signatureView;
-
-    public ProvableParamsChangeObserver(SignatureBaseView signatureView) {
-      this.signatureView = signatureView;
-    }
-
-    @Override
-    public void changed(ObservableValue<? extends Toggle> observable, Toggle oldValue,
-        Toggle newValue) {
-      if (newValue != null) {
-        RadioButton selectedRadioButton = (RadioButton) newValue;
-        String radioButtonText = selectedRadioButton.getText();
-        switch (radioButtonText) {
-          case "Yes":
-            if (isKeyProvablySecure || isSingleKeyProvablySecure) {
-              signatureView.setProvablySecureParametersRadioSelected(true);
-              signatureView.setCustomParametersRadioVisibility(false);
-              signatureView.setStandardParametersRadioVisibility(false);
-            }
-            break;
-          case "No":
-          default:
-            signatureView.setProvablySecureParametersRadioSelected(false);
-            signatureView.setCustomParametersRadioVisibility(true);
-            signatureView.setStandardParametersRadioVisibility(true);
-            break;
-
-        }
-      }
-    }
-  }
 
   /**
    * Observer for changes in the selection of provably secure hash functions in cross-parameter

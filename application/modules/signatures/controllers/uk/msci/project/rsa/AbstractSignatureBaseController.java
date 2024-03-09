@@ -161,6 +161,7 @@ public abstract class AbstractSignatureBaseController {
       signatureView.setProvablySecureParametersRadioSelected(true);
       signatureView.setCustomParametersRadioVisibility(false);
       signatureView.setStandardParametersRadioVisibility(false);
+      signatureView.addProvableSchemeChangeObserver(new ProvableParamsChangeObserver(signatureView));
     }
   }
 
@@ -654,6 +655,46 @@ public abstract class AbstractSignatureBaseController {
     }
   }
 
+  /**
+   * Observer for changes in the selection of standard hash functions in cross-parameter
+   * benchmarking mode. Reacts to the addition or removal of hash function choices in the UI and
+   * updates the signature model to reflect these changes for standard (non-provably secure) hash
+   * functions.
+   */
+  class ProvableParamsChangeObserver implements ChangeListener<Toggle> {
+
+    private SignatureBaseView signatureView;
+
+    public ProvableParamsChangeObserver(SignatureBaseView signatureView) {
+      this.signatureView = signatureView;
+    }
+
+    @Override
+    public void changed(ObservableValue<? extends Toggle> observable, Toggle oldValue,
+        Toggle newValue) {
+      if (newValue != null) {
+        RadioButton selectedRadioButton = (RadioButton) newValue;
+        String radioButtonText = selectedRadioButton.getText();
+        switch (radioButtonText) {
+          case "Yes":
+            if (isKeyProvablySecure || isSingleKeyProvablySecure) {
+              signatureView.setProvablySecureParametersRadioSelected(true);
+              signatureView.setCustomParametersRadioVisibility(false);
+              signatureView.setStandardParametersRadioVisibility(false);
+            }
+            break;
+          case "No":
+          default:
+            signatureView.setProvablySecureParametersRadioSelected(false);
+            signatureView.setCustomParametersRadioVisibility(true);
+            signatureView.setStandardParametersRadioVisibility(true);
+            break;
+
+        }
+      }
+    }
+  }
+
 
   /**
    * Updates the signature model and view with an imported key. This method is used to update the
@@ -770,6 +811,8 @@ public abstract class AbstractSignatureBaseController {
    * @param primaryStage The primary stage of the application where the view will be displayed.
    */
   public abstract void showBenchmarkingView(Stage primaryStage);
+
+
 
 
 }
