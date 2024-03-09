@@ -176,9 +176,9 @@ public abstract class AbstractSignatureBaseControllerBenchmarking extends
    * @param signatureModel The signature model used in cross-parameter benchmarking mode.
    */
   void setupObserversCrossBenchmarking(Stage primaryStage, SignatureBaseView signatureView,
-      SignatureModel signatureModel) {
+      AbstractSignatureModelBenchmarking signatureModel) {
     setupCommonToAllObservers(primaryStage, signatureView, signatureModel);
-    setupBenchmarkingObservers(primaryStage, signatureView, signatureModelComparisonBenchmarking);
+    setupBenchmarkingObservers(primaryStage, signatureView, signatureModel);
     signatureView.addStandardHashFunctionChangeObserver(new StandardHashFunctionChangeObserver());
     signatureView.addProvableHashFunctionChangeObserver(new ProvableHashFunctionChangeObserver());
   }
