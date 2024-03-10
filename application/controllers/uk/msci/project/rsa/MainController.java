@@ -40,43 +40,19 @@ public class MainController {
   private GenController genController;
 
   /**
-   * Controller for the signature verification functionality. Manages the logic and view related to
-   * verifying digital signatures.
+   * Mediator for signature creation functionalities. It encapsulates and manages the interaction
+   * between the main controller and the signature creation controllers, both in standard and
+   * benchmarking modes.
    */
+  private SignatureCreationMediator signatureCreationMediator = new SignatureCreationMediator(this);
 
   /**
-   * Controller for the signature creation functionality. Handles the process of creating digital
-   * signatures, typically by signing documents or messages.
+   * Mediator for signature verification functionalities. Similar to signatureCreationMediator, this
+   * mediator handles the interaction between the main controller and the signature verification
+   * controllers for both standard and benchmarking modes.
    */
-
-
-  /**
-   * Controller for the signature creation functionality in standard mode. Manages the logic and
-   * view related to creating digital signatures in a non-benchmarking context.
-   */
-  private SignatureCreationControllerStandard signatureCreationControllerStandard = new SignatureCreationControllerStandard(
-      MainController.this);
-
-  /**
-   * Controller for the signature creation functionality in benchmarking mode. Handles the process
-   * of creating digital signatures in a context where performance benchmarking is a priority.
-   */
-  private SignatureCreationControllerBenchmarking signatureCreationControllerBenchmarking = new SignatureCreationControllerBenchmarking(
-      MainController.this);
-
-  /**
-   * Controller for the signature verification functionality in standard mode. Manages the logic and
-   * view related to verifying digital signatures in a non-benchmarking context.
-   */
-  private SignatureVerificationControllerStandard signatureVerificationControllerStandard = new SignatureVerificationControllerStandard(
-      MainController.this);
-
-  /**
-   * Controller for the signature verification functionality in benchmarking mode. Handles the logic
-   * and view related to verifying digital signatures where performance benchmarking is important.
-   */
-  private SignatureVerificationControllerBenchmarking signatureVerificationControllerBenchmarking = new SignatureVerificationControllerBenchmarking(
-      MainController.this);
+  private SignatureVerificationMediator signatureVerificationMediator = new SignatureVerificationMediator(
+      this);
 
 
   /**
@@ -122,7 +98,7 @@ public class MainController {
    * @return The SignatureCreationControllerBenchmarking instance.
    */
   public SignatureCreationControllerBenchmarking getSignatureCreationControllerBenchmarking() {
-    return signatureCreationControllerBenchmarking;
+    return (SignatureCreationControllerBenchmarking) signatureCreationMediator.getSignatureControllerBenchmarking();
   }
 
   /**
@@ -132,7 +108,7 @@ public class MainController {
    * @return The SignatureCreationControllerBenchmarking instance.
    */
   public SignatureCreationControllerStandard getSignatureCreationControllerStandard() {
-    return signatureCreationControllerStandard;
+    return (SignatureCreationControllerStandard) signatureCreationMediator.getSignatureControllerStandard();
   }
 
   /**
@@ -142,7 +118,7 @@ public class MainController {
    * @return The SignatureVerificationControllerBenchmarking instance.
    */
   public SignatureVerificationControllerBenchmarking getSignatureVerificationControllerBenchmarking() {
-    return signatureVerificationControllerBenchmarking;
+    return (SignatureVerificationControllerBenchmarking) signatureVerificationMediator.getSignatureControllerBenchmarking();
   }
 
   /**
@@ -152,7 +128,7 @@ public class MainController {
    * @return The SignatureVerificationControllerStandard instance.
    */
   public SignatureVerificationControllerStandard getSignatureVerificationControllerStandard() {
-    return signatureVerificationControllerStandard;
+    return (SignatureVerificationControllerStandard) signatureVerificationMediator.getSignatureControllerStandard();
   }
 
   /**
@@ -177,10 +153,10 @@ public class MainController {
 
     @Override
     public void handle(ActionEvent event) {
-      if (signatureCreationControllerStandard.getIsSingleKeyProvablySecure()) {
-        signatureCreationControllerStandard.showStandardMode(primaryStage);
+      if (signatureCreationMediator.getIsSingleKeyProvablySecure()) {
+        signatureCreationMediator.showSignatureViewStandard();
       } else {
-        signatureCreationControllerBenchmarking.showBenchmarkingView(primaryStage);
+        signatureCreationMediator.showSignatureViewBenchmarking();
       }
     }
   }
@@ -194,10 +170,10 @@ public class MainController {
 
     @Override
     public void handle(ActionEvent event) {
-      if (signatureVerificationControllerStandard.getIsSingleKeyProvablySecure()) {
-        signatureVerificationControllerStandard.showStandardMode(primaryStage);
+      if (signatureVerificationMediator.getIsSingleKeyProvablySecure()) {
+        signatureVerificationMediator.showSignatureViewStandard();
       } else {
-        signatureVerificationControllerBenchmarking.showBenchmarkingView(primaryStage);
+        signatureVerificationMediator.showSignatureViewBenchmarking();
       }
     }
   }
@@ -233,27 +209,6 @@ public class MainController {
     return scene;
   }
 
-  /**
-   * Sets a batch of keys for a signature operation with an optional comparison mode. This method is
-   * updated to allow for comparison between standard and provably secure signature operations using
-   * a batch of keys. It also supports setting keys specifically for custom comparison benchmarking
-   * mode.
-   *
-   * @param keyBatch                     The batch of keys to be used for signing or verifying.
-   * @param isKeyForComparisonMode       If true, the keys are used in comparison mode for signing
-   *                                     operations.
-   * @param isKeyForCustomComparisonMode If true, sets the keys for custom comparison mode, enabling
-   *                                     detailed comparative analysis with custom configurations.
-   */
-  public void setProvableKeyBatchForSignatureProcess(String keyBatch,
-      boolean isKeyForComparisonMode, boolean isKeyForCustomComparisonMode,
-      AbstractSignatureBaseControllerBenchmarking benchmarkingSignatureBaseController) {
-    benchmarkingSignatureBaseController.importKeyFromKeyGeneration(keyBatch,
-        isKeyForComparisonMode);
-    benchmarkingSignatureBaseController.setIsCustomCrossParameterBenchmarkingMode(
-        isKeyForCustomComparisonMode);
-  }
-
 
   /**
    * Sets the batch of private and public keys for both signature creation and verification
@@ -278,10 +233,10 @@ public class MainController {
   public void setProvableKeyBatchForSignatureProcesses(String privateKeyBatch,
       String publicKeyBatch,
       boolean isKeyForComparisonMode, boolean isKeyForCustomComparisonMode) {
-    setProvableKeyBatchForSignatureProcess(privateKeyBatch, isKeyForComparisonMode,
-        isKeyForCustomComparisonMode, signatureCreationControllerBenchmarking);
-    setProvableKeyBatchForSignatureProcess(publicKeyBatch, isKeyForComparisonMode,
-        isKeyForCustomComparisonMode, signatureVerificationControllerBenchmarking);
+    signatureCreationMediator.setProvableKeyBatchForSignatureProcesses(privateKeyBatch,
+        isKeyForComparisonMode, isKeyForCustomComparisonMode);
+    signatureVerificationMediator.setProvableKeyBatchForSignatureProcesses(
+        publicKeyBatch, isKeyForComparisonMode, isKeyForCustomComparisonMode);
   }
 
   /**
@@ -294,8 +249,8 @@ public class MainController {
    * @param publicKey  The public key to be used for signature verification.
    */
   public void setProvableKeyForSignatureProcesses(String privateKey, String publicKey) {
-    signatureCreationControllerStandard.importSingleKeyFromKeyGeneration(privateKey);
-    signatureVerificationControllerStandard.importSingleKeyFromKeyGeneration(publicKey);
+    signatureCreationMediator.setProvableKeyForSignatureProcesses(privateKey);
+    signatureVerificationMediator.setProvableKeyForSignatureProcesses(publicKey);
   }
 
 
@@ -310,9 +265,9 @@ public class MainController {
    */
   public void setKeyConfigurationStringsForComparisonMode(
       List<String> keyConfigurationStringsForComparisonMode) {
-    signatureCreationControllerBenchmarking.setKeyConfigurationStrings(
+    signatureCreationMediator.setKeyConfigurationStringsForComparisonMode(
         keyConfigurationStringsForComparisonMode);
-    signatureVerificationControllerBenchmarking.setKeyConfigurationStrings(
+    signatureVerificationMediator.setKeyConfigurationStringsForComparisonMode(
         keyConfigurationStringsForComparisonMode);
   }
 
@@ -328,22 +283,16 @@ public class MainController {
    */
   public void setKeyConfigToHashFunctionsMapForCustomComparisonMode(
       Map<Integer, List<HashFunctionSelection>> keyConfigToHashFunctionsMap, int keyPerGroup) {
-    signatureCreationControllerBenchmarking.setKeyConfigToHashFunctionsMap(
-        keyConfigToHashFunctionsMap,
-        keyPerGroup);
-    signatureVerificationControllerBenchmarking.setKeyConfigToHashFunctionsMap(
-        keyConfigToHashFunctionsMap,
-        keyPerGroup);
+    signatureCreationMediator.setKeyConfigToHashFunctionsMapForCustomComparisonMode(
+        keyConfigToHashFunctionsMap, keyPerGroup);
+    signatureVerificationMediator.setKeyConfigToHashFunctionsMapForCustomComparisonMode(
+        keyConfigToHashFunctionsMap, keyPerGroup);
+
   }
 
-  /**
-   * Retrieves the SignatureVerificationControllerStandard instance. This controller is responsible
-   * for managing the signature verification process in standard mode.
-   *
-   * @return The SignatureVerificationControllerStandard instance.
-   */
+
   public void showSignatureCreationStandard() {
-    signatureCreationControllerStandard.showStandardMode(primaryStage);
+    signatureCreationMediator.showSignatureViewStandard();
   }
 
   /**
@@ -351,7 +300,7 @@ public class MainController {
    * to show the interface for signature creation with benchmarking functionalities.
    */
   public void showSignatureCreationBenchmarking() {
-    signatureCreationControllerBenchmarking.showBenchmarkingView(primaryStage);
+    signatureCreationMediator.showSignatureViewBenchmarking();
   }
 
   /**
@@ -359,7 +308,7 @@ public class MainController {
    * present the interface for standard signature verification.
    */
   public void showSignatureVerificationStandard() {
-    signatureVerificationControllerStandard.showStandardMode(primaryStage);
+    signatureVerificationMediator.showSignatureViewStandard();
   }
 
   /**
@@ -367,6 +316,6 @@ public class MainController {
    * present the interface for signature verification with benchmarking functionalities.
    */
   public void showSignatureVerificationBenchmarking() {
-    signatureVerificationControllerBenchmarking.showBenchmarkingView(primaryStage);
+    signatureVerificationMediator.showSignatureViewBenchmarking();
   }
 }
