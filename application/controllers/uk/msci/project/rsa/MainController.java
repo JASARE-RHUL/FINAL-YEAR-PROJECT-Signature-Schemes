@@ -389,4 +389,33 @@ public class MainController {
     keyGenerationMediator.showCrossBenchmarkingView();
   }
 
+  /**
+   * Activates and configures the key generation controller for the custom comparison benchmarking
+   * mode. This method instantiates a new GenControllerComparisonBenchmarking controller with custom
+   * comparison logic and sets it as the current controller for comparison benchmarking operations
+   * in the key generation mediator.
+   *
+   * @param genView The GenView instance that provides the user interface elements for the
+   *                benchmarking mode.
+   */
+  public void activateKeyGenCustomComparisonMode(GenView genView) {
+    keyGenerationMediator.setGenControllerComparisonBenchmarking(
+        new GenControllerCustomComparisonBenchmarking(this), genView);
+  }
+
+  /**
+   * Activates and configures the key generation controller for the comparison (provably secure vs
+   * standard) benchmarking mode. This method instantiates a new GenControllerComparisonBenchmarking
+   * controller with standard comparison logic and sets it as the current controller for comparison
+   * benchmarking operations in the key generation mediator.
+   *
+   * @param genView The GenView instance that provides the user interface elements for the
+   *                benchmarking mode.
+   */
+  public void activateKeyGenComparisonMode(GenView genView) {
+    keyGenerationMediator.setGenControllerComparisonBenchmarking(
+        new GenControllerComparisonBenchmarking(this), genView);
+  }
+
+
 }

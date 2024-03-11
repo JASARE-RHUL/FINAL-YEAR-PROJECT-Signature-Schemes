@@ -90,4 +90,20 @@ public class KeyGenerationMediator {
   public void showCrossBenchmarkingView() {
     genControllerComparisonBenchmarking.showCrossBenchmarkingView(mainController.getPrimaryStage());
   }
+
+  /**
+   * Sets the GenControllerComparisonBenchmarking instance for the mediator and facilitates a switch
+   * between normal comparison mode and custom comparison mode.
+   *
+   * @param genControllerComparisonBenchmarking The instance of GenControllerComparisonBenchmarking
+   *                                            to be set.
+   * @param genView                             The GenView instance associated with the comparison
+   *                                            benchmarking mode.
+   */
+  public void setGenControllerComparisonBenchmarking(
+      GenControllerComparisonBenchmarking genControllerComparisonBenchmarking, GenView genView) {
+    this.genControllerComparisonBenchmarking = genControllerComparisonBenchmarking;
+    this.genControllerComparisonBenchmarking.setupCrossBenchmarkingObservers(
+        mainController.getPrimaryStage(), genView);
+  }
 }

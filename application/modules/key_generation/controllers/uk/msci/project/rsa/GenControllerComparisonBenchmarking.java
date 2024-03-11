@@ -30,11 +30,6 @@ public class GenControllerComparisonBenchmarking extends GenControllerBenchmarki
    */
   GenModelComparisonBenchmarking genModelBenchmarking;
 
-  /**
-   * Stores the number of key configurations specified by the user for custom benchmarking.
-   */
-  private int numKeyConfigs;
-
 
   /**
    * Constructs a GenController with a reference to the MainController.
@@ -56,10 +51,24 @@ public class GenControllerComparisonBenchmarking extends GenControllerBenchmarki
   public void showCrossBenchmarkingView(Stage primaryStage) {
     genModelBenchmarking = new GenModelComparisonBenchmarking();
     loadGenView("/GenViewCrossBenchmarkingMode.fxml", () -> {
-      setupBenchmarkingObservers(primaryStage);
-      genView.addCrossBenchMarkingToggleGroupChangeObserver(new ComparisonModeChangeObserver());
-      genView.addNumKeysObserver(new NumKeysBtnObserver());
+      setupCrossBenchmarkingObservers(primaryStage, genView);
     });
+  }
+
+  /**
+   * Sets up observers for cross-benchmarking related UI elements and actions in the GenView. This
+   * method configures event handlers and listeners for user interactions specific to the
+   * cross-benchmarking process. It enables the correct functioning of the GenView in different
+   * cross-benchmarking scenarios.
+   *
+   * @param primaryStage The primary stage of the application, required for some UI actions.
+   * @param genView      The GenView instance used for the cross-benchmarking mode.
+   */
+  void setupCrossBenchmarkingObservers(Stage primaryStage, GenView genView) {
+    this.genView = genView;
+    setupBenchmarkingObservers(primaryStage);
+    genView.addCrossBenchMarkingToggleGroupChangeObserver(new ComparisonModeChangeObserver());
+    genView.addNumKeysObserver(new NumKeysBtnObserver());
   }
 
 
@@ -81,11 +90,7 @@ public class GenControllerComparisonBenchmarking extends GenControllerBenchmarki
             "Error: Invalid input. Please enter a valid number of keys.");
         return;
       }
-      if (genView.getCrossBenchMarkingToggle().equals("Compare Standard vs Provably secure")) {
-        handleBenchmarkingInitiationComparisonMode(numKeys);
-      } else {
-        handleBenchmarkingInitiationCustomComparison(numKeys);
-      }
+      handleBenchmarkingInitiation(numKeys);
 
     }
   }
@@ -97,7 +102,7 @@ public class GenControllerComparisonBenchmarking extends GenControllerBenchmarki
    * the ResultsController with the appropriate context and displays the results view with the
    * gathered benchmarking data.
    */
-  private void handleBenchmarkingCompletion(List<String> keyConfigurationsString,
+  void handleBenchmarkingCompletion(List<String> keyConfigurationsString,
       boolean isCustomComparisonMode) {
 
     ResultsControllerComparisonBenchmarking resultsController = new ResultsControllerComparisonBenchmarking(
@@ -123,7 +128,7 @@ public class GenControllerComparisonBenchmarking extends GenControllerBenchmarki
    *
    * @param numKeys The number of key sizes specified by the user for the comparison benchmarking.
    */
-  private void handleBenchmarkingInitiationComparisonMode(int numKeys) {
+  void handleBenchmarkingInitiation(int numKeys) {
     // Show the dynamic fields dialog and check if it was completed successfully
     boolean isFieldsDialogCompleted = genView.showDynamicFieldsDialogComparisonMode(numKeys,
         mainController.getPrimaryStage());
@@ -145,55 +150,6 @@ public class GenControllerComparisonBenchmarking extends GenControllerBenchmarki
 
 
   /**
-   * Handles the initiation of benchmarking with custom comparison mode. This method sets up and
-   * shows dialogs for entering key sizes and subsequently multiple key configurations for each key
-   * size, and if completed successfully, initiates the benchmarking task based on user-specified
-   * custom parameters.
-   *
-   * @param numKeys The number of key sizes specified by the user for the custom benchmarking.
-   */
-  private void handleBenchmarkingInitiationCustomComparison(int numKeys) {
-    boolean isFieldsDialogCompleted = genView.showDynamicFieldsDialogComparisonMode(numKeys,
-        mainController.getPrimaryStage());
-    if (isFieldsDialogCompleted) {
-      uk.msci.project.rsa.DisplayUtility.showInfoAlert(
-          "Keys per Key Size",
-          "On the dialog that follows, please enter the number of different key configurations you would like to generate for each key size");
-      if (genView.showNumKeyConfigsDialog(mainController.getPrimaryStage())) {
-        numKeyConfigs = genView.getNumKeyConfigs();
-        uk.msci.project.rsa.DisplayUtility.showInfoAlert(
-            "Key Configurations",
-            "On the dialog that follows, to fulfil the " + numKeyConfigs
-                + " key configurations you entered, please input each key configuration as comma separated sequence of fractions whose cumulative sum is one");
-        boolean isKeyConfigurationsDialogCompleted = genView.showKeyConfigurationsDialog(
-            numKeyConfigs,
-            mainController.getPrimaryStage());
-        if (isKeyConfigurationsDialogCompleted) {
-
-          if (genView.showTrialsDialog(mainController.getPrimaryStage())) {
-            numTrials = genView.getNumTrials();
-            benchmarkingUtility = new BenchmarkingUtility();
-            Task<Void> benchmarkingTask = createBenchmarkingTask(
-                genView.getDynamicKeyConfigurationsData(),
-                genView.getDynamicKeySizeData(), numTrials);
-            BenchmarkingUtility.beginBenchmarkWithUtility(benchmarkingUtility, "Key Generation",
-                benchmarkingTask, () -> {
-                  handleBenchmarkingCompletion(
-                      genModelBenchmarking.formatCustomKeyConfigurations(
-                          genView.getDynamicKeyConfigurationsData()), true);
-                  mainController.setKeyConfigToHashFunctionsMapForCustomComparisonMode(
-                      genView.getKeyConfigToHashFunctionsMap(), genView.getKeysPerGroup());
-                },
-                mainController.getPrimaryStage());
-
-          }
-        }
-      }
-    }
-  }
-
-
-  /**
    * Creates a background task for benchmarking key generation in comparison mode. This task
    * generates keys based on provided custom key configurations and key sizes, and updates the
    * progress bar and label on the UI. This mode allows comparing key generation across different
@@ -209,7 +165,7 @@ public class GenControllerComparisonBenchmarking extends GenControllerBenchmarki
 
     return new Task<>() {
       @Override
-      protected Void call() throws Exception {
+      protected Void call() {
         genModelBenchmarking.batchGenerateKeysInComparisonMode(keyConfigurationsData,
             keyParams, numTrials,
             progress -> Platform.runLater(() -> {
@@ -236,13 +192,11 @@ public class GenControllerComparisonBenchmarking extends GenControllerBenchmarki
         RadioButton selectedRadioButton = (RadioButton) newValue;
         String radioButtonText = selectedRadioButton.getText();
         switch (radioButtonText) {
-          case "Yes":
-            genView.setNumKeySizesLabelVisibility(true);
-            genView.setNumKeysLabelVisibility(false);
+          case "Compare Custom Parameters":
+            mainController.activateKeyGenCustomComparisonMode(genView);
             break;
-          case "No":
-            genView.setNumKeySizesLabelVisibility(false);
-            genView.setNumKeysLabelVisibility(true);
+          case "Compare Standard vs Provably secure":
+            mainController.activateKeyGenComparisonMode(genView);
           default:
             break;
 
