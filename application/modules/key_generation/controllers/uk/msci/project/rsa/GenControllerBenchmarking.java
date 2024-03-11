@@ -24,7 +24,7 @@ public class GenControllerBenchmarking extends AbstractGenController {
    * The model component of the MVC pattern that handles the data and business logic for RSA key
    * generation in benchmarking mode.
    */
-  GenModelBenchmarking genModelBenchmarking;
+  GenModelBenchmarking genModel;
 
 
   /**
@@ -61,7 +61,7 @@ public class GenControllerBenchmarking extends AbstractGenController {
    */
   @Override
   public void showBenchmarkingView(Stage primaryStage) {
-    genModelBenchmarking = new GenModelBenchmarking();
+    genModel = new GenModelBenchmarking();
     loadGenView("/GenView.fxml", () -> {
       setupBenchmarkingObservers(primaryStage);
       genView.addNumKeysObserver(new NumKeysBtnObserver());
@@ -130,18 +130,18 @@ public class GenControllerBenchmarking extends AbstractGenController {
   private void handleBenchmarkingCompletion() {
     ResultsControllerNormalBenchmarking resultsController = new ResultsControllerNormalBenchmarking(
         mainController);
-    BenchmarkingContext context = new KeyGenerationContext(genModelBenchmarking);
+    BenchmarkingContext context = new KeyGenerationContext(genModel);
     resultsController.setContext(context);
-    genModelBenchmarking.generateKeyBatch();
-    if (genModelBenchmarking.generateKeyBatch()) {
+    genModel.generateKeyBatch();
+    if (genModel.generateKeyBatch()) {
       mainController.setProvableKeyBatchForSignatureProcesses(
-          genModelBenchmarking.getPrivateKeyBatch(),
-          genModelBenchmarking.getPublicKeyBatch(), false,
+          genModel.getPrivateKeyBatch(),
+          genModel.getPublicKeyBatch(), false,
           false);
     }
     resultsController.showResultsView(Collections.emptyList(),
-        genModelBenchmarking.getClockTimesPerTrial(),
-        genModelBenchmarking.summedKeySizes(genModelBenchmarking.getKeyParams()), false, 0);
+        genModel.getClockTimesPerTrial(),
+        genModel.summedKeySizes(genModel.getKeyParams()), false, 0);
   }
 
 
@@ -158,7 +158,7 @@ public class GenControllerBenchmarking extends AbstractGenController {
     return new Task<>() {
       @Override
       protected Void call() throws Exception {
-        genModelBenchmarking.batchGenerateKeys(numTrials, keyParams,
+        genModel.batchGenerateKeys(numTrials, keyParams,
             progress -> Platform.runLater(() -> {
               benchmarkingUtility.updateProgress(progress);
               benchmarkingUtility.updateProgressLabel(String.format("%.0f%%", progress * 100));

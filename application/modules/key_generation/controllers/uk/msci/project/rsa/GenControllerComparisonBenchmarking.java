@@ -28,7 +28,7 @@ public class GenControllerComparisonBenchmarking extends GenControllerBenchmarki
    * The model component of the MVC pattern that handles the data and business logic for RSA key
    * generation in benchmarking mode.
    */
-  GenModelComparisonBenchmarking genModelBenchmarking;
+  GenModelComparisonBenchmarking genModel;
 
 
   /**
@@ -49,7 +49,7 @@ public class GenControllerComparisonBenchmarking extends GenControllerBenchmarki
    */
   @Override
   public void showCrossBenchmarkingView(Stage primaryStage) {
-    genModelBenchmarking = new GenModelComparisonBenchmarking();
+    genModel = new GenModelComparisonBenchmarking();
     loadGenView("/GenViewCrossBenchmarkingMode.fxml", () -> {
       setupCrossBenchmarkingObservers(primaryStage, genView);
     });
@@ -107,18 +107,18 @@ public class GenControllerComparisonBenchmarking extends GenControllerBenchmarki
 
     ResultsControllerComparisonBenchmarking resultsController = new ResultsControllerComparisonBenchmarking(
         mainController);
-    BenchmarkingContext context = new KeyGenerationContext(genModelBenchmarking);
+    BenchmarkingContext context = new KeyGenerationContext(genModel);
     resultsController.setContext(context);
-    genModelBenchmarking.generateKeyBatch();
+    genModel.generateKeyBatch();
     mainController.setProvableKeyBatchForSignatureProcesses(
-        genModelBenchmarking.getPrivateKeyBatch(),
-        genModelBenchmarking.getPublicKeyBatch(), true,
+        genModel.getPrivateKeyBatch(),
+        genModel.getPublicKeyBatch(), true,
         isCustomComparisonMode);
     mainController.setKeyConfigurationStringsForComparisonMode(keyConfigurationsString);
     resultsController.showResultsView(keyConfigurationsString,
-        genModelBenchmarking.getClockTimesPerTrial(),
-        genModelBenchmarking.summedKeySizes(genModelBenchmarking.getKeyParams()), true,
-        genModelBenchmarking.getNumKeySizesForComparisonMode());
+        genModel.getClockTimesPerTrial(),
+        genModel.summedKeySizes(genModel.getKeyParams()), true,
+        genModel.getNumKeySizesForComparisonMode());
   }
 
   /**
@@ -138,11 +138,11 @@ public class GenControllerComparisonBenchmarking extends GenControllerBenchmarki
         numTrials = genView.getNumTrials();
         benchmarkingUtility = new BenchmarkingUtility();
         Task<Void> benchmarkingTask = createBenchmarkingTask(
-            genModelBenchmarking.getDefaultKeyConfigurationsData(),
+            genModel.getDefaultKeyConfigurationsData(),
             genView.getDynamicKeySizeData(), numTrials);
         BenchmarkingUtility.beginBenchmarkWithUtility(benchmarkingUtility, "Key Generation",
             benchmarkingTask, () -> handleBenchmarkingCompletion(
-                genModelBenchmarking.formatDefaultKeyConfigurations(), false),
+                genModel.formatDefaultKeyConfigurations(), false),
             mainController.getPrimaryStage());
       }
     }
@@ -166,7 +166,7 @@ public class GenControllerComparisonBenchmarking extends GenControllerBenchmarki
     return new Task<>() {
       @Override
       protected Void call() {
-        genModelBenchmarking.batchGenerateKeysInComparisonMode(keyConfigurationsData,
+        genModel.batchGenerateKeysInComparisonMode(keyConfigurationsData,
             keyParams, numTrials,
             progress -> Platform.runLater(() -> {
               benchmarkingUtility.updateProgress(progress);

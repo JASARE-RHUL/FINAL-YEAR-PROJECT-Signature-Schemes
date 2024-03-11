@@ -62,7 +62,7 @@ public class GenControllerCustomComparisonBenchmarking extends GenControllerComp
             BenchmarkingUtility.beginBenchmarkWithUtility(benchmarkingUtility, "Key Generation",
                 benchmarkingTask, () -> {
                   handleBenchmarkingCompletion(
-                      genModelBenchmarking.formatCustomKeyConfigurations(
+                      genModel.formatCustomKeyConfigurations(
                           genView.getDynamicKeyConfigurationsData()), true);
                   mainController.setKeyConfigToHashFunctionsMapForCustomComparisonMode(
                       genView.getKeyConfigToHashFunctionsMap(), genView.getKeysPerGroup());
