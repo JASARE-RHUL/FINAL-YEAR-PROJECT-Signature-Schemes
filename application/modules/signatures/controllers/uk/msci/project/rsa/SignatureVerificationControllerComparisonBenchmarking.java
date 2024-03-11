@@ -22,7 +22,7 @@ public class SignatureVerificationControllerComparisonBenchmarking extends
    * This model supports comparing the performance and behavior of different signature schemes
    * across varying parameters and configurations.
    */
-  SignatureModelComparisonBenchmarking signatureModelComparisonBenchmarking;
+  SignatureModelComparisonBenchmarking signatureModel;
 
 
   /**
@@ -52,14 +52,14 @@ public class SignatureVerificationControllerComparisonBenchmarking extends
     }
     loadVerifyView("/VerifyViewCrossBenchmarkingMode.fxml",
         () -> {
-          this.signatureModelComparisonBenchmarking = new SignatureModelComparisonBenchmarking();
+          this.signatureModel = new SignatureModelComparisonBenchmarking();
           setupObserversCrossBenchmarking(primaryStage, verifyView,
-              signatureModelComparisonBenchmarking);
+              signatureModel);
         },
         () -> {
-          preloadCrossParameterKeyBatch(verifyView, signatureModelComparisonBenchmarking);
+          preloadCrossParameterKeyBatch(verifyView, signatureModel);
           preloadCustomCrossParameterHashFunctions(verifyView,
-              signatureModelComparisonBenchmarking);
+              signatureModel);
         });
   }
 
@@ -85,7 +85,7 @@ public class SignatureVerificationControllerComparisonBenchmarking extends
         new ImportObserver(primaryStage, verifyView, null,
             this::handleSignatureBatch, "*.rsa"));
     verifyView.addVerificationBenchmarkButtonObserver(
-        new VerificationBenchmarkButtonObserver(signatureModelComparisonBenchmarking));
+        new VerificationBenchmarkButtonObserver(signatureModel));
   }
 
 
@@ -95,30 +95,30 @@ public class SignatureVerificationControllerComparisonBenchmarking extends
    */
   class VerificationBenchmarkButtonObserver implements EventHandler<ActionEvent> {
 
-    private SignatureModelComparisonBenchmarking signatureModelBenchmarking;
+    private SignatureModelComparisonBenchmarking signatureModel;
 
     public VerificationBenchmarkButtonObserver(
-        SignatureModelComparisonBenchmarking signatureModelBenchmarking) {
-      this.signatureModelBenchmarking = signatureModelBenchmarking;
+        SignatureModelComparisonBenchmarking signatureModel) {
+      this.signatureModel = signatureModel;
     }
 
     @Override
     public void handle(ActionEvent event) {
       hashOutputSize = verifyView.getHashOutputSizeArea();
-      if (signatureModelBenchmarking.getNumTrials() * signatureModelBenchmarking.getKeyBatchLength()
+      if (signatureModel.getNumTrials() * signatureModel.getKeyBatchLength()
           != numSignatures) {
         uk.msci.project.rsa.DisplayUtility.showErrorAlert(
             "The numbers of messages and signatures do not match. Please ensure they match for a valid set of verification pairings.");
         return;
       }
-      if ((signatureModelComparisonBenchmarking.getNumTrials() == 0)
-          || signatureModelComparisonBenchmarking.getKeyBatchLength() == 0
-          || signatureModelComparisonBenchmarking.getSignatureType() == null || numSignatures == 0
-          || (signatureModelComparisonBenchmarking.getCurrentFixedHashTypeList_ComparisonMode()
+      if ((signatureModel.getNumTrials() == 0)
+          || signatureModel.getKeyBatchLength() == 0
+          || signatureModel.getSignatureType() == null || numSignatures == 0
+          || (signatureModel.getCurrentFixedHashTypeList_ComparisonMode()
           .isEmpty()
           && !isCustomCrossParameterBenchmarkingMode)
           ||
-          signatureModelComparisonBenchmarking.getCurrentProvableHashTypeList_ComparisonMode()
+          signatureModel.getCurrentProvableHashTypeList_ComparisonMode()
               .isEmpty()
               && !isCustomCrossParameterBenchmarkingMode) {
         uk.msci.project.rsa.DisplayUtility.showErrorAlert(
@@ -126,15 +126,15 @@ public class SignatureVerificationControllerComparisonBenchmarking extends
         return;
       }
 
-      if (!setHashSizeInModelBenchmarking(verifyView, signatureModelBenchmarking)) {
+      if (!setHashSizeInModelBenchmarking(verifyView, signatureModel)) {
         return;
       }
       if (!isCustomCrossParameterBenchmarkingMode) {
-        signatureModelComparisonBenchmarking.createDefaultKeyConfigToHashFunctionsMap();
+        signatureModel.createDefaultKeyConfigToHashFunctionsMap();
       }
       benchmarkingUtility = new BenchmarkingUtility();
       Task<Void> benchmarkingTask = createBenchmarkingTask(messageBatchFile,
-          signatureBatchFile, signatureModelBenchmarking);
+          signatureBatchFile, signatureModel);
       BenchmarkingUtility.beginBenchmarkWithUtility(benchmarkingUtility, "Signature Verification",
           benchmarkingTask,
           SignatureVerificationControllerComparisonBenchmarking.this::handleBenchmarkingCompletion,
@@ -157,12 +157,12 @@ public class SignatureVerificationControllerComparisonBenchmarking extends
     ResultsControllerComparisonBenchmarking resultsController = new ResultsControllerComparisonBenchmarking(
         mainController);
     BenchmarkingContext context = new SignatureVerificationContext(
-        signatureModelComparisonBenchmarking);
+        signatureModel);
     resultsController.setContext(context);
     resultsController.showResultsView(keyConfigurationStrings,
-        signatureModelComparisonBenchmarking.getClockTimesPerTrial(),
-        signatureModelComparisonBenchmarking.getKeyLengths(), true,
-        signatureModelComparisonBenchmarking.getNumKeySizesForComparisonMode());
+        signatureModel.getClockTimesPerTrial(),
+        signatureModel.getKeyLengths(), true,
+        signatureModel.getNumKeySizesForComparisonMode());
   }
 
 

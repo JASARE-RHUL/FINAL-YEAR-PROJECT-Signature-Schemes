@@ -20,7 +20,7 @@ public class SignatureCreationControllerBenchmarking extends
    * The model component of the MVC pattern that handles the data and business logic for digital
    * signature creation and verification.
    */
-  SignatureModelBenchmarking signatureModelBenchmarking;
+  SignatureModelBenchmarking signatureModel;
 
 
   /**
@@ -47,11 +47,11 @@ public class SignatureCreationControllerBenchmarking extends
   public void showBenchmarkingView(Stage primaryStage) {
     isBenchmarkingMode = true;
     loadSignView("/SignView.fxml", () -> {
-          this.signatureModelBenchmarking = new SignatureModelBenchmarking();
-          setupObserversBenchmarkingMode(primaryStage, signView, signatureModelBenchmarking);
+          this.signatureModel = new SignatureModelBenchmarking();
+          setupObserversBenchmarkingMode(primaryStage, signView, signatureModel);
         },
         () ->
-            preloadProvablySecureKeyBatch(signView, signatureModelBenchmarking));
+            preloadProvablySecureKeyBatch(signView, signatureModel));
   }
 
 
@@ -89,21 +89,21 @@ public class SignatureCreationControllerBenchmarking extends
     public void handle(ActionEvent event) {
       hashOutputSize = signView.getHashOutputSizeArea();
 
-      if ((signatureModelBenchmarking.getNumTrials() == 0)
-          || signatureModelBenchmarking.getKeyBatchLength() == 0
-          || signatureModelBenchmarking.getSignatureType() == null
-          || signatureModelBenchmarking.getHashType() == null) {
+      if ((signatureModel.getNumTrials() == 0)
+          || signatureModel.getKeyBatchLength() == 0
+          || signatureModel.getSignatureType() == null
+          || signatureModel.getHashType() == null) {
         uk.msci.project.rsa.DisplayUtility.showErrorAlert(
             "You must provide an input for all fields. Please try again.");
         return;
       }
 
-      if (!setHashSizeInModelBenchmarking(signView, signatureModelBenchmarking)) {
+      if (!setHashSizeInModelBenchmarking(signView, signatureModel)) {
         return;
       }
       benchmarkingUtility = new BenchmarkingUtility();
       Task<Void> benchmarkingTask = createBenchmarkingTask(messageBatchFile,
-          signatureModelBenchmarking);
+          signatureModel);
       BenchmarkingUtility.beginBenchmarkWithUtility(benchmarkingUtility, "Signature Generation",
           benchmarkingTask,
           SignatureCreationControllerBenchmarking.this::handleBenchmarkingCompletion,
@@ -121,11 +121,11 @@ public class SignatureCreationControllerBenchmarking extends
     resetPreLoadedKeyParams();
     ResultsControllerNormalBenchmarking resultsController = new ResultsControllerNormalBenchmarking(
         mainController);
-    BenchmarkingContext context = new SignatureCreationContext(signatureModelBenchmarking);
+    BenchmarkingContext context = new SignatureCreationContext(signatureModel);
     resultsController.setContext(context);
     resultsController.showResultsView(null,
-        signatureModelBenchmarking.getClockTimesPerTrial(),
-        signatureModelBenchmarking.getKeyLengths(), false, 0);
+        signatureModel.getClockTimesPerTrial(),
+        signatureModel.getKeyLengths(), false, 0);
   }
 
 

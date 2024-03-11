@@ -19,7 +19,7 @@ public class SignatureVerificationControllerBenchmarking extends
    * The model component of the MVC pattern that handles the data and business logic for digital
    * signature creation and verification.
    */
-  SignatureModelBenchmarking signatureModelBenchmarking;
+  SignatureModelBenchmarking signatureModel;
 
 
   /**
@@ -47,10 +47,10 @@ public class SignatureVerificationControllerBenchmarking extends
     isBenchmarkingMode = true;
     loadVerifyView("/VerifyView.fxml",
         () -> {
-          this.signatureModelBenchmarking = new SignatureModelBenchmarking();
-          setupObserversBenchmarkingMode(primaryStage, verifyView, signatureModelBenchmarking);
+          this.signatureModel = new SignatureModelBenchmarking();
+          setupObserversBenchmarkingMode(primaryStage, verifyView, signatureModel);
         },
-        () -> preloadProvablySecureKeyBatch(verifyView, signatureModelBenchmarking));
+        () -> preloadProvablySecureKeyBatch(verifyView, signatureModel));
   }
 
 
@@ -85,25 +85,25 @@ public class SignatureVerificationControllerBenchmarking extends
    */
   class VerificationBenchmarkButtonObserver implements EventHandler<ActionEvent> {
 
-    private AbstractSignatureModelBenchmarking signatureModelBenchmarking;
+    private AbstractSignatureModelBenchmarking signatureModel;
 
     public VerificationBenchmarkButtonObserver(
         AbstractSignatureModelBenchmarking signatureModelBenchmarking) {
-      this.signatureModelBenchmarking = signatureModelBenchmarking;
+      this.signatureModel = signatureModelBenchmarking;
     }
 
     @Override
     public void handle(ActionEvent event) {
       hashOutputSize = verifyView.getHashOutputSizeArea();
-      if (signatureModelBenchmarking.getNumTrials() * signatureModelBenchmarking.getKeyBatchLength()
+      if (signatureModel.getNumTrials() * signatureModel.getKeyBatchLength()
           != numSignatures) {
         uk.msci.project.rsa.DisplayUtility.showErrorAlert(
             "The numbers of messages and signatures do not match. Please ensure they match for a valid set of verification pairings.");
         return;
       }
 
-      if ((signatureModelBenchmarking.getNumTrials() == 0)
-          || signatureModelBenchmarking.getKeyBatchLength() == 0
+      if ((signatureModel.getNumTrials() == 0)
+          || signatureModel.getKeyBatchLength() == 0
           || signatureModel.getSignatureType() == null || numSignatures == 0
           || signatureModel.getHashType() == null) {
         uk.msci.project.rsa.DisplayUtility.showErrorAlert(
@@ -111,13 +111,13 @@ public class SignatureVerificationControllerBenchmarking extends
         return;
       }
 
-      if (!setHashSizeInModelBenchmarking(verifyView, signatureModelBenchmarking)) {
+      if (!setHashSizeInModelBenchmarking(verifyView, signatureModel)) {
         return;
       }
       // Show the progress dialog
       benchmarkingUtility = new BenchmarkingUtility();
       Task<Void> benchmarkingTask = createBenchmarkingTask(messageBatchFile, signatureBatchFile,
-          signatureModelBenchmarking);
+          signatureModel);
       BenchmarkingUtility.beginBenchmarkWithUtility(benchmarkingUtility, "Signature Verification",
           benchmarkingTask,
           SignatureVerificationControllerBenchmarking.this::handleBenchmarkingCompletion,
@@ -136,11 +136,11 @@ public class SignatureVerificationControllerBenchmarking extends
     resetPreLoadedKeyParams();
     ResultsControllerNormalBenchmarking resultsController = new ResultsControllerNormalBenchmarking(
         mainController);
-    BenchmarkingContext context = new SignatureVerificationContext(signatureModelBenchmarking);
+    BenchmarkingContext context = new SignatureVerificationContext(signatureModel);
     resultsController.setContext(context);
     resultsController.showResultsView(null,
-        signatureModelBenchmarking.getClockTimesPerTrial(),
-        signatureModelBenchmarking.getKeyLengths(), false, 0);
+        signatureModel.getClockTimesPerTrial(),
+        signatureModel.getKeyLengths(), false, 0);
   }
 
 

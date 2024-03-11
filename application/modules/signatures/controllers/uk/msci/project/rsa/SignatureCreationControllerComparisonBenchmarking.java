@@ -23,7 +23,7 @@ public class SignatureCreationControllerComparisonBenchmarking extends
    * This model supports comparing the performance and behavior of different signature schemes
    * across varying parameters and configurations.
    */
-  SignatureModelComparisonBenchmarking signatureModelComparisonBenchmarking;
+  SignatureModelComparisonBenchmarking signatureModel;
 
 
   /**
@@ -55,14 +55,14 @@ public class SignatureCreationControllerComparisonBenchmarking extends
 
       loadSignView("/SignViewCrossBenchmarkingMode.fxml",
           () -> {
-            this.signatureModelComparisonBenchmarking = new SignatureModelComparisonBenchmarking();
+            this.signatureModel = new SignatureModelComparisonBenchmarking();
             setupObserversCrossBenchmarking(primaryStage, signView,
-                signatureModelComparisonBenchmarking);
+                signatureModel);
           },
           () -> {
-            preloadCrossParameterKeyBatch(signView, signatureModelComparisonBenchmarking);
+            preloadCrossParameterKeyBatch(signView, signatureModel);
             preloadCustomCrossParameterHashFunctions(signView,
-                signatureModelComparisonBenchmarking);
+                signatureModel);
           });
     }
   }
@@ -103,14 +103,14 @@ public class SignatureCreationControllerComparisonBenchmarking extends
     public void handle(ActionEvent event) {
       hashOutputSize = signView.getHashOutputSizeArea();
 
-      if ((signatureModelComparisonBenchmarking.getNumTrials() == 0)
-          || signatureModelComparisonBenchmarking.getKeyBatchLength() == 0
-          || signatureModelComparisonBenchmarking.getSignatureType() == null
-          || (signatureModelComparisonBenchmarking.getCurrentFixedHashTypeList_ComparisonMode()
+      if ((signatureModel.getNumTrials() == 0)
+          || signatureModel.getKeyBatchLength() == 0
+          || signatureModel.getSignatureType() == null
+          || (signatureModel.getCurrentFixedHashTypeList_ComparisonMode()
           .isEmpty()
           && !isCustomCrossParameterBenchmarkingMode)
           ||
-          signatureModelComparisonBenchmarking.getCurrentProvableHashTypeList_ComparisonMode()
+          signatureModel.getCurrentProvableHashTypeList_ComparisonMode()
               .isEmpty()
               && !isCustomCrossParameterBenchmarkingMode) {
         uk.msci.project.rsa.DisplayUtility.showErrorAlert(
@@ -118,16 +118,16 @@ public class SignatureCreationControllerComparisonBenchmarking extends
         return;
       }
 
-      if (!setHashSizeInModelBenchmarking(signView, signatureModelComparisonBenchmarking)
+      if (!setHashSizeInModelBenchmarking(signView, signatureModel)
           && !isCustomCrossParameterBenchmarkingMode) {
         return;
       }
       if (!isCustomCrossParameterBenchmarkingMode) {
-        signatureModelComparisonBenchmarking.createDefaultKeyConfigToHashFunctionsMap();
+        signatureModel.createDefaultKeyConfigToHashFunctionsMap();
       }
       benchmarkingUtility = new BenchmarkingUtility();
       Task<Void> benchmarkingTask = createBenchmarkingTask(messageBatchFile,
-          signatureModelComparisonBenchmarking);
+          signatureModel);
       BenchmarkingUtility.beginBenchmarkWithUtility(benchmarkingUtility, "Signature Generation",
           benchmarkingTask,
           SignatureCreationControllerComparisonBenchmarking.this::handleBenchmarkingCompletion,
@@ -149,13 +149,13 @@ public class SignatureCreationControllerComparisonBenchmarking extends
     ResultsControllerComparisonBenchmarking resultsController = new ResultsControllerComparisonBenchmarking(
         mainController);
     BenchmarkingContext context = new SignatureCreationContext(
-        signatureModelComparisonBenchmarking);
+        signatureModel);
     resultsController.setContext(context);
 
     resultsController.showResultsView(keyConfigurationStrings,
-        signatureModelComparisonBenchmarking.getClockTimesPerTrial(),
-        signatureModelComparisonBenchmarking.getKeyLengths(), true,
-        signatureModelComparisonBenchmarking.getNumKeySizesForComparisonMode());
+        signatureModel.getClockTimesPerTrial(),
+        signatureModel.getKeyLengths(), true,
+        signatureModel.getNumKeySizesForComparisonMode());
   }
 
 
