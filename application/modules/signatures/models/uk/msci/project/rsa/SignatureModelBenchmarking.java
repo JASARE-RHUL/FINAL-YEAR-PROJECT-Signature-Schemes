@@ -12,7 +12,6 @@ import java.security.NoSuchProviderException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.DoubleConsumer;
-import java.util.stream.Collectors;
 import java.util.zip.DataFormatException;
 import javafx.util.Pair;
 import uk.msci.project.rsa.exceptions.InvalidDigestException;
@@ -195,30 +194,6 @@ public class SignatureModelBenchmarking extends AbstractSignatureModelBenchmarki
   }
 
 
-
-  /**
-   * Aggregates the results from all verification trials into final lists. This method combines the
-   * times, verification results, signatures, and recovered messages from each public key into
-   * single lists for streamlined access and analysis.
-   *
-   * @param timesPerKey               The list of times for each public key and message.
-   * @param verificationResultsPerKey The list of verification results for each public key and
-   *                                  message.
-   * @param signaturesPerKey          The list of signatures for each public key and message.
-   * @param recoveredMessagesPerKey   The list of recovered message parts for each public key and
-   *                                  message.
-   */
-  public void combineVerificationResultsIntoFinalLists(List<List<Long>> timesPerKey,
-      List<List<Boolean>> verificationResultsPerKey,
-      List<List<byte[]>> signaturesPerKey, List<List<byte[]>> recoveredMessagesPerKey) {
-    verificationResults = verificationResultsPerKey.stream().flatMap(List::stream)
-        .collect(Collectors.toList());
-    signaturesFromBenchmark = signaturesPerKey.stream().flatMap(List::stream)
-        .collect(Collectors.toList());
-    recoverableMessages = recoveredMessagesPerKey.stream().flatMap(List::stream)
-        .collect(Collectors.toList());
-    clockTimesPerTrial = timesPerKey.stream().flatMap(List::stream).collect(Collectors.toList());
-  }
 
 
   /**

@@ -10,6 +10,7 @@ import java.security.NoSuchProviderException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.DoubleConsumer;
+import java.util.stream.Collectors;
 import java.util.zip.DataFormatException;
 import javafx.util.Pair;
 import uk.msci.project.rsa.exceptions.InvalidDigestException;
@@ -378,9 +379,17 @@ public abstract class AbstractSignatureModelBenchmarking extends SignatureModel 
    * @param recoveredMessagesPerKey   The list of recovered message parts for each public key and
    *                                  message.
    */
-  public abstract void combineVerificationResultsIntoFinalLists(List<List<Long>> timesPerKey,
+  void combineVerificationResultsIntoFinalLists(List<List<Long>> timesPerKey,
       List<List<Boolean>> verificationResultsPerKey,
-      List<List<byte[]>> signaturesPerKey, List<List<byte[]>> recoveredMessagesPerKey);
+      List<List<byte[]>> signaturesPerKey, List<List<byte[]>> recoveredMessagesPerKey) {
+    verificationResults = verificationResultsPerKey.stream().flatMap(List::stream)
+        .collect(Collectors.toList());
+    signaturesFromBenchmark = signaturesPerKey.stream().flatMap(List::stream)
+        .collect(Collectors.toList());
+    recoverableMessages = recoveredMessagesPerKey.stream().flatMap(List::stream)
+        .collect(Collectors.toList());
+    clockTimesPerTrial = timesPerKey.stream().flatMap(List::stream).collect(Collectors.toList());
+  }
 
   /**
    * Combines the results from the batch signature creation into final lists. It aggregates the
