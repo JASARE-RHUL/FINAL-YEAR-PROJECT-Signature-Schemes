@@ -34,10 +34,11 @@ public class MainController {
   private MainMenuView mainMenuView;
 
   /**
-   * Controller for the key generation functionality. This controller handles the logic related to
-   * generating keys.
+   * Mediator for key generation functionalities. It encapsulates and manages the interaction
+   * between the main controller and the key generation controllers, both in standard and
+   * benchmarking modes.
    */
-  private GenController genController;
+  private KeyGenerationMediator keyGenerationMediator = new KeyGenerationMediator(this);
 
   /**
    * Mediator for signature creation functionalities. It encapsulates and manages the interaction
@@ -139,8 +140,7 @@ public class MainController {
 
     @Override
     public void handle(ActionEvent event) {
-      genController = new GenController(MainController.this);
-      genController.showGenView(primaryStage);
+      keyGenerationMediator.showBenchmarkingView();
     }
   }
 
@@ -364,4 +364,29 @@ public class MainController {
   public String getSignatureVerificationComparisonBenchmarkingImport() {
     return signatureVerificationMediator.getComparisonBenchmarkingImport();
   }
+
+  /**
+   * Displays the key generation view in benchmarking mode. This method triggers the UI update to
+   * show the interface for key generation with benchmarking functionalities.
+   */
+  public void showGenViewBenchmarking() {
+    keyGenerationMediator.showBenchmarkingView();
+  }
+
+  /**
+   * Displays the key generation  view in standard mode. This method updates the UI to present the
+   * interface for standard key generation.
+   */
+  public void showGenViewStandard() {
+    keyGenerationMediator.showStandardView();
+  }
+
+  /**
+   * Displays the key generation  view in cross parameter benchmarking mode. This method updates the
+   * UI to present the interface for benchmarking in comparison.
+   */
+  public void showGenViewCrossBenchmarking() {
+    keyGenerationMediator.showCrossBenchmarkingView();
+  }
+
 }

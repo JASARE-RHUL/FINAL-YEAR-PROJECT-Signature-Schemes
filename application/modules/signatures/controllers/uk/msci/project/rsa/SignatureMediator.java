@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Thus class class acts as an intermediary between the main controller of the application and
+ * This class acts as an intermediary between the main controller of the application and
  * various signature controllers. It handles the setup and coordination of signature creation and
  * verification processes across different operational modes, including standard, benchmarking, and
  * comparison benchmarking. This class ensures the appropriate controllers are utilized and
