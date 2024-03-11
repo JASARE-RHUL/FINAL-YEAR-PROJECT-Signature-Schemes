@@ -177,7 +177,7 @@ public abstract class AbstractSignatureBaseController {
    */
   public boolean handleKey(File file, SignatureBaseView signatureView,
       SignatureModel signatureModel) {
-    String content = "";
+    String content;
     try {
       content = FileHandle.importFromFile(file);
     } catch (Exception e) {
@@ -353,7 +353,7 @@ public abstract class AbstractSignatureBaseController {
     } catch (Exception e) {
       uk.msci.project.rsa.DisplayUtility.showErrorAlert("Error importing file, please try again.");
     }
-    if (content == "") {
+    if (content.equals("")) {
       uk.msci.project.rsa.DisplayUtility.showErrorAlert(
           file.getName() + " is empty. Please try again.");
     } else {
@@ -559,7 +559,7 @@ public abstract class AbstractSignatureBaseController {
         signatureBaseController.showBenchmarkingView(mainController.getPrimaryStage());
       } else if (Boolean.FALSE.equals(newValue) && Boolean.TRUE.equals(oldValue)) {
         // Switch to Standard Mode
-        signatureBaseController.showStandardMode(mainController.getPrimaryStage());
+        signatureBaseController.showStandardView(mainController.getPrimaryStage());
 
       }
     }
@@ -802,7 +802,7 @@ public abstract class AbstractSignatureBaseController {
     return isSingleKeyProvablySecure;
   }
 
-  public abstract void showStandardMode(Stage primaryStage);
+  public abstract void showStandardView(Stage primaryStage);
 
   /**
    * Displays the signature view in benchmarking mode. This method should transition the user
@@ -812,7 +812,7 @@ public abstract class AbstractSignatureBaseController {
    */
   public abstract void showBenchmarkingView(Stage primaryStage);
 
-
-
-
+  public String getImportedKeyBatch() {
+    return importedKeyBatch;
+  }
 }

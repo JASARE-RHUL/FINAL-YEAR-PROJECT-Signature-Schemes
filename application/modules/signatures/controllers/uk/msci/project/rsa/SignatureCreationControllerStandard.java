@@ -10,11 +10,12 @@ import javafx.stage.Stage;
 
 
 /**
- * This class is part of the controller component specific to digital signature operations
- * responsible for handling user interactions for the signature creation process. It also
- * communicates with the Signature Model to perform the actual signature creation logic.
+ * This class is part of the controller component specific to digital signature creations for non
+ * batch operations. It is responsible for handling user interactions for the signature creation
+ * process. It also communicates with the Signature Model to perform the actual signature creation
+ * logic.
  */
-public class SignatureCreationControllerStandard extends AbstractSignatureBaseController{
+public class SignatureCreationControllerStandard extends AbstractSignatureBaseController {
 
   /**
    * The view component of the MVC pattern for the signing functionality. It handles the user
@@ -80,7 +81,7 @@ public class SignatureCreationControllerStandard extends AbstractSignatureBaseCo
    *
    * @param primaryStage The primary stage of the application where the view will be displayed.
    */
-  public void showStandardMode(Stage primaryStage) {
+  public void showStandardView(Stage primaryStage) {
     isBenchmarkingMode = false;
     loadSignView("/SignViewStandardMode.fxml",
         () -> {
@@ -107,10 +108,11 @@ public class SignatureCreationControllerStandard extends AbstractSignatureBaseCo
    * initialises observers for importing text, keys, canceling imports, and creating signatures,
    * along with other functionalities specific to the standard signature operation mode. It ensures
    * that all necessary UI elements respond correctly to user actions and that the signature model
-   * receives and processes user input as required for the standard digital signature creation process.
+   * receives and processes user input as required for the standard digital signature creation
+   * process.
    *
-   * @param primaryStage The primary stage of the application where the view will be displayed.
-   * @param signatureView The signature view for which observers are being set up.
+   * @param primaryStage   The primary stage of the application where the view will be displayed.
+   * @param signatureView  The signature view for which observers are being set up.
    * @param signatureModel The signature model associated with the signature view, handling the data
    *                       and logic for signature creation.
    */

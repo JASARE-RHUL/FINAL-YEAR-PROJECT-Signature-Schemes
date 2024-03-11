@@ -1,6 +1,7 @@
 package uk.msci.project.rsa;
 
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import javafx.event.ActionEvent;
@@ -10,7 +11,6 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
-import java.io.IOException;
 
 /**
  * This class serves as the central controller for the application, managing navigation between
@@ -155,6 +155,8 @@ public class MainController {
     public void handle(ActionEvent event) {
       if (signatureCreationMediator.getIsSingleKeyProvablySecure()) {
         signatureCreationMediator.showSignatureViewStandard();
+      } else if (signatureCreationMediator.getComparisonBenchmarkingImport() != null) {
+        signatureCreationMediator.showSignatureViewComparisonBenchmarking();
       } else {
         signatureCreationMediator.showSignatureViewBenchmarking();
       }
@@ -172,6 +174,8 @@ public class MainController {
     public void handle(ActionEvent event) {
       if (signatureVerificationMediator.getIsSingleKeyProvablySecure()) {
         signatureVerificationMediator.showSignatureViewStandard();
+      } else if (signatureVerificationMediator.getComparisonBenchmarkingImport() != null) {
+        signatureVerificationMediator.showSignatureViewComparisonBenchmarking();
       } else {
         signatureVerificationMediator.showSignatureViewBenchmarking();
       }
@@ -290,10 +294,31 @@ public class MainController {
 
   }
 
-
+  /**
+   * Displays the signature creation view in the standard mode with no benchmarking functionality.
+   */
   public void showSignatureCreationStandard() {
     signatureCreationMediator.showSignatureViewStandard();
   }
+
+  /**
+   * Displays the signature creation view for comparison benchmarking mode. This method updates the
+   * UI to present an interface tailored for comparing signature creation performance across
+   * different key configurations.
+   */
+  public void showSignatureCreationComparisonBenchmarking() {
+    signatureCreationMediator.showSignatureViewComparisonBenchmarking();
+  }
+
+  /**
+   * Displays the signature verification view for comparison benchmarking mode. This method updates
+   * the UI to present an interface specifically designed for comparing signature verification
+   * performance across various key configurations.
+   */
+  public void showSignatureVerificationComparisonBenchmarking() {
+    signatureVerificationMediator.showSignatureViewComparisonBenchmarking();
+  }
+
 
   /**
    * Displays the signature creation view in benchmarking mode. This method triggers the UI update
@@ -317,5 +342,26 @@ public class MainController {
    */
   public void showSignatureVerificationBenchmarking() {
     signatureVerificationMediator.showSignatureViewBenchmarking();
+  }
+
+
+  /**
+   * Retrieves the imported key batch to be preloaded in comparison benchmarking mode for the
+   * signature creation process.
+   *
+   * @return A string representing the imported key batch
+   */
+  public String getSignatureCreationComparisonBenchmarkingImport() {
+    return signatureCreationMediator.getComparisonBenchmarkingImport();
+  }
+
+  /**
+   * Retrieves the imported key batch to be preloaded in comparison benchmarking mode for the
+   * signature verification process.
+   *
+   * @return A string representing the imported key batch
+   */
+  public String getSignatureVerificationComparisonBenchmarkingImport() {
+    return signatureVerificationMediator.getComparisonBenchmarkingImport();
   }
 }

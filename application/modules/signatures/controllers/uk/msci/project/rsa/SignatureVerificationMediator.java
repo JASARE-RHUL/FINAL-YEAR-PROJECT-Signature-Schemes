@@ -22,6 +22,8 @@ public class SignatureVerificationMediator extends SignatureMediator {
     this.signatureControllerStandard = new SignatureVerificationControllerStandard(mainController);
     this.signatureControllerBenchmarking = new SignatureVerificationControllerBenchmarking(
         mainController);
+    this.signatureControllerComparisonBenchmarking = new SignatureVerificationControllerComparisonBenchmarking(
+        mainController);
   }
 
 }

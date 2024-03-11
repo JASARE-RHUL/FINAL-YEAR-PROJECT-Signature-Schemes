@@ -20,6 +20,8 @@ public class SignatureCreationMediator extends SignatureMediator {
     this.signatureControllerStandard = new SignatureCreationControllerStandard(mainController);
     this.signatureControllerBenchmarking = new SignatureCreationControllerBenchmarking(
         mainController);
+    this.signatureControllerComparisonBenchmarking = new SignatureCreationControllerComparisonBenchmarking(
+        mainController);
   }
 
 }

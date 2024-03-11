@@ -5,11 +5,11 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * The SignatureMediator class acts as an intermediary between the main controller of the
- * application and various signature controllers. It handles the setup and coordination of signature
- * creation and verification processes across different operational modes, including standard,
- * benchmarking, and comparison benchmarking. This class ensures the appropriate controllers are
- * utilized and configured based on the operational context and mode.
+ * Thus class class acts as an intermediary between the main controller of the application and
+ * various signature controllers. It handles the setup and coordination of signature creation and
+ * verification processes across different operational modes, including standard, benchmarking, and
+ * comparison benchmarking. This class ensures the appropriate controllers are utilized and
+ * configured based on the operational context and mode.
  */
 public class SignatureMediator {
 
@@ -30,6 +30,12 @@ public class SignatureMediator {
    * of creating digital signatures in a context where performance benchmarking is a priority.
    */
   AbstractSignatureBaseControllerBenchmarking signatureControllerBenchmarking;
+
+  /**
+   * Controller for the signature creation functionality in benchmarking mode. Handles the process
+   * of creating digital signatures in a context where performance benchmarking is a priority.
+   */
+  AbstractSignatureBaseControllerBenchmarking signatureControllerComparisonBenchmarking;
 
 
   /**
@@ -65,6 +71,16 @@ public class SignatureMediator {
     return signatureControllerBenchmarking;
   }
 
+  /**
+   * Returns the comparison benchmarking mode signature controller. This controller is responsible
+   * for managing signature creation or verification in cross-parameter benchmarking mode.
+   *
+   * @return The cross parameter benchmarking mode signature controller.
+   */
+  public AbstractSignatureBaseControllerBenchmarking getSignatureControllerComparisonBenchmarking() {
+    return signatureControllerComparisonBenchmarking;
+  }
+
 
   /**
    * Sets the batch of private and public keys for a signature process. This method is crucial for
@@ -86,10 +102,19 @@ public class SignatureMediator {
    */
   public void setProvableKeyBatchForSignatureProcesses(String keyBatch,
       boolean isKeyForComparisonMode, boolean isKeyForCustomComparisonMode) {
-    signatureControllerBenchmarking.importKeyFromKeyGeneration(keyBatch,
-        isKeyForComparisonMode);
+    if (isKeyForComparisonMode) {
+      signatureControllerComparisonBenchmarking.importKeyFromKeyGeneration(keyBatch,
+          isKeyForComparisonMode);
+      signatureControllerComparisonBenchmarking.setIsCustomCrossParameterBenchmarkingMode(
+          isKeyForCustomComparisonMode);
+    } else {
+      signatureControllerBenchmarking.importKeyFromKeyGeneration(keyBatch,
+          isKeyForComparisonMode);
+    }
+
 
   }
+
 
   /**
    * Sets the private/public key for signature verification/creation operations. This method is used
@@ -113,7 +138,7 @@ public class SignatureMediator {
    */
   public void setKeyConfigurationStringsForComparisonMode(
       List<String> keyConfigurationStringsForComparisonMode) {
-    signatureControllerBenchmarking.setKeyConfigurationStrings(
+    signatureControllerComparisonBenchmarking.setKeyConfigurationStrings(
         keyConfigurationStringsForComparisonMode);
   }
 
@@ -129,7 +154,7 @@ public class SignatureMediator {
    */
   public void setKeyConfigToHashFunctionsMapForCustomComparisonMode(
       Map<Integer, List<HashFunctionSelection>> keyConfigToHashFunctionsMap, int keyPerGroup) {
-    signatureControllerBenchmarking.setKeyConfigToHashFunctionsMap(
+    signatureControllerComparisonBenchmarking.setKeyConfigToHashFunctionsMap(
         keyConfigToHashFunctionsMap,
         keyPerGroup);
   }
@@ -140,8 +165,18 @@ public class SignatureMediator {
    * interface for signature operations in standard mode.
    */
   public void showSignatureViewStandard() {
-    signatureControllerStandard.showStandardMode(mainController.getPrimaryStage());
+    signatureControllerStandard.showStandardView(mainController.getPrimaryStage());
   }
+
+  /**
+   * Displays the signature view in standard mode. This method triggers the UI update to show the
+   * interface for signature operations in standard mode.
+   */
+  public void showSignatureViewComparisonBenchmarking() {
+    signatureControllerComparisonBenchmarking.showCrossBenchmarkingView(
+        mainController.getPrimaryStage());
+  }
+
 
   /**
    * Displays the signature view in benchmarking mode. This method triggers the UI update to show
@@ -158,6 +193,20 @@ public class SignatureMediator {
    */
   public boolean getIsSingleKeyProvablySecure() {
     return signatureControllerStandard.getIsSingleKeyProvablySecure();
+  }
+
+  /**
+   * Retrieves the imported key batch used in comparison benchmarking mode. This method is essential
+   * for accessing the batch of keys that have been loaded for conducting performance comparisons
+   * across different cryptographic parameters. It's especially useful in scenarios where the
+   * signature creation or verification processes need to operate with a predefined set of keys to
+   * facilitate comparison across different key sizes and configurations.
+   *
+   * @return A String representation of the imported key batch for comparison benchmarking mode.
+   * Returns null if no key batch has been imported.
+   */
+  public String getComparisonBenchmarkingImport() {
+    return signatureControllerComparisonBenchmarking.getImportedKeyBatch();
   }
 
 

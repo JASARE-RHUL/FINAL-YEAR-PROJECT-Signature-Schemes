@@ -11,9 +11,10 @@ import javafx.stage.Stage;
 
 
 /**
- * This class is part of the controller component specific to digital signature operations
- * responsible for handling user interactions for the signature verification process. It also
- * communicates with the Signature Model to perform the actual signature verification logic.
+ * This class is part of the controller component specific to digital signature signature for non
+ * batch operations. It is responsible for handling user interactions for the signature verification
+ * process. It also communicates with the Signature Model to perform the actual signature creation
+ * logic.
  */
 public class SignatureVerificationControllerStandard extends AbstractSignatureBaseController {
 
@@ -76,7 +77,7 @@ public class SignatureVerificationControllerStandard extends AbstractSignatureBa
    *
    * @param primaryStage The primary stage of the application where the view will be displayed.
    */
-  public void showStandardMode(Stage primaryStage) {
+  public void showStandardView(Stage primaryStage) {
     isBenchmarkingMode = false;
     loadVerifyView("/VerifyViewStandardMode.fxml",
         () -> {
