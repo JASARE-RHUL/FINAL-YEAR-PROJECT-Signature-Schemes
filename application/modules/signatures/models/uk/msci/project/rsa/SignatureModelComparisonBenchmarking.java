@@ -13,6 +13,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.function.DoubleConsumer;
 import java.util.zip.DataFormatException;
 import javafx.util.Pair;
@@ -109,8 +113,9 @@ public class SignatureModelComparisonBenchmarking extends AbstractSignatureModel
    * benchmarking/comparison mode. This mode involves generating signatures using a variety of keys
    * created with different parameter settings (or key configurations chosen by the user or set by
    * default ) for each selected key size. For each key size, this method generates signatures using
-   * specified number of keys with * corresponding to each key configuration. The method updates the
-   * progress of signature generation using the provided progressUpdater consumer.
+   * specified number of keys  corresponding to each key configuration and hash function
+   * combination. The method updates the progress of signature generation using the provided
+   * progressUpdater consumer.
    *
    * @param batchMessageFile The file containing the messages to be signed in the batch process.
    * @param progressUpdater  A consumer to update the progress of the batch signing process.
@@ -122,105 +127,140 @@ public class SignatureModelComparisonBenchmarking extends AbstractSignatureModel
    *                                       batchMessageFile.
    * @throws DataFormatException           if the data format is incorrect for signing.
    */
-  public void batchCreateSignatures(File batchMessageFile,
-      DoubleConsumer progressUpdater)
+  public void batchCreateSignatures(File batchMessageFile, DoubleConsumer progressUpdater)
       throws InvalidSignatureTypeException, NoSuchAlgorithmException, InvalidDigestException, NoSuchProviderException, IOException, DataFormatException {
 
     this.messageFile = batchMessageFile;
     this.numKeySizesForComparisonMode = keyBatch.size() / numKeysPerKeySizeComparisonMode;
     setKeyLengths(keyBatch);
 
-    try (BufferedReader messageReader = new BufferedReader(new FileReader(batchMessageFile))) {
-      // Initialize lists to store times and results for each key
-      List<List<Long>> timesPerKey = new ArrayList<>();
-      List<List<byte[]>> signaturesPerKey = new ArrayList<>();
-      List<List<byte[]>> nonRecoverableMessagesPerKey = new ArrayList<>();
+    Map<String, List<Long>> timesPerKeyHashFunction = new HashMap<>();
+    Map<String, List<byte[]>> signaturesPerKeyHashFunction = new HashMap<>();
+    Map<String, List<byte[]>> nonRecoverableMessagesPerKeyHashFunction = new HashMap<>();
 
-      for (int k = 0; k < keyBatch.size(); k++) {
-        timesPerKey.add(new ArrayList<>());
-        signaturesPerKey.add(new ArrayList<>());
-        nonRecoverableMessagesPerKey.add(new ArrayList<>());
-      }
-
-      String message;
-
+    try (ExecutorService executor = Executors.newFixedThreadPool(
+        Runtime.getRuntime().availableProcessors())) {
       int completedWork = 0;
-
       calculateTotalWork();
+      List<Future<Pair<String, Pair<Long, Pair<byte[], byte[]>>>>> futures = new ArrayList<>();
 
-      int messageCounter = 0;
+      try (BufferedReader messageReader = new BufferedReader(new FileReader(batchMessageFile))) {
+        String message;
+        while ((message = messageReader.readLine()) != null) {
+          final String currentMessage = message;
 
-      while ((message = messageReader.readLine()) != null && messageCounter < this.numTrials) {
-        for (int i = 0; i < keyBatch.size(); i += numKeysPerKeySizeComparisonMode) {
-          for (int keyGroupIndex = 0; keyGroupIndex < numKeysPerKeySizeComparisonMode;
-              keyGroupIndex += keysPerGroup) {
-            List<HashFunctionSelection> hashFunctionTypesForGroup = keyConfigToHashFunctionsMap.get(
-                Math.floorDiv(keyGroupIndex, keysPerGroup));
+          for (int keySizeIndex = 0; keySizeIndex < keyBatch.size();
+              keySizeIndex += numKeysPerKeySizeComparisonMode) {
+            for (int keyGroupIndex = 0; keyGroupIndex < numKeysPerKeySizeComparisonMode;
+                keyGroupIndex += keysPerGroup) {
+              List<HashFunctionSelection> hashFunctionTypesForGroup = keyConfigToHashFunctionsMap.get(
+                  Math.floorDiv(keyGroupIndex, keysPerGroup));
 
-            if (hashFunctionTypesForGroup != null) {
-              for (HashFunctionSelection hashFunctionType : hashFunctionTypesForGroup) {
-                for (int j = keyGroupIndex;
-                    j < keyGroupIndex + keysPerGroup && j < numKeysPerKeySizeComparisonMode; j++) {
-                  int actualKeyIndex = i + j;
+              if (hashFunctionTypesForGroup != null) {
+                for (HashFunctionSelection hashFunctionType : hashFunctionTypesForGroup) {
+                  for (int j = keyGroupIndex;
+                      j < keyGroupIndex + keysPerGroup && j < numKeysPerKeySizeComparisonMode;
+                      j++) {
+                    int actualKeyIndex = keySizeIndex + j;
 
-                  PrivateKey privateKey = (PrivateKey) keyBatch.get(actualKeyIndex);
-                  int keyLength = keyLengths.get(actualKeyIndex);
-                  SigScheme sigScheme = SignatureFactory.getSignatureScheme(currentType,
-                      privateKey,
-                      hashFunctionType.isProvablySecure());
-                  int digestSize = hashFunctionType.getCustomSize() == null ? 0
-                      : (int) Math.round((keyLength * hashFunctionType.getCustomSize()[0])
-                          / (double) hashFunctionType.getCustomSize()[1]);
-                  digestSize = Math.floorDiv(digestSize + 7, 8);
-                  sigScheme.setDigest(hashFunctionType.getDigestType(), digestSize);
+                    PrivateKey privateKey = (PrivateKey) keyBatch.get(actualKeyIndex);
+                    int keyLength = keyLengths.get(actualKeyIndex);
+                    int digestSize =
+                        hashFunctionType.getCustomSize() == null ? 0 : (int) Math.round(
+                            (keyLength * hashFunctionType.getCustomSize()[0])
+                                / (double) hashFunctionType.getCustomSize()[1]);
+                    digestSize = Math.floorDiv(digestSize + 7, 8);
 
-                  long startTime = System.nanoTime();
-                  byte[] signature = sigScheme.sign(message.getBytes());
-                  long endTime = System.nanoTime() - startTime;
-                  byte[] nonRecoverableM = sigScheme.getNonRecoverableM();
+                    String keyHashFunctionIdentifier =
+                        actualKeyIndex + "-" + hashFunctionType.getDigestType().toString();
+                    int finalDigestSize = digestSize;
 
-                  // Store results
-                  timesPerKey.get(actualKeyIndex).add(endTime);
-                  signaturesPerKey.get(actualKeyIndex).add(signature);
-                  nonRecoverableMessagesPerKey.get(actualKeyIndex).add(nonRecoverableM);
+                    Future<Pair<String, Pair<Long, Pair<byte[], byte[]>>>> future = executor.submit(
+                        () -> {
+                          try {
+                            SigScheme sigScheme = SignatureFactory.getSignatureScheme(currentType,
+                                privateKey, hashFunctionType.isProvablySecure());
+                            sigScheme.setDigest(hashFunctionType.getDigestType(), finalDigestSize);
 
-                  completedWork++;
-                  double currentKeyProgress = (double) completedWork / totalWork;
-                  progressUpdater.accept(currentKeyProgress);
+                            long startTime = System.nanoTime();
+                            byte[] signature = sigScheme.sign(currentMessage.getBytes());
+                            long endTime = System.nanoTime() - startTime;
+                            byte[] nonRecoverableM = sigScheme.getNonRecoverableM();
 
+                            return new Pair<>(keyHashFunctionIdentifier,
+                                new Pair<>(endTime, new Pair<>(signature, nonRecoverableM)));
+                          } catch (Exception e) {
+                            e.printStackTrace();
+                            return null;
+                          }
+                        });
 
+                    futures.add(future);
+                  }
                 }
               }
             }
           }
         }
-        messageCounter++;
-      }
 
-      // Combine results into final lists
-      combineResultsIntoFinalLists(timesPerKey, signaturesPerKey,
-          nonRecoverableMessagesPerKey);
+        for (Future<Pair<String, Pair<Long, Pair<byte[], byte[]>>>> future : futures) {
+          try {
+            Pair<String, Pair<Long, Pair<byte[], byte[]>>> result = future.get();
+            if (result != null) {
+              String identifier = result.getKey();
+              Long time = result.getValue().getKey();
+              byte[] signature = result.getValue().getValue().getKey();
+              byte[] nonRecoverableM = result.getValue().getValue().getValue();
+
+              timesPerKeyHashFunction.computeIfAbsent(identifier, k -> new ArrayList<>()).add(time);
+              signaturesPerKeyHashFunction.computeIfAbsent(identifier, k -> new ArrayList<>())
+                  .add(signature);
+              nonRecoverableMessagesPerKeyHashFunction.computeIfAbsent(identifier,
+                  k -> new ArrayList<>()).add(nonRecoverableM);
+
+              double currentKeyProgress = (double) (++completedWork) / totalWork;
+              progressUpdater.accept(currentKeyProgress);
+            }
+          } catch (InterruptedException | ExecutionException e) {
+            e.printStackTrace();
+          }
+        }
+      } finally {
+        executor.shutdown();
+        try {
+          if (!executor.awaitTermination(60, java.util.concurrent.TimeUnit.SECONDS)) {
+            executor.shutdownNow();
+          }
+        } catch (InterruptedException ex) {
+          executor.shutdownNow();
+          Thread.currentThread().interrupt();
+        }
+      }
     }
+
+    // Combine the results stored in the maps for further processing or analysis
+    combineResultsIntoFinalLists(timesPerKeyHashFunction, signaturesPerKeyHashFunction,
+        nonRecoverableMessagesPerKeyHashFunction);
   }
 
 
   /**
-   * Combines the results of batch signature creation into final lists for analysis and export in
-   * comparison mode. It aggregates times, signatures, and non-recoverable message parts from all
-   * keys.
+   * Combines the results of the batch signature creation into final lists for further processing or
+   * analysis. This method aggregates the times, signatures, and non-recoverable message parts for
+   * each key and hash function combination used in the batch creation process.
    *
-   * @param timesPerKey                  Times for each key.
-   * @param signaturesPerKey             Signatures for each key.
-   * @param nonRecoverableMessagesPerKey Non-recoverable message parts for each key.
+   * @param timesPerKeyHashFunction                  Map of key-hash function identifiers to their
+   *                                                 corresponding processing times.
+   * @param signaturesPerKeyHashFunction             Map of key-hash function identifiers to their
+   *                                                 corresponding generated signatures.
+   * @param nonRecoverableMessagesPerKeyHashFunction Map of key-hash function identifiers to their
+   *                                                 corresponding non-recoverable message parts.
    */
-  void combineResultsIntoFinalLists(List<List<Long>> timesPerKey,
-      List<List<byte[]>> signaturesPerKey,
-      List<List<byte[]>> nonRecoverableMessagesPerKey) {
-
-    // Calculating the total number of keys and keys per key size for iteration
+  void combineResultsIntoFinalLists(Map<String, List<Long>> timesPerKeyHashFunction,
+      Map<String, List<byte[]>> signaturesPerKeyHashFunction,
+      Map<String, List<byte[]>> nonRecoverableMessagesPerKeyHashFunction) {
     int totalKeys = keyBatch.size();
     int keysPerKeySize = totalKeys / numKeySizesForComparisonMode;
-    int totalMessages = numTrials; // Total number of messages in a trial
 
     // Iterate over each key size to handle different configurations
     for (int keySizeIndex = 0; keySizeIndex < numKeySizesForComparisonMode; keySizeIndex++) {
@@ -230,7 +270,6 @@ public class SignatureModelComparisonBenchmarking extends AbstractSignatureModel
       // Iterate through each group of keys
       for (int groupIndex = 0; groupIndex < keyConfigToHashFunctionsMap.size(); groupIndex++) {
         List<HashFunctionSelection> hashFunctions = keyConfigToHashFunctionsMap.get(groupIndex);
-        int numHashFunctions = hashFunctions.size(); // Number of hash functions in the current group
 
         // Iterate through each key within the group
         for (int keyIndex = 0; keyIndex < keysPerGroup; keyIndex++) {
@@ -242,20 +281,23 @@ public class SignatureModelComparisonBenchmarking extends AbstractSignatureModel
             break;
           }
 
-          // Iterate for each hash function and through all messages for the current key
-          for (int hashIndex = 0; hashIndex < numHashFunctions; hashIndex++) {
-            for (int messageIndex = 0; messageIndex < totalMessages; messageIndex++) {
-              // Calculate the result index based on message and hash function index
-              int resultIndex = messageIndex * numHashFunctions + hashIndex;
+          // Iterate for each hash function for the current key
+          for (HashFunctionSelection hashFunction : hashFunctions) {
+            String keyHashFunctionIdentifier =
+                actualKeyIndex + "-" + hashFunction.getDigestType().toString();
 
-              // Ensure index is within the bounds of the result list for the current key
-              if (resultIndex < signaturesPerKey.get(actualKeyIndex).size()) {
-                // Add results to the combined lists
-                signaturesFromBenchmark.add(signaturesPerKey.get(actualKeyIndex).get(resultIndex));
-                nonRecoverableMessages.add(
-                    nonRecoverableMessagesPerKey.get(actualKeyIndex).get(resultIndex));
-                clockTimesPerTrial.add(timesPerKey.get(actualKeyIndex).get(resultIndex));
-              }
+            // Fetch and aggregate results based on the key-hash-function identifier
+            List<Long> timesForKey = timesPerKeyHashFunction.get(keyHashFunctionIdentifier);
+            List<byte[]> signaturesForKey = signaturesPerKeyHashFunction.get(
+                keyHashFunctionIdentifier);
+            List<byte[]> nonRecoverableMessagesForKey = nonRecoverableMessagesPerKeyHashFunction.get(
+                keyHashFunctionIdentifier);
+
+            if (timesForKey != null && signaturesForKey != null
+                && nonRecoverableMessagesForKey != null) {
+              clockTimesPerTrial.addAll(timesForKey);
+              signaturesFromBenchmark.addAll(signaturesForKey);
+              nonRecoverableMessages.addAll(nonRecoverableMessagesForKey);
             }
           }
         }
@@ -269,8 +311,8 @@ public class SignatureModelComparisonBenchmarking extends AbstractSignatureModel
    * cross-parameter benchmarking/comparison mode. This mode involves verifying signatures using a
    * variety of public keys created with different parameter settings for each selected key size.
    * For each key size, this method verifies signatures using a specified number of keys with
-   * corresponding to each key configuration. The method updates the progress of signature
-   * verification using the provided progressUpdater consumer.
+   * corresponding to each key configuration and hash function combination. The method updates the
+   * progress of signature verification using the provided progressUpdater consumer.
    *
    * @param batchMessageFile   The file containing the messages to be verified.
    * @param batchSignatureFile The file containing the corresponding signatures to be verified.
@@ -282,6 +324,7 @@ public class SignatureModelComparisonBenchmarking extends AbstractSignatureModel
    * @throws InvalidDigestException        If the specified digest algorithm is invalid.
    * @throws NoSuchProviderException       If the specified provider is not available.
    */
+
   public void batchVerifySignatures(File batchMessageFile, File batchSignatureFile,
       DoubleConsumer progressUpdater)
       throws IOException, InvalidSignatureTypeException, DataFormatException, NoSuchAlgorithmException, InvalidDigestException, NoSuchProviderException {
@@ -289,92 +332,225 @@ public class SignatureModelComparisonBenchmarking extends AbstractSignatureModel
     this.messageFile = batchMessageFile;
     this.numKeySizesForComparisonMode = keyBatch.size() / numKeysPerKeySizeComparisonMode;
     setKeyLengths(keyBatch);
-
-    // Initialise lists to store verification details for each key
-    List<List<Long>> timesPerKey = new ArrayList<>();
-    List<List<Boolean>> verificationResultsPerKey = new ArrayList<>();
-    List<List<byte[]>> signaturesPerKey = new ArrayList<>();
-    List<List<byte[]>> recoveredMessagesPerKey = new ArrayList<>();
-
-    for (int k = 0; k < keyBatch.size(); k++) {
-      timesPerKey.add(new ArrayList<>());
-      verificationResultsPerKey.add(new ArrayList<>());
-      signaturesPerKey.add(new ArrayList<>());
-      recoveredMessagesPerKey.add(new ArrayList<>());
-    }
-
     int totalKeys = keyBatch.size();
     int keysPerKeySize = totalKeys / numKeySizesForComparisonMode;
     int completedWork = 0;
     calculateTotalWork();
+    Map<String, List<Long>> timesPerKeyHashFunction;
+    Map<String, List<Boolean>> verificationResultsPerKeyHashFunction;
+    Map<String, List<byte[]>> recoveredMessagesPerKeyHashFunction;
+    Map<String, List<byte[]>> signaturesPerKeyHashFunction;
+    try (ExecutorService executor = Executors.newFixedThreadPool(
+        Runtime.getRuntime().availableProcessors())) {
 
-    // Read signatures from the batch signature file
-    try (BufferedReader signatureReader = new BufferedReader(new FileReader(batchSignatureFile))) {
-      // Iterate over each key size
-      for (int keySizeIndex = 0; keySizeIndex < numKeySizesForComparisonMode; keySizeIndex++) {
-        int keyOffset =
-            keySizeIndex * keysPerKeySize; // Calculate key offset for the current key size
+      timesPerKeyHashFunction = new HashMap<>();
+      verificationResultsPerKeyHashFunction = new HashMap<>();
+      recoveredMessagesPerKeyHashFunction = new HashMap<>();
+      signaturesPerKeyHashFunction = new HashMap<>();
 
-        // Iterate over each group of keys
-        for (int groupIndex = 0; groupIndex < keyConfigToHashFunctionsMap.size(); groupIndex++) {
-          List<HashFunctionSelection> hashFunctions = keyConfigToHashFunctionsMap.get(groupIndex);
+      try (BufferedReader signatureReader = new BufferedReader(
+          new FileReader(batchSignatureFile))) {
 
-          // Iterate over each key in the current group
-          for (int keyIndex = 0; keyIndex < keysPerGroup; keyIndex++) {
-            int actualKeyIndex = keyOffset + groupIndex * keysPerGroup + keyIndex;
+        for (int keySizeIndex = 0; keySizeIndex < numKeySizesForComparisonMode; keySizeIndex++) {
+          int keyOffset = keySizeIndex * keysPerKeySize;
 
-            if (actualKeyIndex >= totalKeys) {
-              break; // Skip if key index exceeds the total number of keys
-            }
+          for (int groupIndex = 0; groupIndex < keyConfigToHashFunctionsMap.size(); groupIndex++) {
+            List<HashFunctionSelection> hashFunctions = keyConfigToHashFunctionsMap.get(groupIndex);
 
-            // Get public key and signature scheme for the current key
-            PublicKey publicKey = (PublicKey) keyBatch.get(actualKeyIndex);
-            SigScheme sigScheme = SignatureFactory.getSignatureScheme(currentType, publicKey,
-                hashFunctions.get(0).isProvablySecure());
-            int keyLength = keyLengths.get(actualKeyIndex);
-            int digestSize = hashFunctions.get(0).getCustomSize() == null ? 0 : (int) Math.round(
-                (keyLength * hashFunctions.get(0).getCustomSize()[0]) / (double) hashFunctions.get(
-                    0).getCustomSize()[1]);
-            digestSize = Math.floorDiv(digestSize + 7, 8);
+            for (int keyIndex = 0; keyIndex < keysPerGroup; keyIndex++) {
+              int actualKeyIndex = keyOffset + groupIndex * keysPerGroup + keyIndex;
 
-            // Iterate over each hash function used for the current key
-            for (HashFunctionSelection hashFunction : hashFunctions) {
-              sigScheme.setDigest(hashFunction.getDigestType(), digestSize);
+              if (actualKeyIndex >= totalKeys) {
+                break; // Skip if key index exceeds the total number of keys
+              }
 
-              // Verify each message using the current key and hash function
-              try (BufferedReader messageReader = new BufferedReader(
-                  new FileReader(batchMessageFile))) {
-                String messageLine;
-                while ((messageLine = messageReader.readLine()) != null) {
-                  String signatureLine = signatureReader.readLine();
-                  byte[] signatureBytes = new BigInteger(signatureLine).toByteArray();
+              PublicKey publicKey = (PublicKey) keyBatch.get(actualKeyIndex);
+              int keyLength = keyLengths.get(actualKeyIndex);
 
-                  // Perform the signature verification and store the results
-                  Pair<Boolean, Pair<Long, List<byte[]>>> result = getBatchVerificationResult(
-                      sigScheme, messageLine, signatureBytes);
-                  long endTime = result.getValue().getKey();
+              for (HashFunctionSelection hashFunction : hashFunctions) {
+                int digestSize = hashFunction.getCustomSize() == null ? 0 : (int) Math.round(
+                    (keyLength * hashFunction.getCustomSize()[0])
+                        / (double) hashFunction.getCustomSize()[1]);
+                digestSize = Math.floorDiv(digestSize + 7, 8);
+                String keyHashFunctionIdentifier =
+                    actualKeyIndex + "-" + hashFunction.getDigestType().toString();
 
-                  timesPerKey.get(actualKeyIndex).add(endTime);
-                  verificationResultsPerKey.get(actualKeyIndex).add(result.getKey());
-                  signaturesPerKey.get(actualKeyIndex).add(signatureBytes);
-                  recoveredMessagesPerKey.get(actualKeyIndex)
-                      .add(result.getValue().getValue().get(2));
+                try (BufferedReader messageReader = new BufferedReader(
+                    new FileReader(batchMessageFile))) {
+                  String messageLine;
+                  while ((messageLine = messageReader.readLine()) != null) {
+                    String signatureLine = signatureReader.readLine();
+                    byte[] signatureBytes = new BigInteger(signatureLine).toByteArray();
 
-                  // Update progress
-                  completedWork++;
-                  double currentKeyProgress = (double) completedWork / totalWork;
-                  progressUpdater.accept(currentKeyProgress);
+                    final String finalMessageLine = messageLine;
+                    int finalDigestSize = digestSize;
+                    String finalKeyHashFunctionIdentifier = keyHashFunctionIdentifier;
+
+                    byte[] finalSignatureBytes = signatureBytes;
+                    Future<Pair<Boolean, Pair<Long, List<byte[]>>>> future = executor.submit(() -> {
+                      try {
+                        SigScheme sigScheme = SignatureFactory.getSignatureScheme(currentType,
+                            publicKey, hashFunction.isProvablySecure());
+                        sigScheme.setDigest(hashFunction.getDigestType(), finalDigestSize);
+                        return getBatchVerificationResult(sigScheme, finalMessageLine,
+                            finalSignatureBytes, finalKeyHashFunctionIdentifier);
+                      } catch (Exception e) {
+                        e.printStackTrace();
+                        return null;
+                      }
+                    });
+
+                    Pair<Boolean, Pair<Long, List<byte[]>>> result = future.get();
+                    if (result != null) {
+                      Long time = result.getValue().getKey();
+                      Boolean verificationResult = result.getKey();
+                      byte[] recoveredMessage = result.getValue().getValue().get(2);
+                      byte[] signature = result.getValue().getValue().get(1);
+                      String keyHashFunctionID = new String(result.getValue().getValue().get(3));
+
+                      timesPerKeyHashFunction.computeIfAbsent(keyHashFunctionID,
+                          k -> new ArrayList<>()).add(time);
+                      verificationResultsPerKeyHashFunction.computeIfAbsent(keyHashFunctionID,
+                          k -> new ArrayList<>()).add(verificationResult);
+                      recoveredMessagesPerKeyHashFunction.computeIfAbsent(keyHashFunctionID,
+                          k -> new ArrayList<>()).add(recoveredMessage);
+                      signaturesPerKeyHashFunction.computeIfAbsent(keyHashFunctionID,
+                          k -> new ArrayList<>()).add(signature);
+
+                      double currentKeyProgress = (double) (++completedWork) / totalWork;
+                      progressUpdater.accept(currentKeyProgress);
+                    }
+                  }
+                } catch (ExecutionException e) {
+                  e.printStackTrace();
+                } catch (InterruptedException e) {
+                  e.printStackTrace();
                 }
+
               }
             }
           }
         }
+      } finally {
+        executor.shutdown();
+        try {
+          if (!executor.awaitTermination(60, java.util.concurrent.TimeUnit.SECONDS)) {
+            executor.shutdownNow();
+          }
+        } catch (InterruptedException ex) {
+          executor.shutdownNow();
+          Thread.currentThread().interrupt();
+        }
       }
     }
 
-    // Combine the results into final lists for further processing or analysis
-    combineVerificationResultsIntoFinalLists(timesPerKey, verificationResultsPerKey,
-        signaturesPerKey, recoveredMessagesPerKey);
+    combineVerificationResultsIntoFinalLists(timesPerKeyHashFunction, signaturesPerKeyHashFunction,
+        recoveredMessagesPerKeyHashFunction, verificationResultsPerKeyHashFunction);
+  }
+
+  /**
+   * Combines the results of the batch signature verification into final lists for further
+   * processing or analysis. This method aggregates the verification times, results, signatures, and
+   * recovered messages for each key and hash function combination used in the batch verification
+   * process.
+   *
+   * @param timesPerKeyHashFunction               Map of key-hash function identifiers to their
+   *                                              corresponding verification times.
+   * @param signaturesPerKeyHashFunction          Map of key-hash function identifiers to their
+   *                                              corresponding verified signatures.
+   * @param recoveredMessagesPerKeyHashFunction   Map of key-hash function identifiers to their
+   *                                              corresponding recovered messages.
+   * @param verificationResultsPerKeyHashFunction Map of key-hash function identifiers to their
+   *                                              corresponding verification results.
+   */
+  void combineVerificationResultsIntoFinalLists(Map<String, List<Long>> timesPerKeyHashFunction,
+      Map<String, List<byte[]>> signaturesPerKeyHashFunction,
+      Map<String, List<byte[]>> recoveredMessagesPerKeyHashFunction,
+      Map<String, List<Boolean>> verificationResultsPerKeyHashFunction) {
+
+    int totalKeys = keyBatch.size();
+    int keysPerKeySize = totalKeys / numKeySizesForComparisonMode;
+
+    // Iterate over each key size to handle different configurations
+    for (int keySizeIndex = 0; keySizeIndex < numKeySizesForComparisonMode; keySizeIndex++) {
+      // Offset to account for multiple key sizes in the key batch
+      int keyOffset = keySizeIndex * keysPerKeySize;
+
+      // Iterate through each group of keys
+      for (int groupIndex = 0; groupIndex < keyConfigToHashFunctionsMap.size(); groupIndex++) {
+        List<HashFunctionSelection> hashFunctions = keyConfigToHashFunctionsMap.get(groupIndex);
+
+        // Iterate through each key within the group
+        for (int keyIndex = 0; keyIndex < keysPerGroup; keyIndex++) {
+          // Calculate the actual index of the key in the batch
+          int actualKeyIndex = keyOffset + groupIndex * keysPerGroup + keyIndex;
+
+          // Ensure the key index is within the total number of keys
+          if (actualKeyIndex >= totalKeys) {
+            break;
+          }
+
+          // Iterate for each hash function for the current key
+          for (HashFunctionSelection hashFunction : hashFunctions) {
+            String keyHashFunctionIdentifier =
+                actualKeyIndex + "-" + hashFunction.getDigestType().toString();
+
+            List<byte[]> signaturesForKey = signaturesPerKeyHashFunction.get(
+                keyHashFunctionIdentifier);
+            List<byte[]> recoveredMessagesPerKey = recoveredMessagesPerKeyHashFunction.get(
+                keyHashFunctionIdentifier);
+            List<Long> timesForKey = timesPerKeyHashFunction.get(keyHashFunctionIdentifier);
+            List<Boolean> verificationResultsPerKey = verificationResultsPerKeyHashFunction.get(
+                keyHashFunctionIdentifier);
+
+            signaturesFromBenchmark.addAll(signaturesForKey);
+            verificationResults.addAll(verificationResultsPerKey);
+            recoverableMessages.addAll(recoveredMessagesPerKey);
+            clockTimesPerTrial.addAll(timesForKey);
+          }
+        }
+      }
+    }
+  }
+
+  /**
+   * Performs the verification of a single message-signature pair using the specified signature
+   * scheme and hash function identifier. It returns the verification result, the time taken for
+   * verification, the original message, signature bytes, and recovered message if any.
+   *
+   * @param sigScheme              The signature scheme to be used for verification.
+   * @param messageLine            The original message to be verified.
+   * @param signatureBytes         The signature bytes to be verified against the message.
+   * @param hashFunctionIdentifier The identifier of the hash function used.
+   * @return Pair<Boolean, Pair < Long, List < byte [ ]>>> Returns a pair containing the
+   * verification result and a pair of the time taken for verification and a list of bytes arrays
+   * including the original message, signature, and recovered message if applicable.
+   * @throws DataFormatException if there is an error corresponding verification results.
+   */
+  Pair<Boolean, Pair<Long, List<byte[]>>> getBatchVerificationResult(SigScheme sigScheme,
+      String messageLine, byte[] signatureBytes, String hashFunctionIdentifier)
+      throws DataFormatException {
+    boolean verificationResult;
+    byte[] recoveredMessage = new byte[]{};
+    long endTime = 0;
+    long startTime = 0;
+    if (currentType == SignatureType.ISO_IEC_9796_2_SCHEME_1) {
+      String[] nonRecoverableParts = messageLine.split(" ", 2);
+      byte[] nonRecoverableMessage =
+          nonRecoverableParts[0].equals("1") ? nonRecoverableParts[1].getBytes() : null;
+      startTime = System.nanoTime();
+      verificationResult = sigScheme.verify(nonRecoverableMessage, signatureBytes);
+      endTime = System.nanoTime() - startTime;
+      recoveredMessage = verificationResult ? sigScheme.getRecoverableM() : new byte[]{};
+    } else {
+      startTime = System.nanoTime();
+      verificationResult = sigScheme.verify(messageLine.getBytes(), signatureBytes);
+      endTime = System.nanoTime() - startTime;
+    }
+
+    return new Pair<>(verificationResult,
+        new Pair<>(endTime, List.of(messageLine.getBytes(), signatureBytes, recoveredMessage,
+            hashFunctionIdentifier.getBytes())));
   }
 
 

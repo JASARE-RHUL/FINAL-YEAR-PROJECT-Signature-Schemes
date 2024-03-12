@@ -401,9 +401,9 @@ public abstract class AbstractSignatureModelBenchmarking extends SignatureModel 
    * @param nonRecoverableMessagesPerKey The list of non-recoverable message parts for each key and
    *                                     message.
    */
-  abstract void combineResultsIntoFinalLists(List<List<Long>> timesPerKey,
+   void combineResultsIntoFinalLists(List<List<Long>> timesPerKey,
       List<List<byte[]>> signaturesPerKey,
-      List<List<byte[]>> nonRecoverableMessagesPerKey);
+      List<List<byte[]>> nonRecoverableMessagesPerKey) {}
 
 
 }
