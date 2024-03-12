@@ -34,6 +34,8 @@ public abstract class AbstractSignatureVerificationControllerBenchmarking extend
    */
   int numSignatures;
 
+  int numTrials;
+
   public AbstractSignatureVerificationControllerBenchmarking(MainController mainController) {
     super(mainController);
   }
@@ -53,7 +55,7 @@ public abstract class AbstractSignatureVerificationControllerBenchmarking extend
    */
   public void handleMessageBatch(File file, SignatureBaseView signatureView,
       AbstractSignatureModelBenchmarking signatureModelBenchmarking) {
-    int numTrials = checkFileForNonEmptyLines(file, "message");
+    numTrials = checkFileForNonEmptyLines(file, "message");
     if (numTrials > 0) {
       messageBatchFile = file;
       signatureModelBenchmarking.setNumTrials(numTrials);

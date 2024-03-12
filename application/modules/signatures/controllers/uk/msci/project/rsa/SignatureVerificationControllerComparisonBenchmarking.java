@@ -105,10 +105,17 @@ public class SignatureVerificationControllerComparisonBenchmarking extends
     @Override
     public void handle(ActionEvent event) {
       hashOutputSize = verifyView.getHashOutputSizeArea();
-      if (signatureModel.getNumTrials() * signatureModel.getKeyBatchLength()
+      if (!isCrossParameterBenchmarkingEnabled
+          && signatureModel.getNumTrials() * signatureModel.getKeyBatchLength()
           != numSignatures) {
         uk.msci.project.rsa.DisplayUtility.showErrorAlert(
             "The numbers of messages and signatures do not match. Please ensure they match for a valid set of verification pairings.");
+        return;
+      }
+      if (isCrossParameterBenchmarkingEnabled
+          && ((signatureModel.calculateNumBenchmarkingRuns() * numTrials) != numSignatures)) {
+        uk.msci.project.rsa.DisplayUtility.showErrorAlert(
+            "The numbers of signatures and/or provided message batch does not match. Please ensure they match to proceed.");
         return;
       }
       if ((signatureModel.getNumTrials() == 0)
