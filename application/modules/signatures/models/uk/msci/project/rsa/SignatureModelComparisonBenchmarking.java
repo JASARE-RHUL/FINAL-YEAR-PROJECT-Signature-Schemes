@@ -96,7 +96,18 @@ public class SignatureModelComparisonBenchmarking extends AbstractSignatureModel
   private int totalGroups;
 
 
+  /**
+   * The total amount of work for the comparison mode benchmarking. It represents the total number
+   * of signature operations that will be performed across all keys, hash functions, and trials.
+   */
   private int totalWork;
+
+
+  /**
+   * The total number of benchmarking runs to be performed over a message set in the comparison
+   * mode.
+   */
+  private int numBenchmarkingRuns;
 
 
   /**
@@ -141,7 +152,9 @@ public class SignatureModelComparisonBenchmarking extends AbstractSignatureModel
     try (ExecutorService executor = Executors.newFixedThreadPool(
         Runtime.getRuntime().availableProcessors())) {
       int completedWork = 0;
-      calculateTotalWork();
+      numBenchmarkingRuns = calculateNumBenchmarkingRuns();
+      computeTrialsPerKeyByGroup(numTrials);
+      totalWork = numBenchmarkingRuns * numTrials;
       List<Future<Pair<String, Pair<Long, Pair<byte[], byte[]>>>>> futures = new ArrayList<>();
 
       try (BufferedReader messageReader = new BufferedReader(new FileReader(batchMessageFile))) {
@@ -335,7 +348,9 @@ public class SignatureModelComparisonBenchmarking extends AbstractSignatureModel
     int totalKeys = keyBatch.size();
     int keysPerKeySize = totalKeys / numKeySizesForComparisonMode;
     int completedWork = 0;
-    calculateTotalWork();
+    numBenchmarkingRuns = calculateNumBenchmarkingRuns();
+    computeTrialsPerKeyByGroup(numTrials);
+    totalWork = numBenchmarkingRuns * numTrials;
     Map<String, List<Long>> timesPerKeyHashFunction;
     Map<String, List<Boolean>> verificationResultsPerKeyHashFunction;
     Map<String, List<byte[]>> recoveredMessagesPerKeyHashFunction;
@@ -808,24 +823,57 @@ public class SignatureModelComparisonBenchmarking extends AbstractSignatureModel
   }
 
   /**
-   * Calculates the total amount of work (in terms of operations) that needs to be performed during
-   * the signature creation/verification processes in the cross-parameter benchmarking/comparison
-   * mode. This method considers the number of keys in each group, the number of hash functions
-   * applied to each group, and the total number of trials and key sizes specified for the
-   * benchmarking. Additionally, this method initialises and populates the 'trialsPerKeyByGroup'
-   * array, which stores the number of trials to be conducted for each key in a given group.
+   * Computes and sets the number of trials to be conducted per key for each group in the comparison
+   * mode. This method takes the total number of trials and distributes them across groups based on
+   * the number of hash functions in each group.
+   *
+   * @param numTrials The total number of trials to be conducted.
    */
-  public void calculateTotalWork() {
+  public void computeTrialsPerKeyByGroup(int numTrials) {
     trialsPerKeyByGroup = new int[totalGroups];
     for (int groupIndex = 0; groupIndex < totalGroups; groupIndex++) {
       List<HashFunctionSelection> hashFunctions = keyConfigToHashFunctionsMap.get(groupIndex);
       int numHashFunctionsInGroup = hashFunctions != null ? hashFunctions.size() : 0;
-      totalWork += keysPerGroup * numHashFunctionsInGroup;
       trialsPerKeyByGroup[groupIndex] = numTrials * numHashFunctionsInGroup;
     }
-    // Multiply by the number of trials
-    totalWork = totalWork * numTrials * numKeySizesForComparisonMode;
+  }
+
+  /**
+   * Calculates the total number of benchmarking runs needed for the comparison mode. This method
+   * considers the number of groups, keys per group, and the number of hash functions within each
+   * group to determine the total number of benchmarking runs required.
+   *
+   * @return The total number of benchmarking runs.
+   */
+  public int calculateNumBenchmarkingRuns() {
+    int totalWork = 0;
+    for (int groupIndex = 0; groupIndex < totalGroups; groupIndex++) {
+      List<HashFunctionSelection> hashFunctions = keyConfigToHashFunctionsMap.get(groupIndex);
+      int numHashFunctionsInGroup = hashFunctions != null ? hashFunctions.size() : 0;
+      totalWork += keysPerGroup * numHashFunctionsInGroup;
+    }
+    return totalWork;
   }
 
 
+  /**
+   * Retrieves the  total number of benchmarking runs to be performed over a message set
+   *
+   * @return The total number of benchmarking runs.
+   */
+  public int getNumBenchmarkingRuns() {
+    return numBenchmarkingRuns;
+  }
+
+
+  /**
+   * Retrieves the total amount of work to be done for the comparison mode benchmarking. This value
+   * represents the total number of signature operations (signing and verification) across all keys,
+   * hash functions, and trials in the comparison mode.
+   *
+   * @return The total work for the comparison mode benchmarking.
+   */
+  public int getTotalWork() {
+    return totalWork;
+  }
 }
