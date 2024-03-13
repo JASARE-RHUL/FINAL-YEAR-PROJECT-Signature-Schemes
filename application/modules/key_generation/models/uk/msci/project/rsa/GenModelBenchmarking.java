@@ -51,6 +51,19 @@ public class GenModelBenchmarking extends GenModel {
    */
   String privateKeyBatch;
 
+  /**
+   * The total number of key generations completed during the current benchmarking process. is used
+   * to update the progress indicator provided to the user.
+   */
+  int completedWork;
+
+
+  /**
+   * The total amount of work for benchmarking of key generations. It represents the total number of
+   * key generations that will be performed across all trials.
+   */
+  int totalWork;
+
 
   /**
    * Constructor for GenModel. This initialises the model which will be bound to the runtime
@@ -77,8 +90,8 @@ public class GenModelBenchmarking extends GenModel {
    */
   public void batchGenerateKeys(int numTrials, List<Pair<int[], Boolean>> keyParams,
       DoubleConsumer progressUpdater) {
-    try (ExecutorService executor = Executors.newFixedThreadPool(
-        Runtime.getRuntime().availableProcessors())) {
+    int threadPoolSize = Runtime.getRuntime().availableProcessors();
+    try (ExecutorService executor = Executors.newFixedThreadPool(threadPoolSize)) {
       this.keyParams = keyParams;
 
       // Lists to hold times for each key generation
@@ -87,39 +100,35 @@ public class GenModelBenchmarking extends GenModel {
         timesPerKey.add(new ArrayList<>());
       }
 
-      int totalWork = numTrials * keyParams.size();
-      int completedWork = 0;
+      totalWork = numTrials * keyParams.size();
+      completedWork = 0;
+      List<Future<Long>> futures = new ArrayList<>();
 
       for (int trial = 0; trial < numTrials; trial++) {
-        List<Future<Long>> futures = new ArrayList<>();
 
         for (int keyIndex = 0; keyIndex < keyParams.size(); keyIndex++) {
           Pair<int[], Boolean> keyParam = keyParams.get(keyIndex);
 
           futures.add(executor.submit(() -> {
-            long startTime = System.nanoTime();
-
             int[] intArray = keyParam.getKey();
             boolean isSmallE = keyParam.getValue();
-            new GenRSA(intArray.length, intArray, isSmallE).generateKeyPair();
-
+            GenRSA genRSA = new GenRSA(intArray.length, intArray, isSmallE);
+            long startTime = System.nanoTime();
+            genRSA.generateKeyPair();
             return System.nanoTime() - startTime;
           }));
-        }
-
-        // Collect results after submitting all tasks for this trial
-        for (int keyIndex = 0; keyIndex < futures.size(); keyIndex++) {
-          try {
-            long timeTaken = futures.get(keyIndex).get();
-            timesPerKey.get(keyIndex).add(timeTaken);
-          } catch (ExecutionException | InterruptedException e) {
-            throw new RuntimeException(e.getCause());
+          if (futures.size() >= threadPoolSize) {
+            processFutures(progressUpdater, futures,
+                timesPerKey);
+            futures.clear();
           }
-
-          double currentKeyProgress = (double) (++completedWork) / totalWork;
-          progressUpdater.accept(currentKeyProgress);
         }
-
+      }
+      // Process remaining futures for the last batch
+      if (futures.size() >= threadPoolSize) {
+        processFutures(progressUpdater, futures,
+            timesPerKey);
+        futures.clear();
       }
 
       // Flatten the times into clockTimesPerTrial
@@ -128,6 +137,37 @@ public class GenModelBenchmarking extends GenModel {
       }
 
     }
+  }
+
+
+  /**
+   * Processes a list of futures representing the results of key generation tasks. This method
+   * iterates over each future, extracts the results, and updates the corresponding list for the
+   * times taken for key generation. It also updates the progress of the batch key generation
+   * process. Each future represents the time taken to generate a single key pair, and the method
+   * updates the appropriate list with these times.
+   *
+   * @param progressUpdater Consumer to update the progress of the batch key generation process.
+   * @param futures         List of futures to process, each representing the result from a key
+   *                        generation task.
+   * @param timesPerKey     List of lists to store the time taken for key generation per key
+   *                        configuration.
+   */
+  private void processFutures(DoubleConsumer progressUpdater,
+      List<Future<Long>> futures,
+      List<List<Long>> timesPerKey) {
+    for (int keyIndex = 0; keyIndex < futures.size(); keyIndex++) {
+      try {
+        long timeTaken = futures.get(keyIndex).get();
+        timesPerKey.get(keyIndex).add(timeTaken);
+      } catch (ExecutionException | InterruptedException e) {
+        throw new RuntimeException(e.getCause());
+      }
+
+      double currentKeyProgress = (double) (++completedWork) / totalWork;
+      progressUpdater.accept(currentKeyProgress);
+    }
+
   }
 
   /**
