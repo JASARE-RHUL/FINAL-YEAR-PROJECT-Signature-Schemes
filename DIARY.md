@@ -259,30 +259,63 @@ getHashID method for more efficient operations (as alluded to previously). I als
 footer across all application screens to unify the user interface.
 
 ## Diary Entry - Week of 19th February - 25th February 2024
+
 This week, my project saw substantial enhancements in both functionality and user interface. I
 introduced a toggle switch across the application screens to switch between standard and
 benchmarking modes, offering users more flexibility. To address the challenges with concurrent
 execution in benchmarking, I reverted to synchronous methods for key generation, signature creation,
-and verification. 
+and verification.
 
-A significant development was the initiation of a cross-parameter comparison
-benchmarking mode. This involved upgrading the ResultsView for displaying results for multiple
-parameter types/keys in one table for comparison and extensively refactoring the ResultsController
-for this new mode, along with integrating support into the GenController. 
+A significant development was the initiation of a cross-parameter comparison benchmarking mode. This
+involved upgrading the ResultsView for displaying results for multiple parameter types/keys in one
+table for comparison and extensively refactoring the ResultsController for this new mode, along with
+integrating support into the GenController.
 
-In the latter part of the week, I focused on finalising the cross-parameter benchmarking implementation. This required
-adapting the Key generation controller to preload keys pre-load keys into signature related
-controllers if the generated key batches/individual key pairs are all provably secure or keys were
-generated using cross parameters comparison mode. I then refactored the signature controller
-assembly to support this new mode. Functionalities for resetting preloaded key parameters and
-exporting verification results for cross-parameter benchmarking were also developed. 
+In the latter part of the week, I focused on finalising the cross-parameter benchmarking
+implementation. This required adapting the Key generation controller to preload keys pre-load keys
+into signature related controllers if the generated key batches/individual key pairs are all
+provably secure or keys were generated using cross parameters comparison mode. I then refactored the
+signature controller assembly to support this new mode. Functionalities for resetting preloaded key
+parameters and exporting verification results for cross-parameter benchmarking were also developed.
 
-Additionally, I enhanced the non benchmarking mode for key generation so that user is presented with an option on
-whether to use a small e in the generation of key and then refined the SignatureController to
-include functionality for preloading a single key for non benchmarking mode if key chosen is
-provably secure i.e., small was used to generate it.
+Additionally, I enhanced the non benchmarking mode for key generation so that user is presented with
+an option on whether to use a small e in the generation of key and then refined the
+SignatureController to include functionality for preloading a single key for non benchmarking mode
+if key chosen is provably secure i.e., small was used to generate it.
 
 Over the weekend, I concentrated on resolving errors and bugs emerging from the integration of the
 new benchmarking mode, such as fixing crashes in signature views. I also dedicated time to
 refactoring, streamlining the initialisation process for the different modes to enhance the
 application's efficiency and user experience.
+
+## Week of 26th February – 3rd March 2024
+
+I started by updating the results view to include multiple graph representations, such as
+histograms, box plots, and line graphs, tailored especially for comparing mean times in different
+result sets. This update required substantial enhancements to the data processing backend, which I
+completed successfully.
+
+The integration of the fully-functional results graph feature into the main branch marked a
+significant milestone. Building on this, I initiated the development of the
+customCrossParameterBenchmarkingMode, a feature allowing users to specify precise key/parameter
+configurations for benchmarking in comparison mode. This involved modifying the GenModel to handle
+user-defined configurations and introducing new methods for generating readable string formats for
+these custom configurations. Additionally, I implemented a toggle switch in the key generation view
+and introduced dialog interactions for user input of configurations as multiple fractions.
+
+Further refining the Signature model, I enabled the setting of a generalised number of key
+configurations per key size for use in batch generation methods for comparison mode. I also enhanced
+the ResultsController to dynamically construct an aggregated results table in comparison mode,
+introducing a parameterised list for context-specific row headers based on previous benchmarking
+tasks.
+
+The latter part of the week saw me wrapping up the refactoring of the SignView and VerifyView domain
+objects by creating a unified SignatureBaseView class. This significantly reduced code duplication
+and streamlined handling across different signature views. I then conceptualized a new feature:
+Multi-Hash Function Selection for Cross-Parameter Benchmarking, focusing on the specification and
+management of custom key configurations.
+
+By the weekend, I had developed a preliminary implementation of this feature, though it required
+further refinement due to some bugs. By Sunday, I had completed significant enhancements across the
+project to fully incorporate the Multi-Hash Function Selection feature, enabling the specification
+and management of custom key configurations and grouping them to be used with selected hash functions. 
