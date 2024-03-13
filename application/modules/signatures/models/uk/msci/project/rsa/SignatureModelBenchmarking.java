@@ -11,6 +11,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -44,13 +45,7 @@ public class SignatureModelBenchmarking extends AbstractSignatureModelBenchmarki
    *
    * @param batchMessageFile The file containing the messages to be signed in the batch process.
    * @param progressUpdater  A consumer to update the progress of the batch signing process.
-   * @throws InvalidSignatureTypeException if the signature type is not supported.
-   * @throws NoSuchAlgorithmException      if the specified algorithm does not exist.
-   * @throws InvalidDigestException        if the specified digest algorithm is invalid.
-   * @throws NoSuchProviderException       if the specified provider is not available.
-   * @throws IOException                   if there is an I/O error reading from the
-   *                                       batchMessageFile.
-   * @throws DataFormatException           if the data format is incorrect for signing.
+   * @throws IOException if there is an I/O error reading from the batchMessageFile.
    */
   public void batchCreateSignatures(File batchMessageFile, DoubleConsumer progressUpdater)
       throws IOException {
@@ -69,15 +64,15 @@ public class SignatureModelBenchmarking extends AbstractSignatureModelBenchmarki
         signaturesPerKey.add(new ArrayList<>());
         nonRecoverableMessagesPerKey.add(new ArrayList<>());
       }
+      int threadPoolSize = Runtime.getRuntime().availableProcessors();
 
       // Initialise ExecutorService for parallel execution
-      try (ExecutorService executor = Executors.newFixedThreadPool(
-          Runtime.getRuntime().availableProcessors())) {
+      try (ExecutorService executor = Executors.newFixedThreadPool(threadPoolSize)) {
         List<Future<Pair<Integer, Pair<Long, Pair<byte[], byte[]>>>>> futures = new ArrayList<>();
 
         String message;
-        int totalWork = numTrials * keyBatch.size();
-        int completedWork = 0;
+        totalWork = numTrials * keyBatch.size();
+        completedWork = 0;
         int messageCounter = 0;
         while ((message = messageReader.readLine()) != null && messageCounter < this.numTrials) {
           final String currentMessage = message;
@@ -88,36 +83,67 @@ public class SignatureModelBenchmarking extends AbstractSignatureModelBenchmarki
               Future<Pair<Integer, Pair<Long, Pair<byte[], byte[]>>>> future = executor.submit(
                   () -> createSignature(privateKey, currentMessage, finalKeyIndex));
               futures.add(future);
+              if (futures.size() >= threadPoolSize) {
+                processFuturesForSignatureCreation(progressUpdater, futures,
+                    timesPerKey,
+                    signaturesPerKey, nonRecoverableMessagesPerKey);
+                futures.clear();
+              }
             }
           }
+
           messageCounter++;
         }
+        // Process remaining futures for the last batch
+        processFuturesForSignatureCreation(progressUpdater, futures,
+            timesPerKey,
+            signaturesPerKey, nonRecoverableMessagesPerKey);
+        futures.clear();
 
-        // Process futures and update progress
-        for (Future<Pair<Integer, Pair<Long, Pair<byte[], byte[]>>>> future : futures) {
-          try {
-            Pair<Integer, Pair<Long, Pair<byte[], byte[]>>> result = future.get();
-            if (result != null) {
-              int keyIndex = result.getKey();
-              Long time = result.getValue().getKey();
-              byte[] signature = result.getValue().getValue().getKey();
-              byte[] nonRecoverableM = result.getValue().getValue().getValue();
-
-              timesPerKey.get(keyIndex).add(time);
-              signaturesPerKey.get(keyIndex).add(signature);
-              nonRecoverableMessagesPerKey.get(keyIndex).add(nonRecoverableM);
-
-              double currentKeyProgress = (double) (++completedWork) / totalWork;
-              progressUpdater.accept(currentKeyProgress);
-            }
-          } catch (InterruptedException | ExecutionException e) {
-            e.printStackTrace();
-          }
-        }
       }
 
       // Combine results into final lists
       combineResultsIntoFinalLists(timesPerKey, signaturesPerKey, nonRecoverableMessagesPerKey);
+    }
+  }
+
+  /**
+   * Processes a list of futures representing the results of signature creation tasks. This method
+   * iterates over each future, extracts the results, and updates the corresponding lists for times,
+   * signatures, and non-recoverable message parts. It also updates the progress of the signature
+   * creation process.
+   *
+   * @param progressUpdater              Consumer to update the progress of the signature creation.
+   * @param futures                      List of futures to process.
+   * @param timesPerKey                  List to store the time taken for signature creation per
+   *                                     key.
+   * @param signaturesPerKey             List to store the created signatures per key.
+   * @param nonRecoverableMessagesPerKey List to store any non-recoverable message parts per key.
+   */
+  private void processFuturesForSignatureCreation(DoubleConsumer progressUpdater,
+      List<Future<Pair<Integer, Pair<Long, Pair<byte[], byte[]>>>>> futures,
+      List<List<Long>> timesPerKey,
+      List<List<byte[]>> signaturesPerKey,
+      List<List<byte[]>> nonRecoverableMessagesPerKey) {
+    for (Future<Pair<Integer, Pair<Long, Pair<byte[], byte[]>>>> future : futures) {
+      try {
+        Pair<Integer, Pair<Long, Pair<byte[], byte[]>>> result = future.get();
+        if (result != null) {
+          int keyIndex = result.getKey();
+          Long time = result.getValue().getKey();
+          byte[] signature = result.getValue().getValue().getKey();
+          byte[] nonRecoverableM = result.getValue().getValue().getValue();
+
+          timesPerKey.get(keyIndex).add(time);
+          signaturesPerKey.get(keyIndex).add(signature);
+          nonRecoverableMessagesPerKey.get(keyIndex).add(nonRecoverableM);
+
+          double currentKeyProgress = (double) (++completedWork) / totalWork;
+          progressUpdater.accept(currentKeyProgress);
+        }
+      } catch (InterruptedException | ExecutionException e) {
+        e.printStackTrace();
+      }
     }
   }
 
@@ -182,7 +208,7 @@ public class SignatureModelBenchmarking extends AbstractSignatureModelBenchmarki
     this.messageFile = batchMessageFile;
     setKeyLengths(keyBatch);
 
-    // Initialize lists to store times, verification results, signatures, and recovered messages
+    // Initialise lists to store times, verification results, signatures, and recovered messages
     List<List<Long>> timesPerKey = new ArrayList<>();
     List<List<Boolean>> verificationResultsPerKey = new ArrayList<>();
     List<List<byte[]>> signaturesPerKey = new ArrayList<>();
@@ -198,17 +224,17 @@ public class SignatureModelBenchmarking extends AbstractSignatureModelBenchmarki
     try (BufferedReader signatureReader = new BufferedReader(new FileReader(batchSignatureFile));
         BufferedReader messageReader = new BufferedReader(new FileReader(batchMessageFile))) {
 
-      try (ExecutorService executor = Executors.newFixedThreadPool(
-          Runtime.getRuntime().availableProcessors())) {
+      int threadPoolSize = Runtime.getRuntime().availableProcessors();
+      try (ExecutorService executor = Executors.newFixedThreadPool(threadPoolSize)) {
 
         String messageLine;
         int messageCounter = 0;
-        int totalWork = numTrials * keyBatch.size();
-        int completedWork = 0;
+        totalWork = numTrials * keyBatch.size();
+        completedWork = 0;
+        List<Future<Pair<Integer, Pair<Boolean, Pair<Long, List<byte[]>>>>>> futures = new ArrayList<>();
 
         while ((messageLine = messageReader.readLine()) != null
             && messageCounter < this.numTrials) {
-          List<Future<Pair<Integer, Pair<Boolean, Pair<Long, List<byte[]>>>>>> futures = new ArrayList<>();
           int keyIndex = 0;
           for (Key key : keyBatch) {
             if (key instanceof PublicKey publicKey) {
@@ -231,33 +257,24 @@ public class SignatureModelBenchmarking extends AbstractSignatureModelBenchmarki
                     return new Pair<>(finalKeyIndex, verificationResult);
                   });
               futures.add(future);
+              if (futures.size() >= threadPoolSize) {
+                processFuturesForSignatureVerification(progressUpdater, futures,
+                    timesPerKey,
+                    signaturesPerKey, recoveredMessagesPerKey, verificationResultsPerKey);
+                futures.clear();
+              }
 
               keyIndex++;
             }
           }
-          for (Future<Pair<Integer, Pair<Boolean, Pair<Long, List<byte[]>>>>> future : futures) {
-            try {
-              Pair<Integer, Pair<Boolean, Pair<Long, List<byte[]>>>> result = future.get();
-              if (result != null) {
-                int i = result.getKey();
-                Long time = result.getValue().getValue().getKey();
-
-                // Store results
-                timesPerKey.get(i).add(time);
-                verificationResultsPerKey.get(i).add(result.getValue().getKey());
-                signaturesPerKey.get(i).add(result.getValue().getValue().getValue().get(1));
-                recoveredMessagesPerKey.get(i)
-                    .add(result.getValue().getValue().getValue().get(2));
-
-                double currentKeyProgress = (double) (++completedWork) / totalWork;
-                progressUpdater.accept(currentKeyProgress);
-              }
-            } catch (InterruptedException | ExecutionException e) {
-              e.printStackTrace();
-            }
-          }
 
           messageCounter++;
+        }
+        if (futures.size() >= threadPoolSize) {
+          processFuturesForSignatureVerification(progressUpdater, futures,
+              timesPerKey,
+              signaturesPerKey, recoveredMessagesPerKey, verificationResultsPerKey);
+          futures.clear();
         }
 
       }
@@ -265,6 +282,49 @@ public class SignatureModelBenchmarking extends AbstractSignatureModelBenchmarki
       // Combine results into final lists
       combineVerificationResultsIntoFinalLists(timesPerKey, verificationResultsPerKey,
           signaturesPerKey, recoveredMessagesPerKey);
+    }
+  }
+
+  /**
+   * Processes a list of futures representing the results of signature verification tasks. This
+   * method iterates over each future, extracts the results, and updates the corresponding lists for
+   * times, verification results, signatures, and recovered messages. It also updates the progress
+   * of the signature verification process.
+   *
+   * @param progressUpdater           Consumer to update the progress of the signature
+   *                                  verification.
+   * @param futures                   List of futures to process.
+   * @param timesPerKey               List to store the time taken for signature verification per
+   *                                  key.
+   * @param signaturesPerKey          List to store the verified signatures per key.
+   * @param recoveredMessagesPerKey   List to store any recovered messages per key.
+   * @param verificationResultsPerKey List to store the results of signature verification per key.
+   */
+  private void processFuturesForSignatureVerification(DoubleConsumer progressUpdater,
+      List<Future<Pair<Integer, Pair<Boolean, Pair<Long, List<byte[]>>>>>> futures,
+      List<List<Long>> timesPerKey,
+      List<List<byte[]>> signaturesPerKey,
+      List<List<byte[]>> recoveredMessagesPerKey, List<List<Boolean>> verificationResultsPerKey) {
+    for (Future<Pair<Integer, Pair<Boolean, Pair<Long, List<byte[]>>>>> future : futures) {
+      try {
+        Pair<Integer, Pair<Boolean, Pair<Long, List<byte[]>>>> result = future.get();
+        if (result != null) {
+          int i = result.getKey();
+          Long time = result.getValue().getValue().getKey();
+
+          // Store results
+          timesPerKey.get(i).add(time);
+          verificationResultsPerKey.get(i).add(result.getValue().getKey());
+          signaturesPerKey.get(i).add(result.getValue().getValue().getValue().get(1));
+          recoveredMessagesPerKey.get(i)
+              .add(result.getValue().getValue().getValue().get(2));
+
+          double currentKeyProgress = (double) (++completedWork) / totalWork;
+          progressUpdater.accept(currentKeyProgress);
+        }
+      } catch (InterruptedException | ExecutionException e) {
+        e.printStackTrace();
+      }
     }
   }
 
