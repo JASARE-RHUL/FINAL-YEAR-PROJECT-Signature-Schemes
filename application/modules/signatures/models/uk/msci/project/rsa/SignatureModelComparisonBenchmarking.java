@@ -142,8 +142,8 @@ public class SignatureModelComparisonBenchmarking extends AbstractSignatureModel
       try (BufferedReader messageReader = new BufferedReader(new FileReader(batchMessageFile))) {
         String message;
         List<Future<Pair<String, Pair<Long, Pair<byte[], byte[]>>>>> futures = new ArrayList<>();
-
-        while ((message = messageReader.readLine()) != null) {
+        int messageCounter = 0;
+        while ((message = messageReader.readLine()) != null && messageCounter < numTrials) {
           final String currentMessage = message;
 
           for (int keySizeIndex = 0; keySizeIndex < keyBatch.size();
@@ -192,7 +192,7 @@ public class SignatureModelComparisonBenchmarking extends AbstractSignatureModel
 
                     futures.add(future);
 
-                    if (futures.size() >= threadPoolSize) {
+                    if (futures.size() >= threadPoolSize || messageCounter == this.numTrials - 1) {
                       processFuturesForSignatureCreation(progressUpdater, futures,
                           timesPerKeyHashFunction,
                           signaturesPerKeyHashFunction, nonRecoverableMessagesPerKeyHashFunction);
@@ -203,7 +203,7 @@ public class SignatureModelComparisonBenchmarking extends AbstractSignatureModel
               }
             }
           }
-
+          messageCounter++;
         }
         // Process remaining futures for the last batch
         processFuturesForSignatureCreation(progressUpdater, futures, timesPerKeyHashFunction,
@@ -382,7 +382,8 @@ public class SignatureModelComparisonBenchmarking extends AbstractSignatureModel
 
         String messageLine;
         List<Future<Pair<Boolean, Pair<Long, List<byte[]>>>>> futures = new ArrayList<>();
-        while ((messageLine = messageReader.readLine()) != null) {
+        int messageCounter = 0;
+        while ((messageLine = messageReader.readLine()) != null && messageCounter < numTrials) {
 
           for (int keySizeIndex = 0; keySizeIndex < numKeySizesForComparisonMode; keySizeIndex++) {
             int keyOffset = keySizeIndex * keysPerKeySize;
@@ -429,7 +430,7 @@ public class SignatureModelComparisonBenchmarking extends AbstractSignatureModel
                   });
                   futures.add(future);
 
-                  if (futures.size() >= threadPoolSize) {
+                  if (futures.size() >= threadPoolSize || messageCounter == numTrials - 1) {
                     processFuturesForSignatureVerification(progressUpdater, futures,
                         timesPerKeyHashFunction,
                         signaturesPerKeyHashFunction, recoveredMessagesPerKeyHashFunction,
@@ -440,8 +441,9 @@ public class SignatureModelComparisonBenchmarking extends AbstractSignatureModel
                 }
               }
             }
-          }
 
+          }
+          messageCounter++;
         }
         // Process remaining futures for the last batch
         processFuturesForSignatureVerification(progressUpdater, futures,

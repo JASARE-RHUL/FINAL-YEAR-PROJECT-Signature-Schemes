@@ -115,9 +115,10 @@ public class GenModelBenchmarking extends GenModel {
             GenRSA genRSA = new GenRSA(intArray.length, intArray, isSmallE);
             long startTime = System.nanoTime();
             genRSA.generateKeyPair();
-            return new Pair<>(iKeyIndex, System.nanoTime() - startTime);
+            long time = System.nanoTime() - startTime;
+            return new Pair<>(iKeyIndex, time);
           }));
-          if (futures.size() >= threadPoolSize) {
+          if (futures.size() >= threadPoolSize || keyIndex == keyParams.size() - 1) {
             processFutures(progressUpdater, futures,
                 timesPerKey);
             futures.clear();

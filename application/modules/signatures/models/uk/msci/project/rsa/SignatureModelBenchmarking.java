@@ -83,7 +83,7 @@ public class SignatureModelBenchmarking extends AbstractSignatureModelBenchmarki
               Future<Pair<Integer, Pair<Long, Pair<byte[], byte[]>>>> future = executor.submit(
                   () -> createSignature(privateKey, currentMessage, finalKeyIndex));
               futures.add(future);
-              if (futures.size() >= threadPoolSize) {
+              if (futures.size() >= threadPoolSize || messageCounter ==  this.numTrials-1) {
                 processFuturesForSignatureCreation(progressUpdater, futures,
                     timesPerKey,
                     signaturesPerKey, nonRecoverableMessagesPerKey);
@@ -257,7 +257,7 @@ public class SignatureModelBenchmarking extends AbstractSignatureModelBenchmarki
                     return new Pair<>(finalKeyIndex, verificationResult);
                   });
               futures.add(future);
-              if (futures.size() >= threadPoolSize) {
+              if (futures.size() >= threadPoolSize || messageCounter ==  this.numTrials-1) {
                 processFuturesForSignatureVerification(progressUpdater, futures,
                     timesPerKey,
                     signaturesPerKey, recoveredMessagesPerKey, verificationResultsPerKey);
