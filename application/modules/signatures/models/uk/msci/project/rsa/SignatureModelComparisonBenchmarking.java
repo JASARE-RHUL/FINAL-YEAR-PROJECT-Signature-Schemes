@@ -132,6 +132,7 @@ public class SignatureModelComparisonBenchmarking extends AbstractSignatureModel
 
     int threadPoolSize = Runtime.getRuntime().availableProcessors();
     try (ExecutorService executor = Executors.newFixedThreadPool(threadPoolSize)) {
+      this.numKeySizesForComparisonMode = keyBatch.size() / numKeysPerKeySizeComparisonMode;
 
       completedWork = 0;
       numBenchmarkingRuns = calculateNumBenchmarkingRuns();
@@ -353,6 +354,7 @@ public class SignatureModelComparisonBenchmarking extends AbstractSignatureModel
       throws IOException {
 
     this.messageFile = batchMessageFile;
+    this.numKeySizesForComparisonMode = keyBatch.size() / numKeysPerKeySizeComparisonMode;
     setKeyLengths(keyBatch);
     int totalKeys = keyBatch.size();
     int keysPerKeySize = totalKeys / numKeySizesForComparisonMode;
