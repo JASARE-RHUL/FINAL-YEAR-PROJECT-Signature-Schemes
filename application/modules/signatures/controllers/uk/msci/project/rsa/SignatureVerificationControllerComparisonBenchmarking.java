@@ -105,19 +105,7 @@ public class SignatureVerificationControllerComparisonBenchmarking extends
     @Override
     public void handle(ActionEvent event) {
       hashOutputSize = verifyView.getHashOutputSizeArea();
-      if (!isCrossParameterBenchmarkingEnabled
-          && signatureModel.getNumTrials() * signatureModel.getKeyBatchLength()
-          != numSignatures) {
-        uk.msci.project.rsa.DisplayUtility.showErrorAlert(
-            "The numbers of messages and signatures do not match. Please ensure they match for a valid set of verification pairings.");
-        return;
-      }
-      if (isCrossParameterBenchmarkingEnabled
-          && ((signatureModel.calculateNumBenchmarkingRuns() * numTrials) != numSignatures)) {
-        uk.msci.project.rsa.DisplayUtility.showErrorAlert(
-            "The numbers of signatures and/or provided message batch does not match. Please ensure they match to proceed.");
-        return;
-      }
+
       if ((signatureModel.getNumTrials() == 0)
           || signatureModel.getKeyBatchLength() == 0
           || signatureModel.getSignatureType() == null || numSignatures == 0
@@ -132,13 +120,21 @@ public class SignatureVerificationControllerComparisonBenchmarking extends
             "You must provide an input for all fields. Please try again.");
         return;
       }
+      if (!isCustomCrossParameterBenchmarkingMode) {
+        signatureModel.createDefaultKeyConfigToHashFunctionsMap();
+      }
+      if (isCrossParameterBenchmarkingEnabled && !isCustomCrossParameterBenchmarkingMode
+          && ((signatureModel.calculateNumBenchmarkingRuns() * numTrials
+          * signatureModel.getNumKeySizesForComparisonMode()) != numSignatures)) {
+        uk.msci.project.rsa.DisplayUtility.showErrorAlert(
+            "The signature-message batches and your chosen hash function selections do not match. Please ensure they match to proceed.");
+        return;
+      }
 
       if (!setHashSizeInModelBenchmarking(verifyView, signatureModel)) {
         return;
       }
-      if (!isCustomCrossParameterBenchmarkingMode) {
-        signatureModel.createDefaultKeyConfigToHashFunctionsMap();
-      }
+
       benchmarkingUtility = new BenchmarkingUtility();
       Task<Void> benchmarkingTask = createBenchmarkingTask(messageBatchFile,
           signatureBatchFile, signatureModel);

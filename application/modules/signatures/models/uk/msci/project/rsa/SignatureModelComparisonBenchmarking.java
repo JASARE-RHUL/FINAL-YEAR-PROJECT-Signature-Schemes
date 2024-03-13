@@ -124,7 +124,6 @@ public class SignatureModelComparisonBenchmarking extends AbstractSignatureModel
   public void batchCreateSignatures(File batchMessageFile, DoubleConsumer progressUpdater)
       throws IOException, ExecutionException, InterruptedException {
     this.messageFile = batchMessageFile;
-    this.numKeySizesForComparisonMode = keyBatch.size() / numKeysPerKeySizeComparisonMode;
     setKeyLengths(keyBatch);
 
     Map<String, List<Long>> timesPerKeyHashFunction = new HashMap<>();
@@ -354,11 +353,10 @@ public class SignatureModelComparisonBenchmarking extends AbstractSignatureModel
       throws IOException {
 
     this.messageFile = batchMessageFile;
-    this.numKeySizesForComparisonMode = keyBatch.size() / numKeysPerKeySizeComparisonMode;
     setKeyLengths(keyBatch);
     int totalKeys = keyBatch.size();
     int keysPerKeySize = totalKeys / numKeySizesForComparisonMode;
-    int completedWork = 0;
+    completedWork = 0;
     numBenchmarkingRuns = calculateNumBenchmarkingRuns();
     computeTrialsPerKeyByGroup(numTrials);
     totalWork = numBenchmarkingRuns * numTrials * numKeySizesForComparisonMode;
@@ -734,6 +732,7 @@ public class SignatureModelComparisonBenchmarking extends AbstractSignatureModel
 
     // Calculate the total number of groups
     totalGroups = numKeysPerKeySizeComparisonMode / keysPerGroup;
+    this.numKeySizesForComparisonMode = keyBatch.size() / numKeysPerKeySizeComparisonMode;
 
     for (int groupIndex = 0; groupIndex < totalGroups; groupIndex++) {
       // Determine the hash function list for the current group
@@ -928,4 +927,5 @@ public class SignatureModelComparisonBenchmarking extends AbstractSignatureModel
   public int getTotalWork() {
     return totalWork;
   }
+
 }
