@@ -7,8 +7,6 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.math.BigInteger;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -20,8 +18,6 @@ import java.util.concurrent.Future;
 import java.util.function.DoubleConsumer;
 import java.util.zip.DataFormatException;
 import javafx.util.Pair;
-import uk.msci.project.rsa.exceptions.InvalidDigestException;
-import uk.msci.project.rsa.exceptions.InvalidSignatureTypeException;
 
 /**
  * This class is part of the Model component specific to digital signature operations providing
@@ -97,13 +93,6 @@ public class SignatureModelComparisonBenchmarking extends AbstractSignatureModel
 
 
   /**
-   * The total amount of work for the comparison mode benchmarking. It represents the total number
-   * of signature operations that will be performed across all keys, hash functions, and trials.
-   */
-  private int totalWork;
-
-
-  /**
    * The total number of benchmarking runs to be performed over a message set in the comparison
    * mode.
    */
@@ -130,17 +119,10 @@ public class SignatureModelComparisonBenchmarking extends AbstractSignatureModel
    *
    * @param batchMessageFile The file containing the messages to be signed in the batch process.
    * @param progressUpdater  A consumer to update the progress of the batch signing process.
-   * @throws InvalidSignatureTypeException if the signature type is not supported.
-   * @throws NoSuchAlgorithmException      if the specified algorithm does not exist.
-   * @throws InvalidDigestException        if the specified digest algorithm is invalid.
-   * @throws NoSuchProviderException       if the specified provider is not available.
-   * @throws IOException                   if there is an I/O error reading from the
-   *                                       batchMessageFile.
-   * @throws DataFormatException           if the data format is incorrect for signing.
+   * @throws IOException if there is an I/O error reading from the batchMessageFile.
    */
   public void batchCreateSignatures(File batchMessageFile, DoubleConsumer progressUpdater)
-      throws InvalidSignatureTypeException, NoSuchAlgorithmException, InvalidDigestException, NoSuchProviderException, IOException, DataFormatException {
-
+      throws IOException, ExecutionException, InterruptedException {
     this.messageFile = batchMessageFile;
     this.numKeySizesForComparisonMode = keyBatch.size() / numKeysPerKeySizeComparisonMode;
     setKeyLengths(keyBatch);
@@ -149,18 +131,20 @@ public class SignatureModelComparisonBenchmarking extends AbstractSignatureModel
     Map<String, List<byte[]>> signaturesPerKeyHashFunction = new HashMap<>();
     Map<String, List<byte[]>> nonRecoverableMessagesPerKeyHashFunction = new HashMap<>();
 
-    try (ExecutorService executor = Executors.newFixedThreadPool(
-        Runtime.getRuntime().availableProcessors())) {
-      int completedWork = 0;
+    int threadPoolSize = Runtime.getRuntime().availableProcessors();
+    try (ExecutorService executor = Executors.newFixedThreadPool(threadPoolSize)) {
+
+      completedWork = 0;
       numBenchmarkingRuns = calculateNumBenchmarkingRuns();
       computeTrialsPerKeyByGroup(numTrials);
-      totalWork = numBenchmarkingRuns * numTrials;
+      totalWork = numBenchmarkingRuns * numTrials * numKeySizesForComparisonMode;
 
       try (BufferedReader messageReader = new BufferedReader(new FileReader(batchMessageFile))) {
         String message;
+        List<Future<Pair<String, Pair<Long, Pair<byte[], byte[]>>>>> futures = new ArrayList<>();
+
         while ((message = messageReader.readLine()) != null) {
           final String currentMessage = message;
-          List<Future<Pair<String, Pair<Long, Pair<byte[], byte[]>>>>> futures = new ArrayList<>();
 
           for (int keySizeIndex = 0; keySizeIndex < keyBatch.size();
               keySizeIndex += numKeysPerKeySizeComparisonMode) {
@@ -175,7 +159,6 @@ public class SignatureModelComparisonBenchmarking extends AbstractSignatureModel
                       j < keyGroupIndex + keysPerGroup && j < numKeysPerKeySizeComparisonMode;
                       j++) {
                     int actualKeyIndex = keySizeIndex + j;
-
                     PrivateKey privateKey = (PrivateKey) keyBatch.get(actualKeyIndex);
                     int keyLength = keyLengths.get(actualKeyIndex);
                     int digestSize =
@@ -183,11 +166,10 @@ public class SignatureModelComparisonBenchmarking extends AbstractSignatureModel
                             (keyLength * hashFunctionType.getCustomSize()[0])
                                 / (double) hashFunctionType.getCustomSize()[1]);
                     digestSize = Math.floorDiv(digestSize + 7, 8);
-
                     String keyHashFunctionIdentifier =
-                        actualKeyIndex + "-" + hashFunctionType.getDigestType().toString();
-                    int finalDigestSize = digestSize;
+                        actualKeyIndex + "-" + hashFunctionType.getDigestType();
 
+                    int finalDigestSize = digestSize;
                     Future<Pair<String, Pair<Long, Pair<byte[], byte[]>>>> future = executor.submit(
                         () -> {
                           try {
@@ -209,43 +191,80 @@ public class SignatureModelComparisonBenchmarking extends AbstractSignatureModel
                         });
 
                     futures.add(future);
+
+                    if (futures.size() >= threadPoolSize) {
+                      processFuturesForSignatureCreation(progressUpdater, futures,
+                          timesPerKeyHashFunction,
+                          signaturesPerKeyHashFunction, nonRecoverableMessagesPerKeyHashFunction);
+                      futures.clear();
+                    }
                   }
                 }
               }
             }
           }
-          for (Future<Pair<String, Pair<Long, Pair<byte[], byte[]>>>> future : futures) {
-            try {
-              Pair<String, Pair<Long, Pair<byte[], byte[]>>> result = future.get();
-              if (result != null) {
-                String identifier = result.getKey();
-                Long time = result.getValue().getKey();
-                byte[] signature = result.getValue().getValue().getKey();
-                byte[] nonRecoverableM = result.getValue().getValue().getValue();
 
-                timesPerKeyHashFunction.computeIfAbsent(identifier, k -> new ArrayList<>())
-                    .add(time);
-                signaturesPerKeyHashFunction.computeIfAbsent(identifier, k -> new ArrayList<>())
-                    .add(signature);
-                nonRecoverableMessagesPerKeyHashFunction.computeIfAbsent(identifier,
-                    k -> new ArrayList<>()).add(nonRecoverableM);
-
-                double currentKeyProgress = (double) (++completedWork) / totalWork;
-                progressUpdater.accept(currentKeyProgress);
-              }
-            } catch (InterruptedException | ExecutionException e) {
-              e.printStackTrace();
-            }
-          }
         }
-
-
+        // Process remaining futures for the last batch
+        processFuturesForSignatureCreation(progressUpdater, futures, timesPerKeyHashFunction,
+            signaturesPerKeyHashFunction, nonRecoverableMessagesPerKeyHashFunction);
+        futures.clear();
+      } finally {
+        executor.shutdown();
       }
     }
 
     // Combine the results stored in the maps for further processing or analysis
     combineResultsIntoFinalLists(timesPerKeyHashFunction, signaturesPerKeyHashFunction,
         nonRecoverableMessagesPerKeyHashFunction);
+  }
+
+  /**
+   * Processes a list of futures obtained from submitting signature creation tasks to an
+   * ExecutorService. Each future represents the result of a signature creation operation. This
+   * method retrieves the result from each future, updates the relevant data structures with the
+   * signature, time taken for the operation, and any non-recoverable message parts, and updates the
+   * overall progress of the signature creation process.
+   *
+   * @param progressUpdater                          A consumer to update the progress of the batch
+   *                                                 signature creation process.
+   * @param futures                                  The list of futures representing pending
+   *                                                 signature creation tasks.
+   * @param timesPerKeyHashFunction                  Map of key-hash function identifiers to their
+   *                                                 corresponding processing times.
+   * @param signaturesPerKeyHashFunction             Map of key-hash function identifiers to their
+   *                                                 corresponding generated signatures.
+   * @param nonRecoverableMessagesPerKeyHashFunction Map of key-hash function identifiers to their
+   *                                                 corresponding non-recoverable message parts.
+   * @throws InterruptedException If the thread is interrupted while waiting for the future's
+   *                              result.
+   * @throws ExecutionException   If an exception occurs during the computation.
+   */
+  private void processFuturesForSignatureCreation(DoubleConsumer progressUpdater,
+      List<Future<Pair<String, Pair<Long, Pair<byte[], byte[]>>>>> futures,
+      Map<String, List<Long>> timesPerKeyHashFunction,
+      Map<String, List<byte[]>> signaturesPerKeyHashFunction,
+      Map<String, List<byte[]>> nonRecoverableMessagesPerKeyHashFunction)
+      throws InterruptedException, ExecutionException {
+    for (Future<Pair<String, Pair<Long, Pair<byte[], byte[]>>>> future : futures) {
+      Pair<String, Pair<Long, Pair<byte[], byte[]>>> result = future.get();
+
+      if (result != null) {
+        String identifier = result.getKey();
+        Long time = result.getValue().getKey();
+        byte[] signature = result.getValue().getValue().getKey();
+        byte[] nonRecoverableM = result.getValue().getValue().getValue();
+
+        timesPerKeyHashFunction.computeIfAbsent(identifier, k -> new ArrayList<>()).add(time);
+        signaturesPerKeyHashFunction.computeIfAbsent(identifier, k -> new ArrayList<>())
+            .add(signature);
+        nonRecoverableMessagesPerKeyHashFunction.computeIfAbsent(identifier, k -> new ArrayList<>())
+            .add(nonRecoverableM);
+      }
+      completedWork++;
+      double currentKeyProgress = (double) completedWork / totalWork;
+      progressUpdater.accept(currentKeyProgress);
+    }
   }
 
 
@@ -330,7 +349,6 @@ public class SignatureModelComparisonBenchmarking extends AbstractSignatureModel
    * @param progressUpdater    A consumer to update the progress of the batch verification process.
    * @throws IOException If there is an I/O error reading from the files.
    */
-
   public void batchVerifySignatures(File batchMessageFile, File batchSignatureFile,
       DoubleConsumer progressUpdater)
       throws IOException {
@@ -343,14 +361,15 @@ public class SignatureModelComparisonBenchmarking extends AbstractSignatureModel
     int completedWork = 0;
     numBenchmarkingRuns = calculateNumBenchmarkingRuns();
     computeTrialsPerKeyByGroup(numTrials);
-    totalWork = numBenchmarkingRuns * numTrials;
+    totalWork = numBenchmarkingRuns * numTrials * numKeySizesForComparisonMode;
     Map<String, List<Long>> timesPerKeyHashFunction;
     Map<String, List<Boolean>> verificationResultsPerKeyHashFunction;
     Map<String, List<byte[]>> recoveredMessagesPerKeyHashFunction;
     Map<String, List<byte[]>> signaturesPerKeyHashFunction;
 
-    try (ExecutorService executor = Executors.newFixedThreadPool(
-        Runtime.getRuntime().availableProcessors())) {
+    int threadPoolSize = Runtime.getRuntime().availableProcessors();
+
+    try (ExecutorService executor = Executors.newFixedThreadPool(threadPoolSize)) {
       timesPerKeyHashFunction = new HashMap<>();
       verificationResultsPerKeyHashFunction = new HashMap<>();
       recoveredMessagesPerKeyHashFunction = new HashMap<>();
@@ -362,8 +381,9 @@ public class SignatureModelComparisonBenchmarking extends AbstractSignatureModel
               new FileReader(batchSignatureFile))) {
 
         String messageLine;
+        List<Future<Pair<Boolean, Pair<Long, List<byte[]>>>>> futures = new ArrayList<>();
         while ((messageLine = messageReader.readLine()) != null) {
-          List<Future<Pair<Boolean, Pair<Long, List<byte[]>>>>> futures = new ArrayList<>();
+
           for (int keySizeIndex = 0; keySizeIndex < numKeySizesForComparisonMode; keySizeIndex++) {
             int keyOffset = keySizeIndex * keysPerKeySize;
 
@@ -409,41 +429,88 @@ public class SignatureModelComparisonBenchmarking extends AbstractSignatureModel
                   });
                   futures.add(future);
 
+                  if (futures.size() >= threadPoolSize) {
+                    processFuturesForSignatureVerification(progressUpdater, futures,
+                        timesPerKeyHashFunction,
+                        signaturesPerKeyHashFunction, recoveredMessagesPerKeyHashFunction,
+                        verificationResultsPerKeyHashFunction);
+                    futures.clear();
+                  }
+
                 }
               }
             }
           }
-          for (Future<Pair<Boolean, Pair<Long, List<byte[]>>>> future : futures) {
-            Pair<Boolean, Pair<Long, List<byte[]>>> result = future.get();
-            Long time = result.getValue().getKey();
 
-            byte[] recoveredMessage = result.getValue().getValue().get(2);
-            byte[] signature = result.getValue().getValue().get(1);
-            String keyHashFunctionID = new String(result.getValue().getValue().get(3));
-            Boolean verificationResult = result.getKey();
-
-            timesPerKeyHashFunction.computeIfAbsent(keyHashFunctionID,
-                k -> new ArrayList<>()).add(time);
-            verificationResultsPerKeyHashFunction.computeIfAbsent(keyHashFunctionID,
-                k -> new ArrayList<>()).add(verificationResult);
-            recoveredMessagesPerKeyHashFunction.computeIfAbsent(keyHashFunctionID,
-                k -> new ArrayList<>()).add(recoveredMessage);
-            signaturesPerKeyHashFunction.computeIfAbsent(keyHashFunctionID,
-                k -> new ArrayList<>()).add(signature);
-
-            double currentKeyProgress = (double) (++completedWork) / totalWork;
-            progressUpdater.accept(currentKeyProgress);
-          }
         }
-      } catch (ExecutionException e) {
+        // Process remaining futures for the last batch
+        processFuturesForSignatureVerification(progressUpdater, futures,
+            timesPerKeyHashFunction,
+            signaturesPerKeyHashFunction, recoveredMessagesPerKeyHashFunction,
+            verificationResultsPerKeyHashFunction);
+        futures.clear();
+      } catch (ExecutionException | InterruptedException e) {
         e.printStackTrace();
-      } catch (InterruptedException e) {
-        e.printStackTrace();
+      } finally {
+        executor.shutdown();
       }
     }
 
     combineVerificationResultsIntoFinalLists(timesPerKeyHashFunction, signaturesPerKeyHashFunction,
         recoveredMessagesPerKeyHashFunction, verificationResultsPerKeyHashFunction);
+  }
+
+  /**
+   * Processes a list of futures obtained from submitting signature verification tasks to an
+   * ExecutorService. Each future represents the result of a signature verification operation. This
+   * method retrieves the result from each future, updates the relevant data structures with the
+   * verification result, time taken for the operation, and any recovered message parts, and updates
+   * the overall progress of the signature verification process.
+   *
+   * @param progressUpdater                       A consumer to update the progress of the batch
+   *                                              signature verification process.
+   * @param futures                               The list of futures representing pending signature
+   *                                              verification tasks.
+   * @param timesPerKeyHashFunction               Map of key-hash function identifiers to their
+   *                                              corresponding verification times.
+   * @param signaturesPerKeyHashFunction          Map of key-hash function identifiers to their
+   *                                              corresponding verified signatures.
+   * @param recoveredMessagesPerKeyHashFunction   Map of key-hash function identifiers to their
+   *                                              corresponding recovered messages.
+   * @param verificationResultsPerKeyHashFunction Map of key-hash function identifiers to their
+   *                                              corresponding verification results.
+   * @throws InterruptedException If the thread is interrupted while waiting for the future's
+   *                              result.
+   * @throws ExecutionException   If an exception occurs during the computation.
+   */
+  private void processFuturesForSignatureVerification(DoubleConsumer progressUpdater,
+      List<Future<Pair<Boolean, Pair<Long, List<byte[]>>>>> futures,
+      Map<String, List<Long>> timesPerKeyHashFunction,
+      Map<String, List<byte[]>> signaturesPerKeyHashFunction,
+      Map<String, List<byte[]>> recoveredMessagesPerKeyHashFunction,
+      Map<String, List<Boolean>> verificationResultsPerKeyHashFunction)
+      throws InterruptedException, ExecutionException {
+    for (Future<Pair<Boolean, Pair<Long, List<byte[]>>>> future : futures) {
+      Pair<Boolean, Pair<Long, List<byte[]>>> result = future.get();
+      Long time = result.getValue().getKey();
+
+      byte[] recoveredMessage = result.getValue().getValue().get(2);
+      byte[] signature = result.getValue().getValue().get(1);
+      String keyHashFunctionID = new String(result.getValue().getValue().get(3));
+      Boolean verificationResult = result.getKey();
+
+      timesPerKeyHashFunction.computeIfAbsent(keyHashFunctionID,
+          k -> new ArrayList<>()).add(time);
+      verificationResultsPerKeyHashFunction.computeIfAbsent(keyHashFunctionID,
+          k -> new ArrayList<>()).add(verificationResult);
+      recoveredMessagesPerKeyHashFunction.computeIfAbsent(keyHashFunctionID,
+          k -> new ArrayList<>()).add(recoveredMessage);
+      signaturesPerKeyHashFunction.computeIfAbsent(keyHashFunctionID,
+          k -> new ArrayList<>()).add(signature);
+
+      double currentKeyProgress = (double) (++completedWork) / totalWork;
+      progressUpdater.accept(currentKeyProgress);
+    }
   }
 
 
