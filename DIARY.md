@@ -288,7 +288,7 @@ new benchmarking mode, such as fixing crashes in signature views. I also dedicat
 refactoring, streamlining the initialisation process for the different modes to enhance the
 application's efficiency and user experience.
 
-## Week of 26th February – 3rd March 2024
+## Diary Entry - Week of 26th February – 3rd March 2024
 
 I started by updating the results view to include multiple graph representations, such as
 histograms, box plots, and line graphs, tailored especially for comparing mean times in different
@@ -318,4 +318,37 @@ management of custom key configurations.
 By the weekend, I had developed a preliminary implementation of this feature, though it required
 further refinement due to some bugs. By Sunday, I had completed significant enhancements across the
 project to fully incorporate the Multi-Hash Function Selection feature, enabling the specification
-and management of custom key configurations and grouping them to be used with selected hash functions. 
+and management of custom key configurations and grouping them to be used with selected hash
+functions.
+
+## Diary Entry - Week of 4th March – 10th March 2024
+
+This week, I focused on refining various aspects of my project, from bug fixes to significant
+restructuring. Starting with resolving an issue in GenView and a benchmarking display error on
+Monday, I then introduced the ability to specify custom hash output sizes for variable-length hash
+functions in comparison mode on Tuesday. This involved notable changes across the application,
+including a major refactoring of the KeyConfigurationsDialog from a lengthy method in GenView into a
+more manageable KeyConfigurationsDialog class.
+
+Midweek, I refined the SignatureModel to handle custom hash outputs uniformly across different key
+sizes and addressed several issues, including missing results overlay in standard mode and absence
+of hash function names in benchmarking results. I also updated the export functionality to include
+hash function details in signature operations.
+
+In a shift to refactoring, I restructured the SignatureModel for unified key batch management,
+reorganised the results module with new inheritance relationships (created a Graph Manager class to
+delegate graph responsibility). The refactoring continued into the signature module, focusing on
+streamlining digital signature operations and separating benchmarking responsibilities into new,
+specialised classes e.g., involved optimising the signature model to concentrate solely on digital
+signature operations and offloading benchmarking responsibilities to newly created, specialised
+classes e.g., introducing AbstractSignatureModelBenchmarking as a base class for benchmarking
+functions, creating SignatureModelBenchmarking and SignatureModelComparisonBenchmarking as
+subclasses
+
+The week concluded with addressing key preloading issues in standard benchmarking mode and a major
+overhaul of the key generation model and results controllers. This included dividing the GenModel
+class into three distinct classes: GenModel, GenModelBenchmarking, and
+GenModelComparisonBenchmarking, with GenModel serving as the foundational class for RSA key
+generation. In parallel, I segmented the ResultsController into ResultsBaseController,
+ResultsControllerComparisonBenchmarking, and ResultsControllerNormalBenchmarking, each catering to
+different benchmarking scenarios.
