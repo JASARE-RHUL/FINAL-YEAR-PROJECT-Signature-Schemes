@@ -102,20 +102,20 @@ public class GenModelBenchmarking extends GenModel {
 
       totalWork = numTrials * keyParams.size();
       completedWork = 0;
-      List<Future<Long>> futures = new ArrayList<>();
+      List<Future<Pair<Integer, Long>>> futures = new ArrayList<>();
 
       for (int trial = 0; trial < numTrials; trial++) {
 
         for (int keyIndex = 0; keyIndex < keyParams.size(); keyIndex++) {
           Pair<int[], Boolean> keyParam = keyParams.get(keyIndex);
-
+          int iKeyIndex = keyIndex;
           futures.add(executor.submit(() -> {
             int[] intArray = keyParam.getKey();
             boolean isSmallE = keyParam.getValue();
             GenRSA genRSA = new GenRSA(intArray.length, intArray, isSmallE);
             long startTime = System.nanoTime();
             genRSA.generateKeyPair();
-            return System.nanoTime() - startTime;
+            return new Pair<>(iKeyIndex, System.nanoTime() - startTime);
           }));
           if (futures.size() >= threadPoolSize) {
             processFutures(progressUpdater, futures,
@@ -154,11 +154,13 @@ public class GenModelBenchmarking extends GenModel {
    *                        configuration.
    */
   private void processFutures(DoubleConsumer progressUpdater,
-      List<Future<Long>> futures,
+      List<Future<Pair<Integer, Long>>> futures,
       List<List<Long>> timesPerKey) {
-    for (int keyIndex = 0; keyIndex < futures.size(); keyIndex++) {
+    for (Future<Pair<Integer, Long>> future : futures) {
       try {
-        long timeTaken = futures.get(keyIndex).get();
+        Pair<Integer, Long> result = future.get();
+        int keyIndex = result.getKey();
+        long timeTaken = result.getValue();
         timesPerKey.get(keyIndex).add(timeTaken);
       } catch (ExecutionException | InterruptedException e) {
         throw new RuntimeException(e.getCause());
