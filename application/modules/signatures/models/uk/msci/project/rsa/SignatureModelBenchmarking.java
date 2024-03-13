@@ -11,6 +11,10 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.function.DoubleConsumer;
 import java.util.zip.DataFormatException;
 import javafx.util.Pair;
@@ -49,14 +53,16 @@ public class SignatureModelBenchmarking extends AbstractSignatureModelBenchmarki
    * @throws DataFormatException           if the data format is incorrect for signing.
    */
   public void batchCreateSignatures(File batchMessageFile, DoubleConsumer progressUpdater)
-      throws InvalidSignatureTypeException, NoSuchAlgorithmException, InvalidDigestException, NoSuchProviderException, IOException, DataFormatException {
+      throws IOException {
+
     try (BufferedReader messageReader = new BufferedReader(new FileReader(batchMessageFile))) {
       this.messageFile = batchMessageFile;
-      // Initialise lists to store times and results (signatures and non-recoverable parts) for each key
+      setKeyLengths(keyBatch);
+
+      // Initialize lists to store times and results for each key
       List<List<Long>> timesPerKey = new ArrayList<>();
       List<List<byte[]>> signaturesPerKey = new ArrayList<>();
       List<List<byte[]>> nonRecoverableMessagesPerKey = new ArrayList<>();
-      setKeyLengths(keyBatch);
 
       for (int k = 0; k < keyBatch.size(); k++) {
         timesPerKey.add(new ArrayList<>());
@@ -64,49 +70,99 @@ public class SignatureModelBenchmarking extends AbstractSignatureModelBenchmarki
         nonRecoverableMessagesPerKey.add(new ArrayList<>());
       }
 
-      String message;
-      int totalWork = numTrials * keyBatch.size();
-      int completedWork = 0;
-      int messageCounter = 0;
-      while ((message = messageReader.readLine()) != null && messageCounter < this.numTrials) {
-        int keyIndex = 0;
-        for (Key key : keyBatch) {
-          if (key instanceof PrivateKey privateKey) {
-            int keyLength = keyLengths.get(keyIndex);
-            int digestSize = customHashSizeFraction == null ? 0
-                : (int) Math.round((keyLength * customHashSizeFraction[0])
-                    / (double) customHashSizeFraction[1]);
-            digestSize = Math.floorDiv(digestSize + 7, 8);
+      // Initialise ExecutorService for parallel execution
+      try (ExecutorService executor = Executors.newFixedThreadPool(
+          Runtime.getRuntime().availableProcessors())) {
+        List<Future<Pair<Integer, Pair<Long, Pair<byte[], byte[]>>>>> futures = new ArrayList<>();
 
-            // Synchronous signature creation
-            SigScheme sigScheme = SignatureFactory.getSignatureScheme(currentType, privateKey,
-                isProvablySecure);
-            sigScheme.setDigest(currentHashType, digestSize);
-            long startTime = System.nanoTime();
-            byte[] signature = sigScheme.sign(message.getBytes());
-            long endTime = System.nanoTime() - startTime;
-            byte[] nonRecoverableM = sigScheme.getNonRecoverableM();
+        String message;
+        int totalWork = numTrials * keyBatch.size();
+        int completedWork = 0;
+        int messageCounter = 0;
+        while ((message = messageReader.readLine()) != null && messageCounter < this.numTrials) {
+          final String currentMessage = message;
+          for (int keyIndex = 0; keyIndex < keyBatch.size(); keyIndex++) {
+            Key key = keyBatch.get(keyIndex);
+            if (key instanceof PrivateKey privateKey) {
+              final int finalKeyIndex = keyIndex;
+              Future<Pair<Integer, Pair<Long, Pair<byte[], byte[]>>>> future = executor.submit(
+                  () -> createSignature(privateKey, currentMessage, finalKeyIndex));
+              futures.add(future);
+            }
+          }
+          messageCounter++;
+        }
 
-            // Store results
-            timesPerKey.get(keyIndex).add(endTime);
-            signaturesPerKey.get(keyIndex).add(signature);
-            nonRecoverableMessagesPerKey.get(keyIndex).add(nonRecoverableM);
+        // Process futures and update progress
+        for (Future<Pair<Integer, Pair<Long, Pair<byte[], byte[]>>>> future : futures) {
+          try {
+            Pair<Integer, Pair<Long, Pair<byte[], byte[]>>> result = future.get();
+            if (result != null) {
+              int keyIndex = result.getKey();
+              Long time = result.getValue().getKey();
+              byte[] signature = result.getValue().getValue().getKey();
+              byte[] nonRecoverableM = result.getValue().getValue().getValue();
 
-            // Update progress
-            double currentKeyProgress = (double) (++completedWork) / totalWork;
-            progressUpdater.accept(currentKeyProgress);
-            keyIndex++;
+              timesPerKey.get(keyIndex).add(time);
+              signaturesPerKey.get(keyIndex).add(signature);
+              nonRecoverableMessagesPerKey.get(keyIndex).add(nonRecoverableM);
+
+              double currentKeyProgress = (double) (++completedWork) / totalWork;
+              progressUpdater.accept(currentKeyProgress);
+            }
+          } catch (InterruptedException | ExecutionException e) {
+            e.printStackTrace();
           }
         }
-        messageCounter++;
       }
 
       // Combine results into final lists
-      combineResultsIntoFinalLists(timesPerKey, signaturesPerKey,
-          nonRecoverableMessagesPerKey);
+      combineResultsIntoFinalLists(timesPerKey, signaturesPerKey, nonRecoverableMessagesPerKey);
     }
   }
 
+  /**
+   * Creates a digital signature for a given message using a specified private key. This method is
+   * used as part of the batch signature creation process in the {@code batchCreateSignatures}
+   * method. It calculates the signature using the provided private key and message, and also tracks
+   * the time taken for the operation. Additionally, it returns non-recoverable parts of the
+   * message, if any.
+   *
+   * @param privateKey The private key used to create the signature.
+   * @param message    The message to be signed.
+   * @param keyIndex   The index of the private key in the key batch, used for tracking purposes.
+   * @return A {@code Pair} object containing the key index and a nested {@code Pair}. The nested
+   * {@code Pair} includes the time taken to generate the signature and another nested {@code Pair}
+   * containing the signature and any non-recoverable message parts.
+   * @throws InvalidSignatureTypeException if the type of signature is invalid.
+   * @throws NoSuchAlgorithmException      if the algorithm for signature is not available.
+   * @throws InvalidDigestException        if there is an issue with the digest algorithm.
+   * @throws NoSuchProviderException       if the provider for the cryptographic service is not
+   *                                       available.
+   * @throws DataFormatException           if the message data format is not suitable for signing.
+   */
+  private Pair<Integer, Pair<Long, Pair<byte[], byte[]>>> createSignature(
+      PrivateKey privateKey, String message, int keyIndex)
+      throws InvalidSignatureTypeException, NoSuchAlgorithmException, InvalidDigestException, NoSuchProviderException, DataFormatException {
+
+    int keyLength = keyLengths.get(keyIndex);
+    int digestSize = customHashSizeFraction == null ? 0
+        : (int) Math.round((keyLength * customHashSizeFraction[0])
+            / (double) customHashSizeFraction[1]);
+    digestSize = Math.floorDiv(digestSize + 7, 8);
+
+    // Create the signature scheme with the specified settings
+    SigScheme sigScheme = SignatureFactory.getSignatureScheme(currentType, privateKey,
+        isProvablySecure);
+    sigScheme.setDigest(currentHashType, digestSize);
+
+    long startTime = System.nanoTime();
+    byte[] signature = sigScheme.sign(message.getBytes());
+    long endTime = System.nanoTime() - startTime;
+    byte[] nonRecoverableM = sigScheme.getNonRecoverableM();
+
+    return new Pair<>(keyIndex, new Pair<>(endTime, new Pair<>(signature, nonRecoverableM)));
+  }
 
 
   /**
@@ -117,25 +173,21 @@ public class SignatureModelBenchmarking extends AbstractSignatureModelBenchmarki
    * @param batchMessageFile   The file containing the messages to be verified.
    * @param batchSignatureFile The file containing the corresponding signatures to be verified.
    * @param progressUpdater    A consumer to update the progress of the batch verification process.
-   * @throws InvalidSignatureTypeException if the signature type is not supported.
-   * @throws NoSuchAlgorithmException      if the specified algorithm does not exist.
-   * @throws InvalidDigestException        if the specified digest algorithm is invalid.
-   * @throws NoSuchProviderException       if the specified provider is not available.
-   * @throws IOException                   if there is an I/O error reading from the
-   *                                       batchMessageFile.
-   * @throws DataFormatException           if the data format is incorrect for signing.
+   * @throws IOException if there is an I/O error reading from the batchMessageFile.
    */
   public void batchVerifySignatures(File batchMessageFile, File batchSignatureFile,
       DoubleConsumer progressUpdater)
-      throws
-      IOException, InvalidSignatureTypeException, DataFormatException, NoSuchAlgorithmException, InvalidDigestException, NoSuchProviderException {
+      throws IOException {
+
     this.messageFile = batchMessageFile;
-    // Initialise lists to store times, verification results, signatures, and recovered messages
+    setKeyLengths(keyBatch);
+
+    // Initialize lists to store times, verification results, signatures, and recovered messages
     List<List<Long>> timesPerKey = new ArrayList<>();
     List<List<Boolean>> verificationResultsPerKey = new ArrayList<>();
     List<List<byte[]>> signaturesPerKey = new ArrayList<>();
     List<List<byte[]>> recoveredMessagesPerKey = new ArrayList<>();
-    setKeyLengths(keyBatch);
+
     for (int k = 0; k < keyBatch.size(); k++) {
       timesPerKey.add(new ArrayList<>());
       verificationResultsPerKey.add(new ArrayList<>());
@@ -146,45 +198,68 @@ public class SignatureModelBenchmarking extends AbstractSignatureModelBenchmarki
     try (BufferedReader signatureReader = new BufferedReader(new FileReader(batchSignatureFile));
         BufferedReader messageReader = new BufferedReader(new FileReader(batchMessageFile))) {
 
-      String messageLine;
-      int messageCounter = 0;
-      int totalWork = numTrials * keyBatch.size();
-      int completedWork = 0;
-      while ((messageLine = messageReader.readLine()) != null
-          && messageCounter < this.numTrials) {
-        int keyIndex = 0;
-        for (Key key : keyBatch) {
-          if (key instanceof PublicKey publicKey) {
-            int keyLength = keyLengths.get(keyIndex);
-            int digestSize = customHashSizeFraction == null ? 0
-                : (int) Math.round((keyLength * customHashSizeFraction[0])
-                    / (double) customHashSizeFraction[1]);
-            digestSize = Math.floorDiv(digestSize + 7, 8);
+      try (ExecutorService executor = Executors.newFixedThreadPool(
+          Runtime.getRuntime().availableProcessors())) {
 
-            // Read signature for each message
-            String signatureLine = signatureReader.readLine();
-            byte[] signatureBytes = new BigInteger(signatureLine).toByteArray();
+        String messageLine;
+        int messageCounter = 0;
+        int totalWork = numTrials * keyBatch.size();
+        int completedWork = 0;
 
-            // Synchronous verification
-            Pair<Boolean, Pair<Long, List<byte[]>>> result = verifySignature(publicKey, messageLine,
-                signatureBytes, digestSize);
+        while ((messageLine = messageReader.readLine()) != null
+            && messageCounter < this.numTrials) {
+          List<Future<Pair<Integer, Pair<Boolean, Pair<Long, List<byte[]>>>>>> futures = new ArrayList<>();
+          int keyIndex = 0;
+          for (Key key : keyBatch) {
+            if (key instanceof PublicKey publicKey) {
+              int keyLength = keyLengths.get(keyIndex);
+              int digestSize = customHashSizeFraction == null ? 0
+                  : (int) Math.round((keyLength * customHashSizeFraction[0])
+                      / (double) customHashSizeFraction[1]);
+              digestSize = Math.floorDiv(digestSize + 7, 8);
 
-            long endTime = result.getValue().getKey();
+              // Read signature for each message
+              String signatureLine = signatureReader.readLine();
+              byte[] signatureBytes = new BigInteger(signatureLine).toByteArray();
+              int finalDigestSize = digestSize;
+              int finalKeyIndex = keyIndex;
+              String finalMessageLine = messageLine;
+              Future<Pair<Integer, Pair<Boolean, Pair<Long, List<byte[]>>>>> future = executor.submit(
+                  () -> {
+                    Pair<Boolean, Pair<Long, List<byte[]>>> verificationResult = verifySignature(
+                        publicKey, finalMessageLine, signatureBytes, finalDigestSize);
+                    return new Pair<>(finalKeyIndex, verificationResult);
+                  });
+              futures.add(future);
 
-            // Store results
-            timesPerKey.get(keyIndex).add(endTime);
-            verificationResultsPerKey.get(keyIndex).add(result.getKey());
-            signaturesPerKey.get(keyIndex).add(result.getValue().getValue().get(1));
-            recoveredMessagesPerKey.get(keyIndex).add(result.getValue().getValue().get(2));
-
-            // Update progress
-            double currentKeyProgress = (double) (++completedWork) / totalWork;
-            progressUpdater.accept(currentKeyProgress);
-
-            keyIndex++;
+              keyIndex++;
+            }
           }
+          for (Future<Pair<Integer, Pair<Boolean, Pair<Long, List<byte[]>>>>> future : futures) {
+            try {
+              Pair<Integer, Pair<Boolean, Pair<Long, List<byte[]>>>> result = future.get();
+              if (result != null) {
+                int i = result.getKey();
+                Long time = result.getValue().getValue().getKey();
+
+                // Store results
+                timesPerKey.get(i).add(time);
+                verificationResultsPerKey.get(i).add(result.getValue().getKey());
+                signaturesPerKey.get(i).add(result.getValue().getValue().getValue().get(1));
+                recoveredMessagesPerKey.get(i)
+                    .add(result.getValue().getValue().getValue().get(2));
+
+                double currentKeyProgress = (double) (++completedWork) / totalWork;
+                progressUpdater.accept(currentKeyProgress);
+              }
+            } catch (InterruptedException | ExecutionException e) {
+              e.printStackTrace();
+            }
+          }
+
+          messageCounter++;
         }
-        messageCounter++;
+
       }
 
       // Combine results into final lists
@@ -192,8 +267,6 @@ public class SignatureModelBenchmarking extends AbstractSignatureModelBenchmarki
           signaturesPerKey, recoveredMessagesPerKey);
     }
   }
-
-
 
 
   /**
@@ -206,7 +279,7 @@ public class SignatureModelBenchmarking extends AbstractSignatureModelBenchmarki
    * @param nonRecoverableMessagesPerKey The list of non-recoverable message parts for each key and
    *                                     message.
    */
-   void combineResultsIntoFinalLists(List<List<Long>> timesPerKey,
+  void combineResultsIntoFinalLists(List<List<Long>> timesPerKey,
       List<List<byte[]>> signaturesPerKey,
       List<List<byte[]>> nonRecoverableMessagesPerKey) {
 
