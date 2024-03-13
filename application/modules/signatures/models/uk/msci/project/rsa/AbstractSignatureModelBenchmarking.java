@@ -9,6 +9,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.function.DoubleConsumer;
 import java.util.stream.Collectors;
 import java.util.zip.DataFormatException;
@@ -87,6 +88,14 @@ public abstract class AbstractSignatureModelBenchmarking extends SignatureModel 
    */
   List<Integer> keyLengths;
 
+  /**
+   * The total number of signature operations completed during the current benchmarking process.
+   * This field tracks the progress of the batch signature creation and verification processes and
+   * is used to update the progress indicator provided to the user.
+   */
+  int completedWork;
+
+
 
   /**
    * Clears all keys from the key batch.
@@ -142,7 +151,7 @@ public abstract class AbstractSignatureModelBenchmarking extends SignatureModel 
 
 
   abstract void batchCreateSignatures(File batchMessageFile, DoubleConsumer progressUpdater)
-      throws InvalidSignatureTypeException, NoSuchAlgorithmException, InvalidDigestException, NoSuchProviderException, IOException, DataFormatException;
+      throws InvalidSignatureTypeException, NoSuchAlgorithmException, InvalidDigestException, NoSuchProviderException, IOException, DataFormatException, ExecutionException, InterruptedException;
 
   /**
    * Exports the batch of signatures generated during the benchmarking process to a file. Each
