@@ -5,6 +5,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.DoubleConsumer;
 import javafx.util.Pair;
 
@@ -69,59 +74,60 @@ public class GenModelBenchmarking extends GenModel {
    *                        whether to use a smaller 'e' value in key generation.
    * @param progressUpdater A DoubleConsumer to report the progress of the batch generation
    *                        process.
-   * @throws InterruptedException if the thread executing the batch generation is interrupted.
    */
   public void batchGenerateKeys(int numTrials, List<Pair<int[], Boolean>> keyParams,
       DoubleConsumer progressUpdater) {
-    clockTimesPerTrial.clear();
-    this.keyParams = keyParams;
-    int totalWork = numTrials * keyParams.size(); // Total units of work
-    final int[] completedWork = {0}; // To keep track of completed work
+    try (ExecutorService executor = Executors.newFixedThreadPool(
+        Runtime.getRuntime().availableProcessors())) {
+      this.keyParams = keyParams;
 
-    for (Pair<int[], Boolean> keyParam : this.keyParams) {
-      batchGenerateKeys(numTrials, keyParam, trialProgress -> {
-        // Increment the completed work with each trial
-        completedWork[0]++;
+      // Lists to hold times for each key generation
+      List<List<Long>> timesPerKey = new ArrayList<>();
+      for (int k = 0; k < keyParams.size(); k++) {
+        timesPerKey.add(new ArrayList<>());
+      }
 
-        // Calculate the overall progress
-        double overallProgress = (double) completedWork[0] / totalWork;
-        progressUpdater.accept(overallProgress);
-      });
+      int totalWork = numTrials * keyParams.size();
+      int completedWork = 0;
+
+      for (int trial = 0; trial < numTrials; trial++) {
+        List<Future<Long>> futures = new ArrayList<>();
+
+        for (int keyIndex = 0; keyIndex < keyParams.size(); keyIndex++) {
+          Pair<int[], Boolean> keyParam = keyParams.get(keyIndex);
+
+          futures.add(executor.submit(() -> {
+            long startTime = System.nanoTime();
+
+            int[] intArray = keyParam.getKey();
+            boolean isSmallE = keyParam.getValue();
+            new GenRSA(intArray.length, intArray, isSmallE).generateKeyPair();
+
+            return System.nanoTime() - startTime;
+          }));
+        }
+
+        // Collect results after submitting all tasks for this trial
+        for (int keyIndex = 0; keyIndex < futures.size(); keyIndex++) {
+          try {
+            long timeTaken = futures.get(keyIndex).get();
+            timesPerKey.get(keyIndex).add(timeTaken);
+          } catch (ExecutionException | InterruptedException e) {
+            throw new RuntimeException(e.getCause());
+          }
+
+          double currentKeyProgress = (double) (++completedWork) / totalWork;
+          progressUpdater.accept(currentKeyProgress);
+        }
+
+      }
+
+      // Flatten the times into clockTimesPerTrial
+      for (List<Long> keyTime : timesPerKey) {
+        clockTimesPerTrial.addAll(keyTime);
+      }
+
     }
-  }
-
-  /**
-   * Performs batch generation of RSA keys with specified parameters for a single key configuration.
-   * This method generates keys with the specified parameters and measures the time taken for each
-   * generation for a fixed number of trials.
-   *
-   * @param numTrials       The number of trials to be conducted for the specified key parameters.
-   * @param keyParam        A pair consisting of an array of integers representing key sizes and a
-   *                        boolean flag indicating whether to use a smaller 'e' value in key
-   *                        generation.
-   * @param progressUpdater A DoubleConsumer to report the progress of the batch generation
-   *                        process.
-   */
-  public void batchGenerateKeys(int numTrials, Pair<int[], Boolean> keyParam,
-      DoubleConsumer progressUpdater) {
-    List<Long> timesPerKey = new ArrayList<>();
-
-    for (int trial = 0; trial < numTrials; trial++) {
-      int[] intArray = keyParam.getKey();
-      boolean isSmallE = keyParam.getValue();
-      GenRSA genRSA = new GenRSA(intArray.length, intArray, isSmallE);
-
-      long startTime = System.nanoTime();
-      genRSA.generateKeyPair();
-      long endTime = System.nanoTime() - startTime;
-
-      timesPerKey.add(endTime);
-      progressUpdater.accept((double) (trial + 1) / numTrials);
-    }
-
-    // Aggregate times from all trials and keys into a single list.
-    clockTimesPerTrial.addAll(timesPerKey);
-
   }
 
   /**
