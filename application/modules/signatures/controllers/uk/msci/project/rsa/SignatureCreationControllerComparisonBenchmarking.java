@@ -4,7 +4,6 @@ import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.stage.Stage;
-import uk.msci.project.rsa.SignatureCreationControllerBenchmarking.SignatureBenchmarkObserver;
 
 
 /**
@@ -14,7 +13,7 @@ import uk.msci.project.rsa.SignatureCreationControllerBenchmarking.SignatureBenc
  * sizes and configurations.
  */
 public class SignatureCreationControllerComparisonBenchmarking extends
-    AbstractSignatureCreationControllerBenchmarking {
+    SignatureCreationControllerBenchmarking {
 
 
   /**
@@ -144,6 +143,7 @@ public class SignatureCreationControllerComparisonBenchmarking extends
    * context, and displays the results view with the gathered benchmarking data. This method is
    * pivotal in finalising the benchmarking process and presenting the results to the user.
    */
+  @Override
   void handleBenchmarkingCompletion() {
     resetPreLoadedKeyParams();
     ResultsControllerComparisonBenchmarking resultsController = new ResultsControllerComparisonBenchmarking(

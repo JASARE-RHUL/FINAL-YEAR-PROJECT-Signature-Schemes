@@ -13,7 +13,7 @@ import javafx.stage.Stage;
  * sizes and configurations.
  */
 public class SignatureVerificationControllerComparisonBenchmarking extends
-    AbstractSignatureVerificationControllerBenchmarking {
+    SignatureVerificationControllerBenchmarking {
 
 
   /**
@@ -44,6 +44,7 @@ public class SignatureVerificationControllerComparisonBenchmarking extends
    *
    * @param primaryStage The primary stage of the application where the view will be displayed.
    */
+  @Override
   public void showCrossBenchmarkingView(Stage primaryStage) {
     if ((isCrossParameterBenchmarkingEnabled && importedKeyBatch == null)
         || !isKeyForComparisonMode) {
@@ -155,6 +156,7 @@ public class SignatureVerificationControllerComparisonBenchmarking extends
    * context, and displays the results view with the gathered benchmarking data. This method is
    * pivotal in finalising the benchmarking process and presenting the results to the user.
    */
+  @Override
   void handleBenchmarkingCompletion() {
     resetPreLoadedKeyParams();
     ResultsControllerComparisonBenchmarking resultsController = new ResultsControllerComparisonBenchmarking(
