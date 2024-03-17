@@ -354,13 +354,16 @@ public class SignatureModelBenchmarking extends AbstractSignatureModelBenchmarki
 
 
   /**
-   * Exports verification results to a CSV file. Each line in the file will contain the index of the
-   * key used for verification, the signed message, the signature, and the recoverable message (if
-   * any).
+   * Exports verification results to a CSV file for a specific key index. Each line in the file will
+   * contain the index of the key used for verification, the verification result, the original
+   * message, the signature, and the recovered message (if any).
    *
-   * @throws IOException If there is an error in writing to the file.
+   * @param keyIndex        The index of the key for which verification results are exported.
+   * @param progressUpdater A consumer to update the progress of the export process.
+   * @throws IOException    If there is an error writing to the file.
    */
-  public void exportVerificationResultsToCSV(int keyIndex) throws IOException {
+  public void exportVerificationResultsToCSV(int keyIndex, DoubleConsumer progressUpdater) throws IOException {
+    int completedWork = 0;
     File file = FileHandle.createUniqueFile(
         "verificationResults_" + getKeyLengths().get(keyIndex) + "bits.csv");
 
@@ -394,6 +397,8 @@ public class SignatureModelBenchmarking extends AbstractSignatureModelBenchmarki
               "\"" + originalMessage + "\", " + // Enclose in quotes to handle commas
               signature + ", " + recoverableMessage + "\n");
 
+          double currentKeyProgress = (double) (++completedWork) / totalWork;
+          progressUpdater.accept(currentKeyProgress);
           messageCounter++;
         }
       }

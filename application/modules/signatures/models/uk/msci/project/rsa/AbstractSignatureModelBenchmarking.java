@@ -103,7 +103,6 @@ public abstract class AbstractSignatureModelBenchmarking extends SignatureModel 
   int totalWork;
 
 
-
   /**
    * Clears all keys from the key batch.
    */
@@ -272,7 +271,18 @@ public abstract class AbstractSignatureModelBenchmarking extends SignatureModel 
     return getBatchVerificationResult(sigScheme, messageLine, signatureBytes);
   }
 
-  abstract void exportVerificationResultsToCSV(int keyIndex) throws IOException;
+  /**
+   * Exports verification results to a CSV file for a specific key index ()benchmarking mode) or key
+   * size index (comparison benchmarking). Each line in the file will contain the index of the key
+   * used for verification, the verification result, the original message, the signature, and the
+   * recovered message (if any).
+   *
+   * @param keyIndex        The index of the key for which verification results are exported.
+   * @param progressUpdater A consumer to update the progress of the export process.
+   * @throws IOException If there is an error writing to the file.
+   */
+  abstract void exportVerificationResultsToCSV(int keyIndex,
+      DoubleConsumer progressUpdater) throws IOException;
 
   /**
    * Retrieves the clock times recorded for each trial during the batch signature creation process.
@@ -419,7 +429,8 @@ public abstract class AbstractSignatureModelBenchmarking extends SignatureModel 
    */
   void combineResultsIntoFinalLists(List<List<Long>> timesPerKey,
       List<List<byte[]>> signaturesPerKey,
-      List<List<byte[]>> nonRecoverableMessagesPerKey) {}
+      List<List<byte[]>> nonRecoverableMessagesPerKey) {
+  }
 
 
 }

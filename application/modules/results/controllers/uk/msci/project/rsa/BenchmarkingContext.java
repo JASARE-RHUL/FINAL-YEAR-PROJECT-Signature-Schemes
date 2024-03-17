@@ -3,6 +3,7 @@ package uk.msci.project.rsa;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import javafx.stage.Stage;
 
 /**
  * This abstract class that provides a framework for specialised functionality within the results
@@ -44,9 +45,13 @@ public abstract class BenchmarkingContext {
 
   /**
    * Exports the results of the signature verification process conducted during benchmarking. The
-   * method is to be overridden in subclasses to handle operation-specific export logic.
+   * method is intended to be overridden in subclasses to handle operation-specific export logic.
+   *
+   * @param keyIndex      The index of the verification key.
+   * @param primaryStage  The primary stage for the UI (JavaFX Stage).
+   * @throws IOException  If an I/O error occurs during file writing.
    */
-  public void exportVerificationResults(int keyIndex)
+  public void exportVerificationResults(int keyIndex, Stage primaryStage)
       throws IOException { /* Default empty implementation */ }
 
 
@@ -54,7 +59,7 @@ public abstract class BenchmarkingContext {
    * Determines if the UI button for exporting the public key batch should be shown. Subclasses can
    * override this method to provide operation-specific display logic.
    *
-   * @return false by default
+   * @return false by defaulta
    */
   public boolean showExportPublicKeyBatchButton() {
     return false;

@@ -1,6 +1,11 @@
 package uk.msci.project.rsa;
 
 import java.io.IOException;
+import java.util.List;
+import javafx.application.Platform;
+import javafx.concurrent.Task;
+import javafx.stage.Stage;
+import javafx.util.Pair;
 
 /**
  * This class is a specialised context for the benchmarking of signature verification operations. It
@@ -29,14 +34,32 @@ public class SignatureVerificationContext extends SignatureBaseContext {
   }
 
   /**
-   * Exports the verification results to a CSV file using the SignatureModel's export function.
+   * Exports the verification results to a CSV file using the SignatureModel's export function. This
+   * method initiates a task to handle the export process asynchronously.
    *
+   * @param keyIndex     The index of the verification key.
+   * @param primaryStage The primary stage for the UI (JavaFX Stage).
    * @throws IOException If an I/O error occurs during file writing.
    */
   @Override
-  public void exportVerificationResults(int keyIndex) throws IOException {
-      signatureModel.exportVerificationResultsToCSV(keyIndex);
+  public void exportVerificationResults(int keyIndex, Stage primaryStage) throws IOException {
+    BenchmarkingUtility benchmarkingUtility = new BenchmarkingUtility();
+    Task<Void> benchmarkingTask = new Task<Void>() {
+      @Override
+      protected Void call() throws Exception {
+        signatureModel.exportVerificationResultsToCSV(keyIndex,
+            progress -> Platform.runLater(() -> {
+              benchmarkingUtility.updateProgress(progress);
+              benchmarkingUtility.updateProgressLabel(String.format("%.0f%%", progress * 100));
+            }));
+        return null;
+      }
+    };
+    BenchmarkingUtility.beginBenchmarkWithUtility(benchmarkingUtility, "Verification Results",
+        benchmarkingTask, () -> uk.msci.project.rsa.DisplayUtility.showInfoAlert("Export",
+            "Verification Results were successfully exported!"), primaryStage);
   }
+
 
   /**
    * Overrides the method from the base class to provide a specific label for the signature

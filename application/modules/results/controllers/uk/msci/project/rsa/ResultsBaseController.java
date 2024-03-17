@@ -365,12 +365,10 @@ public abstract class ResultsBaseController {
     @Override
     public void handle(ActionEvent event) {
       try {
-        currentContext.exportVerificationResults(keyIndex);
+        currentContext.exportVerificationResults(keyIndex, mainController.getPrimaryStage());
       } catch (IOException e) {
         e.printStackTrace();
       }
-      uk.msci.project.rsa.DisplayUtility.showInfoAlert("Export",
-          "Verification Results were successfully exported!");
     }
   }
 

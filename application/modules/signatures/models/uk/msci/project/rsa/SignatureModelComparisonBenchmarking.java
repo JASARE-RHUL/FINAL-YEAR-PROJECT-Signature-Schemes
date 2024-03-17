@@ -631,16 +631,18 @@ public class SignatureModelComparisonBenchmarking extends AbstractSignatureModel
    * This functionality facilitates detailed analysis and comparison of signature verification
    * performance across different parameter configurations.
    *
-   * @param keySizeIndex The index of the key size for which results are to be exported. This index
-   *                     corresponds to the position of the key size in the list of all key sizes
-   *                     used during the benchmarking process.
+   * @param keySizeIndex    The index of the key size for which results are to be exported. This
+   *                        index corresponds to the position of the key size in the list of all key
+   *                        sizes used during the benchmarking process.
+   * @param progressUpdater A consumer to update the progress of the export process.
    * @throws IOException If there is an error in writing to the file.
    */
-  void exportVerificationResultsToCSV(int keySizeIndex) throws IOException {
+  void exportVerificationResultsToCSV(int keySizeIndex, DoubleConsumer progressUpdater)
+      throws IOException {
     File file = FileHandle.createUniqueFile(
         "verificationResults_ComparisonMode_" + getKeyLengths().get(keySizeIndex)
             + "bits.csv");
-
+    int completedWork = 0;
     int currentIndex = 0;
     int headerStartIndex = 0; // Starting index for the row headers for each group
     int resultsPerKeySize = totalWork / numKeySizesForComparisonMode;
@@ -692,6 +694,8 @@ public class SignatureModelComparisonBenchmarking extends AbstractSignatureModel
                       "\"" + originalMessage + "\", " +
                       signature + ", " + recoverableMessage + "\n");
 
+                  double currentKeyProgress = (double) (++completedWork) / totalWork;
+                  progressUpdater.accept(currentKeyProgress);
                   messageCounter++;
                 }
               }
