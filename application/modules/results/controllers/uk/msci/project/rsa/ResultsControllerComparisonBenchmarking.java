@@ -3,6 +3,7 @@ package uk.msci.project.rsa;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
@@ -107,10 +108,9 @@ public class ResultsControllerComparisonBenchmarking extends ResultsBaseControll
           }
           initialiseKeySwitchButtons();
           resultsView.addValueColumns(createComparisonModeColumnHeaders());
-
-          graphManager.precomputeGraphsComparisonMode(resultsModels, comparisonModeRowHeaders,
-              results, keyLengths);
-
+          // Precompute graphs asynchronously
+          Platform.runLater(() -> graphManager.precomputeGraphsComparisonMode(resultsModels, comparisonModeRowHeaders,
+              results, keyLengths));
         });
   }
 

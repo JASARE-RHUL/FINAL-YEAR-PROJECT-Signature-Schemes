@@ -2,17 +2,15 @@ package uk.msci.project.rsa;
 
 import java.io.IOException;
 import java.util.List;
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
-import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
-import javafx.scene.Parent;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tab;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.VBox;
-import uk.msci.project.rsa.ResultsController.ExportBenchmarkingResultsObserver;
 
 
 /**
@@ -98,7 +96,8 @@ public class ResultsControllerNormalBenchmarking extends ResultsBaseController {
                 new StatisticData("Hash Function:", resultsModels.get(0).getHashFunctionName()));
           }
           resultsView.refreshResults();
-          graphManager.precomputeGraphs(resultsModels, keyLengths);
+          // Precompute graphs asynchronously
+          Platform.runLater(() -> graphManager.precomputeGraphs(resultsModels, keyLengths));
           resultsView.setLineGraphButtonMeanVisibility(false);
         });
   }
