@@ -327,8 +327,8 @@ public class ResultsControllerComparisonBenchmarking extends ResultsBaseControll
     @Override
     public void handle(ActionEvent event) {
       resultsView.exportComparisonTableResultsToCSV(
-          currentContext.getResultsLabel(false) + "_" + ResultsUtility.getKeyLength(keyIndex,
-              resultsModels, numKeySizesForComparisonMode, keyLengths) + "bit_key"
+          currentContext.getResultsLabel(true) + "_" + ResultsUtility.getKeyLength(keyIndex,
+              resultsModels, numKeySizesForComparisonMode, keyLengths) + "bit_key_size_"
               + "_comparisonMode.csv");
       uk.msci.project.rsa.DisplayUtility.showInfoAlert("Export",
           "Benchmarking Results were successfully exported!");
