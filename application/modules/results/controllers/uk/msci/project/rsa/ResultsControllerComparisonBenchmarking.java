@@ -172,10 +172,10 @@ public class ResultsControllerComparisonBenchmarking extends ResultsBaseControll
             int trialsPerHashFunction = trialsPerKeyByGroup[groupIndex] / hashFunctions.size();
             List<Long> keySpecificResults = results.subList(currentIndex,
                 currentIndex + trialsPerHashFunction);
-
-            String keyConfigString = comparisonModeRowHeaders.get(
-                (headerStartIndex + k) % comparisonModeRowHeaders.size());
             int keyLength = keyLengths.get(keyIndex); // Retrieve the key length
+            int comparisonModeRowHeaderIndex =
+                (headerStartIndex + k) % comparisonModeRowHeaders.size();
+
             HashFunctionSelection currentHashFunction = hashFunctions.get(hashFunctionIndex);
             int[] hashSizeFractions = currentHashFunction.getCustomSize();
             if (currentHashFunction.isProvablySecure()) {
@@ -189,6 +189,13 @@ public class ResultsControllerComparisonBenchmarking extends ResultsBaseControll
                 digestSize != 0 ? currentHashFunction.getDigestType().toString()
                     + " (" + digestSize + "bit" + ")"
                     : currentHashFunction.getDigestType().toString();
+            if (keyLength == 1024 && digestSize == 0
+                && currentHashFunction.getDigestType() == DigestType.SHA_512
+                && comparisonModeRowHeaders.get(0).startsWith("Standard")) {
+              comparisonModeRowHeaderIndex =
+                  (comparisonModeRowHeaderIndex + 2) % comparisonModeRowHeaders.size();
+            }
+            String keyConfigString = comparisonModeRowHeaders.get(comparisonModeRowHeaderIndex);
             ResultsModel resultsModel = new ResultsModel(keySpecificResults, keyConfigString,
                 hashFunctionName, keyLength);
             resultsModel.calculateStatistics();
