@@ -45,7 +45,7 @@ public class SignatureCreationContext extends SignatureBaseContext {
    */
   @Override
   public boolean showNonRecoverableBatchButton() {
-    return checkForEmptyLists(signatureModel.getNonRecoverableMessages());
+    return signatureModel.getSignatureType()==SignatureType.ISO_IEC_9796_2_SCHEME_1;
   }
 
   /**
