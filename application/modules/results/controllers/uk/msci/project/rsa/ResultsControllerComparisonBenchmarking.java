@@ -6,9 +6,7 @@ import java.util.List;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
-import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
-import javafx.scene.Parent;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tab;
 import javafx.scene.image.Image;
@@ -40,6 +38,8 @@ public class ResultsControllerComparisonBenchmarking extends ResultsBaseControll
   public void setupObservers() {
     super.setupObservers();
     resultsView.addExportBenchmarkingResultsObserver(new ExportBenchmarkingResultsObserver());
+    resultsView.addExportVerificationResultsObserver(
+        new ExportVerificationResultsObserver());
   }
 
 
@@ -109,7 +109,8 @@ public class ResultsControllerComparisonBenchmarking extends ResultsBaseControll
           initialiseKeySwitchButtons();
           resultsView.addValueColumns(createComparisonModeColumnHeaders());
           // Precompute graphs asynchronously
-          Platform.runLater(() -> graphManager.precomputeGraphsComparisonMode(resultsModels, comparisonModeRowHeaders,
+          Platform.runLater(() -> graphManager.precomputeGraphsComparisonMode(resultsModels,
+              comparisonModeRowHeaders,
               results, keyLengths));
         });
   }
@@ -332,6 +333,25 @@ public class ResultsControllerComparisonBenchmarking extends ResultsBaseControll
               + "_comparisonMode.csv");
       uk.msci.project.rsa.DisplayUtility.showInfoAlert("Export",
           "Benchmarking Results were successfully exported!");
+    }
+  }
+
+  /**
+   * Observer for handling the export of verification results containing all related data such keys,
+   * signed messages, a boolean indicator of the results for each verification etc. Triggers upon
+   * user action to export results to a CSV file.
+   */
+  class ExportVerificationResultsObserver implements EventHandler<ActionEvent> {
+
+    @Override
+    public void handle(ActionEvent event) {
+      try {
+        currentContext.exportVerificationResults(ResultsUtility.getKeyLength(keyIndex,
+                resultsModels, numKeySizesForComparisonMode, keyLengths),
+            mainController.getPrimaryStage());
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
     }
   }
 
