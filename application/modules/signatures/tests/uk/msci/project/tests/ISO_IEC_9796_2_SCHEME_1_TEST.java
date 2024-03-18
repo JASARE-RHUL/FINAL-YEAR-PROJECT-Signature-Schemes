@@ -113,7 +113,7 @@ public class ISO_IEC_9796_2_SCHEME_1_TEST {
       Field emLen = SigScheme.class.getDeclaredField("emLen");
       emLen.setAccessible(true);
       int emLenVal = (int) emLen.get(scheme);
-      Field hashSize = ISO_IEC_9796_2_SCHEME_1.class.getDeclaredField("hashSize");
+      Field hashSize = SigScheme.class.getDeclaredField("hashSize");
       hashSize.setAccessible(true);
       int hashSizeVal = (int) hashSize.get(scheme);
       assertEquals((emLenVal + 1) / 2, hashSizeVal);
