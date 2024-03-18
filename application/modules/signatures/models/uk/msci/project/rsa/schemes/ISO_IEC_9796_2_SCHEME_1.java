@@ -98,6 +98,7 @@ public class ISO_IEC_9796_2_SCHEME_1 extends SigScheme {
       isFullRecovery = true;
       availableSpace = -((Math.abs(availableSpace) + 7) / 8);
     }
+    // convert available space in bits
 
 
     int hashStart = emLen - hashSize - 1;
