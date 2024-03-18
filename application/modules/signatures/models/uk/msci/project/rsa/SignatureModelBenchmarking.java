@@ -11,7 +11,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -83,7 +82,7 @@ public class SignatureModelBenchmarking extends AbstractSignatureModelBenchmarki
               Future<Pair<Integer, Pair<Long, Pair<byte[], byte[]>>>> future = executor.submit(
                   () -> createSignature(privateKey, currentMessage, finalKeyIndex));
               futures.add(future);
-              if (futures.size() >= threadPoolSize || messageCounter ==  this.numTrials-1) {
+              if (futures.size() >= threadPoolSize || messageCounter == this.numTrials - 1) {
                 processFuturesForSignatureCreation(progressUpdater, futures,
                     timesPerKey,
                     signaturesPerKey, nonRecoverableMessagesPerKey);
@@ -257,7 +256,7 @@ public class SignatureModelBenchmarking extends AbstractSignatureModelBenchmarki
                     return new Pair<>(finalKeyIndex, verificationResult);
                   });
               futures.add(future);
-              if (futures.size() >= threadPoolSize || messageCounter ==  this.numTrials-1) {
+              if (futures.size() >= threadPoolSize || messageCounter == this.numTrials - 1) {
                 processFuturesForSignatureVerification(progressUpdater, futures,
                     timesPerKey,
                     signaturesPerKey, recoveredMessagesPerKey, verificationResultsPerKey);
@@ -360,12 +359,14 @@ public class SignatureModelBenchmarking extends AbstractSignatureModelBenchmarki
    *
    * @param keyIndex        The index of the key for which verification results are exported.
    * @param progressUpdater A consumer to update the progress of the export process.
-   * @throws IOException    If there is an error writing to the file.
+   * @throws IOException If there is an error writing to the file.
    */
-  public void exportVerificationResultsToCSV(int keyIndex, DoubleConsumer progressUpdater) throws IOException {
+  public void exportVerificationResultsToCSV(int keyIndex, DoubleConsumer progressUpdater)
+      throws IOException {
     int completedWork = 0;
     File file = FileHandle.createUniqueFile(
-        "verificationResults_" + getKeyLengths().get(keyIndex) + "bits.csv");
+        "verificationResults_" + getKeyLengths().get(keyIndex) + "bit_"
+            + String.join("_", currentType.toString().split(" ")) + ".csv");
 
     try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
       // Write header

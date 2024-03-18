@@ -639,9 +639,10 @@ public class SignatureModelComparisonBenchmarking extends AbstractSignatureModel
    */
   void exportVerificationResultsToCSV(int keySizeIndex, DoubleConsumer progressUpdater)
       throws IOException {
+
     File file = FileHandle.createUniqueFile(
-        "verificationResults_ComparisonMode_" + getKeyLengths().get(keySizeIndex)
-            + "bits.csv");
+        "verificationResults_ComparisonMode_" + getKeyLengths().get(keySizeIndex) + "bit_"
+            + String.join( "_",currentType.toString().split(" ")) + ".csv");
     int completedWork = 0;
     int currentIndex = 0;
     int headerStartIndex = 0; // Starting index for the row headers for each group
