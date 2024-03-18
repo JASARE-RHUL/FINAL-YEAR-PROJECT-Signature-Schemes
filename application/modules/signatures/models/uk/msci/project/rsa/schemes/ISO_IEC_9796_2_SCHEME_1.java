@@ -85,22 +85,26 @@ public class ISO_IEC_9796_2_SCHEME_1 extends SigScheme {
   public byte[] encodeMessage(byte[] M) throws DataFormatException {
     byte[] EM = new byte[emLen];
     m1Len = M.length;
+    // available space in bits
     int availableSpace = (hashSize + m1Len) * 8 + 8 + 4 - emBits;
     //Partial recovery if message is larger than available space
     // else scheme proceeds with full recovery.
     if (availableSpace > 0) {
       PADLFIRSTNIBBLE = 0x60;
       isFullRecovery = false;
+      availableSpace = ((availableSpace) + 7) / 8;
     } else {
       PADLFIRSTNIBBLE = 0x40;
       isFullRecovery = true;
+      availableSpace = -((Math.abs(availableSpace) + 7) / 8);
     }
+    // convert available space in bits
 
     int hashStart = emLen - hashSize - 1;
     int delta = hashStart;
     //length of the message to be copied is either the availableSpace most significant bits of
     // M or alternatively the full length of the original message if the message is too short
-    int messageLength = Math.min(m1Len, m1Len - ((availableSpace + 7) / 8) - 1);
+    int messageLength = Math.min(m1Len, m1Len - availableSpace - 1);
     // m2 comprises the non-recoverable message portion
     m2Len = max(m1Len - messageLength, 0);
     //copying the message
