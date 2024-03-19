@@ -38,16 +38,19 @@ public class SignatureVerificationContext extends SignatureBaseContext {
    * method initiates a task to handle the export process asynchronously.
    *
    * @param keyIndex     The index of the verification key.
+   * @param keySize      The length of the key/key size for which verification results are
+   *                     exported.
    * @param primaryStage The primary stage for the UI (JavaFX Stage).
    * @throws IOException If an I/O error occurs during file writing.
    */
   @Override
-  public void exportVerificationResults(int keyIndex, Stage primaryStage) throws IOException {
+  public void exportVerificationResults(int keyIndex, int keySize, Stage primaryStage)
+      throws IOException {
     BenchmarkingUtility benchmarkingUtility = new BenchmarkingUtility();
     Task<Void> benchmarkingTask = new Task<Void>() {
       @Override
       protected Void call() throws Exception {
-        signatureModel.exportVerificationResultsToCSV(keyIndex,
+        signatureModel.exportVerificationResultsToCSV(keyIndex, keySize,
             progress -> Platform.runLater(() -> {
               benchmarkingUtility.updateProgress(progress);
               benchmarkingUtility.updateProgressLabel(String.format("%.0f%%", progress * 100));

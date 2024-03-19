@@ -630,30 +630,33 @@ public class SignatureModelComparisonBenchmarking extends AbstractSignatureModel
    * parameter type, verification result, original message, signature, and any recovered message.
    * This functionality facilitates detailed analysis and comparison of signature verification
    * performance across different parameter configurations.
+   * <p>
    *
-   * @param keySizeIndex    The index of the key size for which results are to be exported. This
-   *                        index corresponds to the position of the key size in the list of all key
-   *                        sizes used during the benchmarking process.
+   * @param keySizeIndex        The index of the key size for which verification results are exported.
+   * @param keySize         The length of the key size for which verification results are exported.
    * @param progressUpdater A consumer to update the progress of the export process.
    * @throws IOException If there is an error in writing to the file.
    */
-  void exportVerificationResultsToCSV(int keySizeIndex, DoubleConsumer progressUpdater)
+  void exportVerificationResultsToCSV(int keySizeIndex, int keySize, DoubleConsumer progressUpdater)
       throws IOException {
 
     File file = FileHandle.createUniqueFile(
-        "verificationResults_ComparisonMode_" + getKeyLengths().get(keySizeIndex) + "bit_"
-            + String.join( "_",currentType.toString().split(" ")) + ".csv");
+        "verificationResults_ComparisonMode_" + keySize + "bit_"
+            + String.join("_", currentType.toString().split(" ")) + ".csv");
     int completedWork = 0;
-    int currentIndex = 0;
+
     int headerStartIndex = 0; // Starting index for the row headers for each group
     int resultsPerKeySize = totalWork / numKeySizesForComparisonMode;
+    int startIndex = keySizeIndex * resultsPerKeySize;
+    int currentIndex = startIndex;
+    int endIndex = (keySizeIndex + 1) * resultsPerKeySize;
     try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
       // Write header
       writer.write(
-          "Parameter Type" + " (" + getKeyLengths().get(keySizeIndex)
-              + "bit key), Hash Function, "
+          "Parameter Type" + " (" + keySize
+              + "bit size), Hash Function, "
               + "Verification Result, Original Message, Signature, Recovered Message\n");
-      while (currentIndex < clockTimesPerTrial.size()) {
+      while (currentIndex < endIndex) {
         for (int groupIndex = 0; groupIndex < keyConfigToHashFunctionsMap.size(); groupIndex++) {
           List<HashFunctionSelection> hashFunctions = keyConfigToHashFunctionsMap.get(
               groupIndex);
@@ -687,7 +690,7 @@ public class SignatureModelComparisonBenchmarking extends AbstractSignatureModel
                   String recoverableMessage =
                       recoverableMessages.get(keySpecificMessageResults) != null
                           && recoverableMessages.get(keySpecificMessageResults).length > 0 ?
-                          new String(recoverableMessages.get(keySpecificMessageResults)) : "";
+                          new String(recoverableMessages.get(keySpecificMessageResults)) : "[*NoMsg*]";
 
                   writer.write(keyConfigString + ", "
                       + hashFunctionName + ", " +

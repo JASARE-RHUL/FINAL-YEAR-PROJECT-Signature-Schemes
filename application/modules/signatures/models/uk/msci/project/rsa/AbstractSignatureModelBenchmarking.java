@@ -277,11 +277,14 @@ public abstract class AbstractSignatureModelBenchmarking extends SignatureModel 
    * used for verification, the verification result, the original message, the signature, and the
    * recovered message (if any).
    *
-   * @param keyIndex        The index of the key for which verification results are exported.
+   * @param keyIndex        The index of the key/keySize for which verification results are
+   *                        exported.
+   * @param keySize         The length of the key/key size for which verification results are
+   *                        exported.
    * @param progressUpdater A consumer to update the progress of the export process.
    * @throws IOException If there is an error writing to the file.
    */
-  abstract void exportVerificationResultsToCSV(int keyIndex,
+  abstract void exportVerificationResultsToCSV(int keyIndex, int keySize,
       DoubleConsumer progressUpdater) throws IOException;
 
   /**

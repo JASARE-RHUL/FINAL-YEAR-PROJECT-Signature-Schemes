@@ -47,11 +47,13 @@ public abstract class BenchmarkingContext {
    * Exports the results of the signature verification process conducted during benchmarking. The
    * method is intended to be overridden in subclasses to handle operation-specific export logic.
    *
-   * @param keyIndex      The index of the verification key.
-   * @param primaryStage  The primary stage for the UI (JavaFX Stage).
-   * @throws IOException  If an I/O error occurs during file writing.
+   * @param keyIndex     The index of the verification key.
+   * @param keySize      The length of the key/key size for which verification results are
+   *                     exported.
+   * @param primaryStage The primary stage for the UI (JavaFX Stage).
+   * @throws IOException If an I/O error occurs during file writing.
    */
-  public void exportVerificationResults(int keyIndex, Stage primaryStage)
+  public void exportVerificationResults(int keyIndex, int keySize, Stage primaryStage)
       throws IOException { /* Default empty implementation */ }
 
 

@@ -353,7 +353,7 @@ public class ResultsControllerComparisonBenchmarking extends ResultsBaseControll
     @Override
     public void handle(ActionEvent event) {
       try {
-        currentContext.exportVerificationResults(ResultsUtility.getKeyLength(keyIndex,
+        currentContext.exportVerificationResults(keyIndex, ResultsUtility.getKeyLength(keyIndex,
                 resultsModels, numKeySizesForComparisonMode, keyLengths),
             mainController.getPrimaryStage());
       } catch (IOException e) {

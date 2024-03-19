@@ -365,7 +365,8 @@ public abstract class ResultsBaseController {
     @Override
     public void handle(ActionEvent event) {
       try {
-        currentContext.exportVerificationResults(keyIndex, mainController.getPrimaryStage());
+        currentContext.exportVerificationResults(keyIndex, keyLengths.get(keyIndex),
+            mainController.getPrimaryStage());
       } catch (IOException e) {
         e.printStackTrace();
       }
