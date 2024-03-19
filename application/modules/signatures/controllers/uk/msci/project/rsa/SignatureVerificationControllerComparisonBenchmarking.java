@@ -124,11 +124,21 @@ public class SignatureVerificationControllerComparisonBenchmarking extends
       if (!isCustomCrossParameterBenchmarkingMode) {
         signatureModel.createDefaultKeyConfigToHashFunctionsMap();
       }
-      if (isCrossParameterBenchmarkingEnabled && !isCustomCrossParameterBenchmarkingMode
-          && ((signatureModel.calculateNumBenchmarkingRuns() * numTrials
-          * signatureModel.getNumKeySizesForComparisonMode()) != numSignatures)) {
+      if (((signatureModel.calculateNumBenchmarkingRuns() * numTrials
+          * signatureModel.getNumKeySizesForComparisonMode()) != numSignatures)
+          && signatureModel.getSignatureType() != SignatureType.ISO_IEC_9796_2_SCHEME_1) {
         uk.msci.project.rsa.DisplayUtility.showErrorAlert(
             "The signature-message batches and your chosen hash function selections do not match. Please ensure they match to proceed.");
+        return;
+      }
+
+      if (((numTrials
+          != numSignatures) || ((numSignatures % (signatureModel.calculateNumBenchmarkingRuns()
+          * signatureModel.getNumKeySizesForComparisonMode())) != 0)
+          && signatureModel.getSignatureType() == SignatureType.ISO_IEC_9796_2_SCHEME_1)) {
+        uk.msci.project.rsa.DisplayUtility.showErrorAlert(
+            "Your selected combination of signature, non recoverable message batch and "
+                + "hash function selections do not match. Please ensure they match to proceed.");
         return;
       }
 
