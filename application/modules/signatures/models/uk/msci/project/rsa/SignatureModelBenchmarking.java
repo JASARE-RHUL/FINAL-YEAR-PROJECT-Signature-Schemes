@@ -394,7 +394,7 @@ public class SignatureModelBenchmarking extends AbstractSignatureModelBenchmarki
           String recoverableMessage =
               recoverableMessages.get(keySpecificMessageResults) != null
                   && recoverableMessages.get(keySpecificMessageResults).length > 0 ?
-                  new String(recoverableMessages.get(keySpecificMessageResults)) : "";
+                  new String(recoverableMessages.get(keySpecificMessageResults)) : "[*NoMsg*]";
 
           writer.write((keyIndex + 1) + ", " +
               verificationResult + ", " +
