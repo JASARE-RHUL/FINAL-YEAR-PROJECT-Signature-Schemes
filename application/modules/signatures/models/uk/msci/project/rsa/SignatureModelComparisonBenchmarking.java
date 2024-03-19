@@ -98,6 +98,12 @@ public class SignatureModelComparisonBenchmarking extends AbstractSignatureModel
    */
   private int numBenchmarkingRuns;
 
+  /**
+   * Indicates if the signature benchmarking is running in the default comparison mode (standard vs
+   * provably secure parameter sets).
+   */
+  private boolean isDefaultComparisonMode;
+
 
   /**
    * Constructs a new {@code SignatureModel} without requiring an initial key representative of the
@@ -159,22 +165,37 @@ public class SignatureModelComparisonBenchmarking extends AbstractSignatureModel
                       j < keyGroupIndex + keysPerGroup && j < numKeysPerKeySizeComparisonMode;
                       j++) {
                     int actualKeyIndex = keySizeIndex + j;
-                    PrivateKey privateKey = (PrivateKey) keyBatch.get(actualKeyIndex);
+                    String keyHashFunctionIdentifier =
+                        actualKeyIndex + "-" + hashFunctionType.getDigestType();
+
                     int keyLength = keyLengths.get(actualKeyIndex);
+                    boolean isProvablySecure = hashFunctionType.isProvablySecure();
                     int digestSize =
                         hashFunctionType.getCustomSize() == null ? 0 : (int) Math.round(
                             (keyLength * hashFunctionType.getCustomSize()[0])
                                 / (double) hashFunctionType.getCustomSize()[1]);
                     digestSize = Math.floorDiv(digestSize + 7, 8);
-                    String keyHashFunctionIdentifier =
-                        actualKeyIndex + "-" + hashFunctionType.getDigestType();
+                    // if standard hash function SHA-512 is chosen for standard parameter set
+                    // but the key length is 1024bit, this means the hash size now meets
+                    // the criteria for provably secure parameters since its output is >= keylength/2
+                    if (keyLength == 1024 && digestSize == 0
+                        && hashFunctionType.getDigestType() == DigestType.SHA_512
+                        && isDefaultComparisonMode && !isProvablySecure) {
+                      // Consequently adapt the hash function to be used with
+                      // the provable parameter (small e) keys which are the second sequence
+                      // of two keys that follow the standard parameter sequence of two keys.
+                      actualKeyIndex = (actualKeyIndex + 2);
+                      isProvablySecure = true;
+                    }
+                    PrivateKey privateKey = (PrivateKey) keyBatch.get(actualKeyIndex);
 
                     int finalDigestSize = digestSize;
+                    boolean finalIsProvablySecure = isProvablySecure;
                     Future<Pair<String, Pair<Long, Pair<byte[], byte[]>>>> future = executor.submit(
                         () -> {
                           try {
                             SigScheme sigScheme = SignatureFactory.getSignatureScheme(currentType,
-                                privateKey, hashFunctionType.isProvablySecure());
+                                privateKey, finalIsProvablySecure);
                             sigScheme.setDigest(hashFunctionType.getDigestType(), finalDigestSize);
 
                             long startTime = System.nanoTime();
@@ -400,7 +421,6 @@ public class SignatureModelComparisonBenchmarking extends AbstractSignatureModel
                   break; // Skip if key index exceeds the total number of keys
                 }
 
-                PublicKey publicKey = (PublicKey) keyBatch.get(actualKeyIndex);
                 int keyLength = keyLengths.get(actualKeyIndex);
 
                 for (HashFunctionSelection hashFunction : hashFunctions) {
@@ -410,16 +430,31 @@ public class SignatureModelComparisonBenchmarking extends AbstractSignatureModel
                       (keyLength * hashFunction.getCustomSize()[0])
                           / (double) hashFunction.getCustomSize()[1]);
                   digestSize = Math.floorDiv(digestSize + 7, 8);
+                  boolean isProvablySecure = hashFunction.isProvablySecure();
+                  // if standard hash function SHA-512 is chosen for standard parameter set
+                  // but the key length is 1024bit, this means the hash size now meets
+                  // the criteria for provably secure parameters since its output is >= keylength/2
+                  if (keyLength == 1024 && digestSize == 0
+                      && hashFunction.getDigestType() == DigestType.SHA_512
+                      && isDefaultComparisonMode && !isProvablySecure) {
+                    // Consequently adapt the hash function to be used with
+                    // the provable parameter (small e) keys which are the second sequence
+                    // of two keys that follow the standard parameter sequence of two keys.
+                    actualKeyIndex = (actualKeyIndex + 2);
+                    isProvablySecure = true;
+                  }
+                  PublicKey publicKey = (PublicKey) keyBatch.get(actualKeyIndex);
 
                   String signatureLine = signatureReader.readLine();
                   byte[] signatureBytes = new BigInteger(signatureLine).toByteArray();
 
                   String finalMessageLine = messageLine;
                   int finalDigestSize = digestSize;
+                  boolean finalIsProvablySecure = isProvablySecure;
                   Future<Pair<Boolean, Pair<Long, List<byte[]>>>> future = executor.submit(() -> {
                     try {
                       SigScheme sigScheme = SignatureFactory.getSignatureScheme(currentType,
-                          publicKey, hashFunction.isProvablySecure());
+                          publicKey, finalIsProvablySecure);
                       sigScheme.setDigest(hashFunction.getDigestType(), finalDigestSize);
                       return getBatchVerificationResult(sigScheme, finalMessageLine,
                           signatureBytes, keyHashFunctionIdentifier);
@@ -632,7 +667,7 @@ public class SignatureModelComparisonBenchmarking extends AbstractSignatureModel
    * performance across different parameter configurations.
    * <p>
    *
-   * @param keySizeIndex        The index of the key size for which verification results are exported.
+   * @param keySizeIndex    The index of the key size for which verification results are exported.
    * @param keySize         The length of the key size for which verification results are exported.
    * @param progressUpdater A consumer to update the progress of the export process.
    * @throws IOException If there is an error in writing to the file.
@@ -690,7 +725,8 @@ public class SignatureModelComparisonBenchmarking extends AbstractSignatureModel
                   String recoverableMessage =
                       recoverableMessages.get(keySpecificMessageResults) != null
                           && recoverableMessages.get(keySpecificMessageResults).length > 0 ?
-                          new String(recoverableMessages.get(keySpecificMessageResults)) : "[*NoMsg*]";
+                          new String(recoverableMessages.get(keySpecificMessageResults))
+                          : "[*NoMsg*]";
 
                   writer.write(keyConfigString + ", "
                       + hashFunctionName + ", " +
@@ -736,10 +772,11 @@ public class SignatureModelComparisonBenchmarking extends AbstractSignatureModel
 
   /**
    * Initialises the keyConfigToHashFunctionsMap with values based on the number of key sizes and
-   * groups for default comparison mode (provaly secure vs standard). This map determines the hash
+   * groups for default comparison mode (provably secure vs standard). This map determines the hash
    * functions used for each group of keys.
    */
   public void createDefaultKeyConfigToHashFunctionsMap() {
+    isDefaultComparisonMode = true;
     keyConfigToHashFunctionsMap = new HashMap<>();
 
     // Calculate the total number of groups
