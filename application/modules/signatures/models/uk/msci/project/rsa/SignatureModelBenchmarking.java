@@ -357,24 +357,23 @@ public class SignatureModelBenchmarking extends AbstractSignatureModelBenchmarki
    * contain the index of the key used for verification, the verification result, the original
    * message, the signature, and the recovered message (if any).
    *
-   * @param keyIndex        The index of the key for which verification results are
-   *                        exported.
-   * @param keySize         The length of the key for which verification results are
-   *                        exported.
+   * @param keyIndex        The index of the key for which verification results are exported.
+   * @param keySize         The length of the key for which verification results are exported.
    * @param progressUpdater A consumer to update the progress of the export process.
    * @throws IOException If there is an error writing to the file.
    */
-  public void exportVerificationResultsToCSV(int keyIndex, int keySize, DoubleConsumer progressUpdater)
+  public void exportVerificationResultsToCSV(int keyIndex, int keySize,
+      DoubleConsumer progressUpdater)
       throws IOException {
     int completedWork = 0;
     File file = FileHandle.createUniqueFile(
         "verificationResults_" + keySize + "bit_"
-            + String.join("_", currentType.toString().split(" ")) + ".csv");
+            + String.join("_", currentType.toString().split(" ")).replace("/", "-") + ".csv");
 
     try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
       // Write header
       writer.write(
-          "KeyIndex" + keyIndex  + " (" + keySize + "bit), "
+          "KeyIndex" + keyIndex + " (" + keySize + "bit), "
               + "Verification Result, Original Message, Signature, Recovered Message\n");
 
       int numKeys = keyBatch.size();

@@ -677,7 +677,7 @@ public class SignatureModelComparisonBenchmarking extends AbstractSignatureModel
 
     File file = FileHandle.createUniqueFile(
         "verificationResults_ComparisonMode_" + keySize + "bit_"
-            + String.join("_", currentType.toString().split(" ")) + ".csv");
+            + String.join("_", currentType.toString().split(" ")).replace("/", "-") + ".csv");
     int completedWork = 0;
 
     int headerStartIndex = 0; // Starting index for the row headers for each group
