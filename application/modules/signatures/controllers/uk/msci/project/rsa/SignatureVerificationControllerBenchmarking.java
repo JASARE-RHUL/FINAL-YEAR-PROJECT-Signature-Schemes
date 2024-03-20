@@ -114,7 +114,17 @@ public class SignatureVerificationControllerBenchmarking extends
 
     @Override
     public void handle(ActionEvent event) {
+
       hashOutputSize = verifyView.getHashOutputSizeArea();
+
+      if ((signatureModel.getNumTrials() == 0)
+          || signatureModel.getKeyBatchLength() == 0
+          || signatureModel.getSignatureType() == null || numSignatures == 0
+          || signatureModel.getHashType() == null) {
+        uk.msci.project.rsa.DisplayUtility.showErrorAlert(
+            "You must provide an input for all fields. Please try again.");
+        return;
+      }
       if ((signatureModel.getNumTrials() * signatureModel.getKeyBatchLength()
           != numSignatures
           && signatureModel.getSignatureType() != SignatureType.ISO_IEC_9796_2_SCHEME_1) || (
@@ -125,14 +135,7 @@ public class SignatureVerificationControllerBenchmarking extends
         return;
       }
 
-      if ((signatureModel.getNumTrials() == 0)
-          || signatureModel.getKeyBatchLength() == 0
-          || signatureModel.getSignatureType() == null || numSignatures == 0
-          || signatureModel.getHashType() == null) {
-        uk.msci.project.rsa.DisplayUtility.showErrorAlert(
-            "You must provide an input for all fields. Please try again.");
-        return;
-      }
+
 
       if (!setHashSizeInModelBenchmarking(verifyView, signatureModel)) {
         return;

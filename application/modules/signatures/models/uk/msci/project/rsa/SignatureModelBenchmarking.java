@@ -23,8 +23,8 @@ import uk.msci.project.rsa.exceptions.InvalidSignatureTypeException;
 
 /**
  * This class is part of the Model component specific to digital signature operations providing
- * methods to sign data and verify signatures.  It encapsulates the data and the logic required to
- * keep track of a user initiated digital signature scheme.
+ * methods to sign batches of data and verification of batch signatures.  It encapsulates the data
+ * and the logic required to keep track of a user initiated digital signature scheme.
  */
 public class SignatureModelBenchmarking extends AbstractSignatureModelBenchmarking {
 
@@ -227,7 +227,6 @@ public class SignatureModelBenchmarking extends AbstractSignatureModelBenchmarki
       verificationResultsPerKey.add(new ArrayList<>());
       signaturesPerKey.add(new ArrayList<>());
       recoveredMessagesPerKey.add(new ArrayList<>());
-      nonRecoverableMessagesPerKey.add(new ArrayList<>());
     }
 
     try (BufferedReader signatureReader = new BufferedReader(new FileReader(batchSignatureFile));
@@ -238,9 +237,6 @@ public class SignatureModelBenchmarking extends AbstractSignatureModelBenchmarki
 
         String messageLine;
         int messageCounter = 0;
-        numTrials =
-            currentType != SignatureType.ISO_IEC_9796_2_SCHEME_1 ? numTrials
-                : numTrials / keyBatch.size();
 
         totalWork = numTrials * keyBatch.size();
 
@@ -338,9 +334,7 @@ public class SignatureModelBenchmarking extends AbstractSignatureModelBenchmarki
       try (ExecutorService executor = Executors.newFixedThreadPool(threadPoolSize)) {
 
         int messageCounter = 0;
-        numTrials =
-            currentType != SignatureType.ISO_IEC_9796_2_SCHEME_1 ? numTrials
-                : numTrials / keyBatch.size();
+        numTrials = numTrials / keyBatch.size();
 
         totalWork = numTrials * keyBatch.size();
 
@@ -513,7 +507,6 @@ public class SignatureModelBenchmarking extends AbstractSignatureModelBenchmarki
           String signature = new BigInteger(1,
               signaturesFromBenchmark.get(keySpecificMessageResults)).toString();
 
-
           writer.write((keyIndex + 1) + ", " +
               verificationResult + ", " +
               "\"" + originalMessage + "\", " + // Enclose in quotes to handle commas
@@ -550,11 +543,10 @@ public class SignatureModelBenchmarking extends AbstractSignatureModelBenchmarki
       // Write header
       writer.write(
           "KeyIndex" + keyIndex + " (" + keySize + "bit), "
-              + "Verification Result, Original Message, Signature, Recovered Message\n");
+              + "Verification Result, Original (Non Recoverable) Message, Signature, Recovered Message\n");
 
       int numKeys = keyBatch.size();
       int numMessagesPerKey = verificationResults.size() / numKeys;
-
 
       int messageCounter = 0;
       List<String> keySpecificMessages = nonRecoverableMessagesPerKey.get(keyIndex);
