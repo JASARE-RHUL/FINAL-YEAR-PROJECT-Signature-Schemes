@@ -140,7 +140,7 @@ public class SignatureVerificationControllerComparisonBenchmarking extends
      benchmarkingTask = new Task<Void>() {
           @Override
           protected Void call() throws Exception {
-            signatureModel.batchVerifySignaturesForMessageRecovery(messageBatchFile, signatureBatchFile,
+            signatureModel.batchVerifySignaturesForRecovery(messageBatchFile, signatureBatchFile,
                 progress -> Platform.runLater(() -> {
                   benchmarkingUtility.updateProgress(progress);
                   benchmarkingUtility.updateProgressLabel(String.format("%.0f%%", progress * 100));

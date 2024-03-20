@@ -104,6 +104,8 @@ public class SignatureModelComparisonBenchmarking extends AbstractSignatureModel
    */
   private boolean isDefaultComparisonMode;
 
+  private Map<String, List<String>> nonRecoverableMessagesPerKeyHashFunction = new HashMap<>();
+
 
   /**
    * Constructs a new {@code SignatureModel} without requiring an initial key representative of the
@@ -507,7 +509,7 @@ public class SignatureModelComparisonBenchmarking extends AbstractSignatureModel
    * @param progressUpdater    A consumer to update the progress of the batch verification process.
    * @throws IOException If there is an I/O error reading from the files.
    */
-  public void batchVerifySignaturesForMessageRecovery(File batchMessageFile,
+  public void batchVerifySignaturesForRecovery(File batchMessageFile,
       File batchSignatureFile,
       DoubleConsumer progressUpdater)
       throws IOException {
@@ -578,6 +580,9 @@ public class SignatureModelComparisonBenchmarking extends AbstractSignatureModel
                   String keyHashFunctionIdentifier =
                       actualKeyIndex + "-" + hashFunctions.get(hashIndex).getDigestType()
                           .toString();
+                  nonRecoverableMessagesPerKeyHashFunction.computeIfAbsent(
+                          keyHashFunctionIdentifier, k -> new ArrayList<>())
+                      .add(messageLine);
                   int digestSize = hashFunction.getCustomSize() == null ? 0 : (int) Math.round(
                       (keyLength * hashFunction.getCustomSize()[0])
                           / (double) hashFunction.getCustomSize()[1]);
@@ -805,7 +810,7 @@ public class SignatureModelComparisonBenchmarking extends AbstractSignatureModel
    * Exports verification results to a CSV file in the cross-parameter benchmarking mode. This
    * method generates a CSV file with results from signature verification processes conducted under
    * different parameter settings for a specific key size. The CSV file includes details such as the
-   * parameter type, verification result, original message, signature, and any recovered message.
+   * parameter type, verification result, original message, and signature.
    * This functionality facilitates detailed analysis and comparison of signature verification
    * performance across different parameter configurations.
    * <p>
@@ -816,6 +821,98 @@ public class SignatureModelComparisonBenchmarking extends AbstractSignatureModel
    * @throws IOException If there is an error in writing to the file.
    */
   void exportVerificationResultsToCSV(int keySizeIndex, int keySize, DoubleConsumer progressUpdater)
+      throws IOException {
+
+    if (currentType == SignatureType.ISO_IEC_9796_2_SCHEME_1) {
+      exportVerificationResultsToCSVForRecovery(keySizeIndex, keySize, progressUpdater);
+      return;
+    }
+
+    File file = FileHandle.createUniqueFile(
+        "verificationResults_ComparisonMode_" + keySize + "bit_"
+            + String.join("_", currentType.toString().split(" ")).replace("/", "-") + ".csv");
+    int completedWork = 0;
+
+    int headerStartIndex = 0; // Starting index for the row headers for each group
+    int resultsPerKeySize = totalWork / numKeySizesForComparisonMode;
+    int startIndex = keySizeIndex * resultsPerKeySize;
+    int currentIndex = startIndex;
+    int endIndex = (keySizeIndex + 1) * resultsPerKeySize;
+    try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
+      // Write header
+      writer.write(
+          "Parameter Type" + " (" + keySize
+              + "bit size), Hash Function, "
+              + "Verification Result, Original Message, Signature\n");
+      while (currentIndex < endIndex) {
+        for (int groupIndex = 0; groupIndex < keyConfigToHashFunctionsMap.size(); groupIndex++) {
+          List<HashFunctionSelection> hashFunctions = keyConfigToHashFunctionsMap.get(
+              groupIndex);
+
+          for (int hashFunctionIndex = 0; hashFunctionIndex < hashFunctions.size();
+              hashFunctionIndex++) {
+            for (int k = 0; k < keysPerGroup; k++) {
+              int keyIndex =
+                  groupIndex * keysPerGroup + k
+                      + (totalGroups * keysPerGroup) * (Math.floorDiv(currentIndex,
+                      resultsPerKeySize));
+              if (keyIndex >= keyBatch.size()) {
+                break; // Prevent accessing keys beyond the total number of keys
+              }
+              int trialsPerHashFunction = trialsPerKeyByGroup[groupIndex] / hashFunctions.size();
+              String keyConfigString = keyConfigurationStrings.get(
+                  (headerStartIndex + k) % keyConfigurationStrings.size());
+              String hashFunctionName = hashFunctions.get(hashFunctionIndex).getDigestType()
+                  .toString();
+              // Read original messages for each key
+              try (BufferedReader reader = new BufferedReader(new FileReader(messageFile))) {
+                String originalMessage;
+                int messageCounter = 0;
+                //numtrials = nummessages
+                while ((originalMessage = reader.readLine()) != null
+                    && messageCounter < numTrials) {
+                  int keySpecificMessageResults = currentIndex + messageCounter;
+                  boolean verificationResult = verificationResults.get(keySpecificMessageResults);
+                  String signature = new BigInteger(1,
+                      signaturesFromBenchmark.get(keySpecificMessageResults)).toString();
+
+
+                  writer.write(keyConfigString + ", "
+                      + hashFunctionName + ", " +
+                      verificationResult + ", " +
+                      "\"" + originalMessage + "\", " +
+                      signature + "\n");
+
+                  double currentKeyProgress = (double) (++completedWork) / totalWork;
+                  progressUpdater.accept(currentKeyProgress);
+                  messageCounter++;
+                }
+              }
+
+              currentIndex += trialsPerHashFunction;
+            }
+          }
+          headerStartIndex += keysPerGroup; // Move to the next set of headers for the next group
+        }
+      }
+    }
+  }
+
+  /**
+   * Exports message recovery verification results to a CSV file in the cross-parameter benchmarking
+   * mode. This method generates a CSV file with results from signature verification processes
+   * conducted under different parameter settings for a specific key size. The CSV file includes
+   * details such as the parameter type, verification result, original message, signature, and any
+   * recovered message.
+   * <p>
+   *
+   * @param keySizeIndex    The index of the key size for which verification results are exported.
+   * @param keySize         The length of the key size for which verification results are exported.
+   * @param progressUpdater A consumer to update the progress of the export process.
+   * @throws IOException If there is an error in writing to the file.
+   */
+  void exportVerificationResultsToCSVForRecovery(int keySizeIndex, int keySize,
+      DoubleConsumer progressUpdater)
       throws IOException {
 
     File file = FileHandle.createUniqueFile(
@@ -854,33 +951,32 @@ public class SignatureModelComparisonBenchmarking extends AbstractSignatureModel
                   (headerStartIndex + k) % keyConfigurationStrings.size());
               String hashFunctionName = hashFunctions.get(hashFunctionIndex).getDigestType()
                   .toString();
+              String keyHashFunctionIdentifier =
+                  keyIndex + "-" + hashFunctionName;
               // Read original messages for each key
-              try (BufferedReader reader = new BufferedReader(new FileReader(messageFile))) {
-                String originalMessage;
-                int messageCounter = 0;
-                //numtrials = nummessages
-                while ((originalMessage = reader.readLine()) != null
-                    && messageCounter < numTrials) {
-                  int keySpecificMessageResults = currentIndex + messageCounter;
-                  boolean verificationResult = verificationResults.get(keySpecificMessageResults);
-                  String signature = new BigInteger(1,
-                      signaturesFromBenchmark.get(keySpecificMessageResults)).toString();
-                  String recoverableMessage =
-                      recoverableMessages.get(keySpecificMessageResults) != null
-                          && recoverableMessages.get(keySpecificMessageResults).length > 0 ?
-                          new String(recoverableMessages.get(keySpecificMessageResults))
-                          : "[*NoMsg*]";
+              List<String> keySpecificMessages = nonRecoverableMessagesPerKeyHashFunction.get(keyHashFunctionIdentifier);
 
-                  writer.write(keyConfigString + ", "
-                      + hashFunctionName + ", " +
-                      verificationResult + ", " +
-                      "\"" + originalMessage + "\", " +
-                      signature + ", " + recoverableMessage + "\n");
+              int messageCounter = 0;
+              for (String originalMessage : keySpecificMessages) {
+                int keySpecificMessageResults = currentIndex + messageCounter;
+                boolean verificationResult = verificationResults.get(keySpecificMessageResults);
+                String signature = new BigInteger(1,
+                    signaturesFromBenchmark.get(keySpecificMessageResults)).toString();
+                String recoverableMessage =
+                    recoverableMessages.get(keySpecificMessageResults) != null
+                        && recoverableMessages.get(keySpecificMessageResults).length > 0 ?
+                        new String(recoverableMessages.get(keySpecificMessageResults))
+                        : "[*NoMsg*]";
 
-                  double currentKeyProgress = (double) (++completedWork) / totalWork;
-                  progressUpdater.accept(currentKeyProgress);
-                  messageCounter++;
-                }
+                writer.write(keyConfigString + ", "
+                    + hashFunctionName + ", " +
+                    verificationResult + ", " +
+                    "\"" + originalMessage + "\", " +
+                    signature + ", " + recoverableMessage + "\n");
+
+                double currentKeyProgress = (double) (++completedWork) / totalWork;
+                progressUpdater.accept(currentKeyProgress);
+                messageCounter++;
               }
 
               currentIndex += trialsPerHashFunction;
