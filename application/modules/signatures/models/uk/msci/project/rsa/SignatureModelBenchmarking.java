@@ -28,6 +28,8 @@ import uk.msci.project.rsa.exceptions.InvalidSignatureTypeException;
  */
 public class SignatureModelBenchmarking extends AbstractSignatureModelBenchmarking {
 
+  List<List<String>> nonRecoverableMessagesPerKey = new ArrayList<>();
+
   /**
    * Constructs a new {@code SignatureModel} without requiring an initial key representative of the
    * fact that at program launch, the model does not have any state: until it is initiated by the
@@ -206,6 +208,11 @@ public class SignatureModelBenchmarking extends AbstractSignatureModelBenchmarki
       DoubleConsumer progressUpdater)
       throws IOException {
 
+    if (currentType == SignatureType.ISO_IEC_9796_2_SCHEME_1) {
+      batchVerifySignaturesForRecovery(batchMessageFile, batchSignatureFile, progressUpdater);
+      return;
+    }
+
     this.messageFile = batchMessageFile;
     setKeyLengths(keyBatch);
 
@@ -220,6 +227,7 @@ public class SignatureModelBenchmarking extends AbstractSignatureModelBenchmarki
       verificationResultsPerKey.add(new ArrayList<>());
       signaturesPerKey.add(new ArrayList<>());
       recoveredMessagesPerKey.add(new ArrayList<>());
+      nonRecoverableMessagesPerKey.add(new ArrayList<>());
     }
 
     try (BufferedReader signatureReader = new BufferedReader(new FileReader(batchSignatureFile));
@@ -245,6 +253,7 @@ public class SignatureModelBenchmarking extends AbstractSignatureModelBenchmarki
           for (Key key : keyBatch) {
             if (key instanceof PublicKey publicKey) {
               int keyLength = keyLengths.get(keyIndex);
+
               int digestSize = customHashSizeFraction == null ? 0
                   : (int) Math.round((keyLength * customHashSizeFraction[0])
                       / (double) customHashSizeFraction[1]);
@@ -260,7 +269,8 @@ public class SignatureModelBenchmarking extends AbstractSignatureModelBenchmarki
                   () -> {
                     Pair<Boolean, Pair<Long, List<byte[]>>> verificationResult = verifySignature(
                         publicKey, finalMessageLine, signatureBytes, finalDigestSize);
-                    return new Pair<>(finalKeyIndex, verificationResult);
+                    return new Pair<>(finalKeyIndex,
+                        verificationResult);
                   });
               futures.add(future);
               if (futures.size() >= threadPoolSize || messageCounter == this.numTrials - 1) {
@@ -276,7 +286,108 @@ public class SignatureModelBenchmarking extends AbstractSignatureModelBenchmarki
 
           messageCounter++;
         }
-        if (futures.size() >= threadPoolSize || messageCounter < numTrials - 1 ) {
+        if (futures.size() >= threadPoolSize || messageCounter < numTrials - 1) {
+          processFuturesForSignatureVerification(progressUpdater, futures,
+              timesPerKey,
+              signaturesPerKey, recoveredMessagesPerKey, verificationResultsPerKey);
+          futures.clear();
+        }
+
+      }
+
+      // Combine results into final lists
+      combineVerificationResultsIntoFinalLists(timesPerKey, verificationResultsPerKey,
+          signaturesPerKey, recoveredMessagesPerKey);
+    }
+  }
+
+  /**
+   * Processes a batch of messages and their corresponding signatures to verify the authenticity of
+   * the signatures for message recovery schemes
+   *
+   * @param batchMessageFile   The file containing the messages to be verified.
+   * @param batchSignatureFile The file containing the corresponding signatures to be verified.
+   * @param progressUpdater    A consumer to update the progress of the batch verification process.
+   * @throws IOException if there is an I/O error reading from the batchMessageFile.
+   */
+  public void batchVerifySignaturesForRecovery(File batchMessageFile, File batchSignatureFile,
+      DoubleConsumer progressUpdater)
+      throws IOException {
+
+    this.messageFile = batchMessageFile;
+    setKeyLengths(keyBatch);
+
+    // Initialise lists to store times, verification results, signatures, and recovered messages
+    List<List<Long>> timesPerKey = new ArrayList<>();
+    List<List<Boolean>> verificationResultsPerKey = new ArrayList<>();
+    List<List<byte[]>> signaturesPerKey = new ArrayList<>();
+    List<List<byte[]>> recoveredMessagesPerKey = new ArrayList<>();
+
+    for (int k = 0; k < keyBatch.size(); k++) {
+      timesPerKey.add(new ArrayList<>());
+      verificationResultsPerKey.add(new ArrayList<>());
+      signaturesPerKey.add(new ArrayList<>());
+      recoveredMessagesPerKey.add(new ArrayList<>());
+      nonRecoverableMessagesPerKey.add(new ArrayList<>());
+    }
+
+    try (BufferedReader signatureReader = new BufferedReader(new FileReader(batchSignatureFile));
+        BufferedReader messageReader = new BufferedReader(new FileReader(batchMessageFile))) {
+
+      int threadPoolSize = Runtime.getRuntime().availableProcessors();
+      try (ExecutorService executor = Executors.newFixedThreadPool(threadPoolSize)) {
+
+        int messageCounter = 0;
+        numTrials =
+            currentType != SignatureType.ISO_IEC_9796_2_SCHEME_1 ? numTrials
+                : numTrials / keyBatch.size();
+
+        totalWork = numTrials * keyBatch.size();
+
+        completedWork = 0;
+        List<Future<Pair<Integer, Pair<Boolean, Pair<Long, List<byte[]>>>>>> futures = new ArrayList<>();
+
+        while (messageCounter < numTrials) {
+          int keyIndex = 0;
+          for (Key key : keyBatch) {
+            if (key instanceof PublicKey publicKey) {
+              int keyLength = keyLengths.get(keyIndex);
+
+              int digestSize = customHashSizeFraction == null ? 0
+                  : (int) Math.round((keyLength * customHashSizeFraction[0])
+                      / (double) customHashSizeFraction[1]);
+              digestSize = Math.floorDiv(digestSize + 7, 8);
+
+              // Read signature for each message
+              String messageLine = messageReader.readLine();
+              nonRecoverableMessagesPerKey.get(keyIndex).add(messageLine);
+              String signatureLine = signatureReader.readLine();
+              byte[] signatureBytes = new BigInteger(signatureLine).toByteArray();
+              int finalDigestSize = digestSize;
+              int finalKeyIndex = keyIndex;
+
+              Future<Pair<Integer, Pair<Boolean, Pair<Long, List<byte[]>>>>> future = executor.submit(
+                  () -> {
+                    Pair<Boolean, Pair<Long, List<byte[]>>> verificationResult = verifySignature(
+                        publicKey, messageLine, signatureBytes, finalDigestSize);
+                    return new Pair<>(finalKeyIndex, verificationResult);
+                  });
+              futures.add(future);
+              if (futures.size() >= threadPoolSize || messageCounter == this.numTrials - 1) {
+                processFuturesForSignatureVerification(progressUpdater, futures,
+                    timesPerKey,
+                    signaturesPerKey, recoveredMessagesPerKey, verificationResultsPerKey);
+                futures.clear();
+              }
+
+
+            }
+            keyIndex++;
+          }
+
+          messageCounter++;
+        }
+        if (futures.size() >= threadPoolSize || messageCounter < numTrials - 1) {
           processFuturesForSignatureVerification(progressUpdater, futures,
               timesPerKey,
               signaturesPerKey, recoveredMessagesPerKey, verificationResultsPerKey);
@@ -362,7 +473,7 @@ public class SignatureModelBenchmarking extends AbstractSignatureModelBenchmarki
   /**
    * Exports verification results to a CSV file for a specific key index. Each line in the file will
    * contain the index of the key used for verification, the verification result, the original
-   * message, the signature, and the recovered message (if any).
+   * message, the signature.
    *
    * @param keyIndex        The index of the key for which verification results are exported.
    * @param keySize         The length of the key for which verification results are exported.
@@ -370,6 +481,64 @@ public class SignatureModelBenchmarking extends AbstractSignatureModelBenchmarki
    * @throws IOException If there is an error writing to the file.
    */
   public void exportVerificationResultsToCSV(int keyIndex, int keySize,
+      DoubleConsumer progressUpdater)
+      throws IOException {
+    if (currentType == SignatureType.ISO_IEC_9796_2_SCHEME_1) {
+      exportVerificationResultsToCSVForRecovery(keyIndex, keySize, progressUpdater);
+      return;
+    }
+    int completedWork = 0;
+    File file = FileHandle.createUniqueFile(
+        "verificationResults_" + keySize + "bit_"
+            + String.join("_", currentType.toString().split(" ")).replace("/", "-") + ".csv");
+
+    try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
+      // Write header
+      writer.write(
+          "KeyIndex" + keyIndex + " (" + keySize + "bit), "
+              + "Verification Result, Original Message, Signature\n");
+
+      int numKeys = keyBatch.size();
+      int numMessagesPerKey = verificationResults.size() / numKeys;
+
+      // Read original messages for each key
+      try (BufferedReader reader = new BufferedReader(new FileReader(messageFile))) {
+        String originalMessage;
+        int messageCounter = 0;
+
+        while ((originalMessage = reader.readLine()) != null
+            && messageCounter < numMessagesPerKey) {
+          int keySpecificMessageResults = (keyIndex * numMessagesPerKey) + messageCounter;
+          boolean verificationResult = verificationResults.get(keySpecificMessageResults);
+          String signature = new BigInteger(1,
+              signaturesFromBenchmark.get(keySpecificMessageResults)).toString();
+
+
+          writer.write((keyIndex + 1) + ", " +
+              verificationResult + ", " +
+              "\"" + originalMessage + "\", " + // Enclose in quotes to handle commas
+              signature + "\n");
+
+          double currentKeyProgress = (double) (++completedWork) / totalWork;
+          progressUpdater.accept(currentKeyProgress);
+          messageCounter++;
+        }
+      }
+
+    }
+  }
+
+  /**
+   * Exports message recovery verification results to a CSV file for a specific key index. Each line
+   * in the file will contain the index of the key used for verification, the verification result,
+   * the original message, the signature, and the recovered message (if any).
+   *
+   * @param keyIndex        The index of the key for which verification results are exported.
+   * @param keySize         The length of the key for which verification results are exported.
+   * @param progressUpdater A consumer to update the progress of the export process.
+   * @throws IOException If there is an error writing to the file.
+   */
+  public void exportVerificationResultsToCSVForRecovery(int keyIndex, int keySize,
       DoubleConsumer progressUpdater)
       throws IOException {
     int completedWork = 0;
@@ -386,32 +555,30 @@ public class SignatureModelBenchmarking extends AbstractSignatureModelBenchmarki
       int numKeys = keyBatch.size();
       int numMessagesPerKey = verificationResults.size() / numKeys;
 
-      // Read original messages for each key
-      try (BufferedReader reader = new BufferedReader(new FileReader(messageFile))) {
-        String originalMessage;
-        int messageCounter = 0;
 
-        while ((originalMessage = reader.readLine()) != null
-            && messageCounter < numMessagesPerKey) {
-          int keySpecificMessageResults = (keyIndex * numMessagesPerKey) + messageCounter;
-          boolean verificationResult = verificationResults.get(keySpecificMessageResults);
-          String signature = new BigInteger(1,
-              signaturesFromBenchmark.get(keySpecificMessageResults)).toString();
-          String recoverableMessage =
-              recoverableMessages.get(keySpecificMessageResults) != null
-                  && recoverableMessages.get(keySpecificMessageResults).length > 0 ?
-                  new String(recoverableMessages.get(keySpecificMessageResults)) : "[*NoMsg*]";
+      int messageCounter = 0;
+      List<String> keySpecificMessages = nonRecoverableMessagesPerKey.get(keyIndex);
 
-          writer.write((keyIndex + 1) + ", " +
-              verificationResult + ", " +
-              "\"" + originalMessage + "\", " + // Enclose in quotes to handle commas
-              signature + ", " + recoverableMessage + "\n");
+      for (String originalMessage : keySpecificMessages) {
+        int keySpecificMessageResults = (keyIndex * numMessagesPerKey) + messageCounter;
+        boolean verificationResult = verificationResults.get(keySpecificMessageResults);
+        String signature = new BigInteger(1,
+            signaturesFromBenchmark.get(keySpecificMessageResults)).toString();
+        String recoverableMessage =
+            recoverableMessages.get(keySpecificMessageResults) != null
+                && recoverableMessages.get(keySpecificMessageResults).length > 0 ?
+                new String(recoverableMessages.get(keySpecificMessageResults)) : "[*NoMsg*]";
 
-          double currentKeyProgress = (double) (++completedWork) / totalWork;
-          progressUpdater.accept(currentKeyProgress);
-          messageCounter++;
-        }
+        writer.write((keyIndex + 1) + ", " +
+            verificationResult + ", " +
+            "\"" + originalMessage + "\", " + // Enclose in quotes to handle commas
+            signature + ", " + recoverableMessage + "\n");
+
+        double currentKeyProgress = (double) (++completedWork) / totalWork;
+        progressUpdater.accept(currentKeyProgress);
+        messageCounter++;
       }
+
 
     }
   }
