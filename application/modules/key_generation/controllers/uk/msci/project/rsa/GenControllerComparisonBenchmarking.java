@@ -38,6 +38,7 @@ public class GenControllerComparisonBenchmarking extends GenControllerBenchmarki
    */
   public GenControllerComparisonBenchmarking(MainController mainController) {
     super(mainController);
+    genModel = new GenModelComparisonBenchmarking();
   }
 
   /**
