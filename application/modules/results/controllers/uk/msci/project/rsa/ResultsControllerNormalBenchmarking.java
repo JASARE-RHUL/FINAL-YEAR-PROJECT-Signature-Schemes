@@ -85,7 +85,11 @@ public class ResultsControllerNormalBenchmarking extends ResultsBaseController {
       List<Long> results, List<Integer> keyLengths,
       boolean isComparisonMode, int numKeySizesForComparisonMode) {
     loadResultsView(keyLengths, results,
-        () -> graphManager.setupComparisonModeGraphObservers(resultsView),
+        () -> {
+          if (results.size() / totalKeys > 1) {
+            graphManager.setupComparisonModeGraphObservers(resultsView);
+          }
+        },
         () -> {
           resultsView.setupTableView();
           resultsView.populateTableView();
@@ -97,7 +101,9 @@ public class ResultsControllerNormalBenchmarking extends ResultsBaseController {
           }
           resultsView.refreshResults();
           // Precompute graphs asynchronously
-          Platform.runLater(() -> graphManager.precomputeGraphs(resultsModels, keyLengths));
+          if (results.size() / totalKeys > 1) {
+            Platform.runLater(() -> graphManager.precomputeGraphs(resultsModels, keyLengths));
+          }
           resultsView.setLineGraphButtonMeanVisibility(false);
         });
   }

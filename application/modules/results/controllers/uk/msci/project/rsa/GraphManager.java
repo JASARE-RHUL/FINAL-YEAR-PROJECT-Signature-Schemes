@@ -172,13 +172,15 @@ public class GraphManager {
   /**
    * Calculates the number of bins for a histogram based on the given results.
    *
-   * @param results The results to use in the calculation.
+   * @param results                  The results to use in the calculation.
+   * @param freedmanDiaconisBinWidth The bin width assumed to be calculated using the
+   *                                 Freedman-Diaconis rule.
    * @return The number of bins.
    */
-  public static int calculateNumberOfBins(List<Long> results) {
+  public static int calculateNumberOfBins(List<Long> results, double freedmanDiaconisBinWidth) {
     double min = BenchmarkingUtility.getMin(results) / 1E6;
     double max = BenchmarkingUtility.getMax(results) / 1E6;
-    return (int) Math.ceil((max - min) / calculateFreedmanDiaconisBinWidth(results));
+    return (int) Math.ceil((max - min) / freedmanDiaconisBinWidth);
   }
 
   /**
@@ -209,7 +211,7 @@ public class GraphManager {
     }
     double min = BenchmarkingUtility.getMin(allCombinedResults) / 1E6;
     double binWidth = calculateFreedmanDiaconisBinWidth(allCombinedResults);
-    int numBins = calculateNumberOfBins(allCombinedResults);
+    int numBins = calculateNumberOfBins(allCombinedResults, binWidth);
 
     // Initialize bin counts for each series
     Map<String, int[]> seriesBinCounts = new HashMap<>();
@@ -271,7 +273,7 @@ public class GraphManager {
     );
     double min = BenchmarkingUtility.getMin(combinedResults) / 1E6;
     double binWidth = calculateFreedmanDiaconisBinWidth(combinedResults);
-    int numBins = calculateNumberOfBins(combinedResults);
+    int numBins = calculateNumberOfBins(combinedResults, binWidth);
 
     // Initialise bin counts for each series
     Map<String, int[]> seriesBinCounts = new HashMap<>();
@@ -321,9 +323,9 @@ public class GraphManager {
     DefaultCategoryDataset dataset = new DefaultCategoryDataset();
     ResultsModel model = resultsModels.get(keyIndex);
 
-    double min = model.getMinTimeData() / 1_000_000.0; // convert to milliseconds
+    double min = model.getMinTimeData();
     double binWidth = calculateFreedmanDiaconisBinWidth(model.getResults());
-    int numBins = calculateNumberOfBins(model.getResults());
+    int numBins = calculateNumberOfBins(model.getResults(), binWidth);
     String seriesName = "Key " + (keyIndex + 1);
     int[] binCounts = new int[numBins]; // Array to hold the count of values in each bin
 
