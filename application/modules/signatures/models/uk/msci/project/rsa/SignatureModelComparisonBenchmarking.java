@@ -169,7 +169,7 @@ public class SignatureModelComparisonBenchmarking extends AbstractSignatureModel
                         actualKeyIndex + "-" + hashFunctionType.getDigestType();
 
                     int keyLength = keyLengths.get(actualKeyIndex);
-                    boolean isProvablySecure = hashFunctionType.isProvablySecure();
+                    boolean isProvablySecureHash = hashFunctionType.isProvablySecure();
                     int digestSize =
                         hashFunctionType.getCustomSize() == null ? 0 : (int) Math.round(
                             (keyLength * hashFunctionType.getCustomSize()[0])
@@ -180,28 +180,29 @@ public class SignatureModelComparisonBenchmarking extends AbstractSignatureModel
                     // the criteria for provably secure parameters since its output is >= keylength/2
                     if (keyLength == 1024 && digestSize == 0
                         && hashFunctionType.getDigestType() == DigestType.SHA_512
-                        && isDefaultComparisonMode && !isProvablySecure) {
+                        && isDefaultComparisonMode && !isProvablySecureHash) {
                       // Consequently adapt the hash function to be used with
                       // the provable parameter (small e) keys which are the second sequence
                       // of two keys that follow the standard parameter sequence of two keys.
                       actualKeyIndex = (actualKeyIndex + 2);
-                      isProvablySecure = true;
+                      isProvablySecureHash = true;
                     }
                     PrivateKey privateKey = (PrivateKey) keyBatch.get(actualKeyIndex);
 
                     int finalDigestSize = digestSize;
-                    boolean finalIsProvablySecure = isProvablySecure;
+                    boolean finalIsProvablySecureHash = isProvablySecureHash;
                     Future<Pair<String, Pair<Long, Pair<byte[], byte[]>>>> future = executor.submit(
                         () -> {
                           try {
                             SigScheme sigScheme = SignatureFactory.getSignatureScheme(currentType,
-                                privateKey, finalIsProvablySecure);
+                                privateKey, finalIsProvablySecureHash);
                             sigScheme.setDigest(hashFunctionType.getDigestType(), finalDigestSize);
 
                             long startTime = System.nanoTime();
                             byte[] signature = sigScheme.sign(currentMessage.getBytes());
                             long endTime = System.nanoTime() - startTime;
                             byte[] nonRecoverableM = sigScheme.getNonRecoverableM();
+                            String ass = new String(nonRecoverableM);
 
                             return new Pair<>(keyHashFunctionIdentifier,
                                 new Pair<>(endTime, new Pair<>(signature, nonRecoverableM)));
@@ -356,7 +357,6 @@ public class SignatureModelComparisonBenchmarking extends AbstractSignatureModel
     }
   }
 
-
   /**
    * Processes a batch of messages and their corresponding signatures for verification in the
    * cross-parameter benchmarking/comparison mode. This mode involves verifying signatures using a
@@ -430,18 +430,18 @@ public class SignatureModelComparisonBenchmarking extends AbstractSignatureModel
                       (keyLength * hashFunction.getCustomSize()[0])
                           / (double) hashFunction.getCustomSize()[1]);
                   digestSize = Math.floorDiv(digestSize + 7, 8);
-                  boolean isProvablySecure = hashFunction.isProvablySecure();
+                  boolean isProvablySecureHash = hashFunction.isProvablySecure();
                   // if standard hash function SHA-512 is chosen for standard parameter set
                   // but the key length is 1024bit, this means the hash size now meets
                   // the criteria for provably secure parameters since its output is >= keylength/2
                   if (keyLength == 1024 && digestSize == 0
                       && hashFunction.getDigestType() == DigestType.SHA_512
-                      && isDefaultComparisonMode && !isProvablySecure) {
+                      && isDefaultComparisonMode && !isProvablySecureHash) {
                     // Consequently adapt the hash function to be used with
                     // the provable parameter (small e) keys which are the second sequence
                     // of two keys that follow the standard parameter sequence of two keys.
                     actualKeyIndex = (actualKeyIndex + 2);
-                    isProvablySecure = true;
+                    isProvablySecureHash = true;
                   }
                   PublicKey publicKey = (PublicKey) keyBatch.get(actualKeyIndex);
 
@@ -450,11 +450,11 @@ public class SignatureModelComparisonBenchmarking extends AbstractSignatureModel
 
                   String finalMessageLine = messageLine;
                   int finalDigestSize = digestSize;
-                  boolean finalIsProvablySecure = isProvablySecure;
+                  boolean finalIsProvablySecureHash = isProvablySecureHash;
                   Future<Pair<Boolean, Pair<Long, List<byte[]>>>> future = executor.submit(() -> {
                     try {
                       SigScheme sigScheme = SignatureFactory.getSignatureScheme(currentType,
-                          publicKey, finalIsProvablySecure);
+                          publicKey, finalIsProvablySecureHash);
                       sigScheme.setDigest(hashFunction.getDigestType(), finalDigestSize);
                       return getBatchVerificationResult(sigScheme, finalMessageLine,
                           signatureBytes, keyHashFunctionIdentifier);
@@ -496,6 +496,149 @@ public class SignatureModelComparisonBenchmarking extends AbstractSignatureModel
     combineVerificationResultsIntoFinalLists(timesPerKeyHashFunction, signaturesPerKeyHashFunction,
         recoveredMessagesPerKeyHashFunction, verificationResultsPerKeyHashFunction);
   }
+
+
+  /**
+   * Processes a batch of messages and their corresponding signatures for verification in the
+   * cross-parameter benchmarking/comparison mode for message recovery schemes.
+   *
+   * @param batchMessageFile   The file containing the messages to be verified.
+   * @param batchSignatureFile The file containing the corresponding signatures to be verified.
+   * @param progressUpdater    A consumer to update the progress of the batch verification process.
+   * @throws IOException If there is an I/O error reading from the files.
+   */
+  public void batchVerifySignaturesForMessageRecovery(File batchMessageFile,
+      File batchSignatureFile,
+      DoubleConsumer progressUpdater)
+      throws IOException {
+
+    this.messageFile = batchMessageFile;
+    this.numKeySizesForComparisonMode = keyBatch.size() / numKeysPerKeySizeComparisonMode;
+    setKeyLengths(keyBatch);
+    int totalKeys = keyBatch.size();
+    int keysPerKeySize = totalKeys / numKeySizesForComparisonMode;
+    completedWork = 0;
+    numBenchmarkingRuns = calculateNumBenchmarkingRuns();
+    totalWork = numTrials; // Total number of message-signature pairs to process
+    numTrials =
+        totalWork / (numBenchmarkingRuns * numKeySizesForComparisonMode); // Number of messages
+    computeTrialsPerKeyByGroup(numTrials);
+    Map<String, List<Long>> timesPerKeyHashFunction;
+    Map<String, List<Boolean>> verificationResultsPerKeyHashFunction;
+    Map<String, List<byte[]>> recoveredMessagesPerKeyHashFunction;
+    Map<String, List<byte[]>> signaturesPerKeyHashFunction;
+
+    int threadPoolSize = Runtime.getRuntime().availableProcessors();
+
+    try (ExecutorService executor = Executors.newFixedThreadPool(threadPoolSize)) {
+      timesPerKeyHashFunction = new HashMap<>();
+      verificationResultsPerKeyHashFunction = new HashMap<>();
+      recoveredMessagesPerKeyHashFunction = new HashMap<>();
+      signaturesPerKeyHashFunction = new HashMap<>();
+
+      try (BufferedReader messageReader = new BufferedReader(
+          new FileReader(batchMessageFile));
+          BufferedReader signatureReader = new BufferedReader(
+              new FileReader(batchSignatureFile))) {
+
+        // Iterate over each message
+        List<Future<Pair<Boolean, Pair<Long, List<byte[]>>>>> futures = new ArrayList<>();
+        for (int messageIndex = 0; messageIndex < numTrials; messageIndex++) {
+
+          // Iterate over each key size to handle different configurations
+          for (int keySizeIndex = 0; keySizeIndex < numKeySizesForComparisonMode; keySizeIndex++) {
+            // Offset to account for multiple key sizes in the key batch
+            int keyOffset = keySizeIndex * keysPerKeySize;
+
+            // Iterate through each group of keys
+            for (int groupIndex = 0; groupIndex < keyConfigToHashFunctionsMap.size();
+                groupIndex++) {
+              List<HashFunctionSelection> hashFunctions = keyConfigToHashFunctionsMap.get(
+                  groupIndex);
+              int numHashFunctions = hashFunctions.size(); // Number of hash functions in the current group
+
+              // Iterate through each key within the group
+              for (int keyIndex = 0; keyIndex < keysPerGroup; keyIndex++) {
+                // Calculate the actual index of the key in the batch
+                int actualKeyIndex = keyOffset + groupIndex * keysPerGroup + keyIndex;
+
+                // Ensure the key index is within the total number of keys
+                if (actualKeyIndex >= totalKeys) {
+                  break;
+                }
+
+                // Iterate for each hash function
+                for (int hashIndex = 0; hashIndex < numHashFunctions; hashIndex++) {
+                  String signatureLine = signatureReader.readLine();
+                  String messageLine = messageReader.readLine();
+                  byte[] signatureBytes = new BigInteger(signatureLine).toByteArray();
+
+                  int keyLength = keyLengths.get(actualKeyIndex);
+                  HashFunctionSelection hashFunction = hashFunctions.get(hashIndex);
+                  String keyHashFunctionIdentifier =
+                      actualKeyIndex + "-" + hashFunctions.get(hashIndex).getDigestType()
+                          .toString();
+                  int digestSize = hashFunction.getCustomSize() == null ? 0 : (int) Math.round(
+                      (keyLength * hashFunction.getCustomSize()[0])
+                          / (double) hashFunction.getCustomSize()[1]);
+                  digestSize = Math.floorDiv(digestSize + 7, 8);
+                  boolean isProvablySecureHash = hashFunction.isProvablySecure();
+                  if (keyLength == 1024 && digestSize == 0
+                      && hashFunction.getDigestType() == DigestType.SHA_512
+                      && isDefaultComparisonMode && !isProvablySecureHash) {
+                    actualKeyIndex = (actualKeyIndex + 2);
+                    isProvablySecureHash = true;
+                  }
+                  PublicKey publicKey = (PublicKey) keyBatch.get(actualKeyIndex);
+
+                  int finalDigestSize = digestSize;
+
+                  boolean finalIsProvablySecureHash = isProvablySecureHash;
+                  Future<Pair<Boolean, Pair<Long, List<byte[]>>>> future = executor.submit(() -> {
+
+                    try {
+                      SigScheme sigScheme = SignatureFactory.getSignatureScheme(currentType,
+                          publicKey, finalIsProvablySecureHash);
+                      sigScheme.setDigest(hashFunction.getDigestType(), finalDigestSize);
+                      return getBatchVerificationResult(sigScheme, messageLine,
+                          signatureBytes, keyHashFunctionIdentifier);
+                    } catch (Exception e) {
+                      e.printStackTrace();
+                      return null;
+                    }
+                  });
+                  futures.add(future);
+
+                  if (futures.size() >= threadPoolSize || messageIndex == numTrials - 1) {
+                    processFuturesForSignatureVerification(progressUpdater, futures,
+                        timesPerKeyHashFunction,
+                        signaturesPerKeyHashFunction, recoveredMessagesPerKeyHashFunction,
+                        verificationResultsPerKeyHashFunction);
+                    futures.clear();
+                  }
+
+                }
+              }
+            }
+          }
+        }
+        // Process remaining futures for the last batch
+        processFuturesForSignatureVerification(progressUpdater, futures,
+            timesPerKeyHashFunction,
+            signaturesPerKeyHashFunction, recoveredMessagesPerKeyHashFunction,
+            verificationResultsPerKeyHashFunction);
+        futures.clear();
+      } catch (ExecutionException | InterruptedException e) {
+        e.printStackTrace();
+      } finally {
+        executor.shutdown();
+      }
+    }
+
+    combineVerificationResultsIntoFinalLists(timesPerKeyHashFunction, signaturesPerKeyHashFunction,
+        recoveredMessagesPerKeyHashFunction, verificationResultsPerKeyHashFunction);
+  }
+
 
   /**
    * Processes a list of futures obtained from submitting signature verification tasks to an
@@ -641,7 +784,7 @@ public class SignatureModelComparisonBenchmarking extends AbstractSignatureModel
     if (currentType == SignatureType.ISO_IEC_9796_2_SCHEME_1) {
       String[] nonRecoverableParts = messageLine.split(" ", 2);
       byte[] nonRecoverableMessage =
-          nonRecoverableParts[0].equals("1") ? nonRecoverableParts[1].getBytes() : null;
+          nonRecoverableParts[0].equals("0") ? null : nonRecoverableParts[1].getBytes();
       startTime = System.nanoTime();
       verificationResult = sigScheme.verify(nonRecoverableMessage, signatureBytes);
       endTime = System.nanoTime() - startTime;

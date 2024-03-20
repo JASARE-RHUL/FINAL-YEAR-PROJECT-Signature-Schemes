@@ -1,5 +1,6 @@
 package uk.msci.project.rsa;
 
+import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -106,7 +107,6 @@ public class SignatureVerificationControllerComparisonBenchmarking extends
     @Override
     public void handle(ActionEvent event) {
       hashOutputSize = verifyView.getHashOutputSizeArea();
-
       if ((signatureModel.getNumTrials() == 0)
           || signatureModel.getKeyBatchLength() == 0
           || signatureModel.getSignatureType() == null || numSignatures == 0
@@ -124,36 +124,49 @@ public class SignatureVerificationControllerComparisonBenchmarking extends
       if (!isCustomCrossParameterBenchmarkingMode) {
         signatureModel.createDefaultKeyConfigToHashFunctionsMap();
       }
-      if (((signatureModel.calculateNumBenchmarkingRuns() * numTrials
-          * signatureModel.getNumKeySizesForComparisonMode()) != numSignatures)
-          && signatureModel.getSignatureType() != SignatureType.ISO_IEC_9796_2_SCHEME_1) {
-        uk.msci.project.rsa.DisplayUtility.showErrorAlert(
-            "The signature-message batches and your chosen hash function selections do not match. Please ensure they match to proceed.");
-        return;
-      }
 
-      if (((numTrials
-          != numSignatures) || ((numSignatures % (signatureModel.calculateNumBenchmarkingRuns()
-          * signatureModel.getNumKeySizesForComparisonMode())) != 0)
-          && signatureModel.getSignatureType() == SignatureType.ISO_IEC_9796_2_SCHEME_1)) {
-        uk.msci.project.rsa.DisplayUtility.showErrorAlert(
-            "Your selected combination of signature, non recoverable message batch and "
-                + "hash function selections do not match. Please ensure they match to proceed.");
-        return;
+
+      benchmarkingUtility = new BenchmarkingUtility();
+      Task<Void> benchmarkingTask = null;
+      if (signatureModel.getSignatureType() == SignatureType.ISO_IEC_9796_2_SCHEME_1) {
+        if (((numTrials
+            != numSignatures) || ((numSignatures % (signatureModel.calculateNumBenchmarkingRuns()
+            * signatureModel.getNumKeySizesForComparisonMode())) != 0))) {
+          uk.msci.project.rsa.DisplayUtility.showErrorAlert(
+              "Your selected combination of signature, non recoverable message batch and "
+                  + "hash function selections do not match. Please ensure they match to proceed.");
+          return;
+        }
+     benchmarkingTask = new Task<Void>() {
+          @Override
+          protected Void call() throws Exception {
+            signatureModel.batchVerifySignaturesForMessageRecovery(messageBatchFile, signatureBatchFile,
+                progress -> Platform.runLater(() -> {
+                  benchmarkingUtility.updateProgress(progress);
+                  benchmarkingUtility.updateProgressLabel(String.format("%.0f%%", progress * 100));
+                }));
+            return null;
+          }
+        };
+      } else {
+        if (((signatureModel.calculateNumBenchmarkingRuns() * numTrials
+            * signatureModel.getNumKeySizesForComparisonMode()) != numSignatures)) {
+          uk.msci.project.rsa.DisplayUtility.showErrorAlert(
+              "The signature-message batches and your chosen hash function selections do not match. Please ensure they match to proceed.");
+          return;
+        }
+        benchmarkingTask = createBenchmarkingTask(messageBatchFile,
+            signatureBatchFile, signatureModel);
       }
 
       if (!setHashSizeInModelBenchmarking(verifyView, signatureModel)) {
         return;
       }
 
-      benchmarkingUtility = new BenchmarkingUtility();
-      Task<Void> benchmarkingTask = createBenchmarkingTask(messageBatchFile,
-          signatureBatchFile, signatureModel);
       BenchmarkingUtility.beginBenchmarkWithUtility(benchmarkingUtility, "Signature Verification",
           benchmarkingTask,
           SignatureVerificationControllerComparisonBenchmarking.this::handleBenchmarkingCompletion,
           mainController.getPrimaryStage());
-
 
     }
   }

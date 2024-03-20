@@ -70,7 +70,9 @@ public class SignatureModelBenchmarking extends AbstractSignatureModelBenchmarki
         List<Future<Pair<Integer, Pair<Long, Pair<byte[], byte[]>>>>> futures = new ArrayList<>();
 
         String message;
-        totalWork = numTrials * keyBatch.size();
+        totalWork =
+            currentType != SignatureType.ISO_IEC_9796_2_SCHEME_1 ? numTrials * keyBatch.size()
+                : numTrials;
         completedWork = 0;
         int messageCounter = 0;
         while ((message = messageReader.readLine()) != null && messageCounter < this.numTrials) {
@@ -228,7 +230,12 @@ public class SignatureModelBenchmarking extends AbstractSignatureModelBenchmarki
 
         String messageLine;
         int messageCounter = 0;
+        numTrials =
+            currentType != SignatureType.ISO_IEC_9796_2_SCHEME_1 ? numTrials
+                : numTrials / keyBatch.size();
+
         totalWork = numTrials * keyBatch.size();
+
         completedWork = 0;
         List<Future<Pair<Integer, Pair<Boolean, Pair<Long, List<byte[]>>>>>> futures = new ArrayList<>();
 
@@ -269,7 +276,7 @@ public class SignatureModelBenchmarking extends AbstractSignatureModelBenchmarki
 
           messageCounter++;
         }
-        if (futures.size() >= threadPoolSize) {
+        if (futures.size() >= threadPoolSize || messageCounter < numTrials - 1 ) {
           processFuturesForSignatureVerification(progressUpdater, futures,
               timesPerKey,
               signaturesPerKey, recoveredMessagesPerKey, verificationResultsPerKey);

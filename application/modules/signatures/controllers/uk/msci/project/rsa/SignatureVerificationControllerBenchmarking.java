@@ -115,8 +115,11 @@ public class SignatureVerificationControllerBenchmarking extends
     @Override
     public void handle(ActionEvent event) {
       hashOutputSize = verifyView.getHashOutputSizeArea();
-      if (signatureModel.getNumTrials() * signatureModel.getKeyBatchLength()
-          != numSignatures) {
+      if ((signatureModel.getNumTrials() * signatureModel.getKeyBatchLength()
+          != numSignatures
+          && signatureModel.getSignatureType() != SignatureType.ISO_IEC_9796_2_SCHEME_1) || (
+          signatureModel.getSignatureType() == SignatureType.ISO_IEC_9796_2_SCHEME_1
+              && signatureModel.getNumTrials() != numSignatures)) {
         uk.msci.project.rsa.DisplayUtility.showErrorAlert(
             "The numbers of messages and signatures do not match. Please ensure they match for a valid set of verification pairings.");
         return;
