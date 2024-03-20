@@ -85,27 +85,22 @@ public class ISO_IEC_9796_2_SCHEME_1 extends SigScheme {
   public byte[] encodeMessage(byte[] M) throws DataFormatException {
     byte[] EM = new byte[emLen];
     m1Len = M.length;
-    // available space in bits
     int availableSpace = (hashSize + m1Len) * 8 + 8 + 4 - emBits;
     //Partial recovery if message is larger than available space
     // else scheme proceeds with full recovery.
     if (availableSpace > 0) {
       PADLFIRSTNIBBLE = 0x60;
       isFullRecovery = false;
-      availableSpace = ((availableSpace) + 7) / 8;
     } else {
       PADLFIRSTNIBBLE = 0x40;
       isFullRecovery = true;
-      availableSpace = -((Math.abs(availableSpace) + 7) / 8);
     }
-    // convert available space in bits
-
 
     int hashStart = emLen - hashSize - 1;
     int delta = hashStart;
     //length of the message to be copied is either the availableSpace most significant bits of
     // M or alternatively the full length of the original message if the message is too short
-    int messageLength = Math.min(m1Len, m1Len - availableSpace - 1);
+    int messageLength = Math.min(m1Len, m1Len - ((availableSpace + 7) / 8) - 1);
     // m2 comprises the non-recoverable message portion
     m2Len = max(m1Len - messageLength, 0);
     //copying the message
@@ -138,6 +133,7 @@ public class ISO_IEC_9796_2_SCHEME_1 extends SigScheme {
     EM[emLen - 1] = PADR;
     return EM;
   }
+
 
   /**
    * Creates a signature for specified message and stores the extracted non-recoverable part of the
@@ -211,14 +207,17 @@ public class ISO_IEC_9796_2_SCHEME_1 extends SigScheme {
     byte[] EMHash = Arrays.copyOfRange(EM, hashStart, emLen - 1);
 
     byte[] m1 = Arrays.copyOfRange(EM, mStart, hashStart);
-
-    md.update(m1);
-
+    byte[] m1m2;
     // Full recovery mode does not have a second message portion
     if (!isFullRecovery) {
-      addM2(m2);
+      m1m2 = new byte[m1.length + m2.length];
+      System.arraycopy(m1, 0, m1m2, 0, m1.length);
+      System.arraycopy(m2, 0, m1m2, m1.length, m2.length);
+    } else {
+      m1m2 = m1; // Use only m1 if in full recovery mode
     }
-    byte[] m1m2Hash = md.digest();
+
+    byte[] m1m2Hash = computeHashWithOptionalMasking(m1m2);
     // Compare the computed hash with the extracted hash from EM
     if (!(Arrays.equals(EMHash, m1m2Hash))) {
       return false;
@@ -228,17 +227,6 @@ public class ISO_IEC_9796_2_SCHEME_1 extends SigScheme {
 
   }
 
-  /**
-   * Processes and adds the non-recoverable part of the message (m2) to the message digest. This is
-   * part of the message that is not covered by the signature.
-   *
-   * @param m2 The non-recoverable part of the message (m2).
-   */
-  public void addM2(byte[] m2) {
-    if (m2 != null && m2.length > 0) {
-      md.update(m2);
-    }
-  }
 
   /**
    * Sets the message digest algorithm to be used for hashing in the ISO_IEC_9796_2_SCHEME_1
