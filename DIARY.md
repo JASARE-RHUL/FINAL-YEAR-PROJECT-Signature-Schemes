@@ -352,3 +352,32 @@ GenModelComparisonBenchmarking, with GenModel serving as the foundational class 
 generation. In parallel, I segmented the ResultsController into ResultsBaseController,
 ResultsControllerComparisonBenchmarking, and ResultsControllerNormalBenchmarking, each catering to
 different benchmarking scenarios.
+
+## Diary Entry - Week of 11th March – 17th March 2024
+Early Week:
+On Monday, I resolved minor issues, such as fixing the key size retrieval for verification results export in comparison
+mode and updating the export functionality to include the signature scheme name. I also added images and descriptions of
+the application's comparison benchmarking flow into the report.
+
+Midweek:
+Tuesday involved implementing logic to adjust hash function parameters, specifically for SHA-512 with 1024-bit keys in
+standard parameter sets, to align with provably secure parameters. I decided to use the Oxford 3000 message batch for
+benchmarking the signature schemes and ran a comprehensive session involving 3847 trials across six key sizes. I
+encountered challenges with the ISO scheme during the verification phase due to issues in handling non-recoverable
+message batches, which I planned to address the next day.
+
+Later in the Week:
+By Wednesday, I had updated the signature benchmarking model to resolve errors in verifying signatures for the ISO/IEC
+9796-2 Scheme 1 and fixed various related issues. Thursday saw me completing a full benchmarking session with the ISO
+scheme and capturing a complete set of results, which I began incorporating into a new results section in the report.
+
+Weekend Focus:
+On Friday and Saturday, I added screenshots of benchmarking results to the report, requiring some editing for format
+suitability. I also wrote summarised descriptions and discussions under the results tables for key generation and
+signature creation benchmarking for the PKCS and ANSI schemes.
+
+Week’s End:
+Sunday was dedicated to developing the results section further, adding summaries and discussions for the ISO Scheme's
+signature creation benchmarking and starting on the signature verification across all schemes. By day’s end, I had
+completed the PKCS signature scheme verification summary, with plans to polish it and add descriptions for the remaining
+schemes.
