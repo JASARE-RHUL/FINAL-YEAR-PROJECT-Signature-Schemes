@@ -354,6 +354,7 @@ ResultsControllerComparisonBenchmarking, and ResultsControllerNormalBenchmarking
 different benchmarking scenarios.
 
 ## Diary Entry - Week of 11th March – 17th March 2024
+
 Early Week:
 On Monday, I resolved minor issues, such as fixing the key size retrieval for verification results export in comparison
 mode and updating the export functionality to include the signature scheme name. I also added images and descriptions of
@@ -381,3 +382,35 @@ Sunday was dedicated to developing the results section further, adding summaries
 signature creation benchmarking and starting on the signature verification across all schemes. By day’s end, I had
 completed the PKCS signature scheme verification summary, with plans to polish it and add descriptions for the remaining
 schemes.
+
+## Diary Entry - Week of 18th March – 24th March 2024
+
+On Monday, I focused on addressing minor details such as correcting the key size retrieval for verification
+results export and updating the benchmarking results export function to include the signature scheme name. I also
+ensured the functionality of exporting non-recoverable message batches in the ISO scheme during benchmarking mode.
+Further, I added images and detailed explanations of the application’s comparison benchmarking flow to the report.
+
+Tuesday was marked by implementing adjustments in hash function parameters, particularly when using SHA-512 with
+1024-bit keys, to align with provably secure parameters. I chose the Oxford 3000 dataset for benchmarking the signature
+schemes and ran a comprehensive session across six key sizes for key generation. Despite successfully capturing results
+for the PKCS and ANSI schemes, I encountered challenges with the ISO scheme during verification, which I aimed to
+address subsequently.
+
+On Wednesday, I updated the signature benchmarking model, adding specialized methods for verifying signatures and
+exporting verification results, particularly for the ISO/IEC 9796-2 Scheme 1. This resolved the issues I faced with the
+ISO scheme verification. However, the day was also spent troubleshooting various errors related to variable length hash
+functions and verification accuracy in the ISO scheme.
+
+By Thursday, I had completed a full benchmarking session with the ISO scheme, capturing all relevant results and graphs.
+I began incorporating these findings into the project report, adding sections on hardware specifications and the
+methodology used for benchmarking.
+
+On Friday, I integrated screenshots of the key generation benchmarking results into the report, followed by results from
+benchmarking signature creation and verification for the three signature schemes. Editing these images for clarity in
+the report was also part of the day’s work.
+
+Over the weekend, I focused on writing detailed descriptions and discussions for the benchmarking results. On Saturday,
+this included the key generation and signature creation benchmarking for the PKCS and ANSI schemes. On Sunday, my
+efforts were directed at summarizing and discussing the signature creation benchmarking results for the ISO Scheme, and
+I started on the descriptions for signature verification across all schemes, completing a preliminary summary for the
+PKCS scheme.
