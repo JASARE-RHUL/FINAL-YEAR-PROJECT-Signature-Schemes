@@ -669,6 +669,9 @@ public class GenView {
     okButton.addEventFilter(ActionEvent.ACTION, event -> {
       try {
         numTrials = Integer.parseInt(trialsField.getText());
+        if (!(numTrials > 0)) {
+          throw new NumberFormatException();
+        }
         isCompleted[0] = true;
       } catch (NumberFormatException e) {
         // Show an error alert if the input is not a valid integer
