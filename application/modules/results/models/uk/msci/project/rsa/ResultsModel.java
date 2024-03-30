@@ -299,7 +299,7 @@ public class ResultsModel {
    * @throws IOException If there is an issue in file writing.
    */
   public void exportStatisticsToCSV(String fileName) throws IOException {
-    File statsFile = FileHandle.createUniqueFile(fileName);
+    File statsFile = FileHandle.createUniqueFile(fileName.replace("/", "-"));
 
     try (BufferedWriter statsWriter = new BufferedWriter(new FileWriter(statsFile))) {
       // Writing the headers
