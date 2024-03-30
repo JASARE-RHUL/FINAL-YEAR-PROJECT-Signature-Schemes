@@ -126,7 +126,10 @@ public class SignatureVerificationControllerBenchmarking extends
         return;
       }
       if ((signatureModel.getNumTrials() * signatureModel.getKeyBatchLength()
-          != numSignatures)) {
+          != numSignatures
+          && signatureModel.getSignatureType() != SignatureType.ISO_IEC_9796_2_SCHEME_1) || (
+          signatureModel.getSignatureType() == SignatureType.ISO_IEC_9796_2_SCHEME_1
+              && signatureModel.getNumTrials() != numSignatures)) {
         uk.msci.project.rsa.DisplayUtility.showErrorAlert(
             "The numbers of messages and signatures do not match. Please ensure they match for a valid set of verification pairings.");
         return;
