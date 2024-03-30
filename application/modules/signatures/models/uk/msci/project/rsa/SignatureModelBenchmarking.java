@@ -257,14 +257,21 @@ public class SignatureModelBenchmarking extends AbstractSignatureModelBenchmarki
 
               // Read signature for each message
               String signatureLine = signatureReader.readLine();
-              byte[] signatureBytes = new BigInteger(signatureLine).toByteArray();
+              byte[] signatureBytes;
+              try {
+                signatureBytes = new BigInteger(signatureLine).toByteArray();
+                // proceed with signatureBytes
+              } catch (NumberFormatException e) {
+                signatureBytes = new BigInteger("0").toByteArray();
+              }
               int finalDigestSize = digestSize;
               int finalKeyIndex = keyIndex;
               String finalMessageLine = messageLine;
+              byte[] finalSignatureBytes = signatureBytes;
               Future<Pair<Integer, Pair<Boolean, Pair<Long, List<byte[]>>>>> future = executor.submit(
                   () -> {
                     Pair<Boolean, Pair<Long, List<byte[]>>> verificationResult = verifySignature(
-                        publicKey, finalMessageLine, signatureBytes, finalDigestSize);
+                        publicKey, finalMessageLine, finalSignatureBytes, finalDigestSize);
                     return new Pair<>(finalKeyIndex,
                         verificationResult);
                   });
@@ -356,14 +363,20 @@ public class SignatureModelBenchmarking extends AbstractSignatureModelBenchmarki
               String messageLine = messageReader.readLine();
               nonRecoverableMessagesPerKey.get(keyIndex).add(messageLine);
               String signatureLine = signatureReader.readLine();
-              byte[] signatureBytes = new BigInteger(signatureLine).toByteArray();
+              byte[] signatureBytes;
+              try {
+                signatureBytes = new BigInteger(signatureLine).toByteArray();
+              } catch (NumberFormatException e) {
+                signatureBytes = new BigInteger("0").toByteArray();
+              }
               int finalDigestSize = digestSize;
               int finalKeyIndex = keyIndex;
 
+              byte[] finalSignatureBytes = signatureBytes;
               Future<Pair<Integer, Pair<Boolean, Pair<Long, List<byte[]>>>>> future = executor.submit(
                   () -> {
                     Pair<Boolean, Pair<Long, List<byte[]>>> verificationResult = verifySignature(
-                        publicKey, messageLine, signatureBytes, finalDigestSize);
+                        publicKey, messageLine, finalSignatureBytes, finalDigestSize);
                     return new Pair<>(finalKeyIndex, verificationResult);
                   });
               futures.add(future);

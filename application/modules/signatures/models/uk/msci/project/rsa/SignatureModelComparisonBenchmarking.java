@@ -448,18 +448,24 @@ public class SignatureModelComparisonBenchmarking extends AbstractSignatureModel
                   PublicKey publicKey = (PublicKey) keyBatch.get(actualKeyIndex);
 
                   String signatureLine = signatureReader.readLine();
-                  byte[] signatureBytes = new BigInteger(signatureLine).toByteArray();
+                  byte[] signatureBytes;
+                  try {
+                    signatureBytes = new BigInteger(signatureLine).toByteArray();
+                  } catch (NumberFormatException e) {
+                    signatureBytes = new BigInteger("0").toByteArray();
+                  }
 
                   String finalMessageLine = messageLine;
                   int finalDigestSize = digestSize;
                   boolean finalIsProvablySecureHash = isProvablySecureHash;
+                  byte[] finalSignatureBytes = signatureBytes;
                   Future<Pair<Boolean, Pair<Long, List<byte[]>>>> future = executor.submit(() -> {
                     try {
                       SigScheme sigScheme = SignatureFactory.getSignatureScheme(currentType,
                           publicKey, finalIsProvablySecureHash);
                       sigScheme.setDigest(hashFunction.getDigestType(), finalDigestSize);
                       return getBatchVerificationResult(sigScheme, finalMessageLine,
-                          signatureBytes, keyHashFunctionIdentifier);
+                        finalSignatureBytes, keyHashFunctionIdentifier);
                     } catch (Exception e) {
                       e.printStackTrace();
                       return null;
@@ -573,7 +579,12 @@ public class SignatureModelComparisonBenchmarking extends AbstractSignatureModel
                 for (int hashIndex = 0; hashIndex < numHashFunctions; hashIndex++) {
                   String signatureLine = signatureReader.readLine();
                   String messageLine = messageReader.readLine();
-                  byte[] signatureBytes = new BigInteger(signatureLine).toByteArray();
+                  byte[] signatureBytes;
+                  try {
+                    signatureBytes = new BigInteger(signatureLine).toByteArray();
+                  } catch (NumberFormatException e) {
+                    signatureBytes = new BigInteger("0").toByteArray();
+                  }
 
                   int keyLength = keyLengths.get(actualKeyIndex);
                   HashFunctionSelection hashFunction = hashFunctions.get(hashIndex);
@@ -599,6 +610,7 @@ public class SignatureModelComparisonBenchmarking extends AbstractSignatureModel
                   int finalDigestSize = digestSize;
 
                   boolean finalIsProvablySecureHash = isProvablySecureHash;
+                  byte[] finalSignatureBytes = signatureBytes;
                   Future<Pair<Boolean, Pair<Long, List<byte[]>>>> future = executor.submit(() -> {
 
                     try {
@@ -606,7 +618,7 @@ public class SignatureModelComparisonBenchmarking extends AbstractSignatureModel
                           publicKey, finalIsProvablySecureHash);
                       sigScheme.setDigest(hashFunction.getDigestType(), finalDigestSize);
                       return getBatchVerificationResult(sigScheme, messageLine,
-                          signatureBytes, keyHashFunctionIdentifier);
+                        finalSignatureBytes, keyHashFunctionIdentifier);
                     } catch (Exception e) {
                       e.printStackTrace();
                       return null;
