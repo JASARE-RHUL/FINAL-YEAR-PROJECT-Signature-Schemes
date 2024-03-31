@@ -96,6 +96,9 @@ public class GenControllerBenchmarking extends AbstractGenController {
       int numKeys = 0;
       try {
         numKeys = Integer.parseInt(genView.getNumKeys());
+        if (!(numTrials > 0)) {
+          throw new NumberFormatException();
+        }
       } catch (NumberFormatException e) {
         uk.msci.project.rsa.DisplayUtility.showErrorAlert(
             "Error: Invalid input. Please enter a valid number of keys.");
@@ -132,7 +135,6 @@ public class GenControllerBenchmarking extends AbstractGenController {
         mainController);
     BenchmarkingContext context = new KeyGenerationContext(genModel);
     resultsController.setContext(context);
-    genModel.generateKeyBatch();
     if (genModel.generateKeyBatch()) {
       mainController.setProvableKeyBatchForSignatureProcesses(
           genModel.getPrivateKeyBatch(),
