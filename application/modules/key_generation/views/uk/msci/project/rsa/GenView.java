@@ -1,9 +1,6 @@
 package uk.msci.project.rsa;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Pattern;
 import javafx.beans.value.ChangeListener;
 import javafx.event.ActionEvent;
@@ -586,22 +583,28 @@ public class GenView {
 
         textField.setStyle("");
 
-        if (!(Pattern.compile("^\\s*\\d+(?:\\s*,\\s*\\d+)+\\s*$").matcher(textField.getText())
-            .matches())) {
+        if (!(Pattern.compile("^\\s*\\d+(?:\\s*,\\s*\\d+)+\\s*$").matcher(textField.getText()).matches())) {
           invalidField = true;
           textField.setStyle("-fx-control-inner-background: #FFDDDD;");
         } else {
           String textFieldValue = textField.getText();
           boolean checkBoxValue = checkBox.isSelected();
-          dynamicKeyData.add(
-              new Pair<>(KeyGenUtil.convertStringToIntArray(textFieldValue), checkBoxValue));
 
+          int[] numbers = KeyGenUtil.convertStringToIntArray(textFieldValue);
+          int sum = Arrays.stream(numbers).sum();
+
+          if (sum < 1024 || sum > 7168) {
+            invalidField = true;
+            textField.setStyle("-fx-control-inner-background: #FFDDDD;");
+          } else {
+            dynamicKeyData.add(new Pair<>(numbers, checkBoxValue));
+          }
         }
-
       }
     }
     return !invalidField;
   }
+
 
 
   /**
