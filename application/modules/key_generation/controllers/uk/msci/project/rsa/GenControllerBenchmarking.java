@@ -96,7 +96,7 @@ public class GenControllerBenchmarking extends AbstractGenController {
       int numKeys = 0;
       try {
         numKeys = Integer.parseInt(genView.getNumKeys());
-        if (!(numTrials > 0)) {
+        if (!(numKeys > 0)) {
           throw new NumberFormatException();
         }
       } catch (NumberFormatException e) {
