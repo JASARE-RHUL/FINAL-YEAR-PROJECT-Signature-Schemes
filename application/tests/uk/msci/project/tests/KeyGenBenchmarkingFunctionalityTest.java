@@ -93,17 +93,34 @@ public class KeyGenBenchmarkingFunctionalityTest extends ApplicationTest {
    */
   @Test
   void shouldValidateNumKeysInput() {
+    String[] invalidInputs = {"invalid input", "@#\\%\\&*[(\\$", "adewfrgtrvbc125663", "", "7.8", "-5", "0", "1/2"};
     WaitForAsyncUtils.waitForFxEvents();
-    TextField keySizeTextField = robot.lookup("#keySizeTextField").queryAs(TextField.class);
-    // Input an invalid value
-    robot.clickOn(keySizeTextField).write("invalid input");
-    robot.clickOn("#numKeysButton");
-    // Assert that the failure popup is visible
-    assertNotNull((Node) robot.lookup(button -> button instanceof Button &&
-        ((Button) button).getText().equals(ButtonType.OK.getText())).tryQuery().orElseThrow(
-        () -> new AssertionError("Button with text '" + ButtonType.OK.getText() + "' not found.")
-      ),
-      "Failure popup box ok button should exist.");
+    TextField numKeysTextField = robot.lookup("#numKeysTextField").queryAs(TextField.class);
+    for (String input : invalidInputs) {
+      // Enter each invalid input and attempt to perform the operation
+      Platform.runLater(() -> {
+        numKeysTextField.clear();
+        numKeysTextField.setText(input);
+        robot.clickOn("#numKeysButton");
+      });
+      WaitForAsyncUtils.waitForFxEvents();
+
+      // Verify that an error message is displayed
+      Platform.runLater(() -> {
+        // Assert that the failure popup is visible
+        assertNotNull((Node) robot.lookup(button -> button instanceof Button &&
+            ((Button) button).getText().equals(ButtonType.OK.getText())).tryQuery().orElseThrow(
+            () -> new AssertionError("Button with text '" + ButtonType.OK.getText() + "' not found.")
+          ),
+          "Failure popup box ok button should exist.");
+        MainTestUtility.clickOnDialogButton(robot, ButtonType.OK);
+
+
+      });
+
+      WaitForAsyncUtils.waitForFxEvents();
+    }
+
   }
 
 
