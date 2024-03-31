@@ -86,6 +86,9 @@ public class GenControllerComparisonBenchmarking extends GenControllerBenchmarki
       int numKeys = 0;
       try {
         numKeys = Integer.parseInt(genView.getNumKeys());
+        if (!(numTrials > 0)) {
+          throw new NumberFormatException();
+        }
       } catch (NumberFormatException e) {
         uk.msci.project.rsa.DisplayUtility.showErrorAlert(
             "Error: Invalid input. Please enter a valid number of keys.");
