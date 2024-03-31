@@ -8,6 +8,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Comparator;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javafx.scene.Node;
@@ -70,6 +72,8 @@ public class MainTestUtility {
     ));
   }
 
+
+
   /**
    * Tests whether a file is exported successfully when clicking an export button in the UI. This
    * method clicks the specified export button and then checks if the expected file with the given
@@ -98,6 +102,28 @@ public class MainTestUtility {
         fileExtension);
     assertTrue(file.isPresent(), "Expected exported file not found.");
     assertTrue(file.get().exists(), "Exported file should exist.");
+  }
+
+  /**
+   * Waits for the export dialog to show up.
+   *
+   * @param robot         The robot used to simulate user interactions.
+   */
+  public static void waitForExportDialogToShow(FxRobot robot) {
+    WaitForAsyncUtils.waitForFxEvents();
+    try {
+      WaitForAsyncUtils.waitFor(1, TimeUnit.SECONDS, () -> {
+        try {
+          return robot.window("Export") != null && robot.window("Export").isShowing();
+        } catch (Exception e) {
+          return false;
+        }
+      });
+    } catch (TimeoutException e) {
+      // Handle timeout exception if dialog doesn't appear within 10 seconds
+      System.err.println("Export dialog didn't appear within the expected time.");
+      e.printStackTrace(); // Handle or log the exception appropriately
+    }
   }
 
 }
