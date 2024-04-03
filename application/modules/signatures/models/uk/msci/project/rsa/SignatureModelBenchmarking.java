@@ -208,11 +208,6 @@ public class SignatureModelBenchmarking extends AbstractSignatureModelBenchmarki
       DoubleConsumer progressUpdater)
       throws IOException {
 
-    if (getRecoveryStatus()) {
-      batchVerifySignaturesForRecovery(batchMessageFile, batchSignatureFile, progressUpdater);
-      return;
-    }
-
     this.messageFile = batchMessageFile;
     setKeyLengths(keyBatch);
 
