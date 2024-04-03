@@ -83,7 +83,10 @@ public abstract class SigScheme implements SigSchemeInterface {
    */
   DigestType currentHashType;
 
-
+  /**
+   * Indicates whether this signature scheme supports message recovery.
+   * This flag helps to distinguish between schemes that provide this feature and those that don't.
+   */
   boolean isRecoveryScheme;
 
 
@@ -414,6 +417,13 @@ public abstract class SigScheme implements SigSchemeInterface {
    */
   public abstract byte[] getHashID(DigestType digestType);
 
+
+
+  /**
+   * Retrieves the status indicating whether the signature scheme supports message recovery.
+   *
+   * @return true if the signature scheme is a message recovery scheme, false otherwise.
+   */
   boolean getRecoveryStatus() {
     return isRecoveryScheme;
   }
