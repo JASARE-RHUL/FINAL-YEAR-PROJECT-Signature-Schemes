@@ -53,6 +53,8 @@ public class SignatureModel {
    */
   boolean isProvablySecure;
 
+  boolean isRecoveryScheme;
+
 
   /**
    * Constructs a new {@code SignatureModel} without requiring an initial key
@@ -72,6 +74,11 @@ public class SignatureModel {
    */
   public void setSignatureType(SignatureType signatureType) {
     this.currentType = signatureType;
+    try {
+      isRecoveryScheme = SignatureFactory.getRecoveryStatus(signatureType);
+    } catch (InvalidSignatureTypeException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   /**
@@ -267,6 +274,6 @@ public class SignatureModel {
    * otherwise.
    */
   boolean getRecoveryStatus() {
-    return currentSignatureScheme.getRecoveryStatus();
+    return isRecoveryScheme;
   }
 }

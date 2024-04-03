@@ -46,4 +46,25 @@ public class SignatureFactory {
         throw new InvalidSignatureTypeException("Invalid signature type");
     }
   }
+  /**
+   * Determines if the specified signature type supports message recovery.
+   *
+   * @param signatureType The type of the signature to be evaluated.
+   * @return A boolean value indicating whether message recovery is supported by the given signature type.
+   *         Returns {@code true} for signature types with message recovery capabilities and {@code false} otherwise.
+   * @throws InvalidSignatureTypeException If the specified signature type is not recognized or supported.
+   *                                       This exception is thrown to indicate an unsupported or invalid type.
+   */
+  public static boolean getRecoveryStatus(SignatureType signatureType)
+    throws InvalidSignatureTypeException {
+    switch (signatureType) {
+      case RSASSA_PKCS1_v1_5:
+      case ANSI_X9_31_RDSA:
+        return false;
+      case ISO_IEC_9796_2_SCHEME_1:
+        return true;
+      default:
+        throw new InvalidSignatureTypeException("Invalid signature type");
+    }
+  }
 }
