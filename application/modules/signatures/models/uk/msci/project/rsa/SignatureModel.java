@@ -3,18 +3,22 @@ package uk.msci.project.rsa;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.util.zip.DataFormatException;
+
 import uk.msci.project.rsa.exceptions.InvalidDigestException;
 import uk.msci.project.rsa.exceptions.InvalidSignatureTypeException;
 
 /**
- * This class is part of the Model component specific to digital signature operations providing
- * methods to sign data and verify signatures.  It encapsulates the data and the logic required to
+ * This class is part of the Model component specific to digital signature
+ * operations providing
+ * methods to sign data and verify signatures.  It encapsulates the data and
+ * the logic required to
  * keep track of a user initiated digital signature scheme.
  */
 public class SignatureModel {
 
   /**
-   * The current state of the model representing a tracked instance of a signature scheme
+   * The current state of the model representing a tracked instance of a
+   * signature scheme
    */
   SigScheme currentSignatureScheme;
   /**
@@ -38,19 +42,21 @@ public class SignatureModel {
   int hashSize;
 
   /**
-   * Indicator of whether the current signature scheme operates in provably secure mode.
+   * Indicator of whether the current signature scheme operates in provably
+   * secure mode.
    */
   boolean isProvablySecure;
 
 
   /**
-   * Constructs a new {@code SignatureModel} without requiring an initial key representative of the
-   * fact that at program launch, the model does not have any state: until it is initiated by the
+   * Constructs a new {@code SignatureModel} without requiring an initial key
+   * representative of the
+   * fact that at program launch, the model does not have any state: until it
+   * is initiated by the
    * user
    */
   public SignatureModel() {
   }
-
 
 
   /**
@@ -98,7 +104,7 @@ public class SignatureModel {
   public void setHashSize(int hashSize) {
     if (hashSize < 0) {
       throw new IllegalArgumentException(
-          "Hash size must be a non-negative integer");
+        "Hash size must be a non-negative integer");
     }
     this.hashSize = hashSize;
   }
@@ -134,27 +140,33 @@ public class SignatureModel {
 
 
   /**
-   * Instantiates a signature scheme based on the current key and signature type. Throws an
+   * Instantiates a signature scheme based on the current key and signature
+   * type. Throws an
    * exception if either the key or the signature type is not set.
    *
-   * @throws InvalidSignatureTypeException if the parameter passed SignatureType is not valid or
+   * @throws InvalidSignatureTypeException if the parameter passed
+   * SignatureType is not valid or
    *                                       supported.
    */
   public void instantiateSignatureScheme()
-      throws InvalidSignatureTypeException, NoSuchAlgorithmException, InvalidDigestException, NoSuchProviderException {
+    throws InvalidSignatureTypeException, NoSuchAlgorithmException,
+    InvalidDigestException, NoSuchProviderException {
     if (key != null && currentType != null) {
-      currentSignatureScheme = SignatureFactory.getSignatureScheme(currentType, key,
-          isProvablySecure);
+      currentSignatureScheme =
+        SignatureFactory.getSignatureScheme(currentType, key,
+        isProvablySecure);
       try {
         currentSignatureScheme.setDigest(currentHashType, hashSize);
       } catch (IllegalArgumentException e) {
         throw new IllegalArgumentException(
-            "Custom hash size must a positive integer that allows the minimum bytes of padding to be incorporated");
+          "Custom hash size must a positive integer that allows the minimum " +
+            "bytes of padding to be incorporated");
       }
 
     } else {
       throw new IllegalStateException(
-          "Both key and signature type need to be set before instantiating a signature scheme");
+        "Both key and signature type need to be set before instantiating a " +
+          "signature scheme");
     }
   }
 
@@ -163,35 +175,42 @@ public class SignatureModel {
    *
    * @param data The data to be signed.
    * @return A byte array representing the digital signature.
-   * @throws IllegalStateException if the key or signature type is not set before signing.
-   * @throws DataFormatException   If signing process fails due to incorrect format.
+   * @throws IllegalStateException if the key or signature type is not set
+   * before signing.
+   * @throws DataFormatException   If signing process fails due to incorrect
+   * format.
    */
   public byte[] sign(byte[] data) throws DataFormatException {
     if (currentSignatureScheme == null) {
-      throw new IllegalStateException("Both key and signature type need to be set before signing");
+      throw new IllegalStateException("Both key and signature type need to be" +
+        " set before signing");
     }
     return currentSignatureScheme.sign(data);
   }
 
   /**
-   * Verifies a signature against the provided data using the current signature scheme.
+   * Verifies a signature against the provided data using the current
+   * signature scheme.
    *
    * @param data      The data to be verified against the signature.
    * @param signature The signature to be verified.
    * @return {@code true} if the signature is valid, {@code false} otherwise.
-   * @throws IllegalStateException if the key or signature type is not set before verification.
-   * @throws DataFormatException   If verification fails due to incorrect format.
+   * @throws IllegalStateException if the key or signature type is not set
+   * before verification.
+   * @throws DataFormatException   If verification fails due to incorrect
+   * format.
    */
   public boolean verify(byte[] data, byte[] signature) throws DataFormatException {
     if (currentSignatureScheme == null) {
       throw new IllegalStateException(
-          "Both key and signature type need to be set before verification");
+        "Both key and signature type need to be set before verification");
     }
     return currentSignatureScheme.verify(data, signature);
   }
 
   /**
-   * Gets the non-recoverable portion of message as generated by the adjusted sign method for
+   * Gets the non-recoverable portion of message as generated by the adjusted
+   * sign method for
    * signature schemes with message recovery
    *
    * @return signing process initialised non-recoverable portion of message
@@ -201,7 +220,8 @@ public class SignatureModel {
   }
 
   /**
-   * Gets recoverable portion of message as generated by the adjusted verify method for signature
+   * Gets recoverable portion of message as generated by the adjusted verify
+   * method for signature
    * schemes with message recovery
    *
    * @return verification process initialised non-recoverable portion of message
@@ -214,7 +234,8 @@ public class SignatureModel {
   /**
    * Indicates whether the signature scheme operates in provably secure mode.
    *
-   * @return {@code true} if the signature scheme is operating in provably secure mode, {@code
+   * @return {@code true} if the signature scheme is operating in provably
+   * secure mode, {@code
    * false} otherwise.
    */
   public boolean getProvablySecure() {
@@ -224,12 +245,21 @@ public class SignatureModel {
   /**
    * Sets whether the signature scheme should operate in provably secure mode.
    *
-   * @param isProvablySecure A boolean flag to enable or disable provably secure mode.
+   * @param isProvablySecure A boolean flag to enable or disable provably
+   *                         secure mode.
    */
   public void setProvablySecure(boolean isProvablySecure) {
     this.isProvablySecure = isProvablySecure;
   }
 
+
+  /**
+   * Retrieves the status indicating whether the currently tracked signature
+   * scheme supports message recovery.
+   *
+   * @return true if the signature scheme is a message recovery scheme, false
+   * otherwise.
+   */
   boolean getRecoveryStatus() {
     return currentSignatureScheme.getRecoveryStatus();
   }
