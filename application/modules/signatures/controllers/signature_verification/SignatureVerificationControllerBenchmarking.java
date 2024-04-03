@@ -125,8 +125,11 @@ public class SignatureVerificationControllerBenchmarking extends
     verifyView.addImportSigBatchButtonObserver(
       new ImportObserver(primaryStage, verifyView, null,
         this::handleSignatureBatch, "*.rsa"));
-    verifyView.addVerificationBenchmarkButtonObserver(
-      new VerificationBenchmarkButtonObserver((SignatureModelBenchmarking) signatureModelBenchmarking));
+    if (signatureModelBenchmarking instanceof SignatureModelBenchmarking) {
+      verifyView.addVerificationBenchmarkButtonObserver(new
+        VerificationBenchmarkButtonObserver((SignatureModelBenchmarking)
+        signatureModelBenchmarking));
+    }
   }
 
 
