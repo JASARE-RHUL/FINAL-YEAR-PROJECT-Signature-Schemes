@@ -2,7 +2,7 @@
 
 This project implements the Model-View-Controller (MVC) design pattern to ensure a clear separation
 of concerns. The directory structure is customised to reflect this design principle and to
-facilitate the implementation of the Proof of Concept (PoC) program as described in the report.
+facilitate the implementation of the final application as described in the report.
 Below is an overview of the structure and the Maven configuration used to accommodate it.
 
 ## Prerequisites
@@ -11,19 +11,13 @@ Java must be installed to run this application
 
 ## Demo Video
 
-1. Full demo of the application: https://youtu.be/saX__2eaFAI
+1. Full demo of the application:
 2. Optional video (Recovering a partial message from a Signature (ISO\IEC 9796-2
-   Scheme 1)): https://youtu.be/R0csFIayPJY
+   Scheme 1)):
 
 ## Running the application
 
-To run the application, run
-
-```
-mvn javafx:run
-```
-
-or alternatively, using the provided jar
+To run the application, using the provided jar, run
 
 ```
 java -jar digital-signature-poc-1.0.jar
@@ -45,62 +39,48 @@ Simply open `index.html` to view.
 <Final Year Project>/
 ├── application/
 │   ├── controllers/
-│   │   └── uk.msci.project.rsa/
-│   │       ├── LaunchMainMenu.java         # Orchestrates the application flow
+│   │   └── LaunchMainMenu.java         # Orchestrates the application flow
 │   │       └── MainController.java         # Central controller for the application
-│   ├── models/
-│   │   └── uk.msci.project.rsa/            # Contains domain logic and data
+│   ├── models/ # Contains domain logic and data
+│   │            
 │   ├── views/
-│   │   └── uk.msci.project.rsa/
 │   │       └── MainMenuView.java           # UI logic for the main menu
 │   ├── utility/
-│   │   └── uk.msci.project.rsa/
 │   │       └── FileHandle.java             # Utility class for file operations
 │   ├── modules/
 │   │   ├── key_generation/
-│   │   │   ├── controllers/
-│   │   │   │   └── uk.msci.project.rsa/
-│   │   │   │       └── GenController.java  # Controller for key generation
-│   │   │   ├── models/
-│   │   │   │   └── uk.msci.project.rsa/
-│   │   │   │       └── GenModel.java       # Model for key generation logic
-│   │   │   ├── views/
-│   │   │   │   └── uk.msci.project.rsa/
-│   │   │   │       └── GenView.java        # UI logic for key generation
-│   │   │   ├── resources/
-│   │   │   │   └── GenView.fxml             # FXML for key generation view
-│   │   │   └── tests/
-│   │   │       └── uk.msci.project.tests/  # Unit tests for key generation module
-│   │   └── signatures/
-│   │       ├── controllers/
-│   │       │   └── uk.msci.project.rsa/
-│   │       │       └── SignatureController.java  # Controller for signature processes
-│   │       ├── models/
-│   │       │   └── uk.msci.project.rsa/
-│   │       │       └── SignatureModel.java     # Model for signature logic
-│   │       ├── views/
-│   │       │   └── uk.msci.project.rsa/
-│   │       │       ├── SignView.java           # UI for signing process
-│   │       │       └── VerifyView.java         # UI for verification process
-│   │       ├── resources/
-│   │       │   ├── SignView.fxml                # FXML for signing view
-│   │       │   └── VerifyView.fxml              # FXML for verification view
-│   │       ├── utility/
-│   │       │   └── uk.msci.project.rsa/        # Utility classes for signatures module
-│   │       └── tests/
-│   │           └── uk.msci.project.tests/      # Unit tests for signatures module
+│   │   │   ├── controllers/  # controller assembly for key generation
+│   │   │   ├── models/ # Model assembly for key generation logic
+│   │   │   ├── views/ # view assembly for key generation
+│   │   │   ├── resources/   # FXML assembly for key generation views
+│   │   │   └── tests/ # Unit tests for key generation module
+│   │   ├──signatures/
+│   │   │   ├── controllers/ # Controller assembly for signature processes
+│   │   │   ├── models/ # Model assembly for signature logic
+│   │   │   ├── views/ # view assembly for key generation
+│   │   │   │       ├── SignatureBaseView.java  # Parent CLass
+│   │   │   │       ├── SignView.java           # UI for signing process
+│   │   │   │       └── VerifyView.java         # UI for verification process
+│   │   │   ├── resources/ # FXML assembly for signature views
+│   │   │   ├── utility/  # Utility classes for signatures module
+│   │   │   └── tests/ # Unit tests for key generation module
+│   │   └── Results/
+│   │       ├── controllers/ # Controller assembly for results
+│   │       ├── models/ # Model for results logic
+│   │       ├── views/ # view for results
+│   │       ├── resources/ # assembly for results view
+│   │       └── tests/  # Unit tests for results module
 │   ├── resources/
 │   │   ├── MainMenuView.fxml                    # FXML for the main menu
 │   │   └── checkmark.png                       # Resource image file
 │   ├── docs/                                   # Documentation files
-│   └── tests/
-│       └── uk.msci.project.tests/              # integration tests for the application
+│   └── tests/     # integration tests for the application
 └── ...
 ```
 
 ## Notes
 
-- `application/` contains the full application structured around the MVC pattern.
+- `application/` contains the full application, structured around the MVC pattern.
     - `controllers/, models/, and views/`: default controller, model or view directories.
     - `tests/` is used for storing the application test cases.
     - `docs/` directory is intended for project documentation.
@@ -124,6 +104,21 @@ modules.
   stemming from user interation.
 - The controllers handle user input, observing changes in the view, manipulating the models and then
   updating the views.
+
+## Application Modes Context
+
+In the application, each MVC (Model-View-Controller) component for every module comprises an assembly of
+classes, each designed for a specific application mode:
+
+Standard Mode: Classes like GenModelStandard and GenControllerStandard are responsible for routine tasks
+like generating a single key or signature, without the complexity of benchmarking.
+Benchmarking Mode: Classes like GenModelBenchmarking and GenControllerBenchmarking specialize in processing and
+evaluating batches of operations, delivering detailed results for individual keys.
+Comparison Mode: Comparison classes, such as GenModelComparisonBenchmarking and GenControllerComparisonBenchmarking,
+enable comparative analysis across different key sizes, contrasting parameters and outcomes side by side.
+
+This pattern extends to the view assembly for key generation, as well as the respective assemblies for
+signatures modules.
 
 ## Maven Configuration
 

@@ -187,7 +187,7 @@
     <dependency>
       <groupId>com.puppycrawl.tools</groupId>
       <artifactId>checkstyle</artifactId>
-      <version>9.1</version>
+      <version>10.15.0</version>
     </dependency>
     <dependency>
       <groupId>org.testfx</groupId>
@@ -213,8 +213,8 @@
     </dependency>
     <dependency>
       <groupId>org.bouncycastle</groupId>
-      <artifactId>bcprov-jdk15on</artifactId>
-      <version>1.68</version>
+      <artifactId>bcprov-jdk18on</artifactId>
+      <version>1.77</version>
     </dependency>
     <dependency>
       <groupId>com.jfoenix</groupId>
