@@ -42,8 +42,6 @@ public class SignatureModel {
    */
   boolean isProvablySecure;
 
-  private SignatureModelBenchmarking signatureModelBenchmarking;
-
 
   /**
    * Constructs a new {@code SignatureModel} without requiring an initial key representative of the
@@ -51,10 +49,6 @@ public class SignatureModel {
    * user
    */
   public SignatureModel() {
-  }
-
-  public SignatureModel(SignatureModelBenchmarking signatureModelBenchmarking) {
-    this.signatureModelBenchmarking = signatureModelBenchmarking;
   }
 
 
@@ -234,5 +228,9 @@ public class SignatureModel {
    */
   public void setProvablySecure(boolean isProvablySecure) {
     this.isProvablySecure = isProvablySecure;
+  }
+
+  boolean getRecoveryStatus() {
+    return currentSignatureScheme.getRecoveryStatus();
   }
 }

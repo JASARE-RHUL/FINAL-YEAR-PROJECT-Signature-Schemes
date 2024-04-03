@@ -83,7 +83,8 @@ public abstract class SigScheme implements SigSchemeInterface {
    */
   DigestType currentHashType;
 
-  private Integer pendingHashSize = null;
+
+  boolean isRecoveryScheme;
 
 
   /**
@@ -412,6 +413,10 @@ public abstract class SigScheme implements SigSchemeInterface {
    * @throws IllegalArgumentException If the provided digest type is not supported.
    */
   public abstract byte[] getHashID(DigestType digestType);
+
+  boolean getRecoveryStatus() {
+    return isRecoveryScheme;
+  }
 
 
 }

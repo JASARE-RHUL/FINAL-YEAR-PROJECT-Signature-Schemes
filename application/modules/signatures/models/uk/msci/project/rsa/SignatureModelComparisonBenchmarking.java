@@ -798,7 +798,7 @@ public class SignatureModelComparisonBenchmarking extends AbstractSignatureModel
     byte[] recoveredMessage = new byte[]{};
     long endTime = 0;
     long startTime = 0;
-    if (currentType == SignatureType.ISO_IEC_9796_2_SCHEME_1) {
+    if (getRecoveryStatus()) {
       String[] nonRecoverableParts = messageLine.split(" ", 2);
       byte[] nonRecoverableMessage =
           nonRecoverableParts[0].equals("0") ? null : nonRecoverableParts[1].getBytes();
@@ -835,7 +835,7 @@ public class SignatureModelComparisonBenchmarking extends AbstractSignatureModel
   void exportVerificationResultsToCSV(int keySizeIndex, int keySize, DoubleConsumer progressUpdater)
       throws IOException {
 
-    if (currentType == SignatureType.ISO_IEC_9796_2_SCHEME_1) {
+    if (getRecoveryStatus()) {
       exportVerificationResultsToCSVForRecovery(keySizeIndex, keySize, progressUpdater);
       return;
     }

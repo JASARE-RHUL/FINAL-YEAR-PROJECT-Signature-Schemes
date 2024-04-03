@@ -228,7 +228,7 @@ public abstract class AbstractSignatureModelBenchmarking extends SignatureModel 
     byte[] recoveredMessage = new byte[]{};
     long endTime = 0;
     long startTime = 0;
-    if (currentType == SignatureType.ISO_IEC_9796_2_SCHEME_1) {
+    if (getRecoveryStatus()) {
       String[] nonRecoverableParts = messageLine.split(" ", 2);
       byte[] nonRecoverableMessage =
           nonRecoverableParts[0].equals("1") ? nonRecoverableParts[1].getBytes() : null;

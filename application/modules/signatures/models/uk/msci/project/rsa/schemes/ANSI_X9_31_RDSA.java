@@ -32,6 +32,7 @@ public class ANSI_X9_31_RDSA extends SigScheme {
   public ANSI_X9_31_RDSA(Key key) {
     super(key);
     this.hashID = SHA_256_HASH_ID;
+    isRecoveryScheme = false;
   }
 
   /**

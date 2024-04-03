@@ -53,6 +53,7 @@ public class ISO_IEC_9796_2_SCHEME_1 extends SigScheme {
    */
   public ISO_IEC_9796_2_SCHEME_1(Key key) {
     super(key);
+    isRecoveryScheme = true;
   }
 
   /**

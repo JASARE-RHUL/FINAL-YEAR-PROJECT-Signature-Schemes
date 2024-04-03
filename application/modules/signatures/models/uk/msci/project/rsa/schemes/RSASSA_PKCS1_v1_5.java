@@ -69,6 +69,7 @@ public class RSASSA_PKCS1_v1_5 extends SigScheme {
   public RSASSA_PKCS1_v1_5(Key key) {
     super(key);
     this.hashID = SHA_256_HASH_ID;
+    isRecoveryScheme = false;
   }
 
 

@@ -178,7 +178,7 @@ public class SignatureVerificationControllerStandard extends AbstractSignatureBa
     public void handle(ActionEvent event) {
       hashOutputSize = verifyView.getHashOutputSizeArea();
       if ((verifyView.getTextInput().equals("") && message == null)) {
-        if ((signatureModel.getSignatureType() != SignatureType.ISO_IEC_9796_2_SCHEME_1)) {
+        if ((!signatureModel.getRecoveryStatus())) {
           uk.msci.project.rsa.DisplayUtility.showErrorAlert(
               "You must provide an input for all required fields. Please try again.");
           return;

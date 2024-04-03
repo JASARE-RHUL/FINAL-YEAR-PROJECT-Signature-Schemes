@@ -128,7 +128,7 @@ public class SignatureVerificationControllerComparisonBenchmarking extends
 
       benchmarkingUtility = new BenchmarkingUtility();
       Task<Void> benchmarkingTask = null;
-      if (signatureModel.getSignatureType() == SignatureType.ISO_IEC_9796_2_SCHEME_1) {
+      if (signatureModel.getRecoveryStatus()) {
         if (((numTrials
             != numSignatures) || ((numSignatures % (signatureModel.calculateNumBenchmarkingRuns()
             * signatureModel.getNumKeySizesForComparisonMode())) != 0))) {

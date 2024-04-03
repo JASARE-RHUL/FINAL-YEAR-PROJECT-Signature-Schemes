@@ -2,6 +2,7 @@ package uk.msci.project.rsa;
 
 import java.io.File;
 import java.io.IOException;
+
 import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
@@ -18,7 +19,7 @@ import javafx.stage.Stage;
  * verification logic.
  */
 public class SignatureVerificationControllerBenchmarking extends
-    AbstractSignatureBaseControllerBenchmarking {
+  AbstractSignatureBaseControllerBenchmarking {
 
   /**
    * The model component of the MVC pattern that handles the data and business logic for digital
@@ -66,11 +67,11 @@ public class SignatureVerificationControllerBenchmarking extends
   public void showBenchmarkingView(Stage primaryStage) {
     isBenchmarkingMode = true;
     loadVerifyView("/VerifyView.fxml",
-        () -> {
-          this.signatureModel = new SignatureModelBenchmarking();
-          setupObserversBenchmarkingMode(primaryStage, verifyView, signatureModel);
-        },
-        () -> preloadProvablySecureKeyBatch(verifyView, signatureModel));
+      () -> {
+        this.signatureModel = new SignatureModelBenchmarking();
+        setupObserversBenchmarkingMode(primaryStage, verifyView, signatureModel);
+      },
+      () -> preloadProvablySecureKeyBatch(verifyView, signatureModel));
   }
 
 
@@ -89,13 +90,13 @@ public class SignatureVerificationControllerBenchmarking extends
    */
   @Override
   void setupBenchmarkingObservers(Stage primaryStage, SignatureBaseView signatureView,
-      AbstractSignatureModelBenchmarking signatureModelBenchmarking) {
+                                  AbstractSignatureModelBenchmarking signatureModelBenchmarking) {
     super.setupBenchmarkingObservers(primaryStage, verifyView, signatureModelBenchmarking);
     verifyView.addImportSigBatchButtonObserver(
-        new ImportObserver(primaryStage, verifyView, null,
-            this::handleSignatureBatch, "*.rsa"));
+      new ImportObserver(primaryStage, verifyView, null,
+        this::handleSignatureBatch, "*.rsa"));
     verifyView.addVerificationBenchmarkButtonObserver(
-        new VerificationBenchmarkButtonObserver(signatureModelBenchmarking));
+      new VerificationBenchmarkButtonObserver(signatureModelBenchmarking));
   }
 
 
@@ -108,7 +109,7 @@ public class SignatureVerificationControllerBenchmarking extends
     private AbstractSignatureModelBenchmarking signatureModel;
 
     public VerificationBenchmarkButtonObserver(
-        AbstractSignatureModelBenchmarking signatureModelBenchmarking) {
+      AbstractSignatureModelBenchmarking signatureModelBenchmarking) {
       this.signatureModel = signatureModelBenchmarking;
     }
 
@@ -118,23 +119,24 @@ public class SignatureVerificationControllerBenchmarking extends
       hashOutputSize = verifyView.getHashOutputSizeArea();
 
       if ((signatureModel.getNumTrials() == 0)
-          || signatureModel.getKeyBatchLength() == 0
-          || signatureModel.getSignatureType() == null || numSignatures == 0
-          || signatureModel.getHashType() == null) {
+        || signatureModel.getKeyBatchLength() == 0
+        || signatureModel.getSignatureType() == null || numSignatures == 0
+        || signatureModel.getHashType() == null) {
         uk.msci.project.rsa.DisplayUtility.showErrorAlert(
-            "You must provide an input for all fields. Please try again.");
+          "You must provide an input for all fields. Please try again.");
         return;
       }
+      int a = signatureModel.getNumTrials();
+      int b = signatureModel.getKeyBatchLength();
       if ((signatureModel.getNumTrials() * signatureModel.getKeyBatchLength()
-          != numSignatures
-          && signatureModel.getSignatureType() != SignatureType.ISO_IEC_9796_2_SCHEME_1) || (
-          signatureModel.getSignatureType() == SignatureType.ISO_IEC_9796_2_SCHEME_1
-              && signatureModel.getNumTrials() != numSignatures)) {
+        != numSignatures
+        && (!signatureModel.getRecoveryStatus())) || (
+        signatureModel.getRecoveryStatus()
+          && signatureModel.getNumTrials() != numSignatures)) {
         uk.msci.project.rsa.DisplayUtility.showErrorAlert(
-            "The numbers of messages and signatures do not match. Please ensure they match for a valid set of verification pairings.");
+          "The numbers of messages and signatures do not match. Please ensure they match for a valid set of verification pairings.");
         return;
       }
-
 
 
       if (!setHashSizeInModelBenchmarking(verifyView, signatureModel)) {
@@ -143,11 +145,11 @@ public class SignatureVerificationControllerBenchmarking extends
       // Show the progress dialog
       benchmarkingUtility = new BenchmarkingUtility();
       Task<Void> benchmarkingTask = createBenchmarkingTask(messageBatchFile, signatureBatchFile,
-          signatureModel);
+        signatureModel);
       BenchmarkingUtility.beginBenchmarkWithUtility(benchmarkingUtility, "Signature Verification",
-          benchmarkingTask,
-          SignatureVerificationControllerBenchmarking.this::handleBenchmarkingCompletion,
-          mainController.getPrimaryStage());
+        benchmarkingTask,
+        SignatureVerificationControllerBenchmarking.this::handleBenchmarkingCompletion,
+        mainController.getPrimaryStage());
     }
   }
 
@@ -161,12 +163,12 @@ public class SignatureVerificationControllerBenchmarking extends
   void handleBenchmarkingCompletion() {
     resetPreLoadedKeyParams();
     ResultsControllerNormalBenchmarking resultsController = new ResultsControllerNormalBenchmarking(
-        mainController);
+      mainController);
     BenchmarkingContext context = new SignatureVerificationContext(signatureModel);
     resultsController.setContext(context);
     resultsController.showResultsView(null,
-        signatureModel.getClockTimesPerTrial(),
-        signatureModel.getKeyLengths(), false, 0);
+      signatureModel.getClockTimesPerTrial(),
+      signatureModel.getKeyLengths(), false, 0);
   }
 
   /**
@@ -182,7 +184,7 @@ public class SignatureVerificationControllerBenchmarking extends
    *                                   batch.
    */
   public void handleMessageBatch(File file, SignatureBaseView signatureView,
-      AbstractSignatureModelBenchmarking signatureModelBenchmarking) {
+                                 AbstractSignatureModelBenchmarking signatureModelBenchmarking) {
     numTrials = checkFileForNonEmptyLines(file, "message");
     if (numTrials > 0) {
       messageBatchFile = file;
@@ -194,7 +196,7 @@ public class SignatureVerificationControllerBenchmarking extends
       signatureView.setImportTextBatchBtnVisibility(false);
       signatureView.setCancelImportTextBatchButtonVisibility(true);
       signatureView.addCancelImportTextBatchButtonObserver(
-          new CancelImportTextBatchButtonObserver(signatureView));
+        new CancelImportTextBatchButtonObserver(signatureView));
     }
   }
 
@@ -237,7 +239,7 @@ public class SignatureVerificationControllerBenchmarking extends
    *                                   batch.
    */
   public void handleSignatureBatch(File file, SignatureBaseView signatureView,
-      AbstractSignatureModelBenchmarking signatureModelBenchmarking) {
+                                   AbstractSignatureModelBenchmarking signatureModelBenchmarking) {
     numSignatures = checkFileForNonEmptyLines(file, "signature");
     if (signatureView instanceof VerifyView verifyView && numSignatures > 0) {
       signatureBatchFile = file;
@@ -248,11 +250,11 @@ public class SignatureVerificationControllerBenchmarking extends
       verifyView.setImportSigBatchBtnVisibility(false);
       verifyView.setCancelImportSigBatchButtonVisibility(true);
       verifyView.addCancelImportSigBatchButtonObserver(
-          new CancelImportSigButtonObserver(verifyView));
+        new CancelImportSigButtonObserver(verifyView));
 
     } else {
       uk.msci.project.rsa.DisplayUtility.showErrorAlert(
-          "Invalid signature batch. Please make sure the file is not empty.");
+        "Invalid signature batch. Please make sure the file is not empty.");
     }
   }
 
@@ -318,7 +320,7 @@ public class SignatureVerificationControllerBenchmarking extends
    *                                   mode.
    */
   void loadVerifyView(String fxmlPath, Runnable observerSetup,
-      Runnable additionalSetupBasedOnMode) {
+                      Runnable additionalSetupBasedOnMode) {
     try {
       FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
       Parent root = loader.load();
@@ -344,15 +346,15 @@ public class SignatureVerificationControllerBenchmarking extends
    * @return A Task<Void> that will execute the benchmarking process in the background.
    */
   Task<Void> createBenchmarkingTask(File messageFile, File batchSignatureFile,
-      AbstractSignatureModelBenchmarking signatureModelBenchmarking) {
+                                    AbstractSignatureModelBenchmarking signatureModelBenchmarking) {
     return new Task<>() {
       @Override
       protected Void call() throws Exception {
         signatureModelBenchmarking.batchVerifySignatures(messageFile, batchSignatureFile,
-            progress -> Platform.runLater(() -> {
-              benchmarkingUtility.updateProgress(progress);
-              benchmarkingUtility.updateProgressLabel(String.format("%.0f%%", progress * 100));
-            }));
+          progress -> Platform.runLater(() -> {
+            benchmarkingUtility.updateProgress(progress);
+            benchmarkingUtility.updateProgressLabel(String.format("%.0f%%", progress * 100));
+          }));
         return null;
       }
     };

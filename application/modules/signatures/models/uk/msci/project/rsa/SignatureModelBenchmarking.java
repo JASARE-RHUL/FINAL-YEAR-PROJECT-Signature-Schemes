@@ -73,7 +73,7 @@ public class SignatureModelBenchmarking extends AbstractSignatureModelBenchmarki
 
         String message;
         totalWork =
-            currentType != SignatureType.ISO_IEC_9796_2_SCHEME_1 ? numTrials * keyBatch.size()
+            !getRecoveryStatus() ? numTrials * keyBatch.size()
                 : numTrials;
         completedWork = 0;
         int messageCounter = 0;
@@ -208,7 +208,7 @@ public class SignatureModelBenchmarking extends AbstractSignatureModelBenchmarki
       DoubleConsumer progressUpdater)
       throws IOException {
 
-    if (currentType == SignatureType.ISO_IEC_9796_2_SCHEME_1) {
+    if (getRecoveryStatus()) {
       batchVerifySignaturesForRecovery(batchMessageFile, batchSignatureFile, progressUpdater);
       return;
     }
@@ -490,7 +490,7 @@ public class SignatureModelBenchmarking extends AbstractSignatureModelBenchmarki
   public void exportVerificationResultsToCSV(int keyIndex, int keySize,
       DoubleConsumer progressUpdater)
       throws IOException {
-    if (currentType == SignatureType.ISO_IEC_9796_2_SCHEME_1) {
+    if (getRecoveryStatus()) {
       exportVerificationResultsToCSVForRecovery(keyIndex, keySize, progressUpdater);
       return;
     }
