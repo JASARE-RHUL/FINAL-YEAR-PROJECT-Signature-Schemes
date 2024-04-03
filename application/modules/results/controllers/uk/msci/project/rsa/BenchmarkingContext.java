@@ -34,13 +34,13 @@ public abstract class BenchmarkingContext {
    * Exports the batch of signatures generated during the benchmarking process. The method is to be
    * overridden in subclasses to handle operation-specific export logic.
    */
-  public void exportSignatureBatch() throws IOException { /* Default empty implementation */ }
+  public void exportSignatureBatch(Stage primaryStage) throws IOException { /* Default empty implementation */ }
 
   /**
    * Exports the batch of non-recoverable messages generated during the benchmarking process. The
    * method is to be overridden in subclasses to handle operation-specific export logic.
    */
-  public void exportNonRecoverableMessages()
+  public void exportNonRecoverableMessages(Stage primaryStage)
       throws IOException { /* Default empty implementation */ }
 
   /**

@@ -1,5 +1,9 @@
 package uk.msci.project.rsa;
 
+import javafx.application.Platform;
+import javafx.concurrent.Task;
+import javafx.stage.Stage;
+
 import java.io.IOException;
 
 /**
@@ -24,8 +28,22 @@ public class SignatureCreationContext extends SignatureBaseContext {
    * @throws IOException If an I/O error occurs during file writing.
    */
   @Override
-  public void exportSignatureBatch() throws IOException {
-    signatureModel.exportSignatureBatch("signatureBatch.rsa");
+  public void exportSignatureBatch(Stage primaryStage) throws IOException {
+    BenchmarkingUtility benchmarkingUtility = new BenchmarkingUtility();
+    Task<Void> benchmarkingTask = new Task<Void>() {
+      @Override
+      protected Void call() throws Exception {
+        signatureModel.exportSignatureBatch("signatureBatch.rsa",
+          progress -> Platform.runLater(() -> {
+            benchmarkingUtility.updateProgress(progress);
+            benchmarkingUtility.updateProgressLabel(String.format("%.0f%%", progress * 100));
+          }));
+        return null;
+      }
+    };
+    BenchmarkingUtility.beginBenchmarkWithUtility(benchmarkingUtility, "Signature Export",
+      benchmarkingTask, () -> uk.msci.project.rsa.DisplayUtility.showInfoAlert("Export",
+        "Signature batch was successfully exported!"), primaryStage);
   }
 
   /**
