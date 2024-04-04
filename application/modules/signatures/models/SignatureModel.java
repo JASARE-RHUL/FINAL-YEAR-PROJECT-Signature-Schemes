@@ -53,6 +53,10 @@ public class SignatureModel {
    */
   boolean isProvablySecure;
 
+  /**
+   * Indicates whether the currently tracked type of signature scheme is
+   * message recovery scheme.
+   */
   boolean isRecoveryScheme;
 
 
@@ -158,7 +162,7 @@ public class SignatureModel {
    * exception if either the key or the signature type is not set.
    *
    * @throws InvalidSignatureTypeException if the parameter passed
-   * SignatureType is not valid or
+   *                                       SignatureType is not valid or
    *                                       supported.
    */
   public void instantiateSignatureScheme()
@@ -167,7 +171,7 @@ public class SignatureModel {
     if (key != null && currentType != null) {
       currentSignatureScheme =
         SignatureFactory.getSignatureScheme(currentType, key,
-        isProvablySecure);
+          isProvablySecure);
       try {
         currentSignatureScheme.setDigest(currentHashType, hashSize);
       } catch (IllegalArgumentException e) {
@@ -189,9 +193,9 @@ public class SignatureModel {
    * @param data The data to be signed.
    * @return A byte array representing the digital signature.
    * @throws IllegalStateException if the key or signature type is not set
-   * before signing.
+   *                               before signing.
    * @throws DataFormatException   If signing process fails due to incorrect
-   * format.
+   *                               format.
    */
   public byte[] sign(byte[] data) throws DataFormatException {
     if (currentSignatureScheme == null) {
@@ -209,9 +213,9 @@ public class SignatureModel {
    * @param signature The signature to be verified.
    * @return {@code true} if the signature is valid, {@code false} otherwise.
    * @throws IllegalStateException if the key or signature type is not set
-   * before verification.
+   *                               before verification.
    * @throws DataFormatException   If verification fails due to incorrect
-   * format.
+   *                               format.
    */
   public boolean verify(byte[] data, byte[] signature) throws DataFormatException {
     if (currentSignatureScheme == null) {

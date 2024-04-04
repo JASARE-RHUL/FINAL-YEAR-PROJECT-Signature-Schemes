@@ -26,52 +26,67 @@ import uk.msci.project.rsa.GenControllerCustomComparisonBenchmarking;
 
 
 /**
- * This class serves as the central controller for the application, managing navigation between
+ * This class serves as the central controller for the application, managing
+ * navigation between
  * different views and coordinating actions across the entire program.
  */
 public class MainController {
 
   /**
-   * The primary stage for the application. This is the main window or frame of the JavaFX
+   * The primary stage for the application. This is the main window or frame
+   * of the JavaFX
    * application where different views are displayed.
    */
   private Stage primaryStage;
   /**
-   * The main scene for the application. This is the container for all content in a scene graph.
+   * The main scene for the application. This is the container for all
+   * content in a scene graph.
    */
   private Scene scene;
   /**
-   * The main menu view of the application. This view serves as the starting point of the
+   * The main menu view of the application. This view serves as the starting
+   * point of the
    * application, allowing navigation to core functionality.
    */
   private MainMenuView mainMenuView;
 
   /**
-   * Mediator for key generation functionalities. It encapsulates and manages the interaction
-   * between the main controller and the key generation controllers, both in standard and
+   * Mediator for key generation functionalities. It encapsulates and manages
+   * the interaction
+   * between the main controller and the key generation controllers, both in
+   * standard and
    * benchmarking modes.
    */
-  private KeyGenerationMediator keyGenerationMediator = new KeyGenerationMediator(this);
+  private KeyGenerationMediator keyGenerationMediator =
+    new KeyGenerationMediator(this);
 
   /**
-   * Mediator for signature creation functionalities. It encapsulates and manages the interaction
-   * between the main controller and the signature creation controllers, both in standard and
+   * Mediator for signature creation functionalities. It encapsulates and
+   * manages the interaction
+   * between the main controller and the signature creation controllers, both
+   * in standard and
    * benchmarking modes.
    */
-  private SignatureCreationMediator signatureCreationMediator = new SignatureCreationMediator(this);
+  private SignatureCreationMediator signatureCreationMediator =
+    new SignatureCreationMediator(this);
 
   /**
-   * Mediator for signature verification functionalities. Similar to signatureCreationMediator, this
-   * mediator handles the interaction between the main controller and the signature verification
+   * Mediator for signature verification functionalities. Similar to
+   * signatureCreationMediator, this
+   * mediator handles the interaction between the main controller and the
+   * signature verification
    * controllers for both standard and benchmarking modes.
    */
-  private SignatureVerificationMediator signatureVerificationMediator = new SignatureVerificationMediator(
-      this);
+  private SignatureVerificationMediator signatureVerificationMediator =
+    new SignatureVerificationMediator(
+    this);
 
 
   /**
-   * Constructs a MainController with the primary stage of the application. This constructor
-   * initialises the controller with the main application stage and displays the main menu view.
+   * Constructs a MainController with the primary stage of the application.
+   * This constructor
+   * initialises the controller with the main application stage and displays
+   * the main menu view.
    *
    * @param primaryStage The primary stage of the application.
    */
@@ -84,13 +99,15 @@ public class MainController {
   }
 
   /**
-   * Displays the main menu view on the primary stage. It loads the MainMenuView from the FXML file,
+   * Displays the main menu view on the primary stage. It loads the
+   * MainMenuView from the FXML file,
    * initialises its domain object, and sets it on the stage.
    */
   void showMainMenuView() {
     try {
 
-      FXMLLoader loader = new FXMLLoader(getClass().getResource("/MainMenuView.fxml"));
+      FXMLLoader loader = new FXMLLoader(getClass().getResource(
+        "/MainMenuView.fxml"));
       Parent root = loader.load();
       scene.setRoot(root);
       mainMenuView = loader.getController();
@@ -106,7 +123,8 @@ public class MainController {
 
 
   /**
-   * Retrieves the SignatureCreationControllerBenchmarking instance. This controller is responsible
+   * Retrieves the SignatureCreationControllerBenchmarking instance. This
+   * controller is responsible
    * for handling the signature creation process in benchmarking mode.
    *
    * @return The SignatureCreationControllerBenchmarking instance.
@@ -116,7 +134,8 @@ public class MainController {
   }
 
   /**
-   * Retrieves the SignatureCreationControllerBenchmarking instance. This controller is responsible
+   * Retrieves the SignatureCreationControllerBenchmarking instance. This
+   * controller is responsible
    * for handling the signature creation process in benchmarking mode.
    *
    * @return The SignatureCreationControllerBenchmarking instance.
@@ -126,8 +145,10 @@ public class MainController {
   }
 
   /**
-   * Retrieves the SignatureVerificationControllerBenchmarking instance. This controller is
-   * responsible for handling the signature verification process in benchmarking mode.
+   * Retrieves the SignatureVerificationControllerBenchmarking instance. This
+   * controller is
+   * responsible for handling the signature verification process in
+   * benchmarking mode.
    *
    * @return The SignatureVerificationControllerBenchmarking instance.
    */
@@ -136,7 +157,8 @@ public class MainController {
   }
 
   /**
-   * Retrieves the SignatureVerificationControllerStandard instance. This controller is responsible
+   * Retrieves the SignatureVerificationControllerStandard instance. This
+   * controller is responsible
    * for managing the signature verification process in standard mode.
    *
    * @return The SignatureVerificationControllerStandard instance.
@@ -146,7 +168,8 @@ public class MainController {
   }
 
   /**
-   * Observers the "Generate Keys" button click. Instantiates the GenController and displays the key
+   * Observers the "Generate Keys" button click. Instantiates the
+   * GenController and displays the key
    * generation view.
    */
   class GenerateKeysButtonObserver implements EventHandler<ActionEvent> {
@@ -158,8 +181,10 @@ public class MainController {
   }
 
   /**
-   * Observes "Sign Document" button click. Instantiates the SignatureCreationController and
-   * displays the document signing view. Depending on whether a key has been pre-loaded for standard
+   * Observes "Sign Document" button click. Instantiates the
+   * SignatureCreationController and
+   * displays the document signing view. Depending on whether a key has been
+   * pre-loaded for standard
    * mode, the non benchmarking signing view may be launched.
    */
   class SignDocumentObserver implements EventHandler<ActionEvent> {
@@ -177,8 +202,10 @@ public class MainController {
   }
 
   /**
-   * Observes "verify signature" button click. Instantiates the SignatureVerificationController and
-   * displays the signature verification view. Depending on whether a key has been pre-loaded for
+   * Observes "verify signature" button click. Instantiates the
+   * SignatureVerificationController and
+   * displays the signature verification view. Depending on whether a key has
+   * been pre-loaded for
    * standard  mode, the non benchmarking verification view may be launched.
    */
   class verifySignatureObserver implements EventHandler<ActionEvent> {
@@ -205,10 +232,12 @@ public class MainController {
   }
 
   /**
-   * Sets the root of the main scene to the provided parent node. This method is used to change the
+   * Sets the root of the main scene to the provided parent node. This method
+   * is used to change the
    * content displayed in the primary stage of the application.
    *
-   * @param parent The root node of the new content to be displayed on the scene.
+   * @param parent The root node of the new content to be displayed on the
+   *               scene.
    */
   public void setScene(Parent parent) {
     scene.setRoot(parent);
@@ -217,7 +246,8 @@ public class MainController {
 
 
   /**
-   * Retrieves the main scene of the application. This scene is used as the primary container for
+   * Retrieves the main scene of the application. This scene is used as the
+   * primary container for
    * all content in the application's user interface.
    *
    * @return The main Scene of the application.
@@ -228,95 +258,122 @@ public class MainController {
 
 
   /**
-   * Sets the batch of private and public keys for both signature creation and verification
-   * processes. This method is crucial for handling the application's functionality in different
-   * modes, specifically in comparison and custom comparison benchmarking modes. It delegates the
-   * process of setting keys for the signature creation and verification controllers, allowing these
+   * Sets the batch of private and public keys for both signature creation
+   * and verification
+   * processes. This method is crucial for handling the application's
+   * functionality in different
+   * modes, specifically in comparison and custom comparison benchmarking
+   * modes. It delegates the
+   * process of setting keys for the signature creation and verification
+   * controllers, allowing these
    * controllers to operate with the specified keys.
    * <p>
-   * In comparison mode, this method helps in setting up the environment for comparing the standard
-   * vs provably secure parameters. In custom comparison mode, it facilitates a more granular and
+   * In comparison mode, this method helps in setting up the environment for
+   * comparing the standard
+   * vs provably secure parameters. In custom comparison mode, it facilitates
+   * a more granular and
    * detailed analysis with arbitrary user provided key configurations.
    *
-   * @param privateKeyBatch              The batch of private keys used in the signature creation
+   * @param privateKeyBatch              The batch of private keys used in
+   *                                     the signature creation
    *                                     process.
-   * @param publicKeyBatch               The batch of public keys used in the signature verification
+   * @param publicKeyBatch               The batch of public keys used in the
+   *                                    signature verification
    *                                     process.
-   * @param isKeyForComparisonMode       Indicates if the keys are used in comparison mode, enabling
+   * @param isKeyForComparisonMode       Indicates if the keys are used in
+   *                                     comparison mode, enabling
    *                                     performance comparison.
-   * @param isKeyForCustomComparisonMode Indicates if the keys are set for custom comparison mode,
-   *                                     enabling detailed analysis with custom configurations.
+   * @param isKeyForCustomComparisonMode Indicates if the keys are set for
+   *                                     custom comparison mode,
+   *                                     enabling detailed analysis with
+   *                                     custom configurations.
    */
   public void setProvableKeyBatchForSignatureProcesses(String privateKeyBatch,
-      String publicKeyBatch,
-      boolean isKeyForComparisonMode, boolean isKeyForCustomComparisonMode) {
+                                                       String publicKeyBatch,
+                                                       boolean isKeyForComparisonMode, boolean isKeyForCustomComparisonMode) {
     signatureCreationMediator.setProvableKeyBatchForSignatureProcesses(privateKeyBatch,
-        isKeyForComparisonMode, isKeyForCustomComparisonMode);
+      isKeyForComparisonMode, isKeyForCustomComparisonMode);
     signatureVerificationMediator.setProvableKeyBatchForSignatureProcesses(
-        publicKeyBatch, isKeyForComparisonMode, isKeyForCustomComparisonMode);
+      publicKeyBatch, isKeyForComparisonMode, isKeyForCustomComparisonMode);
   }
 
   /**
-   * Sets the private/public key for signature verification/creation operations. This method is used
-   * to provide the signature controller with a provably secure generated (small e ) key pairing to
-   * allow for later instantiation of a signature scheme with provably secure parameters. The key
+   * Sets the private/public key for signature verification/creation
+   * operations. This method is used
+   * to provide the signature controller with a provably secure generated
+   * (small e ) key pairing to
+   * allow for later instantiation of a signature scheme with provably secure
+   * parameters. The key
    * pairing can be set in non-benchmarking mode.
    *
    * @param privateKey The private key to be used for signature creation.
    * @param publicKey  The public key to be used for signature verification.
    */
-  public void setProvableKeyForSignatureProcesses(String privateKey, String publicKey) {
+  public void setProvableKeyForSignatureProcesses(String privateKey,
+                                                  String publicKey) {
     signatureCreationMediator.setProvableKeyForSignatureProcesses(privateKey);
     signatureVerificationMediator.setProvableKeyForSignatureProcesses(publicKey);
   }
 
 
   /**
-   * Sets the list of key configuration strings for comparison mode across the signature controller
-   * assembly by providing configuration details of the keys used in the comparison benchmarking
-   * mode. The configuration strings represent different key configurations that are used to compare
+   * Sets the list of key configuration strings for comparison mode across
+   * the signature controller
+   * assembly by providing configuration details of the keys used in the
+   * comparison benchmarking
+   * mode. The configuration strings represent different key configurations
+   * that are used to compare
    * signature processes under different key settings.
    *
-   * @param keyConfigurationStringsForComparisonMode A list of string representations of key
+   * @param keyConfigurationStringsForComparisonMode A list of string
+   *                                                 representations of key
    *                                                 configurations.
    */
   public void setKeyConfigurationStringsForComparisonMode(
-      List<String> keyConfigurationStringsForComparisonMode) {
+    List<String> keyConfigurationStringsForComparisonMode) {
     signatureCreationMediator.setKeyConfigurationStringsForComparisonMode(
-        keyConfigurationStringsForComparisonMode);
+      keyConfigurationStringsForComparisonMode);
     signatureVerificationMediator.setKeyConfigurationStringsForComparisonMode(
-        keyConfigurationStringsForComparisonMode);
+      keyConfigurationStringsForComparisonMode);
   }
 
   /**
-   * Sets the mapping of key configurations to hash functions for the custom comparison mode in
-   * signature creation and verification controllers. This method allows for specifying different
+   * Sets the mapping of key configurations to hash functions for the custom
+   * comparison mode in
+   * signature creation and verification controllers. This method allows for
+   * specifying different
    * hash functions for each group of key configurations.
    *
-   * @param keyConfigToHashFunctionsMap The map linking each key configuration group to its hash
+   * @param keyConfigToHashFunctionsMap The map linking each key
+   *                                    configuration group to its hash
    *                                    function selections.
-   * @param keyPerGroup                 The number of keys per group, determining how many keys are
+   * @param keyPerGroup                 The number of keys per group,
+   *                                    determining how many keys are
    *                                    processed together.
    */
   public void setKeyConfigToHashFunctionsMapForCustomComparisonMode(
-    Map<Integer, List<HashFunctionSelection>> keyConfigToHashFunctionsMap, int keyPerGroup) {
+    Map<Integer, List<HashFunctionSelection>> keyConfigToHashFunctionsMap,
+    int keyPerGroup) {
     signatureCreationMediator.setKeyConfigToHashFunctionsMapForCustomComparisonMode(
-        keyConfigToHashFunctionsMap, keyPerGroup);
+      keyConfigToHashFunctionsMap, keyPerGroup);
     signatureVerificationMediator.setKeyConfigToHashFunctionsMapForCustomComparisonMode(
-        keyConfigToHashFunctionsMap, keyPerGroup);
+      keyConfigToHashFunctionsMap, keyPerGroup);
 
   }
 
   /**
-   * Displays the signature creation view in the standard mode with no benchmarking functionality.
+   * Displays the signature creation view in the standard mode with no
+   * benchmarking functionality.
    */
   public void showSignatureCreationStandard() {
     signatureCreationMediator.showSignatureViewStandard();
   }
 
   /**
-   * Displays the signature creation view for comparison benchmarking mode. This method updates the
-   * UI to present an interface tailored for comparing signature creation performance across
+   * Displays the signature creation view for comparison benchmarking mode.
+   * This method updates the
+   * UI to present an interface tailored for comparing signature creation
+   * performance across
    * different key configurations.
    */
   public void showSignatureCreationComparisonBenchmarking() {
@@ -324,8 +381,10 @@ public class MainController {
   }
 
   /**
-   * Displays the signature verification view for comparison benchmarking mode. This method updates
-   * the UI to present an interface specifically designed for comparing signature verification
+   * Displays the signature verification view for comparison benchmarking
+   * mode. This method updates
+   * the UI to present an interface specifically designed for comparing
+   * signature verification
    * performance across various key configurations.
    */
   public void showSignatureVerificationComparisonBenchmarking() {
@@ -334,15 +393,18 @@ public class MainController {
 
 
   /**
-   * Displays the signature creation view in benchmarking mode. This method triggers the UI update
-   * to show the interface for signature creation with benchmarking functionalities.
+   * Displays the signature creation view in benchmarking mode. This method
+   * triggers the UI update
+   * to show the interface for signature creation with benchmarking
+   * functionalities.
    */
   public void showSignatureCreationBenchmarking() {
     signatureCreationMediator.showSignatureViewBenchmarking();
   }
 
   /**
-   * Displays the signature verification view in standard mode. This method updates the UI to
+   * Displays the signature verification view in standard mode. This method
+   * updates the UI to
    * present the interface for standard signature verification.
    */
   public void showSignatureVerificationStandard() {
@@ -350,8 +412,10 @@ public class MainController {
   }
 
   /**
-   * Displays the signature verification view in benchmarking mode. This method updates the UI to
-   * present the interface for signature verification with benchmarking functionalities.
+   * Displays the signature verification view in benchmarking mode. This
+   * method updates the UI to
+   * present the interface for signature verification with benchmarking
+   * functionalities.
    */
   public void showSignatureVerificationBenchmarking() {
     signatureVerificationMediator.showSignatureViewBenchmarking();
@@ -359,7 +423,8 @@ public class MainController {
 
 
   /**
-   * Retrieves the imported key batch to be preloaded in comparison benchmarking mode for the
+   * Retrieves the imported key batch to be preloaded in comparison
+   * benchmarking mode for the
    * signature creation process.
    *
    * @return A string representing the imported key batch
@@ -369,7 +434,8 @@ public class MainController {
   }
 
   /**
-   * Retrieves the imported key batch to be preloaded in comparison benchmarking mode for the
+   * Retrieves the imported key batch to be preloaded in comparison
+   * benchmarking mode for the
    * signature verification process.
    *
    * @return A string representing the imported key batch
@@ -379,7 +445,8 @@ public class MainController {
   }
 
   /**
-   * Displays the key generation view in benchmarking mode. This method triggers the UI update to
+   * Displays the key generation view in benchmarking mode. This method
+   * triggers the UI update to
    * show the interface for key generation with benchmarking functionalities.
    */
   public void showGenViewBenchmarking() {
@@ -387,7 +454,8 @@ public class MainController {
   }
 
   /**
-   * Displays the key generation  view in standard mode. This method updates the UI to present the
+   * Displays the key generation  view in standard mode. This method updates
+   * the UI to present the
    * interface for standard key generation.
    */
   public void showGenViewStandard() {
@@ -395,7 +463,8 @@ public class MainController {
   }
 
   /**
-   * Displays the key generation  view in cross parameter benchmarking mode. This method updates the
+   * Displays the key generation  view in cross parameter benchmarking mode.
+   * This method updates the
    * UI to present the interface for benchmarking in comparison.
    */
   public void showGenViewCrossBenchmarking() {
@@ -403,31 +472,39 @@ public class MainController {
   }
 
   /**
-   * Activates and configures the key generation controller for the custom comparison benchmarking
-   * mode. This method instantiates a new GenControllerComparisonBenchmarking controller with custom
-   * comparison logic and sets it as the current controller for comparison benchmarking operations
+   * Activates and configures the key generation controller for the custom
+   * comparison benchmarking
+   * mode. This method instantiates a new GenControllerComparisonBenchmarking
+   * controller with custom
+   * comparison logic and sets it as the current controller for comparison
+   * benchmarking operations
    * in the key generation mediator.
    *
-   * @param genView The GenView instance that provides the user interface elements for the
+   * @param genView The GenView instance that provides the user interface
+   *                elements for the
    *                benchmarking mode.
    */
   public void activateKeyGenCustomComparisonMode(GenView genView) {
     keyGenerationMediator.setGenControllerComparisonBenchmarking(
-        new GenControllerCustomComparisonBenchmarking(this), genView);
+      new GenControllerCustomComparisonBenchmarking(this), genView);
   }
 
   /**
-   * Activates and configures the key generation controller for the comparison (provably secure vs
-   * standard) benchmarking mode. This method instantiates a new GenControllerComparisonBenchmarking
-   * controller with standard comparison logic and sets it as the current controller for comparison
+   * Activates and configures the key generation controller for the
+   * comparison (provably secure vs
+   * standard) benchmarking mode. This method instantiates a new
+   * GenControllerComparisonBenchmarking
+   * controller with standard comparison logic and sets it as the current
+   * controller for comparison
    * benchmarking operations in the key generation mediator.
    *
-   * @param genView The GenView instance that provides the user interface elements for the
+   * @param genView The GenView instance that provides the user interface
+   *                elements for the
    *                benchmarking mode.
    */
   public void activateKeyGenComparisonMode(GenView genView) {
     keyGenerationMediator.setGenControllerComparisonBenchmarking(
-        new GenControllerComparisonBenchmarking(this), genView);
+      new GenControllerComparisonBenchmarking(this), genView);
   }
 
 

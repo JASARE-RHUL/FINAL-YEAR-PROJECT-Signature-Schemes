@@ -5,14 +5,19 @@ import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.regex.Pattern;
+
 import uk.msci.project.rsa.FileHandle;
 
 
 /**
- * This abstract class provides a foundational representation of an RSA key, encapsulating common
- * attributes and behaviors such as parsing, storing, and retrieving a key or its components. It
- * provides methods to load the key from a file or initialise it directly using a string
- * representation. This class is intended to be subclassed to create concrete (public or private)
+ * This abstract class provides a foundational representation of an RSA key,
+ * encapsulating common
+ * attributes and behaviors such as parsing, storing, and retrieving a key or
+ * its components. It
+ * provides methods to load the key from a file or initialise it directly
+ * using a string
+ * representation. This class is intended to be subclassed to create concrete
+ * (public or private)
  * key representations.
  */
 public abstract class Key {
@@ -34,8 +39,10 @@ public abstract class Key {
   protected BigInteger exponent;
 
   /**
-   * Constructs key using a comma-delimited string representation of the key containing the modulus
-   * followed by the exponent. This constructor initialises the key's value and parses the modulus
+   * Constructs key using a comma-delimited string representation of the key
+   * containing the modulus
+   * followed by the exponent. This constructor initialises the key's value
+   * and parses the modulus
    * and exponent.
    *
    * @param key The string representation of the key.
@@ -45,7 +52,8 @@ public abstract class Key {
   }
 
   /**
-   * Constructs key by reading string representation from a file before initialising the key's value
+   * Constructs key by reading string representation from a file before
+   * initialising the key's value
    * and parsing the modulus and exponent.
    *
    * @param keyFile The file from which to read the key.
@@ -57,24 +65,29 @@ public abstract class Key {
 
 
   /**
-   * Validates the modulus and exponent components of the public key to ensure they are not null and
+   * Validates the modulus and exponent components of the public key to
+   * ensure they are not null and
    * are positive integers.
    *
    * @param modulus  the modulus component of the public key.
    * @param exponent the exponent component of the public key.
-   * @throws NullPointerException     if either the modulus or the exponent is {@code null}.
-   * @throws IllegalArgumentException if either the modulus or the exponent is less than or equal to
+   * @throws NullPointerException     if either the modulus or the exponent
+   * is {@code null}.
+   * @throws IllegalArgumentException if either the modulus or the exponent
+   * is less than or equal to
    *                                  0.
    */
-  protected void checkValidKeyComponents(BigInteger modulus, BigInteger exponent) {
+  protected void checkValidKeyComponents(BigInteger modulus,
+                                         BigInteger exponent) {
     if (modulus == null || exponent == null) {
       throw new NullPointerException(
-          "Public Key cannot be constructed with a null component" + exponent);
+        "Public Key cannot be constructed with a null component" + exponent);
     }
 
     if (modulus.compareTo(BigInteger.ZERO) <= 0 || exponent.compareTo(BigInteger.ZERO) <= 0) {
       throw new IllegalArgumentException(
-          "Public Key cannot be constructed with a non positive modulus or exponent");
+        "Public Key cannot be constructed with a non positive modulus or " +
+          "exponent");
     }
 
   }
@@ -93,7 +106,8 @@ public abstract class Key {
   }
 
   /**
-   * Parses the string representation of the key to extract the modulus and exponent.
+   * Parses the string representation of the key to extract the modulus and
+   * exponent.
    *
    * @param keyValue The string representation of the key.
    */
@@ -141,11 +155,14 @@ public abstract class Key {
   }
 
   /**
-   * Exports the key to a file with a specified file name. If a file with the same name already *
-   * exists, a number suffix will be added to the file name to avoid overwriting the existing file.
+   * Exports the key to a file with a specified file name. If a file with the
+   * same name already *
+   * exists, a number suffix will be added to the file name to avoid
+   * overwriting the existing file.
    *
    * @param fileName The name of the file to which the key should be exported.
-   * @throws IOException If an I/O error occurs while writing the key to the file.
+   * @throws IOException If an I/O error occurs while writing the key to the
+   * file.
    */
 
   public void exportKey(String fileName) throws IOException {

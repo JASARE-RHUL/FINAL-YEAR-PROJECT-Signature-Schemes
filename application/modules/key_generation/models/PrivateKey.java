@@ -3,6 +3,7 @@ package uk.msci.project.rsa;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
+
 import uk.msci.project.rsa.Key;
 
 /**
@@ -16,8 +17,10 @@ public class PrivateKey extends Key {
 
 
   /**
-   * Constructs private key by parsing a string representation of the key, containing the modulus
-   * followed by the exponent. This constructor delegates the parsing to the superclass
+   * Constructs private key by parsing a string representation of the key,
+   * containing the modulus
+   * followed by the exponent. This constructor delegates the parsing to the
+   * superclass
    * constructor.
    *
    * @param key The string representation of the private key.
@@ -37,7 +40,8 @@ public class PrivateKey extends Key {
   }
 
   /**
-   * Constructs a public key with the given modulus and exponent whilst also encapsulating the
+   * Constructs a public key with the given modulus and exponent whilst also
+   * encapsulating the
    * auxiliary components used in the computation of the private exponent, d.
    *
    * @param N      The modulus part of the private key.
@@ -46,8 +50,9 @@ public class PrivateKey extends Key {
    * @param e      The public exponent.
    * @param d      The private exponent.
    */
-  public PrivateKey(BigInteger N, BigInteger[] primes, BigInteger phi, BigInteger e,
-      BigInteger d) {
+  public PrivateKey(BigInteger N, BigInteger[] primes, BigInteger phi,
+                    BigInteger e,
+                    BigInteger d) {
     super(N, d);
     this.primes = primes;
     this.phi = phi;
@@ -55,8 +60,10 @@ public class PrivateKey extends Key {
   }
 
   /**
-   * Constructs a private key by first importing the key from a file and then parsing resulting
-   * string. This constructor delegates the file reading and parsing to the superclass constructor.
+   * Constructs a private key by first importing the key from a file and then
+   * parsing resulting
+   * string. This constructor delegates the file reading and parsing to the
+   * superclass constructor.
    *
    * @param keyFile The file from which to read the private key.
    * @throws IOException If an I/O error occurs while reading the key file.

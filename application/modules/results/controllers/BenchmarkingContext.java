@@ -64,7 +64,7 @@ public abstract class BenchmarkingContext {
    * Determines if the UI button for exporting the public key batch should be shown. Subclasses can
    * override this method to provide operation-specific display logic.
    *
-   * @return false by defaulta
+   * @return false by default
    */
   public boolean showExportPublicKeyBatchButton() {
     return false;
@@ -126,27 +126,6 @@ public abstract class BenchmarkingContext {
     return false;
   }
 
-
-  /**
-   * Checks if a list of byte arrays contains any non-empty arrays.
-   *
-   * @param list The list of byte arrays to check.
-   * @return true if at least one byte array in the list is not empty, false otherwise.
-   */
-  public boolean checkForEmptyLists(List<byte[]> list) {
-    if (list != null && !list.isEmpty()) {
-      // Check each byte array in the list
-      for (byte[] elem : list) {
-        // If any byte array is not empty, return true
-        if (elem.length > 0) {
-          return true;
-        }
-      }
-    }
-    // All byte arrays are empty or the list itself is empty/null
-    return false;
-
-  }
 
   /**
    * Retrieves a map linking each group index to its corresponding list of hash functions and their

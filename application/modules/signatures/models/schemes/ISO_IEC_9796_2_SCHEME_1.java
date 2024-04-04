@@ -7,15 +7,19 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.util.Arrays;
 import java.util.zip.DataFormatException;
+
 import uk.msci.project.rsa.exceptions.InvalidDigestException;
 import uk.msci.project.rsa.SigScheme;
 import uk.msci.project.rsa.Key;
 import uk.msci.project.rsa.DigestType;
 
 /**
- * This class implements the ISO/IEC 9796-2 Scheme 1 signature scheme using RSA keys. It provides
- * functionalities for signing and verifying messages with RSA digital signatures, conforming to the
- * ISO/IEC 9796-2:2010 specification and chooses the appropriate mode of message recovery according
+ * This class implements the ISO/IEC 9796-2 Scheme 1 signature scheme using
+ * RSA keys. It provides
+ * functionalities for signing and verifying messages with RSA digital
+ * signatures, conforming to the
+ * ISO/IEC 9796-2:2010 specification and chooses the appropriate mode of
+ * message recovery according
  * to the length of message provided to its sign algorithm.
  */
 public class ISO_IEC_9796_2_SCHEME_1 extends SigScheme {
@@ -49,7 +53,8 @@ public class ISO_IEC_9796_2_SCHEME_1 extends SigScheme {
 
 
   /**
-   * Constructs an instance of ISO_IEC_9796_2_SCHEME_1 with the specified RSA key
+   * Constructs an instance of ISO_IEC_9796_2_SCHEME_1 with the specified RSA
+   * key
    *
    * @param key The RSA key containing the modulus and exponent.
    */
@@ -59,13 +64,18 @@ public class ISO_IEC_9796_2_SCHEME_1 extends SigScheme {
   }
 
   /**
-   * Constructs an instance of ISO_IEC_9796_2_SCHEME_1 with the specified RSA key and a flag for
-   * using provably secure parameters. It performs the same initialisations as the single-argument
-   * constructor and additionally sets the flag for using provably secure parameters in the
+   * Constructs an instance of ISO_IEC_9796_2_SCHEME_1 with the specified RSA
+   * key and a flag for
+   * using provably secure parameters. It performs the same initialisations
+   * as the single-argument
+   * constructor and additionally sets the flag for using provably secure
+   * parameters in the
    * signature scheme.
    *
-   * @param key                    The RSA key containing the exponent and modulus.
-   * @param isProvablySecureParams A boolean flag indicating if provably secure parameters should be
+   * @param key                    The RSA key containing the exponent and
+   *                               modulus.
+   * @param isProvablySecureParams A boolean flag indicating if provably
+   *                               secure parameters should be
    *                               used in the signature scheme.
    */
   public ISO_IEC_9796_2_SCHEME_1(Key key, boolean isProvablySecureParams) {
@@ -73,12 +83,16 @@ public class ISO_IEC_9796_2_SCHEME_1 extends SigScheme {
   }
 
   /**
-   * Encodes a message following the ISO/IEC 9796-2:2010 standard (includes hashing the message and
-   * preparing the encoded message with specified padding) while also be designed to account for
-   * standard or provably secure parameters. The format of the encoded message is: Partial Recovery:
+   * Encodes a message following the ISO/IEC 9796-2:2010 standard (includes
+   * hashing the message and
+   * preparing the encoded message with specified padding) while also be
+   * designed to account for
+   * standard or provably secure parameters. The format of the encoded
+   * message is: Partial Recovery:
    * 0x6A ∥ m1 ∥ hash ∥ 0xBC. Full Recovery: 0x4B...BA ∥ m ∥ hash ∥ 0xBC.
    * <p>
-   * Java equivalent format requires the encoding to be a byte less than the modulus byte size to
+   * Java equivalent format requires the encoding to be a byte less than the
+   * modulus byte size to
    * ensure resulting value is less than modulus.
    *
    * @param M The message to be encoded.
@@ -101,8 +115,10 @@ public class ISO_IEC_9796_2_SCHEME_1 extends SigScheme {
 
     int hashStart = emLen - hashSize - 1;
     int delta = hashStart;
-    //length of the message to be copied is either the availableSpace most significant bits of
-    // M or alternatively the full length of the original message if the message is too short
+    //length of the message to be copied is either the availableSpace most
+    // significant bits of
+    // M or alternatively the full length of the original message if the
+    // message is too short
     int messageLength = Math.min(m1Len, m1Len - ((availableSpace + 7) / 8) - 1);
     // m2 comprises the non-recoverable message portion
     m2Len = max(m1Len - messageLength, 0);
@@ -110,7 +126,8 @@ public class ISO_IEC_9796_2_SCHEME_1 extends SigScheme {
     delta -= messageLength;
     System.arraycopy(M, 0, EM, delta, messageLength);
 
-    // Hash message as normal for standard case, else apply the MGF1 as means for computing hash
+    // Hash message as normal for standard case, else apply the MGF1 as means
+    // for computing hash
     // to generate large hash output (1/2 length of modulus)
     byte[] hashedM = computeHashWithOptionalMasking(M);
     System.arraycopy(hashedM, 0, EM, hashStart, hashSize);
@@ -139,11 +156,13 @@ public class ISO_IEC_9796_2_SCHEME_1 extends SigScheme {
 
 
   /**
-   * Creates a signature for specified message and stores the extracted non-recoverable part of the
+   * Creates a signature for specified message and stores the extracted
+   * non-recoverable part of the
    * message by initialising its corresponding field in the class
    *
    * @param M The message to be signed.
-   * @return A combined byte array containing signature and an appended non-recoverable part of the
+   * @return A combined byte array containing signature and an appended
+   * non-recoverable part of the
    * message.
    * @throws DataFormatException If the message encoding fails.
    */
@@ -158,13 +177,16 @@ public class ISO_IEC_9796_2_SCHEME_1 extends SigScheme {
   }
 
   /**
-   * Verifies an RSA signature according to the ISO/IEC 9796-2 Scheme 1 standard. Validates the
-   * encoded message structure, allows for implicit message recovery by automatically choosing the
+   * Verifies an RSA signature according to the ISO/IEC 9796-2 Scheme 1
+   * standard. Validates the
+   * encoded message structure, allows for implicit message recovery by
+   * automatically choosing the
    * mode of recovery based on the length of provided message.
    *
    * @param m2 The non-recoverable part of the message (m2).
    * @param S  The signature to be verified.
-   * @return A SignatureRecovery object containing the result of the verification and any recovered
+   * @return A SignatureRecovery object containing the result of the
+   * verification and any recovered
    * message.
    * @throws DataFormatException if the signature format is not valid.
    */
@@ -184,7 +206,8 @@ public class ISO_IEC_9796_2_SCHEME_1 extends SigScheme {
       return false;
     }
 
-    // Checks the recovery mode the signature was created in by checking third bit
+    // Checks the recovery mode the signature was created in by checking
+    // third bit
     // if third bit is one that indicates full recovery.
     if ((EM[0] & 0x20) == 0 && m2 == null) {
       PADLFIRSTNIBBLE = 0x40;
@@ -199,7 +222,8 @@ public class ISO_IEC_9796_2_SCHEME_1 extends SigScheme {
     }
     int hashStart = emLen - hashSize - 1;
     int mStart = 0;
-    //finds the starting index of the recoverable message by checking the first 0x0A nibble
+    //finds the starting index of the recoverable message by checking the
+    // first 0x0A nibble
     for (mStart = 0; mStart != emLen; mStart++) {
       if (((EM[mStart] & 0x0f) ^ 0x0a) == 0) {
         break;
@@ -232,36 +256,49 @@ public class ISO_IEC_9796_2_SCHEME_1 extends SigScheme {
 
 
   /**
-   * Sets the message digest algorithm to be used for hashing in the ISO_IEC_9796_2_SCHEME_1
-   * signature scheme to the specified digest type, with the option to specify a custom hash size.
+   * Sets the message digest algorithm to be used for hashing in the
+   * ISO_IEC_9796_2_SCHEME_1
+   * signature scheme to the specified digest type, with the option to
+   * specify a custom hash size.
    *
    * @param digestType     The type of message digest algorithm to be set.
-   * @param customHashSize The custom hash size, used only for variable-length hash types.
-   * @throws NoSuchAlgorithmException If the specified algorithm is not available in the
+   * @param customHashSize The custom hash size, used only for
+   *                       variable-length hash types.
+   * @throws NoSuchAlgorithmException If the specified algorithm is not
+   * available in the
    *                                  environment.
-   * @throws InvalidDigestException   If the specified digest type is invalid or unsupported.
-   * @throws NoSuchProviderException  If the specified provider for the algorithm is not available.
-   * @throws IllegalArgumentException If the custom hash size is not a positive integer that allows
+   * @throws InvalidDigestException   If the specified digest type is invalid
+   * or unsupported.
+   * @throws NoSuchProviderException  If the specified provider for the
+   * algorithm is not available.
+   * @throws IllegalArgumentException If the custom hash size is not a
+   * positive integer that allows
    *                                  incorporation of minimum padding bytes.
    */
   @Override
   public void setDigest(DigestType digestType, int customHashSize)
-      throws NoSuchAlgorithmException, InvalidDigestException, NoSuchProviderException {
+    throws NoSuchAlgorithmException, InvalidDigestException,
+    NoSuchProviderException {
     int availableSpace = customHashSize * 8 + 1 + 4 - emBits;
     if (availableSpace > 0) {
       throw new IllegalArgumentException(
-          "Custom hash size must a positive integer that allows the minimum bytes of padding to be incorporated");
+        "Custom hash size must a positive integer that allows the minimum " +
+          "bytes of padding to be incorporated");
     }
     super.setDigest(digestType, customHashSize);
   }
 
   /**
-   * Retrieves the hash ID associated with a given digest type. Not applicable to this scheme
+   * Retrieves the hash ID associated with a given digest type. Not
+   * applicable to this scheme
    * (ISO_IEC_9796_2_SCHEME_1) where a hash ID is not using in message encoding
    *
-   * @param digestType The type of digest algorithm for which the hash ID is required.
-   * @return A byte array representing the hash ID associated with the specified digest type.
-   * @throws IllegalArgumentException If the provided digest type is not supported.
+   * @param digestType The type of digest algorithm for which the hash ID is
+   *                   required.
+   * @return A byte array representing the hash ID associated with the
+   * specified digest type.
+   * @throws IllegalArgumentException If the provided digest type is not
+   * supported.
    */
   @Override
   public byte[] getHashID(DigestType digestType) {

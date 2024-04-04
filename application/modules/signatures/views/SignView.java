@@ -9,13 +9,15 @@ import javafx.scene.layout.HBox;
 import uk.msci.project.rsa.SignatureBaseView;
 
 /**
- * The {@code SignView} class is responsible for managing the user interface related to the signing
+ * The {@code SignView} class is responsible for managing the user interface
+ * related to the signing
  * process in the Signature Scheme application.
  */
 public class SignView extends SignatureBaseView {
 
   /**
-   * Button to trigger the creation of a digital signature based on the provided text and selected
+   * Button to trigger the creation of a digital signature based on the
+   * provided text and selected
    * key.
    */
   @FXML
@@ -66,7 +68,8 @@ public class SignView extends SignatureBaseView {
 
 
   /**
-   * HBox for inputting the number of messages in benchmarking mode. Contains elements to specify
+   * HBox for inputting the number of messages in benchmarking mode. Contains
+   * elements to specify
    * the number of trials or messages to be used in benchmarking.
    */
   @FXML
@@ -76,7 +79,8 @@ public class SignView extends SignatureBaseView {
   /**
    * Sets the visibility of the SigBenchmarkButton and manages its properties.
    *
-   * @param visible true to make the SigBenchmarkButton visible, false to hide it.
+   * @param visible true to make the SigBenchmarkButton visible, false to
+   *                hide it.
    */
   public void setSigBenchmarkButtonVisibility(boolean visible) {
     SigBenchmarkButton.setVisible(visible);
@@ -123,7 +127,8 @@ public class SignView extends SignatureBaseView {
   }
 
   /**
-   * Registers an observer for the exportNonRecoverableMessageButton Button's action event.
+   * Registers an observer for the exportNonRecoverableMessageButton Button's
+   * action event.
    *
    * @param observer The event handler to be registered.
    */
@@ -132,7 +137,8 @@ public class SignView extends SignatureBaseView {
   }
 
   /**
-   * Registers observer for the copyNonRecoverableMessageButton Button's action event.
+   * Registers observer for the copyNonRecoverableMessageButton Button's
+   * action event.
    *
    * @param observer The event handler to be registered.
    */
@@ -141,7 +147,8 @@ public class SignView extends SignatureBaseView {
   }
 
   /**
-   * Registers an observer for the closeNotificationButton Button's action event.
+   * Registers an observer for the closeNotificationButton Button's action
+   * event.
    *
    * @param observer The event handler to be registered.
    */
@@ -172,9 +179,11 @@ public class SignView extends SignatureBaseView {
   }
 
   /**
-   * Sets the visibility of the recoveryOptions hBox which contains recovery action options.
+   * Sets the visibility of the recoveryOptions hBox which contains recovery
+   * action options.
    *
-   * @param visible true if the recovery options should be visible, false otherwise.
+   * @param visible true if the recovery options should be visible, false
+   *                otherwise.
    */
   public void setRecoveryOptionsVisibility(boolean visible) {
     this.recoveryOptions.setVisible(visible);

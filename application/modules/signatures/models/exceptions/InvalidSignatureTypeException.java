@@ -6,7 +6,8 @@ package uk.msci.project.rsa.exceptions;
 public class InvalidSignatureTypeException extends Exception {
 
   /**
-   * Constructs a new InvalidSignatureTypeException with the specified detail message.
+   * Constructs a new InvalidSignatureTypeException with the specified detail
+   * message.
    *
    * @param message the detail message.
    */

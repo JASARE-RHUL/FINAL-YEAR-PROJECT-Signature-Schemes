@@ -89,8 +89,7 @@ public abstract class SigScheme implements SigSchemeInterface {
   DigestType currentHashType;
 
   /**
-   * Indicates whether this signature scheme supports message recovery.
-   * This flag helps to distinguish between schemes that provide this feature and those that don't.
+   * Indicates whether this signature scheme is message recovery scheme.
    */
   boolean isRecoveryScheme;
 
@@ -359,7 +358,7 @@ public abstract class SigScheme implements SigSchemeInterface {
 
   /**
    * Computes a SHAKE hash of the given message using the current message digest algorithm. SHAKE
-   * (Secure Hash Algorithm KEccak) is a cryptographic hash function that can produce a
+   * (Secure Hash Algorithm Keccak) is a cryptographic hash function that can produce a
    * variable-length output, allowing flexibility in hash sizes, for example, SHAKE-128.
    *
    * <p>The resulting hash is generated from the provided message.</p>

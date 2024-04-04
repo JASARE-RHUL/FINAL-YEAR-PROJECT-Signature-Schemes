@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
+
 import javafx.util.Pair;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -35,7 +36,8 @@ public class GenModelTest {
   }
 
   @Test
-  public void testSetKeyParameters() throws IllegalAccessException, NoSuchFieldException {
+  public void testSetKeyParameters() throws IllegalAccessException,
+    NoSuchFieldException {
     int k = 3; // Example value
     int[] lambda = {512, 256, 256}; // Example bit sizes
     genModel.setKeyParameters(k, lambda);
@@ -52,7 +54,8 @@ public class GenModelTest {
   }
 
   @Test
-  public void testGenerateKeyWithParameters() throws NoSuchFieldException, IllegalAccessException {
+  public void testGenerateKeyWithParameters() throws NoSuchFieldException,
+    IllegalAccessException {
     int k = 2;
     int[] lambda = {512, 512};
     genModel.setKeyParameters(k, lambda);
@@ -77,7 +80,8 @@ public class GenModelTest {
   }
 
   @Test
-  public void testGenerateKeyValid() throws NoSuchFieldException, IllegalAccessException {
+  public void testGenerateKeyValid() throws NoSuchFieldException,
+    IllegalAccessException {
     int k = 3;
     int[] lambda = {1024, 1024, 1024};
     genModel.setKeyParameters(k, lambda);
@@ -90,16 +94,18 @@ public class GenModelTest {
   }
 
   @Test
-  public void testGenerateKeyNullParam() throws NoSuchFieldException, IllegalAccessException {
+  public void testGenerateKeyNullParam() throws NoSuchFieldException,
+    IllegalAccessException {
     assertThrows(IllegalStateException.class, () -> genModel.generateKey(),
-        "Should throw an exception when Key Size is set before a key can be generated");
+      "Should throw an exception when Key Size is set before a key can be " +
+        "generated");
 
   }
 
   @Test
   public void testExport() throws NoSuchFieldException, IllegalAccessException {
     assertThrows(IllegalStateException.class, () -> genModel.generateKey(),
-        "Should throw an exception no key has been generated");
+      "Should throw an exception no key has been generated");
   }
 
   @Test
@@ -114,11 +120,11 @@ public class GenModelTest {
     expected.add("3 primes (1/4N+1/4N+1/2N)");
 
 
-    List<String> result = model.formatCustomKeyConfigurations(keyConfigurationsData);
+    List<String> result =
+      model.formatCustomKeyConfigurations(keyConfigurationsData);
 
     assertEquals(expected, result);
   }
-
 
 
 }

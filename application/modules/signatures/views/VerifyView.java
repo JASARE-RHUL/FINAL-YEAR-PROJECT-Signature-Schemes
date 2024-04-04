@@ -14,13 +14,15 @@ import javafx.scene.layout.VBox;
 import uk.msci.project.rsa.SignatureBaseView;
 
 /**
- * The {@code VerifyView} class is responsible for managing the user interface related to the
+ * The {@code VerifyView} class is responsible for managing the user
+ * interface related to the
  * verification process in the Signature Scheme application.
  */
 public class VerifyView extends SignatureBaseView {
 
   @FXML
-  private HBox sigFileHBox;   // Container for the signature input area and file name label
+  private HBox sigFileHBox;   // Container for the signature input area and
+  // file name label
 
   // TextArea for user to input or import the signature to be verified
   @FXML
@@ -60,7 +62,8 @@ public class VerifyView extends SignatureBaseView {
   @FXML
   private HBox signatureBatchHBox;
 
-  // Buttons within the notification pane for actions related to the recoverable message
+  // Buttons within the notification pane for actions related to the
+  // recoverable message
   @FXML
   private Button exportRecoverableMessageButton;
   @FXML
@@ -77,7 +80,8 @@ public class VerifyView extends SignatureBaseView {
   private VBox recoveryOptions;
 
   /**
-   * Sets the visibility of the HBox that contains the signature file information.
+   * Sets the visibility of the HBox that contains the signature file
+   * information.
    *
    * @param visible true to show the HBox, false to hide it.
    */
@@ -98,7 +102,8 @@ public class VerifyView extends SignatureBaseView {
 
 
   /**
-   * Gets the ImageView that shows the checkmark that indicates the success in importing a
+   * Gets the ImageView that shows the checkmark that indicates the success
+   * in importing a
    * signature
    *
    * @return The ImageView with the checkmark.
@@ -108,7 +113,8 @@ public class VerifyView extends SignatureBaseView {
   }
 
   /**
-   * Sets the image of the signature file checkmark ImageView to a checkmark, indicating successful
+   * Sets the image of the signature file checkmark ImageView to a checkmark,
+   * indicating successful
    * import.
    */
   public void setSigFileCheckmarkImage() {
@@ -151,7 +157,8 @@ public class VerifyView extends SignatureBaseView {
 
 
   /**
-   * Retrieves the text from the sigFileNameLabel Label which displays the name of the imported
+   * Retrieves the text from the sigFileNameLabel Label which displays the
+   * name of the imported
    * signature.
    *
    * @return A String representing the file name.
@@ -195,9 +202,11 @@ public class VerifyView extends SignatureBaseView {
   }
 
   /**
-   * Sets the visibility of the cancelImportSignatureButton and manages its properties.
+   * Sets the visibility of the cancelImportSignatureButton and manages its
+   * properties.
    *
-   * @param visible true to make the cancelImportSignatureButton visible, false to hide it.
+   * @param visible true to make the cancelImportSignatureButton visible,
+   *                false to hide it.
    */
   public void setCancelImportSignatureButtonVisibility(boolean visible) {
     cancelImportSignatureButton.setVisible(visible);
@@ -208,7 +217,8 @@ public class VerifyView extends SignatureBaseView {
   /**
    * Sets the visibility of the importSigBatchButton and manages its properties.
    *
-   * @param visible true to make the importSigBatchButton visible, false to hide it.
+   * @param visible true to make the importSigBatchButton visible, false to
+   *                hide it.
    */
   public void setImportSigBatchBtnVisibility(boolean visible) {
     importSigBatchButton.setVisible(visible);
@@ -216,9 +226,11 @@ public class VerifyView extends SignatureBaseView {
   }
 
   /**
-   * Sets the visibility of the CancelImportSigBatchButton and manages its properties.
+   * Sets the visibility of the CancelImportSigBatchButton and manages its
+   * properties.
    *
-   * @param visible true to make the CancelImportSigBatchButton visible, false to hide it.
+   * @param visible true to make the CancelImportSigBatchButton visible,
+   *                false to hide it.
    */
   public void setCancelImportSigBatchButtonVisibility(boolean visible) {
     cancelImportSigBatchButton.setVisible(visible);
@@ -228,7 +240,8 @@ public class VerifyView extends SignatureBaseView {
   /**
    * Sets the visibility of the SigBenchmarkButton and manages its properties.
    *
-   * @param visible true to make the SigBenchmarkButton visible, false to hide it.
+   * @param visible true to make the SigBenchmarkButton visible, false to
+   *                hide it.
    */
   public void setVerificationBenchmarkButtonVisibility(boolean visible) {
     verificationBenchmarkButton.setVisible(visible);
@@ -243,7 +256,8 @@ public class VerifyView extends SignatureBaseView {
   /**
    * Sets the visibility of the signatureBatchHBox and manages its properties.
    *
-   * @param visible true to make the signatureBatchHBox visible, false to hide it.
+   * @param visible true to make the signatureBatchHBox visible, false to
+   *                hide it.
    */
   public void setSignatureBatchHBoxVisibility(boolean visible) {
     signatureBatchHBox.setVisible(visible);
@@ -263,7 +277,8 @@ public class VerifyView extends SignatureBaseView {
   /**
    * Sets the visibility of the messageBatchField and manages its properties.
    *
-   * @param visible true to make the messageBatchField visible, false to hide it.
+   * @param visible true to make the messageBatchField visible, false to hide
+   *               it.
    */
   public void setSignatureBatchFieldVisibility(boolean visible) {
     signatureField.setVisible(visible);
@@ -296,8 +311,10 @@ public class VerifyView extends SignatureBaseView {
 
 
   /**
-   * Registers an observer for the cancelImportSignatureButton Button's action event. This observer
-   * is called when the user clicks the button to cancel the import of a text batch.
+   * Registers an observer for the cancelImportSignatureButton Button's
+   * action event. This observer
+   * is called when the user clicks the button to cancel the import of a text
+   * batch.
    *
    * @param observer The event handler to be registered.
    */
@@ -307,7 +324,8 @@ public class VerifyView extends SignatureBaseView {
 
 
   /**
-   * Registers an observer for the importSigBatchButton Button's action event. This observer is
+   * Registers an observer for the importSigBatchButton Button's action event
+   * . This observer is
    * invoked when the user clicks the button to import a batch of signatures.
    *
    * @param observer The event handler to be registered.
@@ -317,7 +335,8 @@ public class VerifyView extends SignatureBaseView {
   }
 
   /**
-   * Registers an observer for the cancelImportSigBatchButton Button's action event.
+   * Registers an observer for the cancelImportSigBatchButton Button's action
+   * event.
    *
    * @param observer The event handler to be registered.
    */
@@ -326,7 +345,8 @@ public class VerifyView extends SignatureBaseView {
   }
 
   /**
-   * Registers an observer for the verification benchmarking Button's action event.
+   * Registers an observer for the verification benchmarking Button's action
+   * event.
    *
    * @param observer The event handler to be registered.
    */
@@ -336,8 +356,10 @@ public class VerifyView extends SignatureBaseView {
 
 
   /**
-   * Registers an observer for the cancelImportSignatureButton Button's action event. This observer
-   * is called when the user clicks the button to cancel the import of a text batch in standard
+   * Registers an observer for the cancelImportSignatureButton Button's
+   * action event. This observer
+   * is called when the user clicks the button to cancel the import of a text
+   * batch in standard
    * mode.
    *
    * @param observer The event handler to be registered.
@@ -347,7 +369,8 @@ public class VerifyView extends SignatureBaseView {
   }
 
   /**
-   * Registers an observer for the export recoverable message button click action.
+   * Registers an observer for the export recoverable message button click
+   * action.
    *
    * @param observer The event handler to register.
    */
@@ -383,9 +406,11 @@ public class VerifyView extends SignatureBaseView {
   }
 
   /**
-   * Sets the visibility of the recoveryOptions VBox which contains recovery action options.
+   * Sets the visibility of the recoveryOptions VBox which contains recovery
+   * action options.
    *
-   * @param visible true if the recovery options should be visible, false otherwise.
+   * @param visible true if the recovery options should be visible, false
+   *                otherwise.
    */
   public void setRecoveryOptionsVisibility(boolean visible) {
     this.recoveryOptions.setVisible(visible);

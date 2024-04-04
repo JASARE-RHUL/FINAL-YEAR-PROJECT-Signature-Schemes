@@ -1,8 +1,6 @@
 package uk.msci.project.rsa;
 
 
-import java.util.HashMap;
-import java.util.Map;
 import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
@@ -24,24 +22,28 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import javafx.util.StringConverter;
 import org.controlsfx.control.CheckComboBox;
 import org.controlsfx.control.ToggleSwitch;
-import uk.msci.project.rsa.SignatureViewInterface;
 
 
 /**
- * This class serves as the abstract base class for all views related to the signature processes
- * (generation and verification). The class provides a structured layout for the signature-related
- * views by defining common UI components and behavior that are shared across the different
+ * This class serves as the abstract base class for all views related to the
+ * signature processes
+ * (generation and verification). The class provides a structured layout for
+ * the signature-related
+ * views by defining common UI components and behavior that are shared across
+ * the different
  * signature views.
  * <p>
- * Te common components include text input, key management, signature scheme and hash function
- * selection, as well as benchmarking-related UI elements. It ensures consistency and reusability of
- * UI components and behavior across different signature views, streamlining the implementation of
+ * Te common components include text input, key management, signature scheme
+ * and hash function
+ * selection, as well as benchmarking-related UI elements. It ensures
+ * consistency and reusability of
+ * UI components and behavior across different signature views, streamlining
+ * the implementation of
  * specific views for signature creation or verification.
  */
-public abstract class SignatureBaseView implements SignatureViewInterface {
+public abstract class SignatureBaseView {
 
   @FXML
   /**
@@ -80,13 +82,15 @@ public abstract class SignatureBaseView implements SignatureViewInterface {
   @FXML
   private Button importTextButton;
   /**
-   * TextField to display the selected private key file or to prompt for key import.
+   * TextField to display the selected private key file or to prompt for key
+   * import.
    */
   @FXML
   private TextField keyField;
 
   /**
-   * ImageView to display a checkmark indicating the successful import of a private key.
+   * ImageView to display a checkmark indicating the successful import of a
+   * private key.
    */
   @FXML
   private ImageView checkmarkImage;
@@ -98,7 +102,8 @@ public abstract class SignatureBaseView implements SignatureViewInterface {
   private Button importKeyButton;
 
   /**
-   * ComboBox to allow the selection of a signature scheme from predefined options.
+   * ComboBox to allow the selection of a signature scheme from predefined
+   * options.
    */
   @FXML
   private ComboBox<String> signatureSchemeDropdown;
@@ -110,7 +115,8 @@ public abstract class SignatureBaseView implements SignatureViewInterface {
   private ComboBox<String> hashFunctionDropdown;
 
   /**
-   * Button to trigger the creation of a digital signature based on the provided text and selected
+   * Button to trigger the creation of a digital signature based on the
+   * provided text and selected
    * key.
    */
   @FXML
@@ -129,7 +135,8 @@ public abstract class SignatureBaseView implements SignatureViewInterface {
   private Button helpButton;
 
   /**
-   * StackPane to display notifications and results to the user, such as the success or failure of
+   * StackPane to display notifications and results to the user, such as the
+   * success or failure of
    * operations.
    */
   @FXML
@@ -179,7 +186,8 @@ public abstract class SignatureBaseView implements SignatureViewInterface {
   private TextField messageBatchField;
 
   /**
-   * ImageView displaying a checkmark indicating successful message batch import.
+   * ImageView displaying a checkmark indicating successful message batch
+   * import.
    */
   @FXML
   private ImageView checkmarkImageMessageBatch;
@@ -245,14 +253,16 @@ public abstract class SignatureBaseView implements SignatureViewInterface {
   private RadioButton customParametersRadio;
 
   /**
-   * TextField for entering the hash output size. Initially hidden and managed based on the selected
+   * TextField for entering the hash output size. Initially hidden and
+   * managed based on the selected
    * hash function.
    */
   @FXML
   private TextArea hashOutputSizeField;
 
   /**
-   * VBox containing elements for message input in standard mode. This includes the text area for
+   * VBox containing elements for message input in standard mode. This
+   * includes the text area for
    * inputting or importing the text to be signed.
    */
   @FXML
@@ -260,7 +270,8 @@ public abstract class SignatureBaseView implements SignatureViewInterface {
 
 
   /**
-   * VBox containing elements for message batch input in benchmarking mode. This includes fields for
+   * VBox containing elements for message batch input in benchmarking mode.
+   * This includes fields for
    * importing and managing message batches for signature benchmarking.
    */
   @FXML
@@ -268,15 +279,18 @@ public abstract class SignatureBaseView implements SignatureViewInterface {
 
 
   /**
-   * Label associated with the keyField TextField. Displays a description or instruction related to
+   * Label associated with the keyField TextField. Displays a description or
+   * instruction related to
    * the private key input field.
    */
   @FXML
   private Label keyFieldLabel;
 
   /**
-   * Horizontal Box containing options on whether to instantiate a scheme with provably secure
-   * parameters on the occasion that a key has been pre-loaded (not selected by the user) as a
+   * Horizontal Box containing options on whether to instantiate a scheme
+   * with provably secure
+   * parameters on the occasion that a key has been pre-loaded (not selected
+   * by the user) as a
    * consequence of the key generation process.
    */
   @FXML
@@ -319,34 +333,39 @@ public abstract class SignatureBaseView implements SignatureViewInterface {
   private HBox hashFunctionSizeHbox;
 
   /**
-   * Horizontal Box containing options for the hash type to be used under standard parameters in the
+   * Horizontal Box containing options for the hash type to be used under
+   * standard parameters in the
    * * cross-parameter benchmarking/comparison mode.
    */
   @FXML
   private HBox standardHashChoiceComparisonModeHbox;
 
   /**
-   * Horizontal Box containing options for the hash type to be used under provably secure parameters
+   * Horizontal Box containing options for the hash type to be used under
+   * provably secure parameters
    * in the * cross-parameter benchmarking/comparison mode.
    */
   @FXML
   private HBox provableHashChoiceComparisonModeHbox;
 
   /**
-   * Horizontal Box containing options for hash function choice in benchmarking and standard modes.
+   * Horizontal Box containing options for hash function choice in
+   * benchmarking and standard modes.
    */
   @FXML
   private HBox generalHashFunctionHbox;
 
   /**
-   * Check ComboBox for selecting a hash function to be used under provably secure parameters in the
+   * Check ComboBox for selecting a hash function to be used under provably
+   * secure parameters in the
    * cross-parameter benchmarking/comparison mode.
    */
   @FXML
   private CheckComboBox<String> provableHashFunctionComboBox;
 
   /**
-   * Check ComboBox for selecting a hash function to be used under standard parameters in the
+   * Check ComboBox for selecting a hash function to be used under standard
+   * parameters in the
    * cross-parameter benchmarking/comparison mode.
    */
   @FXML
@@ -371,25 +390,29 @@ public abstract class SignatureBaseView implements SignatureViewInterface {
 
     // Populate the CheckComboBox for provable parameters
     provableHashFunctionComboBox.getItems()
-        .addAll("SHA-256 with MGF1", "SHA-512 with MGF1", "SHAKE-128", "SHAKE-256");
+      .addAll("SHA-256 with MGF1", "SHA-512 with MGF1", "SHAKE-128", "SHAKE" +
+        "-256");
 
   }
 
 
   /**
-   * Retrieves the parameter choice selected by the user, which relates to the potential hash size
+   * Retrieves the parameter choice selected by the user, which relates to
+   * the potential hash size
    * chosen for the selected signature scheme.
    *
    * @return A String representing the parameter choice.
    */
   public String getParameterChoice() {
-    RadioButton selectedButton = (RadioButton) parameterChoiceToggleGroup.getSelectedToggle();
+    RadioButton selectedButton =
+      (RadioButton) parameterChoiceToggleGroup.getSelectedToggle();
     return selectedButton != null ? selectedButton.getText() : "";
   }
 
 
   /**
-   * Gets the image view showing a checkmark next to the text file, indicating a successful load.
+   * Gets the image view showing a checkmark next to the text file,
+   * indicating a successful load.
    *
    * @return ImageView for the text file checkmark.
    */
@@ -398,7 +421,8 @@ public abstract class SignatureBaseView implements SignatureViewInterface {
   }
 
   /**
-   * Sets the image for the text file checkmark to indicate the status of the text file import.
+   * Sets the image for the text file checkmark to indicate the status of the
+   * text file import.
    */
   public void setTextFileCheckmarkImage() {
     this.textFileCheckmarkImage.setImage(new Image("/checkmark.png"));
@@ -412,7 +436,8 @@ public abstract class SignatureBaseView implements SignatureViewInterface {
   }
 
   /**
-   * Sets the image for the text file checkmark to indicate the status of message batch file
+   * Sets the image for the text file checkmark to indicate the status of
+   * message batch file
    * import.
    */
   public void setCheckmarkImageMessageBatch() {
@@ -427,7 +452,8 @@ public abstract class SignatureBaseView implements SignatureViewInterface {
   }
 
   /**
-   * Sets the visibility of the image for the checkmark to indicate the status of the import of a
+   * Sets the visibility of the image for the checkmark to indicate the
+   * status of the import of a
    * message.
    */
   public void setTextFieldCheckmarkImageVisibility(boolean visible) {
@@ -435,7 +461,8 @@ public abstract class SignatureBaseView implements SignatureViewInterface {
   }
 
   /**
-   * Gets the ImageView that shows the checkmark that indicates the success in importing a private
+   * Gets the ImageView that shows the checkmark that indicates the success
+   * in importing a private
    * key.
    *
    * @return The ImageView with the checkmark.
@@ -445,7 +472,8 @@ public abstract class SignatureBaseView implements SignatureViewInterface {
   }
 
   /**
-   * Sets the image for the checkmark to indicate the status of the private key import.
+   * Sets the image for the checkmark to indicate the status of the private
+   * key import.
    */
   public void setCheckmarkImage() {
     this.checkmarkImage.setImage(new Image("/checkmark.png"));
@@ -457,7 +485,8 @@ public abstract class SignatureBaseView implements SignatureViewInterface {
   }
 
   /**
-   * Sets the visibility of the checkmark image, indicating the status of the private key import.
+   * Sets the visibility of the checkmark image, indicating the status of the
+   * private key import.
    *
    * @param visible true to make the checkmark visible, false to hide it.
    */
@@ -466,7 +495,8 @@ public abstract class SignatureBaseView implements SignatureViewInterface {
   }
 
   /**
-   * Sets the visibility of the notification pane, which shows the results of the signature
+   * Sets the visibility of the notification pane, which shows the results of
+   * the signature
    * operation.
    *
    * @param visible true to make the pane visible, false to hide it.
@@ -477,7 +507,8 @@ public abstract class SignatureBaseView implements SignatureViewInterface {
 
 
   /**
-   * Retrieves the text from the textInput TextField which represents the message to be signed,
+   * Retrieves the text from the textInput TextField which represents the
+   * message to be signed,
    * entered or selected by the user.
    *
    * @return A String representing the key.
@@ -516,7 +547,8 @@ public abstract class SignatureBaseView implements SignatureViewInterface {
   }
 
   /**
-   * Retrieves the text from the keyField TextField which represents the key entered or selected by
+   * Retrieves the text from the keyField TextField which represents the key
+   * entered or selected by
    * the user.
    *
    * @return A String representing the key.
@@ -535,7 +567,8 @@ public abstract class SignatureBaseView implements SignatureViewInterface {
   }
 
   /**
-   * Sets the text of the keyFieldLabel. This method updates the label text associated with the
+   * Sets the text of the keyFieldLabel. This method updates the label text
+   * associated with the
    * keyField, providing instructions or descriptions.
    *
    * @param text The text to set for the label.
@@ -554,7 +587,8 @@ public abstract class SignatureBaseView implements SignatureViewInterface {
   }
 
   /**
-   * Retrieves the currently selected signature scheme from the signatureSchemeDropdown ComboBox.
+   * Retrieves the currently selected signature scheme from the
+   * signatureSchemeDropdown ComboBox.
    *
    * @return string representing the selected signature scheme.
    */
@@ -572,7 +606,8 @@ public abstract class SignatureBaseView implements SignatureViewInterface {
   }
 
   /**
-   * Retrieves the currently selected hash function from the hashFunctionDropdown ComboBox.
+   * Retrieves the currently selected hash function from the
+   * hashFunctionDropdown ComboBox.
    *
    * @return string representing the selected hash function.
    */
@@ -584,7 +619,8 @@ public abstract class SignatureBaseView implements SignatureViewInterface {
   /**
    * Sets the selected hash function from the hashFunctionDropdown ComboBox.
    *
-   * @param hashFunction string representing the signature scheme to be selected.
+   * @param hashFunction string representing the signature scheme to be
+   *                     selected.
    */
   public void setSelectedHashFunction(String hashFunction) {
     hashFunctionDropdown.setValue(hashFunction);
@@ -592,7 +628,8 @@ public abstract class SignatureBaseView implements SignatureViewInterface {
 
 
   /**
-   * Retrieves the text from the textFileNameLabel Label which displays the name of the imported
+   * Retrieves the text from the textFileNameLabel Label which displays the
+   * name of the imported
    * text file.
    *
    * @return A String representing the file name.
@@ -629,7 +666,8 @@ public abstract class SignatureBaseView implements SignatureViewInterface {
   }
 
   /**
-   * Retrieves the notificationPane StackPane which is used to display signature generation
+   * Retrieves the notificationPane StackPane which is used to display
+   * signature generation
    * completion status.
    *
    * @return The notificationPane StackPane.
@@ -640,9 +678,11 @@ public abstract class SignatureBaseView implements SignatureViewInterface {
 
 
   /**
-   * Sets the visibility of the benchmarking mode toggle switch and manages its properties.
+   * Sets the visibility of the benchmarking mode toggle switch and manages
+   * its properties.
    *
-   * @param visible true to make the benchmarking mode toggle switch visible, false to hide it.
+   * @param visible true to make the benchmarking mode toggle switch visible,
+   *               false to hide it.
    */
   public void setBenchmarkingModeToggleVisibility(boolean visible) {
     benchmarkingModeToggle.setVisible(visible);
@@ -650,9 +690,11 @@ public abstract class SignatureBaseView implements SignatureViewInterface {
   }
 
   /**
-   * Sets the visibility of the numMessageLabel, numMessageField, and manages their properties.
+   * Sets the visibility of the numMessageLabel, numMessageField, and manages
+   * their properties.
    *
-   * @param visible true to make the numMessageLabel and numMessageField visible, false to hide
+   * @param visible true to make the numMessageLabel and numMessageField
+   *                visible, false to hide
    *                them.
    */
   public void setNumMessageVisibility(boolean visible) {
@@ -663,7 +705,8 @@ public abstract class SignatureBaseView implements SignatureViewInterface {
   }
 
   /**
-   * Retrieves the text from the numMessageField TextField, which specifies the number of messages
+   * Retrieves the text from the numMessageField TextField, which specifies
+   * the number of messages
    * for benchmarking.
    *
    * @return The text from the numMessageField.
@@ -712,7 +755,8 @@ public abstract class SignatureBaseView implements SignatureViewInterface {
   /**
    * Sets the visibility of the messageBatchField and manages its properties.
    *
-   * @param visible true to make the messageBatchField visible, false to hide it.
+   * @param visible true to make the messageBatchField visible, false to hide
+   *               it.
    */
   public void setMessageBatchFieldVisibility(boolean visible) {
     messageBatchField.setVisible(visible);
@@ -720,14 +764,14 @@ public abstract class SignatureBaseView implements SignatureViewInterface {
   }
 
   /**
-   * Sets the prompting text of the messageBatchField to urge the user to import a message batch
+   * Sets the prompting text of the messageBatchField to urge the user to
+   * import a message batch
    *
    * @param text String representing the prompting text.
    */
   public void setMessageBatch(String text) {
     messageBatchField.setText(text);
   }
-
 
 
   /**
@@ -773,9 +817,11 @@ public abstract class SignatureBaseView implements SignatureViewInterface {
 
 
   /**
-   * Sets the visibility of the checkmarkImageMessageBatch and manages its properties.
+   * Sets the visibility of the checkmarkImageMessageBatch and manages its
+   * properties.
    *
-   * @param visible true to make the checkmarkImageMessageBatch visible, false to hide it.
+   * @param visible true to make the checkmarkImageMessageBatch visible,
+   *                false to hide it.
    */
   public void setCheckmarkImageMessageBatchVisibility(boolean visible) {
     checkmarkImageMessageBatch.setVisible(visible);
@@ -785,7 +831,8 @@ public abstract class SignatureBaseView implements SignatureViewInterface {
   /**
    * Sets the visibility of the importTextBatchBtn and manages its properties.
    *
-   * @param visible true to make the importTextBatchBtn visible, false to hide it.
+   * @param visible true to make the importTextBatchBtn visible, false to
+   *                hide it.
    */
   public void setImportTextBatchBtnVisibility(boolean visible) {
     importTextBatchBtn.setVisible(visible);
@@ -793,7 +840,8 @@ public abstract class SignatureBaseView implements SignatureViewInterface {
   }
 
   /**
-   * Sets the visibility of the importTextButton. This method controls whether the button for
+   * Sets the visibility of the importTextButton. This method controls
+   * whether the button for
    * importing a message in standard mode is visible to the user.
    *
    * @param visible true to make the button visible, false to hide it.
@@ -804,9 +852,11 @@ public abstract class SignatureBaseView implements SignatureViewInterface {
   }
 
   /**
-   * Sets the visibility of the cancelImportTextBatchButton and manages its properties.
+   * Sets the visibility of the cancelImportTextBatchButton and manages its
+   * properties.
    *
-   * @param visible true to make the cancelImportTextBatchButton visible, false to hide it.
+   * @param visible true to make the cancelImportTextBatchButton visible,
+   *                false to hide it.
    */
   public void setCancelImportTextBatchButtonVisibility(boolean visible) {
     cancelImportTextBatchButton.setVisible(visible);
@@ -814,7 +864,8 @@ public abstract class SignatureBaseView implements SignatureViewInterface {
   }
 
   /**
-   * Sets the visibility of the cancelImportTextButton. This method controls whether the button for
+   * Sets the visibility of the cancelImportTextButton. This method controls
+   * whether the button for
    * canceling the import of a message in standard mode is visible to the user.
    *
    * @param visible true to make the button visible, false to hide it.
@@ -827,7 +878,8 @@ public abstract class SignatureBaseView implements SignatureViewInterface {
   /**
    * Sets the visibility of the importKeyBatchButton and manages its properties.
    *
-   * @param visible true to make the importKeyBatchButton visible, false to hide it.
+   * @param visible true to make the importKeyBatchButton visible, false to
+   *                hide it.
    */
   public void setImportKeyBatchButtonVisibility(boolean visible) {
     importKeyBatchButton.setVisible(visible);
@@ -835,7 +887,8 @@ public abstract class SignatureBaseView implements SignatureViewInterface {
   }
 
   /**
-   * Sets the visibility of the importKeyButton. This method controls whether the button for
+   * Sets the visibility of the importKeyButton. This method controls whether
+   * the button for
    * importing a key during standard mode is visible to the user.
    *
    * @param visible true to make the button visible, false to hide it.
@@ -846,9 +899,11 @@ public abstract class SignatureBaseView implements SignatureViewInterface {
   }
 
   /**
-   * Sets the visibility of the cancelImportKeyButton and manages its properties.
+   * Sets the visibility of the cancelImportKeyButton and manages its
+   * properties.
    *
-   * @param visible true to make the cancelImportKeyButton visible, false to hide it.
+   * @param visible true to make the cancelImportKeyButton visible, false to
+   *                hide it.
    */
   public void setCancelImportKeyButtonVisibility(boolean visible) {
     cancelImportKeyButton.setVisible(visible);
@@ -856,8 +911,10 @@ public abstract class SignatureBaseView implements SignatureViewInterface {
   }
 
   /**
-   * Sets the visibility of the cancelImportSingleKeyButton. This method controls whether the button
-   * for canceling the import of a single key in standard mode is visible to the user.
+   * Sets the visibility of the cancelImportSingleKeyButton. This method
+   * controls whether the button
+   * for canceling the import of a single key in standard mode is visible to
+   * the user.
    *
    * @param visible true to make the button visible, false to hide it.
    */
@@ -868,30 +925,33 @@ public abstract class SignatureBaseView implements SignatureViewInterface {
 
 
   /**
-   * Updates the hash function dropdown options for custom or provably secure parameter selections.
+   * Updates the hash function dropdown options for custom or provably secure
+   * parameter selections.
    */
   public void updateHashFunctionDropdownForCustomOrProvablySecure() {
     hashFunctionDropdown.setItems(FXCollections.observableArrayList(
-        "SHA-256 with MGF1",
-        "SHA-512 with MGF1",
-        "SHAKE-128",
-        "SHAKE-256"
+      "SHA-256 with MGF1",
+      "SHA-512 with MGF1",
+      "SHAKE-128",
+      "SHAKE-256"
     ));
   }
 
   /**
-   * Updates the hash function dropdown options for standard parameter selections.
+   * Updates the hash function dropdown options for standard parameter
+   * selections.
    */
   public void updateHashFunctionDropdownForStandard() {
     hashFunctionDropdown.setItems(FXCollections.observableArrayList(
-        "SHA-256",
-        "SHA-512"
+      "SHA-256",
+      "SHA-512"
     ));
   }
 
 
   /**
-   * Registers an observer for the event of importing text. The observer is triggered when the user
+   * Registers an observer for the event of importing text. The observer is
+   * triggered when the user
    * interacts with the import text button.
    *
    * @param observer the event handler to be invoked on text import action.
@@ -947,7 +1007,8 @@ public abstract class SignatureBaseView implements SignatureViewInterface {
   }
 
   /**
-   * Registers an observer for changes in the selected hash function from the hash function
+   * Registers an observer for changes in the selected hash function from the
+   * hash function
    * dropdown.
    *
    * @param observer The change listener to be registered.
@@ -976,8 +1037,10 @@ public abstract class SignatureBaseView implements SignatureViewInterface {
   }
 
   /**
-   * Registers an observer for the cancelImportTextButton Button's action event. This observer is
-   * called when the user clicks the button to cancel the import of a text batch in benchmarking
+   * Registers an observer for the cancelImportTextButton Button's action
+   * event. This observer is
+   * called when the user clicks the button to cancel the import of a text
+   * batch in benchmarking
    * mode.
    *
    * @param observer The event handler to be registered.
@@ -987,8 +1050,10 @@ public abstract class SignatureBaseView implements SignatureViewInterface {
   }
 
   /**
-   * Registers an observer for the cancelImportTextButton's action event. This observer is invoked
-   * when the user clicks the button to cancel the import of a single message in the applications
+   * Registers an observer for the cancelImportTextButton's action event.
+   * This observer is invoked
+   * when the user clicks the button to cancel the import of a single message
+   * in the applications
    * standard mode.
    *
    * @param observer The event handler to be registered.
@@ -998,7 +1063,8 @@ public abstract class SignatureBaseView implements SignatureViewInterface {
   }
 
   /**
-   * Registers an observer for the importKeyBatchButton Button's action event. This observer is
+   * Registers an observer for the importKeyBatchButton Button's action event
+   * . This observer is
    * invoked when the user clicks the button to import a batch of keys.
    *
    * @param observer The event handler to be registered.
@@ -1017,8 +1083,10 @@ public abstract class SignatureBaseView implements SignatureViewInterface {
   }
 
   /**
-   * Registers an observer for the cancelImportSingleKeyButton's action event. This observer is
-   * called when the user clicks the button to cancel the import of a single key.
+   * Registers an observer for the cancelImportSingleKeyButton's action event
+   * . This observer is
+   * called when the user clicks the button to cancel the import of a single
+   * key.
    *
    * @param observer The event handler to be registered.
    */
@@ -1028,7 +1096,8 @@ public abstract class SignatureBaseView implements SignatureViewInterface {
 
 
   /**
-   * Registers an observer for when the benchmarking mode toggle switch value changes.
+   * Registers an observer for when the benchmarking mode toggle switch value
+   * changes.
    *
    * @param observer The change listener to be registered.
    */
@@ -1038,7 +1107,8 @@ public abstract class SignatureBaseView implements SignatureViewInterface {
 
 
   /**
-   * Registers an observer for the closeNotificationButton Button's action event.
+   * Registers an observer for the closeNotificationButton Button's action
+   * event.
    *
    * @param observer The event handler to be registered.
    */
@@ -1047,7 +1117,8 @@ public abstract class SignatureBaseView implements SignatureViewInterface {
   }
 
   /**
-   * Shows the notification pane, disabling interaction with other UI components to focus user
+   * Shows the notification pane, disabling interaction with other UI
+   * components to focus user
    * attention on the notification for a completed signature generation process.
    */
   public void showNotificationPane() {
@@ -1163,7 +1234,8 @@ public abstract class SignatureBaseView implements SignatureViewInterface {
   /**
    * Adds an observer for changes in the provable scheme selection.
    *
-   * @param observer the observer to be notified when the scheme selection changes.
+   * @param observer the observer to be notified when the scheme selection
+   *                 changes.
    */
   public void addProvableSchemeChangeObserver(ChangeListener<Toggle> observer) {
     provableParamsToggleGroup.selectedToggleProperty().addListener(observer);
@@ -1189,7 +1261,8 @@ public abstract class SignatureBaseView implements SignatureViewInterface {
   }
 
   /**
-   * Sets the visibility of the standard hash choice comparison mode horizontal box.
+   * Sets the visibility of the standard hash choice comparison mode
+   * horizontal box.
    *
    * @param visible true to make the box visible, false to hide it.
    */
@@ -1199,7 +1272,8 @@ public abstract class SignatureBaseView implements SignatureViewInterface {
   }
 
   /**
-   * Sets the visibility of the provable hash choice comparison mode horizontal box.
+   * Sets the visibility of the provable hash choice comparison mode
+   * horizontal box.
    *
    * @param visible true to make the box visible, false to hide it.
    */
@@ -1219,7 +1293,8 @@ public abstract class SignatureBaseView implements SignatureViewInterface {
   }
 
   /**
-   * Registers an observer for when the standard parameter instantiation CheckComboBox values
+   * Registers an observer for when the standard parameter instantiation
+   * CheckComboBox values
    * change.
    *
    * @param observer The change listener to register.
@@ -1229,7 +1304,8 @@ public abstract class SignatureBaseView implements SignatureViewInterface {
   }
 
   /**
-   * Registers an observer for when the provably secure parameter instantiation CheckComboBox values
+   * Registers an observer for when the provably secure parameter
+   * instantiation CheckComboBox values
    * change.
    *
    * @param observer The change listener to register.

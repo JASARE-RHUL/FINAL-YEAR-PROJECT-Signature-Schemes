@@ -4,28 +4,34 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.Security;
+
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import uk.msci.project.rsa.DigestType;
 
 
 /**
- * The DigestFactory class provides a method to create MessageDigest instances based on a given
+ * The DigestFactory class provides a method to create MessageDigest
+ * instances based on a given
  * DigestType.
  */
 public class DigestFactory {
 
   /**
-   * Creates and returns a MessageDigest instance corresponding to the specified DigestType.
+   * Creates and returns a MessageDigest instance corresponding to the
+   * specified DigestType.
    *
-   * @param digestType The type of the digest to be created, defined by the DigestType enum.
+   * @param digestType The type of the digest to be created, defined by the
+   *                   DigestType enum.
    * @return A MessageDigest instance corresponding to the specified type.
-   * @throws NoSuchAlgorithmException If the algorithm for the requested digest type is not
+   * @throws NoSuchAlgorithmException If the algorithm for the requested
+   * digest type is not
    *                                  available.
-   * @throws NoSuchProviderException  If the BouncyCastle provider is not available when trying to
+   * @throws NoSuchProviderException  If the BouncyCastle provider is not
+   * available when trying to
    *                                  create a SHAKE message digest.
    */
   public static MessageDigest getMessageDigest(DigestType digestType)
-      throws NoSuchAlgorithmException, NoSuchProviderException {
+    throws NoSuchAlgorithmException, NoSuchProviderException {
     switch (digestType) {
       case SHA_256 -> {
 
@@ -43,13 +49,16 @@ public class DigestFactory {
       }
       case SHAKE_128 -> {
         Security.addProvider(new BouncyCastleProvider());
-        return MessageDigest.getInstance("SHAKE128", BouncyCastleProvider.PROVIDER_NAME);
+        return MessageDigest.getInstance("SHAKE128",
+          BouncyCastleProvider.PROVIDER_NAME);
       }
       case SHAKE_256 -> {
         Security.addProvider(new BouncyCastleProvider());
-        return MessageDigest.getInstance("SHAKE256", BouncyCastleProvider.PROVIDER_NAME);
+        return MessageDigest.getInstance("SHAKE256",
+          BouncyCastleProvider.PROVIDER_NAME);
       }
-      default -> throw new NoSuchAlgorithmException("Unsupported digest type: " + digestType);
+      default ->
+        throw new NoSuchAlgorithmException("Unsupported digest type: " + digestType);
     }
   }
 

@@ -4,8 +4,10 @@ import java.util.List;
 
 
 /**
- * The {@code StatisticData} class represents a single statistic, including its name and value,
- * for display in the results view. This class supports both single-value and multi-value statistics.
+ * The {@code StatisticData} class represents a single statistic, including
+ * its name and value,
+ * for display in the results view. This class supports both single-value and
+ * multi-value statistics.
  */
 public class StatisticData {
 
@@ -20,7 +22,8 @@ public class StatisticData {
   private String statisticValue;
 
   /**
-   * A list of values for the statistic. Used when the statistic has multiple values.
+   * A list of values for the statistic. Used when the statistic has multiple
+   * values.
    */
   private List<String> statisticValues;
 
@@ -37,7 +40,8 @@ public class StatisticData {
   }
 
   /**
-   * Constructs a {@code StatisticData} object with a specified name and multiple values.
+   * Constructs a {@code StatisticData} object with a specified name and
+   * multiple values.
    *
    * @param statisticName   The name of the statistic.
    * @param statisticValues The list of values for the statistic.
@@ -86,7 +90,8 @@ public class StatisticData {
   /**
    * Returns the list of values for the statistic.
    *
-   * @return The list of values for the statistic, or null if only a single value is set.
+   * @return The list of values for the statistic, or null if only a single
+   * value is set.
    */
   public List<String> getStatisticValues() {
     return statisticValues;

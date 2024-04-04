@@ -3,6 +3,7 @@ package uk.msci.project.rsa;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
+
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
@@ -17,29 +18,35 @@ import uk.msci.project.rsa.FileHandle;
 
 
 /**
- * This class is part of the controller component specific to digital signature signature for non
- * batch operations. It is responsible for handling user interactions for the signature verification
- * process. It also communicates with the Signature Model to perform the actual signature creation
+ * This class is part of the controller component specific to digital
+ * signature for non
+ * batch operations. It is responsible for handling user interactions for the
+ * signature verification
+ * process. It also communicates with the Signature Model to perform the
+ * actual signature creation
  * logic.
  */
 public class SignatureVerificationControllerStandard extends AbstractSignatureBaseController {
 
   /**
-   * The view component of the MVC pattern for the verification functionality. It handles the user
+   * The view component of the MVC pattern for the verification functionality
+   * . It handles the user
    * interface for the digital signature verification.
    */
   private VerifyView verifyView;
 
 
   /**
-   * The digital signature generated after signing the message. It is stored as a String for storage
+   * The digital signature generated after signing the message. It is stored
+   * as a String for storage
    * purposes.
    */
   private String signature;
 
 
   /**
-   * Constructs a SignatureCreationController with a reference to the MainController to be used in
+   * Constructs a SignatureCreationController with a reference to the
+   * MainController to be used in
    * the event of the user initiating a switch back to main menu.
    *
    * @param mainController The main controller that this controller is part of.
@@ -49,18 +56,23 @@ public class SignatureVerificationControllerStandard extends AbstractSignatureBa
   }
 
   /**
-   * Loads the VerifyView FXML corresponding to a mode for the verification view (e.g., standard,
-   * benchmarking, cross benchmarking) and initialises the view. This method handles the setup for
-   * different VerifyView modes based on the provided FXML path and runs the observer setup and
+   * Loads the VerifyView FXML corresponding to a mode for the verification
+   * view (e.g., standard,
+   * benchmarking, cross benchmarking) and initialises the view. This method
+   * handles the setup for
+   * different VerifyView modes based on the provided FXML path and runs the
+   * observer setup and
    * additional setup based on mode.
    *
    * @param fxmlPath                   Path to the FXML file to load.
-   * @param observerSetup              Runnable containing the observer setup logic.
-   * @param additionalSetupBasedOnMode Runnable containing additional setup logic specific to the
+   * @param observerSetup              Runnable containing the observer setup
+   *                                   logic.
+   * @param additionalSetupBasedOnMode Runnable containing additional setup
+   *                                   logic specific to the
    *                                   mode.
    */
   private void loadVerifyView(String fxmlPath, Runnable observerSetup,
-      Runnable additionalSetupBasedOnMode) {
+                              Runnable additionalSetupBasedOnMode) {
     try {
       FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
       Parent root = loader.load();
@@ -77,27 +89,34 @@ public class SignatureVerificationControllerStandard extends AbstractSignatureBa
 
 
   /**
-   * Displays the VerifyView in standard mode. This method loads the VerifyView for the standard
-   * (non-benchmarking) mode. It initialises the view, sets up the required observers for handling
-   * events like text and key import, and displays the view on the provided stage.
+   * Displays the VerifyView in standard mode. This method loads the
+   * VerifyView for the standard
+   * (non-benchmarking) mode. It initialises the view, sets up the required
+   * observers for handling
+   * events like text and key import, and displays the view on the provided
+   * stage.
    *
-   * @param primaryStage The primary stage of the application where the view will be displayed.
+   * @param primaryStage The primary stage of the application where the view
+   *                     will be displayed.
    */
   public void showStandardView(Stage primaryStage) {
     isBenchmarkingMode = false;
     loadVerifyView("/VerifyViewStandardMode.fxml",
-        () -> {
-          this.signatureModel = new SignatureModel();
-          setupObserversStandardMode(primaryStage, verifyView, signatureModel);
-        },
-        () -> preloadProvablySecureKey(verifyView));
+      () -> {
+        this.signatureModel = new SignatureModel();
+        setupObserversStandardMode(primaryStage, verifyView, signatureModel);
+      },
+      () -> preloadProvablySecureKey(verifyView));
   }
 
   /**
-   * Displays the signature view in benchmarking mode. This method should transition the user
-   * interface to a state that supports benchmarking functionalities for signature operations.
+   * Displays the signature view in benchmarking mode. This method should
+   * transition the user
+   * interface to a state that supports benchmarking functionalities for
+   * signature operations.
    *
-   * @param primaryStage The primary stage of the application where the view will be displayed.
+   * @param primaryStage The primary stage of the application where the view
+   *                     will be displayed.
    */
   @Override
   public void showBenchmarkingView(Stage primaryStage) {
@@ -105,61 +124,77 @@ public class SignatureVerificationControllerStandard extends AbstractSignatureBa
   }
 
   /**
-   * Sets up observers for the VerifyView in the standard (non-benchmarking) mode for signature
-   * verification. This method initialises observers for importing signatures, keys, handling
-   * signature verification, and other standard mode functionalities. It is essential for managing
+   * Sets up observers for the VerifyView in the standard (non-benchmarking)
+   * mode for signature
+   * verification. This method initialises observers for importing
+   * signatures, keys, handling
+   * signature verification, and other standard mode functionalities. It is
+   * essential for managing
    * user interactions and facilitating the verification process.
    *
-   * @param primaryStage   The primary stage of the application where the view will be displayed.
+   * @param primaryStage   The primary stage of the application where the
+   *                       view will be displayed.
    * @param signatureView  The signature view associated with this controller.
    * @param signatureModel The signature model used for verification processes.
    */
   @Override
-  public void setupObserversStandardMode(Stage primaryStage, SignatureBaseView signatureView,
-      SignatureModel signatureModel) {
+  public void setupObserversStandardMode(Stage primaryStage,
+                                         SignatureBaseView signatureView,
+                                         SignatureModel signatureModel) {
     super.setupObserversStandardMode(primaryStage, verifyView, signatureModel);
     verifyView.addImportSigButtonObserver(
-        new ImportObserver(primaryStage, verifyView, null, this::handleSig, "*.rsa"));
+      new ImportObserver(primaryStage, verifyView, null, this::handleSig, "*" +
+        ".rsa"));
     verifyView.addCancelImportSignatureButtonObserver(
-        new CancelImportSignatureButtonObserver());
+      new CancelImportSignatureButtonObserver());
     verifyView.addVerifyBtnObserver(
-        new VerifyBtnObserver());
+      new VerifyBtnObserver());
   }
 
 
   /**
-   * Initialises and sets up the post-verification observers for the VerifyView. This includes
-   * observers for exporting and copying the recoverable message (if applicable). This method is
+   * Initialises and sets up the post-verification observers for the
+   * VerifyView. This includes
+   * observers for exporting and copying the recoverable message (if
+   * applicable). This method is
    * called after a signature has been successfully verified.
    */
   public void setupPostVerificationObservers() {
-    verifyView.addExportRecoverableMessageObserver(new ExportObserver("recoverableMessage.txt",
-        new String(signatureModel.getRecoverableM()),
-        "Recoverable message was successfully exported!"));
+    verifyView.addExportRecoverableMessageObserver(new ExportObserver(
+      "recoverableMessage.txt",
+      new String(signatureModel.getRecoverableM()),
+      "Recoverable message was successfully exported!"));
     verifyView.addCopyRecoverableMessageObserver(
-        new CopyToClipboardObserver("Recoverable message",
-            new String(signatureModel.getRecoverableM()),
-            "Failed to copy recoverable message to clipboard."));
+      new CopyToClipboardObserver("Recoverable message",
+        new String(signatureModel.getRecoverableM()),
+        "Failed to copy recoverable message to clipboard."));
   }
 
 
   /**
-   * Handles the importing of a signature file. The method reads the signature data from the file,
-   * updates the signature model with the content, and reflects the changes on the view to indicate
-   * that the signature has been successfully imported. This is crucial in the signature
-   * verification process where the imported signature is used for verification against a message.
+   * Handles the importing of a signature file. The method reads the
+   * signature data from the file,
+   * updates the signature model with the content, and reflects the changes
+   * on the view to indicate
+   * that the signature has been successfully imported. This is crucial in
+   * the signature
+   * verification process where the imported signature is used for
+   * verification against a message.
    *
-   * @param file           The signature file selected by the user for verification.
-   * @param signatureView  The signature view to be updated with the imported signature.
+   * @param file           The signature file selected by the user for
+   *                       verification.
+   * @param signatureView  The signature view to be updated with the imported
+   *                       signature.
    * @param signatureModel The signature model used in the verification process.
    */
   public void handleSig(File file, SignatureBaseView signatureView,
-      SignatureModel signatureModel) {
+                        SignatureModel signatureModel) {
     String content = "";
     try {
       content = FileHandle.importFromFile(file);
     } catch (Exception e) {
-      uk.msci.project.rsa.DisplayUtility.showErrorAlert("Error importing file, please try again.");
+      uk.msci.project.rsa.DisplayUtility.showErrorAlert("Error importing " +
+        "file, please try again.");
     }
     signature = content;
     verifyView.setSignatureText("");
@@ -174,34 +209,49 @@ public class SignatureVerificationControllerStandard extends AbstractSignatureBa
 
 
   /**
-   * The observer for verifying signatures. This class handles the action event triggered for the
-   * signature verification process. It checks for necessary inputs, verifies the signature using
+   * The observer for verifying signatures. This class handles the action
+   * event triggered for the
+   * signature verification process. It checks for necessary inputs, verifies
+   * the signature using
    * the selected scheme, and updates the view with the verification result.
    */
   class VerifyBtnObserver implements EventHandler<ActionEvent> {
 
     @Override
     public void handle(ActionEvent event) {
+      // Retrieve the hash output size from the view
       hashOutputSize = verifyView.getHashOutputSizeArea();
+
+      // Check if message input is required and not provided
       if ((verifyView.getTextInput().equals("") && message == null)) {
+        // Check if message recovery is not part of the scheme, hence
+        // requiring a message input
         if ((!signatureModel.getRecoveryStatus())) {
           uk.msci.project.rsa.DisplayUtility.showErrorAlert(
-              "You must provide an input for all required fields. Please try again.");
+            "You must provide an input for all required fields. Please try " +
+              "again.");
           return;
         }
       }
+
+      // Set the hash size in the model based on the view's configuration
       if (!setHashSizeInModel(verifyView)) {
-        return;
+        return; // Exit if hash size setup fails
       }
+
+      // Validate other essential inputs like key, signature type, and hash type
       if (signatureModel.getKey() == null
-          || signatureModel.getSignatureType() == null
-          || (verifyView.getSigText().equals("") && signature == null)
-          || signatureModel.getHashType() == null) {
+        || signatureModel.getSignatureType() == null
+        || (verifyView.getSigText().equals("") && signature == null)
+        || signatureModel.getHashType() == null) {
         uk.msci.project.rsa.DisplayUtility.showErrorAlert(
-            "You must provide an input for all required fields. Please try again.");
+          "You must provide an input for all required fields. Please try " +
+            "again.");
         return;
       }
+
       try {
+        // Retrieve text to be verified and signature string from the view
         String textToVerify = verifyView.getTextInput();
         if (!textToVerify.equals("")) {
           message = textToVerify.getBytes();
@@ -211,16 +261,21 @@ public class SignatureVerificationControllerStandard extends AbstractSignatureBa
           signature = signatureInput;
         }
 
-        byte[] signatureBytes = new byte[0];
-        try {
-          signatureBytes = new BigInteger(signature).toByteArray();
-        } catch (Exception ignored) {
-        }
+        // Convert the signature string into a byte array
+        byte[] signatureBytes = new BigInteger(signature).toByteArray();
 
+        // Instantiate the signature scheme as per the selected configuration
         signatureModel.instantiateSignatureScheme();
-        boolean verificationResult = signatureModel.verify(message, signatureBytes);
+
+        // Verify the signature
+        boolean verificationResult = signatureModel.verify(message,
+          signatureBytes);
+
+        // Update view based on the verification result
         if (verificationResult) {
           verifyView.setTrueLabelVisibility(true);
+          // If there is a recoverable message part, set up options to
+          // display or copy it
           if (signatureModel.getRecoverableM() != null) {
             setupPostVerificationObservers();
             verifyView.setRecoveryOptionsVisibility(true);
@@ -228,20 +283,26 @@ public class SignatureVerificationControllerStandard extends AbstractSignatureBa
         } else {
           verifyView.setFalseLabelVisibility(true);
         }
+
+        // Reset any preloaded key parameters
         resetPreLoadedKeyParams();
+
+        // Show notification pane to inform the user of the verification result
         verifyView.showNotificationPane();
 
       } catch (Exception e) {
+        // Display error alert if any issue occurs during the verification
+        // process
         uk.msci.project.rsa.DisplayUtility.showErrorAlert(
-            "There was an error in the verification process. Please try again.");
-        e.printStackTrace();
-
+          "There was an error in the verification process. Please try again.");
+        e.printStackTrace(); // Print stack trace for debugging
       }
     }
   }
 
   /**
-   * Sets the message to be verified. This method is used to update the message that will be
+   * Sets the message to be verified. This method is used to update the
+   * message that will be
    * verified by the signature model.
    *
    * @param message The message to be verified, represented as a byte array.
@@ -252,9 +313,12 @@ public class SignatureVerificationControllerStandard extends AbstractSignatureBa
   }
 
   /**
-   * Observer for canceling the import of a signature in non benchmarking mode. Handles the event
-   * when the user decides to cancel the import of the signature by replacing the cancel button with
-   * the original import button and resetting corresponding text field that display the name of the
+   * Observer for canceling the import of a signature in non benchmarking
+   * mode. Handles the event
+   * when the user decides to cancel the import of the signature by replacing
+   * the cancel button with
+   * the original import button and resetting corresponding text field that
+   * display the name of the
    * file.
    */
   class CancelImportSignatureButtonObserver implements EventHandler<ActionEvent> {

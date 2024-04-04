@@ -16,7 +16,8 @@ import uk.msci.project.rsa.MainController;
 import uk.msci.project.rsa.MainMenuView;
 
 /**
- * Test class for MainMenuView UI interactions. Ensures that all buttons are present and correctly
+ * Test class for MainMenuView UI interactions. Ensures that all buttons are
+ * present and correctly
  * labeled, and that navigation occurs as expected when buttons are clicked.
  */
 @ExtendWith(ApplicationExtension.class)
@@ -46,11 +47,13 @@ public class MainMenuTest {
     Button node = (Button) robot.lookup("#generateKeysButton").query();
     assertNotNull(node, "The component should exist.");
     // Verify that the button with the text "[K] Generate Keys" is present
-    verifyThat("#generateKeysButton", LabeledMatchers.hasText("[K] Generate Keys"));
+    verifyThat("#generateKeysButton", LabeledMatchers.hasText("[K] Generate " +
+      "Keys"));
   }
 
   /**
-   * Tests the navigation functionality of the Generate Keys button works as intended by confirming
+   * Tests the navigation functionality of the Generate Keys button works as
+   * intended by confirming
    * that the key generation view is successfully loaded.
    *
    * @param robot The robot used to simulate user interactions.
@@ -72,11 +75,13 @@ public class MainMenuTest {
   public void testSignDocumentButton(FxRobot robot) {
     Button node = (Button) robot.lookup("#signDocumentButton").query();
     assertNotNull(node, "The component should exist.");
-    verifyThat("#signDocumentButton", LabeledMatchers.hasText("[S] Sign Document"));
+    verifyThat("#signDocumentButton", LabeledMatchers.hasText("[S] Sign " +
+      "Document"));
   }
 
   /**
-   * Tests the navigation functionality of the Sign Document button. orks as intended by confirming
+   * Tests the navigation functionality of the Sign Document button. orks as
+   * intended by confirming
    * that the sign view is successfully loaded.
    *
    * @param robot The robot used to simulate user interactions.
@@ -86,7 +91,8 @@ public class MainMenuTest {
     robot.clickOn("#signDocumentButton");
     Button node = (Button) robot.lookup("#createSignatureButton").query();
     assertNotNull(node, "The component should exist.");
-    verifyThat("#createSignatureButton", LabeledMatchers.hasText("Create Signature"));
+    verifyThat("#createSignatureButton", LabeledMatchers.hasText("Create " +
+      "Signature"));
   }
 
   /**
@@ -98,11 +104,13 @@ public class MainMenuTest {
   public void testVerifySignatureButton(FxRobot robot) {
     Button node = (Button) robot.lookup("#verifySignatureButton").query();
     assertNotNull(node, "The component should exist.");
-    verifyThat("#verifySignatureButton", LabeledMatchers.hasText("[V] Verify Signature"));
+    verifyThat("#verifySignatureButton", LabeledMatchers.hasText("[V] Verify " +
+      "Signature"));
   }
 
   /**
-   * Tests the navigation functionality of the Verify Signature button works as intended by
+   * Tests the navigation functionality of the Verify Signature button works
+   * as intended by
    * confirming that the verify view is successfully loaded.
    *
    * @param robot The robot used to simulate user interactions.

@@ -5,7 +5,7 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>uk.msci.project.rsa</groupId>
-  <artifactId>digital-signature-poc</artifactId>
+  <artifactId>ds-benchmarking-final</artifactId>
   <version>1.0</version>
 
   <properties>
@@ -87,6 +87,8 @@
                 <source>application/modules/key_generation/models</source>
                 <source>application/modules/key_generation/views</source>
                 <source>application/modules/key_generation/controllers</source>
+                <source>application/modules/key_generation/controllers</source>
+                <source>application/modules/key_generation/utility</source>
                 <source>application/modules/signatures/models</source>
                 <source>application/modules/signatures/views</source>
                 <source>application/modules/signatures/controllers</source>

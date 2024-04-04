@@ -112,6 +112,11 @@ public class SignatureModelComparisonBenchmarking extends AbstractSignatureModel
    */
   private boolean isDefaultComparisonMode;
 
+  /**
+   * Maps each unique combination of key and hash function identifiers to a list of non-recoverable
+   * message parts generated during the digital signature creation process in the cross-parameter
+   * benchmarking/comparison mode.
+   */
   private Map<String, List<String>> nonRecoverableMessagesPerKeyHashFunction = new HashMap<>();
 
 
@@ -161,7 +166,7 @@ public class SignatureModelComparisonBenchmarking extends AbstractSignatureModel
         int messageCounter = 0;
         while ((message = messageReader.readLine()) != null && messageCounter < numTrials) {
           final String currentMessage = message;
-
+          // Iterating over key sizes and groups
           for (int keySizeIndex = 0; keySizeIndex < keyBatch.size();
               keySizeIndex += numKeysPerKeySizeComparisonMode) {
             for (int keyGroupIndex = 0; keyGroupIndex < numKeysPerKeySizeComparisonMode;
@@ -180,6 +185,7 @@ public class SignatureModelComparisonBenchmarking extends AbstractSignatureModel
 
                     int keyLength = keyLengths.get(actualKeyIndex);
                     boolean isProvablySecureHash = hashFunctionType.isProvablySecure();
+                    // Calculating the digest size if custom hash size fractions are specified
                     int digestSize =
                         hashFunctionType.getCustomSize() == null ? 0 : (int) Math.round(
                             (keyLength * hashFunctionType.getCustomSize()[0])
@@ -198,7 +204,7 @@ public class SignatureModelComparisonBenchmarking extends AbstractSignatureModel
                       isProvablySecureHash = true;
                     }
                     PrivateKey privateKey = (PrivateKey) keyBatch.get(actualKeyIndex);
-
+                    // Submitting a task for verifying each signature asynchronously
                     int finalDigestSize = digestSize;
                     boolean finalIsProvablySecureHash = isProvablySecureHash;
                     Future<Pair<String, Pair<Long, Pair<byte[], byte[]>>>> future = executor.submit(
@@ -212,7 +218,6 @@ public class SignatureModelComparisonBenchmarking extends AbstractSignatureModel
                             byte[] signature = sigScheme.sign(currentMessage.getBytes());
                             long endTime = System.nanoTime() - startTime;
                             byte[] nonRecoverableM = sigScheme.getNonRecoverableM();
-                            String ass = new String(nonRecoverableM);
 
                             return new Pair<>(keyHashFunctionIdentifier,
                                 new Pair<>(endTime, new Pair<>(signature, nonRecoverableM)));
@@ -223,7 +228,7 @@ public class SignatureModelComparisonBenchmarking extends AbstractSignatureModel
                         });
 
                     futures.add(future);
-
+                    // Process the futures once the pool is full or all messages are read
                     if (futures.size() >= threadPoolSize || messageCounter == this.numTrials - 1) {
                       processFuturesForSignatureCreation(progressUpdater, futures,
                           timesPerKeyHashFunction,
@@ -480,7 +485,7 @@ public class SignatureModelComparisonBenchmarking extends AbstractSignatureModel
                     }
                   });
                   futures.add(future);
-
+                  // Process the futures once the pool is full or all messages are read
                   if (futures.size() >= threadPoolSize || messageCounter == numTrials - 1) {
                     processFuturesForSignatureVerification(progressUpdater, futures,
                         timesPerKeyHashFunction,
@@ -855,6 +860,7 @@ public class SignatureModelComparisonBenchmarking extends AbstractSignatureModel
 
     int headerStartIndex = 0; // Starting index for the row headers for each group
     int resultsPerKeySize = totalWork / numKeySizesForComparisonMode;
+    // Get key specific results
     int startIndex = keySizeIndex * resultsPerKeySize;
     int currentIndex = startIndex;
     int endIndex = (keySizeIndex + 1) * resultsPerKeySize;
@@ -865,12 +871,15 @@ public class SignatureModelComparisonBenchmarking extends AbstractSignatureModel
               + "bit size), Hash Function, "
               + "Verification Result, Original Message, Signature\n");
       while (currentIndex < endIndex) {
+        // Iterate through each group of keys
         for (int groupIndex = 0; groupIndex < keyConfigToHashFunctionsMap.size(); groupIndex++) {
           List<HashFunctionSelection> hashFunctions = keyConfigToHashFunctionsMap.get(
               groupIndex);
-
+          // Iterate through each hash function in the group
           for (int hashFunctionIndex = 0; hashFunctionIndex < hashFunctions.size();
               hashFunctionIndex++) {
+            // Iterate through each key in the group
+
             for (int k = 0; k < keysPerGroup; k++) {
               int keyIndex =
                   groupIndex * keysPerGroup + k
@@ -888,7 +897,7 @@ public class SignatureModelComparisonBenchmarking extends AbstractSignatureModel
               try (BufferedReader reader = new BufferedReader(new FileReader(messageFile))) {
                 String originalMessage;
                 int messageCounter = 0;
-                //numtrials = nummessages
+                //num trials = num messages
                 while ((originalMessage = reader.readLine()) != null
                     && messageCounter < numTrials) {
                   int keySpecificMessageResults = currentIndex + messageCounter;
@@ -912,7 +921,8 @@ public class SignatureModelComparisonBenchmarking extends AbstractSignatureModel
               currentIndex += trialsPerHashFunction;
             }
           }
-          headerStartIndex += keysPerGroup; // Move to the next set of headers for the next group
+          // Update header start index for the next group
+          headerStartIndex += keysPerGroup;
         }
       }
     }

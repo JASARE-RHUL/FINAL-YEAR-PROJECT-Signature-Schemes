@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.msci.project.rsa.BenchmarkingUtility;
@@ -26,55 +27,67 @@ public class BenchmarkingUtilityTest {
   void testCalculateMean() {
     double actualMean = BenchmarkingUtility.calculateMean(exampleTimes);
     double expectedMean = 300.0;
-    assertEquals(expectedMean, actualMean, "The mean should be calculated correctly.");
+    assertEquals(expectedMean, actualMean, "The mean should be calculated " +
+      "correctly.");
   }
 
   @Test
   void testCalculateMedian() {
     double actualMedian = BenchmarkingUtility.calculateMedian(exampleTimes);
     double expectedMedian = 300.0;
-    assertEquals(expectedMedian, actualMedian, "The median should be calculated correctly.");
+    assertEquals(expectedMedian, actualMedian, "The median should be " +
+      "calculated correctly.");
   }
 
   @Test
   void testCalculateRange() {
     long actualRange = BenchmarkingUtility.calculateRange(exampleTimes);
     long expectedRange = 400L;
-    assertEquals(expectedRange, actualRange, "The range should be calculated correctly.");
+    assertEquals(expectedRange, actualRange, "The range should be calculated " +
+      "correctly.");
   }
 
   @Test
   void testCalculatePercentile() {
-    double actual25th = BenchmarkingUtility.calculatePercentile(exampleTimes, 0.25);
-    double actual75th = BenchmarkingUtility.calculatePercentile(exampleTimes, 0.75);
-    assertEquals(150.0, actual25th, "The 25th percentile should be calculated correctly.");
-    assertEquals(450.0, actual75th, "The 75th percentile should be calculated correctly.");
+    double actual25th = BenchmarkingUtility.calculatePercentile(exampleTimes,
+      0.25);
+    double actual75th = BenchmarkingUtility.calculatePercentile(exampleTimes,
+      0.75);
+    assertEquals(150.0, actual25th, "The 25th percentile should be calculated" +
+      " correctly.");
+    assertEquals(450.0, actual75th, "The 75th percentile should be calculated" +
+      " correctly.");
   }
 
   @Test
   void testCalculateStandardDeviation() {
-    double actualStdDev = BenchmarkingUtility.calculateStandardDeviation(exampleTimes);
+    double actualStdDev =
+      BenchmarkingUtility.calculateStandardDeviation(exampleTimes);
     double expectedStdDev = Math.sqrt(20000.0);
-    assertEquals(expectedStdDev, actualStdDev, "The standard deviation should be calculated correctly.");
+    assertEquals(expectedStdDev, actualStdDev, "The standard deviation should" +
+      " be calculated correctly.");
   }
 
   @Test
   void testCalculateVariance() {
     double actualVariance = BenchmarkingUtility.calculateVariance(exampleTimes);
     double expectedVariance = 20000.0;
-    assertEquals(expectedVariance, actualVariance, "The variance should be calculated correctly.");
+    assertEquals(expectedVariance, actualVariance, "The variance should be " +
+      "calculated correctly.");
   }
 
   @Test
   void testGetMin() {
     long actualMin = BenchmarkingUtility.getMin(exampleTimes);
-    assertEquals(100L, actualMin, "The minimum value should be found correctly.");
+    assertEquals(100L, actualMin, "The minimum value should be found " +
+      "correctly.");
   }
 
   @Test
   void testGetMax() {
     long actualMax = BenchmarkingUtility.getMax(exampleTimes);
-    assertEquals(500L, actualMax, "The maximum value should be found correctly.");
+    assertEquals(500L, actualMax, "The maximum value should be found " +
+      "correctly.");
   }
 
   @Test
@@ -87,7 +100,8 @@ public class BenchmarkingUtilityTest {
     times.add(150L);
 
     double confidenceLevel = 0.95;
-    double[] confidenceInterval = benchmarkingUtility.calculateConfidenceInterval(times, confidenceLevel);
+    double[] confidenceInterval =
+      benchmarkingUtility.calculateConfidenceInterval(times, confidenceLevel);
 
     assertTrue(confidenceInterval[0] < confidenceInterval[1]);
   }
@@ -101,12 +115,11 @@ public class BenchmarkingUtilityTest {
       times.add(100L + i);
     }
     double confidenceLevel = 0.95;
-    double[] confidenceInterval = benchmarkingUtility.calculateConfidenceInterval(times, confidenceLevel);
+    double[] confidenceInterval =
+      benchmarkingUtility.calculateConfidenceInterval(times, confidenceLevel);
 
     assertTrue(confidenceInterval[0] < confidenceInterval[1]);
   }
-
-
 
 
 }

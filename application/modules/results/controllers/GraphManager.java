@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.control.Button;
@@ -38,11 +39,16 @@ import uk.msci.project.rsa.ResultsView;
 
 
 /**
- * Manages the generation and display of graphical representations of benchmarking results in RSA
- * cryptography. This includes histograms, box plots, and line graphs for both individual key
- * analysis and comparative analysis across different key sizes and configurations. The GraphManager
- * supports a 'comparison mode' which allows benchmarking and comparing results between custom
- * parameter In this mode, users can compare the performance of different key sizes and
+ * Manages the generation and display of graphical representations of
+ * benchmarking results in RSA
+ * cryptography. This includes histograms, box plots, and line graphs for
+ * both individual key
+ * analysis and comparative analysis across different key sizes and
+ * configurations. The GraphManager
+ * supports a 'comparison mode' which allows benchmarking and comparing
+ * results between custom
+ * parameter In this mode, users can compare the performance of different key
+ * sizes and
  * configurations side-by-side using a variety of graph types.
  */
 public class GraphManager {
@@ -62,8 +68,10 @@ public class GraphManager {
    */
   private int numRowsComparisonMode;
   /**
-   * Number of key sizes selected for comparison mode. This indicates how many different key sizes
-   * will be used to benchmark and compare provably secure versus standard parameters.
+   * Number of key sizes selected for comparison mode. This indicates how
+   * many different key sizes
+   * will be used to benchmark and compare provably secure versus standard
+   * parameters.
    */
   private int numKeySizesForComparisonMode;
 
@@ -77,7 +85,8 @@ public class GraphManager {
    */
   private int keyIndex;
   /**
-   * Stores the last selected graph button to maintain the active state across different result
+   * Stores the last selected graph button to maintain the active state
+   * across different result
    * sets.
    */
   private Button lastSelectedGraphButton;
@@ -90,14 +99,18 @@ public class GraphManager {
   /**
    * Initializes a new GraphManager with specified parameters.
    *
-   * @param totalTrials                  Number of trials conducted in benchmarking.
+   * @param totalTrials                  Number of trials conducted in
+   *                                     benchmarking.
    * @param totalKeys                    Number of keys used in benchmarking.
    * @param numRowsComparisonMode        Number of rows for comparison mode.
-   * @param numKeySizesForComparisonMode Number of key sizes selected for comparison mode.
-   * @param isSignatureOperationResults  Flag indicating if results are from a signature operation.
+   * @param numKeySizesForComparisonMode Number of key sizes selected for
+   *                                     comparison mode.
+   * @param isSignatureOperationResults  Flag indicating if results are from
+   *                                     a signature operation.
    */
   public GraphManager(int totalTrials, int totalKeys, int numRowsComparisonMode,
-      int numKeySizesForComparisonMode, boolean isSignatureOperationResults) {
+                      int numKeySizesForComparisonMode,
+                      boolean isSignatureOperationResults) {
     precomputedGraphs = new HashMap<String, ChartViewer>();
     this.totalTrials = totalTrials;
     this.totalKeys = totalKeys;
@@ -108,54 +121,67 @@ public class GraphManager {
   }
 
   /**
-   * Precomputes and stores graphs for all keys to optimise performance during graph switching.
+   * Precomputes and stores graphs for all keys to optimise performance
+   * during graph switching.
    *
-   * @param resultsModels A list of ResultsModel objects containing benchmarking data.
+   * @param resultsModels A list of ResultsModel objects containing
+   *                      benchmarking data.
    * @param keyLengths    A list of integers representing key lengths.
    */
-  void precomputeGraphs(List<ResultsModel> resultsModels, List<Integer> keyLengths) {
+  void precomputeGraphs(List<ResultsModel> resultsModels,
+                        List<Integer> keyLengths) {
     for (int keyIndex = 0; keyIndex < totalKeys; keyIndex++) {
       int keyLength = keyLengths.get(keyIndex);
       // Precompute and store each type of graph for each key
       String histogramKey = "Histogram_" + keyIndex;
       precomputedGraphs.put(histogramKey,
-          displayHistogramForKey(keyIndex, keyLength, resultsModels));
+        displayHistogramForKey(keyIndex, keyLength, resultsModels));
 
       String boxPlotKey = "BoxPlot_" + keyIndex;
-      ChartViewer boxPlotViewer = displayBoxPlotForKey(keyIndex, keyLength, resultsModels);
+      ChartViewer boxPlotViewer = displayBoxPlotForKey(keyIndex, keyLength,
+        resultsModels);
       precomputedGraphs.put(boxPlotKey, boxPlotViewer);
 
     }
   }
 
   /**
-   * Precomputes and stores graphs for comparison mode, facilitating quick switching between
+   * Precomputes and stores graphs for comparison mode, facilitating quick
+   * switching between
    * graphs.
    *
-   * @param resultsModels            A list of ResultsModel objects containing benchmarking data.
+   * @param resultsModels            A list of ResultsModel objects
+   *                                 containing benchmarking data.
    * @param comparisonModeRowHeaders Headers for rows in comparison mode.
-   * @param results                  A list of longs representing benchmarking results.
-   * @param keyLengths               A list of integers representing key lengths.
+   * @param results                  A list of longs representing
+   *                                 benchmarking results.
+   * @param keyLengths               A list of integers representing key
+   *                                 lengths.
    */
   void precomputeGraphsComparisonMode(List<ResultsModel> resultsModels,
-      List<String> comparisonModeRowHeaders, List<Long> results, List<Integer> keyLengths) {
+                                      List<String> comparisonModeRowHeaders,
+                                      List<Long> results,
+                                      List<Integer> keyLengths) {
     for (int keySizeIndex = 0; keySizeIndex < numKeySizesForComparisonMode; keySizeIndex++) {
       int keyLength = ResultsUtility.getKeyLength(keySizeIndex, resultsModels,
-          numKeySizesForComparisonMode, keyLengths);
+        numKeySizesForComparisonMode, keyLengths);
       // Precompute and store each type of graph for each key
       String histogramKey = "Histogram_" + keySizeIndex;
       precomputedGraphs.put(histogramKey,
-          displayStackedHistogram(keySizeIndex, keyLength, resultsModels, comparisonModeRowHeaders,
-              results));
+        displayStackedHistogram(keySizeIndex, keyLength, resultsModels,
+          comparisonModeRowHeaders,
+          results));
 
       String lineChartMeanKey = "LineChartMeanTimes_" + keySizeIndex;
-      ChartViewer lineChartMeanViewer = displayLineGraphMeanForComparisonMode(keySizeIndex,
-          keyLength, resultsModels, comparisonModeRowHeaders);
+      ChartViewer lineChartMeanViewer =
+        displayLineGraphMeanForComparisonMode(keySizeIndex,
+        keyLength, resultsModels, comparisonModeRowHeaders);
       precomputedGraphs.put(lineChartMeanKey, lineChartMeanViewer);
 
       String boxPlotKey = "BoxPlot_" + keySizeIndex;
-      ChartViewer boxPlotViewer = displayBoxPlotForComparisonMode(keySizeIndex, keyLength,
-          resultsModels, comparisonModeRowHeaders);
+      ChartViewer boxPlotViewer =
+        displayBoxPlotForComparisonMode(keySizeIndex, keyLength,
+        resultsModels, comparisonModeRowHeaders);
       precomputedGraphs.put(boxPlotKey, boxPlotViewer);
 
     }
@@ -178,36 +204,47 @@ public class GraphManager {
    * Calculates the number of bins for a histogram based on the given results.
    *
    * @param results                  The results to use in the calculation.
-   * @param freedmanDiaconisBinWidth The bin width assumed to be calculated using the
+   * @param freedmanDiaconisBinWidth The bin width assumed to be calculated
+   *                                 using the
    *                                 Freedman-Diaconis rule.
    * @return The number of bins.
    */
-  public static int calculateNumberOfBins(List<Long> results, double freedmanDiaconisBinWidth) {
+  public static int calculateNumberOfBins(List<Long> results,
+                                          double freedmanDiaconisBinWidth) {
     double min = BenchmarkingUtility.getMin(results) / 1E6;
     double max = BenchmarkingUtility.getMax(results) / 1E6;
     return (int) Math.ceil((max - min) / freedmanDiaconisBinWidth);
   }
 
   /**
-   * Creates a dataset for a stacked histogram specifically tailored to signature operations. This
-   * dataset is generated based on the key size index provided and is intended for comparative
+   * Creates a dataset for a stacked histogram specifically tailored to
+   * signature operations. This
+   * dataset is generated based on the key size index provided and is
+   * intended for comparative
    * analysis in 'comparison mode'.
    *
-   * @param keySizeIndex                 The index of the key size for which the dataset is
+   * @param keySizeIndex                 The index of the key size for which
+   *                                     the dataset is
    *                                     prepared.
-   * @param numKeySizesForComparisonMode Number of key sizes selected for comparison mode.
-   * @param resultsModels                A list of ResultsModel objects containing benchmarking
+   * @param numKeySizesForComparisonMode Number of key sizes selected for
+   *                                     comparison mode.
+   * @param resultsModels                A list of ResultsModel objects
+   *                                     containing benchmarking
    *                                     data.
-   * @return A CategoryDataset suitable for creating a stacked histogram, reflecting the
-   * distribution of results for different hash functions and key configurations.
+   * @return A CategoryDataset suitable for creating a stacked histogram,
+   * reflecting the
+   * distribution of results for different hash functions and key
+   * configurations.
    */
   public CategoryDataset createStackedHistogramDatasetSignatures(int keySizeIndex,
-      int numKeySizesForComparisonMode, List<ResultsModel> resultsModels) {
+                                                                 int numKeySizesForComparisonMode, List<ResultsModel> resultsModels) {
     DefaultCategoryDataset dataset = new DefaultCategoryDataset();
 
     // Calculate the range of model indices for the specified key size
-    int startModelIndex = keySizeIndex * (resultsModels.size() / numKeySizesForComparisonMode);
-    int endModelIndex = (keySizeIndex + 1) * (resultsModels.size() / numKeySizesForComparisonMode);
+    int startModelIndex =
+      keySizeIndex * (resultsModels.size() / numKeySizesForComparisonMode);
+    int endModelIndex =
+      (keySizeIndex + 1) * (resultsModels.size() / numKeySizesForComparisonMode);
 
     // Calculate minimum, bin width, and number of bins for all combined results
     List<Long> allCombinedResults = new ArrayList<>();
@@ -229,9 +266,10 @@ public class GraphManager {
       String hashFunctionName = model.getHashFunctionName();
       String keyConfigString = model.getConfigString();
       String seriesName =
-          modelIndex + ". " + keyConfigString + " - " + hashFunctionName;
+        modelIndex + ". " + keyConfigString + " - " + hashFunctionName;
 
-      double[] values = model.getResults().stream().mapToDouble(ns -> ns / 1_000_000.0).toArray();
+      double[] values =
+        model.getResults().stream().mapToDouble(ns -> ns / 1_000_000.0).toArray();
 
       // Populate bin counts
       seriesBinCounts.putIfAbsent(seriesName, new int[numBins]);
@@ -246,7 +284,8 @@ public class GraphManager {
     for (Map.Entry<String, int[]> entry : seriesBinCounts.entrySet()) {
       String seriesName = entry.getKey();
       int[] binCounts = entry.getValue();
-      addBinCountDataset(dataset, min, binWidth, numBins, seriesName, binCounts);
+      addBinCountDataset(dataset, min, binWidth, numBins, seriesName,
+        binCounts);
     }
 
     return dataset;
@@ -254,27 +293,31 @@ public class GraphManager {
 
 
   /**
-   * Creates a dataset for a general stacked histogram based on a given key index. This dataset is
-   * used for generating histograms in comparison modes, providing a detailed view of the
+   * Creates a dataset for a general stacked histogram based on a given key
+   * index. This dataset is
+   * used for generating histograms in comparison modes, providing a detailed
+   * view of the
    * benchmarking results.
    *
-   * @param keyIndex                 The index of the key for which the dataset is prepared.
+   * @param keyIndex                 The index of the key for which the
+   *                                 dataset is prepared.
    * @param comparisonModeRowHeaders Headers for rows in comparison mode.
    * @param results                  A list of benchmarking results.
-   * @param resultsModels            A list of ResultsModel objects containing benchmarking data.
+   * @param resultsModels            A list of ResultsModel objects
+   *                                 containing benchmarking data.
    * @return A CategoryDataset suitable for creating a stacked histogram.
    */
   public CategoryDataset createStackedHistogramDataset(int keyIndex,
-      List<String> comparisonModeRowHeaders, List<Long> results, List<ResultsModel> resultsModels) {
+                                                       List<String> comparisonModeRowHeaders, List<Long> results, List<ResultsModel> resultsModels) {
 
     // Create the dataset
     DefaultCategoryDataset dataset = new DefaultCategoryDataset();
 
     // Determine the combined range and bin width
     List<Long> combinedResults = results.subList(
-        keyIndex * (this.totalTrials / totalKeys) * numRowsComparisonMode,
-        (keyIndex * (this.totalTrials / totalKeys) * numRowsComparisonMode)
-            + (this.totalTrials / totalKeys) * numRowsComparisonMode
+      keyIndex * (this.totalTrials / totalKeys) * numRowsComparisonMode,
+      (keyIndex * (this.totalTrials / totalKeys) * numRowsComparisonMode)
+        + (this.totalTrials / totalKeys) * numRowsComparisonMode
     );
     double min = BenchmarkingUtility.getMin(combinedResults) / 1E6;
     double binWidth = calculateFreedmanDiaconisBinWidth(combinedResults);
@@ -283,18 +326,20 @@ public class GraphManager {
     // Initialise bin counts for each series
     Map<String, int[]> seriesBinCounts = new HashMap<>();
 
-    for (int i = keyIndex * (resultsModels.size() / numKeySizesForComparisonMode);
-        i < keyIndex * (resultsModels.size() / numKeySizesForComparisonMode)
-            + numRowsComparisonMode;
-        i++) {
+    for (int i =
+         keyIndex * (resultsModels.size() / numKeySizesForComparisonMode);
+         i < keyIndex * (resultsModels.size() / numKeySizesForComparisonMode)
+           + numRowsComparisonMode;
+         i++) {
 
       ResultsModel model = resultsModels.get(i);
-      String seriesName = i + ". " + comparisonModeRowHeaders.get(i % numRowsComparisonMode);
+      String seriesName =
+        i + ". " + comparisonModeRowHeaders.get(i % numRowsComparisonMode);
       seriesBinCounts.putIfAbsent(seriesName, new int[numBins]);
 
       double[] values = model.getResults().stream()
-          .mapToDouble(ns -> ns / 1_000_000.0) // Convert to milliseconds
-          .toArray();
+        .mapToDouble(ns -> ns / 1_000_000.0) // Convert to milliseconds
+        .toArray();
 
       // Populate bin counts
       for (double value : values) {
@@ -308,7 +353,8 @@ public class GraphManager {
     for (Map.Entry<String, int[]> entry : seriesBinCounts.entrySet()) {
       String seriesName = entry.getKey();
       int[] binCounts = entry.getValue();
-      addBinCountDataset(dataset, min, binWidth, numBins, seriesName, binCounts);
+      addBinCountDataset(dataset, min, binWidth, numBins, seriesName,
+        binCounts);
     }
 
     return dataset;
@@ -316,15 +362,19 @@ public class GraphManager {
 
 
   /**
-   * Prepares a histogram dataset for a specific key index, primarily used in non-comparison mode.
-   * This method organizes data into appropriate bins for histogram representation.
+   * Prepares a histogram dataset for a specific key index, primarily used in
+   * non-comparison mode.
+   * This method organizes data into appropriate bins for histogram
+   * representation.
    *
-   * @param keyIndex      The index of the key for which the dataset is prepared.
-   * @param resultsModels A list of ResultsModel objects containing benchmarking data.
+   * @param keyIndex      The index of the key for which the dataset is
+   *                      prepared.
+   * @param resultsModels A list of ResultsModel objects containing
+   *                      benchmarking data.
    * @return A histogram dataset for the specified key.
    */
   private DefaultCategoryDataset prepareHistogramForKey(int keyIndex,
-      List<ResultsModel> resultsModels) {
+                                                        List<ResultsModel> resultsModels) {
     DefaultCategoryDataset dataset = new DefaultCategoryDataset();
     ResultsModel model = resultsModels.get(keyIndex);
 
@@ -332,11 +382,12 @@ public class GraphManager {
     double binWidth = calculateFreedmanDiaconisBinWidth(model.getResults());
     int numBins = calculateNumberOfBins(model.getResults(), binWidth);
     String seriesName = "Key " + (keyIndex + 1);
-    int[] binCounts = new int[numBins]; // Array to hold the count of values in each bin
+    int[] binCounts = new int[numBins]; // Array to hold the count of values
+    // in each bin
 
     double[] values = model.getResults().stream()
-        .mapToDouble(ns -> ns / 1_000_000.0) // Convert to milliseconds
-        .toArray();
+      .mapToDouble(ns -> ns / 1_000_000.0) // Convert to milliseconds
+      .toArray();
 
     // Populate bin counts
     for (double value : values) {
@@ -352,26 +403,32 @@ public class GraphManager {
   }
 
   /**
-   * Adds data for bin counts to the given category dataset. This method is used for preparing
-   * datasets for histogram graphs by populating it with frequency data for specific value ranges
+   * Adds data for bin counts to the given category dataset. This method is
+   * used for preparing
+   * datasets for histogram graphs by populating it with frequency data for
+   * specific value ranges
    * (bins).
    *
-   * @param dataset    The category dataset to which the bin counts will be added.
+   * @param dataset    The category dataset to which the bin counts will be
+   *                   added.
    * @param min        The minimum value in the range of data.
    * @param binWidth   The width of each bin (value range).
    * @param numBins    The total number of bins.
    * @param seriesName The name of the series to which this bin data belongs.
-   * @param binCounts  An array of integers representing the count of values in each bin.
+   * @param binCounts  An array of integers representing the count of values
+   *                   in each bin.
    */
-  private void addBinCountDataset(DefaultCategoryDataset dataset, double min, double binWidth,
-      int numBins, String seriesName, int[] binCounts) {
+  private void addBinCountDataset(DefaultCategoryDataset dataset, double min,
+                                  double binWidth,
+                                  int numBins, String seriesName,
+                                  int[] binCounts) {
     for (int bin = 0; bin < numBins; bin++) {
       double lowerBound = min + (bin * binWidth);
       double upperBound = lowerBound + binWidth;
       // Format the bin range as a label
       String binLabel = String.format("%.1f-%.1f ms", lowerBound, upperBound);
       dataset.addValue(binCounts[bin], seriesName,
-          binLabel); // Add the count of the bin to the dataset
+        binLabel); // Add the count of the bin to the dataset
     }
   }
 
@@ -383,17 +440,18 @@ public class GraphManager {
    * @param title   The title of the histogram chart.
    * @return A JFreeChart object representing the stacked histogram chart.
    */
-  private JFreeChart createStackedHistogramChart(CategoryDataset dataset, String title) {
+  private JFreeChart createStackedHistogramChart(CategoryDataset dataset,
+                                                 String title) {
     // Create the stacked bar chart with the dataset
     JFreeChart chart = ChartFactory.createStackedBarChart(
-        title,
-        "Category",
-        "Frequency",
-        dataset,
-        PlotOrientation.VERTICAL,
-        true,                  // include legend
-        true,                  // tooltips
-        false
+      title,
+      "Category",
+      "Frequency",
+      dataset,
+      PlotOrientation.VERTICAL,
+      true,                  // include legend
+      true,                  // tooltips
+      false
     );
     //chart should be rendered as a stacked bar chart, where
     // each category contains stacked bars representing different bins of data
@@ -404,7 +462,8 @@ public class GraphManager {
     for (int i = 0; i < dataset.getRowCount(); i++) {
       // generate colors based on the hue, saturation, and brightness.
       // Each series is assigned a different hue value based on its index.
-      Color color = Color.getHSBColor((float) i / dataset.getRowCount(), 0.85f, 0.85f);
+      Color color = Color.getHSBColor((float) i / dataset.getRowCount(),
+        0.85f, 0.85f);
       renderer.setSeriesPaint(i, color);
     }
 
@@ -422,16 +481,17 @@ public class GraphManager {
    * @param title   The title for the histogram chart.
    * @return A JFreeChart object representing the histogram.
    */
-  private JFreeChart createHistogramFromDataset(CategoryDataset dataset, String title) {
+  private JFreeChart createHistogramFromDataset(CategoryDataset dataset,
+                                                String title) {
     JFreeChart chart = ChartFactory.createStackedBarChart(
-        title,
-        "Time (ms)",
-        "Frequency",
-        dataset,
-        PlotOrientation.VERTICAL,
-        false,
-        true,
-        false
+      title,
+      "Time (ms)",
+      "Frequency",
+      dataset,
+      PlotOrientation.VERTICAL,
+      false,
+      true,
+      false
     );
     CategoryPlot plot = chart.getCategoryPlot();
     StackedBarRenderer renderer = new StackedBarRenderer();
@@ -461,30 +521,34 @@ public class GraphManager {
     double max = model.getMaxTimeData();
 
     return new BoxAndWhiskerItem(
-        mean,
-        median,
-        q1,
-        q3,
-        min,
-        max,
-        null, // Min outlier
-        null,     // Max outlier
-        null     // Outlier list
+      mean,
+      median,
+      q1,
+      q3,
+      min,
+      max,
+      null, // Min outlier
+      null,     // Max outlier
+      null     // Outlier list
     );
   }
 
   /**
-   * Prepares a dataset for a box plot corresponding to a specific key. This method aggregates
-   * statistical data such as mean, median, quartiles, and outliers for visualizing the distribution
+   * Prepares a dataset for a box plot corresponding to a specific key. This
+   * method aggregates
+   * statistical data such as mean, median, quartiles, and outliers for
+   * visualizing the distribution
    * of benchmarking results.
    *
    * @param keyIndex      Index of the key for which the dataset is prepared.
-   * @param resultsModels A list of ResultsModel objects containing benchmarking data.
+   * @param resultsModels A list of ResultsModel objects containing
+   *                      benchmarking data.
    * @return A dataset ready for generating a box plot.
    */
   private DefaultBoxAndWhiskerCategoryDataset prepareBoxPlotDatasetForKey(int keyIndex,
-      List<ResultsModel> resultsModels) {
-    DefaultBoxAndWhiskerCategoryDataset dataset = new DefaultBoxAndWhiskerCategoryDataset();
+                                                                          List<ResultsModel> resultsModels) {
+    DefaultBoxAndWhiskerCategoryDataset dataset =
+      new DefaultBoxAndWhiskerCategoryDataset();
     ResultsModel model = resultsModels.get(keyIndex);
 
     dataset.add(createBoxAndWhiskerItem(model), "Key " + keyIndex + 1, "");
@@ -492,20 +556,28 @@ public class GraphManager {
   }
 
   /**
-   * Prepares a dataset for box plots in comparison mode specifically for signature operations. It
-   * collects statistical data from multiple ResultsModel instances, offering a detailed insight
-   * into performance variations across different hash functions and key configurations.
+   * Prepares a dataset for box plots in comparison mode specifically for
+   * signature operations. It
+   * collects statistical data from multiple ResultsModel instances, offering
+   * a detailed insight
+   * into performance variations across different hash functions and key
+   * configurations.
    *
-   * @param keySizeIndex  Index of the key size for which the dataset is prepared.
-   * @param resultsModels A list of ResultsModel objects containing benchmarking data.
+   * @param keySizeIndex  Index of the key size for which the dataset is
+   *                      prepared.
+   * @param resultsModels A list of ResultsModel objects containing
+   *                      benchmarking data.
    * @return A dataset ready for generating a box plot in comparison mode.
    */
   private DefaultBoxAndWhiskerCategoryDataset prepareBoxPlotDatasetForComparisonModeSignatures(
-      int keySizeIndex, List<ResultsModel> resultsModels) {
-    DefaultBoxAndWhiskerCategoryDataset dataset = new DefaultBoxAndWhiskerCategoryDataset();
+    int keySizeIndex, List<ResultsModel> resultsModels) {
+    DefaultBoxAndWhiskerCategoryDataset dataset =
+      new DefaultBoxAndWhiskerCategoryDataset();
 
-    int startModelIndex = keySizeIndex * (resultsModels.size() / numKeySizesForComparisonMode);
-    int endModelIndex = (keySizeIndex + 1) * (resultsModels.size() / numKeySizesForComparisonMode);
+    int startModelIndex =
+      keySizeIndex * (resultsModels.size() / numKeySizesForComparisonMode);
+    int endModelIndex =
+      (keySizeIndex + 1) * (resultsModels.size() / numKeySizesForComparisonMode);
 
     for (int modelIndex = startModelIndex; modelIndex < endModelIndex; modelIndex++) {
       ResultsModel model = resultsModels.get(modelIndex);
@@ -514,7 +586,7 @@ public class GraphManager {
       String hashFunctionName = model.getHashFunctionName();
       String keyConfigString = model.getConfigString();
       String seriesName =
-          modelIndex + ". " + keyConfigString + " - " + hashFunctionName;
+        modelIndex + ". " + keyConfigString + " - " + hashFunctionName;
 
       dataset.add(createBoxAndWhiskerItem(model), seriesName, seriesName);
 
@@ -524,27 +596,35 @@ public class GraphManager {
   }
 
   /**
-   * Prepares a dataset for a box plot in comparison mode. This method aggregates the statistical
-   * data from multiple ResultsModel instances to create a dataset suitable for generating box
-   * plots. Each entry in the dataset represents the distribution of benchmarking results for a
+   * Prepares a dataset for a box plot in comparison mode. This method
+   * aggregates the statistical
+   * data from multiple ResultsModel instances to create a dataset suitable
+   * for generating box
+   * plots. Each entry in the dataset represents the distribution of
+   * benchmarking results for a
    * particular parameter type or key configuration in the comparison mode.
    *
-   * @param keyIndex The index of the key size for which the dataset is prepared.
-   * @return A box-and-whisker dataset representing the aggregated results for the specified key
+   * @param keyIndex The index of the key size for which the dataset is
+   *                 prepared.
+   * @return A box-and-whisker dataset representing the aggregated results
+   * for the specified key
    * size.
    */
   private DefaultBoxAndWhiskerCategoryDataset prepareBoxPlotDatasetForComparisonMode(
-      int keyIndex, List<ResultsModel> resultsModels, List<String> comparisonModeRowHeaders) {
-    DefaultBoxAndWhiskerCategoryDataset dataset = new DefaultBoxAndWhiskerCategoryDataset();
+    int keyIndex, List<ResultsModel> resultsModels,
+    List<String> comparisonModeRowHeaders) {
+    DefaultBoxAndWhiskerCategoryDataset dataset =
+      new DefaultBoxAndWhiskerCategoryDataset();
 
-    for (int i = keyIndex * (resultsModels.size() / numKeySizesForComparisonMode);
-        i < keyIndex * (resultsModels.size() / numKeySizesForComparisonMode)
-            + numRowsComparisonMode;
-        i++) {
+    for (int i =
+         keyIndex * (resultsModels.size() / numKeySizesForComparisonMode);
+         i < keyIndex * (resultsModels.size() / numKeySizesForComparisonMode)
+           + numRowsComparisonMode;
+         i++) {
 
       ResultsModel model = resultsModels.get(i);
       String seriesName = i + ". " +
-          comparisonModeRowHeaders.get(i % numRowsComparisonMode);
+        comparisonModeRowHeaders.get(i % numRowsComparisonMode);
 
       // Extract necessary statistics and add to dataset
       dataset.add(createBoxAndWhiskerItem(model), seriesName, seriesName);
@@ -554,26 +634,34 @@ public class GraphManager {
 
 
   /**
-   * Prepares datasets for displaying mean times in a line chart format, specifically for comparison
-   * mode. This method creates datasets that visually represent the average execution times and
-   * their variance for different results sets, facilitating comparison across various
+   * Prepares datasets for displaying mean times in a line chart format,
+   * specifically for comparison
+   * mode. This method creates datasets that visually represent the average
+   * execution times and
+   * their variance for different results sets, facilitating comparison
+   * across various
    * configurations.
    *
-   * @param keySizeIndex  The index of the key size for which the datasets are prepared.
-   * @param resultsModels A list of ResultsModel objects containing the data for each
+   * @param keySizeIndex  The index of the key size for which the datasets
+   *                      are prepared.
+   * @param resultsModels A list of ResultsModel objects containing the data
+   *                      for each
    *                      configuration.
-   * @return A Pair containing two datasets: one for mean times and one for error intervals.
+   * @return A Pair containing two datasets: one for mean times and one for
+   * error intervals.
    */
   private Pair<XYSeriesCollection, YIntervalSeriesCollection> prepareLineChartMeanDatasetForComparisonModeSignatures(
-      int keySizeIndex, List<ResultsModel> resultsModels) {
+    int keySizeIndex, List<ResultsModel> resultsModels) {
     XYSeriesCollection meanDataset = new XYSeriesCollection();
     YIntervalSeriesCollection errorDataset = new YIntervalSeriesCollection();
 
     XYSeries meanSeries = new XYSeries("Mean Times");
     YIntervalSeries errorSeries = new YIntervalSeries("Error Bars");
 
-    int startModelIndex = keySizeIndex * (resultsModels.size() / numKeySizesForComparisonMode);
-    int endModelIndex = (keySizeIndex + 1) * (resultsModels.size() / numKeySizesForComparisonMode);
+    int startModelIndex =
+      keySizeIndex * (resultsModels.size() / numKeySizesForComparisonMode);
+    int endModelIndex =
+      (keySizeIndex + 1) * (resultsModels.size() / numKeySizesForComparisonMode);
 
     // Iterate over each key within the key size range
     for (int modelIndex = startModelIndex; modelIndex < endModelIndex; modelIndex++) {
@@ -583,7 +671,8 @@ public class GraphManager {
       double stdDev = model.getStdDeviationData();
 
       // X-value for the series should be based on the group index
-      int xValue = (modelIndex % (resultsModels.size() / numKeySizesForComparisonMode));
+      int xValue =
+        (modelIndex % (resultsModels.size() / numKeySizesForComparisonMode));
 
       meanSeries.add(xValue, mean);
       errorSeries.add(xValue, mean, mean - stdDev, mean + stdDev);
@@ -597,27 +686,34 @@ public class GraphManager {
 
 
   /**
-   * Prepares datasets for the mean times line chart in comparison mode. This method aggregates data
-   * from multiple ResultsModel instances, creating a dataset suitable for generating line charts.
-   * The line chart displays the mean times of operations, aiding in comparing the performance of
+   * Prepares datasets for the mean times line chart in comparison mode. This
+   * method aggregates data
+   * from multiple ResultsModel instances, creating a dataset suitable for
+   * generating line charts.
+   * The line chart displays the mean times of operations, aiding in
+   * comparing the performance of
    * different parameter sets or key configurations in comparison mode.
    *
-   * @param keyIndex      Index of the key size for which the datasets are prepared.
-   * @param resultsModels List of ResultsModel objects containing benchmarking data.
+   * @param keyIndex      Index of the key size for which the datasets are
+   *                      prepared.
+   * @param resultsModels List of ResultsModel objects containing
+   *                      benchmarking data.
    * @return A pair of datasets: one for mean times and one for error intervals.
    */
   private Pair<XYSeriesCollection, YIntervalSeriesCollection> prepareLineChartMeanDatasetForComparisonMode(
-      int keyIndex, List<ResultsModel> resultsModels) {
+    int keyIndex, List<ResultsModel> resultsModels) {
     XYSeriesCollection meanDataset = new XYSeriesCollection();
     YIntervalSeriesCollection errorDataset = new YIntervalSeriesCollection();
 
     XYSeries meanSeries = new XYSeries("Mean Times");
-    YIntervalSeries errorSeries = new YIntervalSeries("Error Bars (Standard Deviation)");
+    YIntervalSeries errorSeries = new YIntervalSeries("Error Bars (Standard " +
+      "Deviation)");
 
-    for (int i = keyIndex * (resultsModels.size() / numKeySizesForComparisonMode);
-        i < keyIndex * (resultsModels.size() / numKeySizesForComparisonMode)
-            + numRowsComparisonMode;
-        i++) {
+    for (int i =
+         keyIndex * (resultsModels.size() / numKeySizesForComparisonMode);
+         i < keyIndex * (resultsModels.size() / numKeySizesForComparisonMode)
+           + numRowsComparisonMode;
+         i++) {
 
       ResultsModel model = resultsModels.get(i);
       double mean = model.getMeanData();
@@ -658,27 +754,31 @@ public class GraphManager {
   }
 
   /**
-   * Creates a line chart for displaying mean times in comparison mode, allowing visual comparison
+   * Creates a line chart for displaying mean times in comparison mode,
+   * allowing visual comparison
    * of performance across different cryptographic configurations.
    *
-   * @param meanDataset              The dataset containing mean times for each configuration.
-   * @param errorDataset             The dataset containing error intervals for each mean time.
+   * @param meanDataset              The dataset containing mean times for
+   *                                 each configuration.
+   * @param errorDataset             The dataset containing error intervals
+   *                                 for each mean time.
    * @param title                    The title of the line chart.
-   * @param comparisonModeRowHeaders Headers used for the rows in comparison mode.
+   * @param comparisonModeRowHeaders Headers used for the rows in comparison
+   *                                 mode.
    * @return A JFreeChart object representing the line chart.
    */
   private JFreeChart createLineChartMeanForComparisonMode(XYSeriesCollection meanDataset,
-      YIntervalSeriesCollection errorDataset, String title, List<String> comparisonModeRowHeaders) {
+                                                          YIntervalSeriesCollection errorDataset, String title, List<String> comparisonModeRowHeaders) {
 
     JFreeChart lineChart = ChartFactory.createXYLineChart(
-        title,
-        "Parameter Type",
-        "Mean Time (ms)",
-        meanDataset,
-        PlotOrientation.VERTICAL,
-        true,
-        true,
-        false
+      title,
+      "Parameter Type",
+      "Mean Time (ms)",
+      meanDataset,
+      PlotOrientation.VERTICAL,
+      true,
+      true,
+      false
     );
 
     XYPlot plot = lineChart.getXYPlot();
@@ -700,7 +800,8 @@ public class GraphManager {
 
 
   /**
-   * Creates a line chart for mean times, specific to signature operations in comparison mode.
+   * Creates a line chart for mean times, specific to signature operations in
+   * comparison mode.
    *
    * @param meanDataset  The dataset for mean times.
    * @param errorDataset The dataset for error intervals.
@@ -708,17 +809,17 @@ public class GraphManager {
    * @return A JFreeChart object representing the line chart.
    */
   private JFreeChart createLineChartMeanForComparisonModeSignatures(XYSeriesCollection meanDataset,
-      YIntervalSeriesCollection errorDataset, String title, List<ResultsModel> resultsModels) {
+                                                                    YIntervalSeriesCollection errorDataset, String title, List<ResultsModel> resultsModels) {
 
     JFreeChart lineChart = ChartFactory.createXYLineChart(
-        title,
-        "Parameter Type",
-        "Mean Time (ms)",
-        meanDataset,
-        PlotOrientation.VERTICAL,
-        true,
-        true,
-        false
+      title,
+      "Parameter Type",
+      "Mean Time (ms)",
+      meanDataset,
+      PlotOrientation.VERTICAL,
+      true,
+      true,
+      false
     );
 
     XYPlot plot = lineChart.getXYPlot();
@@ -726,12 +827,14 @@ public class GraphManager {
     configureLineChartMeanRenderers(plot);
 
     int modelsPerKeySize = resultsModels.size() / numKeySizesForComparisonMode;
-    String[] paramTypeLabels = new String[resultsModels.size() / numKeySizesForComparisonMode];
+    String[] paramTypeLabels =
+      new String[resultsModels.size() / numKeySizesForComparisonMode];
     for (int i = 0; i < modelsPerKeySize; i++) {
       ResultsModel model = resultsModels.get(i);
       String hashFunctionName = model.getHashFunctionName();
       String keyConfigString = model.getConfigString();
-      paramTypeLabels[i] = i + ". " + keyConfigString + " - " + hashFunctionName;
+      paramTypeLabels[i] =
+        i + ". " + keyConfigString + " - " + hashFunctionName;
     }
 
     SymbolAxis xAxis = new SymbolAxis("Parameter Type", paramTypeLabels);
@@ -745,29 +848,37 @@ public class GraphManager {
 
 
   /**
-   * Displays a histogram for a specific key size in comparison mode. This method generates a
-   * histogram chart containing results for multiple keys, facilitating comparative analysis.
+   * Displays a histogram for a specific key size in comparison mode. This
+   * method generates a
+   * histogram chart containing results for multiple keys, facilitating
+   * comparative analysis.
    *
-   * @param keyIndex                 Index of the key size for which the histogram is displayed.
+   * @param keyIndex                 Index of the key size for which the
+   *                                 histogram is displayed.
    * @param keyLength                The length of the cryptographic key.
-   * @param resultsModels            A list of ResultsModel objects containing benchmarking data.
+   * @param resultsModels            A list of ResultsModel objects
+   *                                 containing benchmarking data.
    * @param comparisonModeRowHeaders Headers for the rows in comparison mode.
-   * @param results                  A list of long values representing benchmarking results.
+   * @param results                  A list of long values representing
+   *                                 benchmarking results.
    * @return A ChartViewer containing the stacked histogram.
    */
   public ChartViewer displayStackedHistogram(int keyIndex, int keyLength,
-      List<ResultsModel> resultsModels, List<String> comparisonModeRowHeaders, List<Long> results) {
+                                             List<ResultsModel> resultsModels
+    , List<String> comparisonModeRowHeaders, List<Long> results) {
     CategoryDataset dataset;
     if (isSignatureOperationResults) {
-      dataset = createStackedHistogramDatasetSignatures(keyIndex, numKeySizesForComparisonMode,
-          resultsModels);
+      dataset = createStackedHistogramDatasetSignatures(keyIndex,
+        numKeySizesForComparisonMode,
+        resultsModels);
     } else {
-      dataset = createStackedHistogramDataset(keyIndex, comparisonModeRowHeaders, results,
-          resultsModels);
+      dataset = createStackedHistogramDataset(keyIndex,
+        comparisonModeRowHeaders, results,
+        resultsModels);
     }
     JFreeChart chart = createStackedHistogramChart(dataset,
-        "Stacked Histogram for " + "Key Size " + (keyIndex + 1) + " (" +
-            keyLength + "bit)");
+      "Stacked Histogram for " + "Key Size " + (keyIndex + 1) + " (" +
+        keyLength + "bit)");
     return new ChartViewer(chart);
   }
 
@@ -775,15 +886,17 @@ public class GraphManager {
    * Creates and displays a histogram for a specific key.
    *
    * @param keyIndex      Index of the key for which the histogram is displayed.
-   * @param keyLength     Length of the key for which the histogram is generated.
-   * @param resultsModels A list of ResultsModel objects containing benchmarking data.
+   * @param keyLength     Length of the key for which the histogram is
+   *                      generated.
+   * @param resultsModels A list of ResultsModel objects containing
+   *                      benchmarking data.
    * @return A ChartViewer containing the histogram.
    */
   public ChartViewer displayHistogramForKey(int keyIndex, int keyLength,
-      List<ResultsModel> resultsModels) {
+                                            List<ResultsModel> resultsModels) {
     CategoryDataset dataset = prepareHistogramForKey(keyIndex, resultsModels);
     JFreeChart chart = createHistogramFromDataset(dataset,
-        "Histogram for " + "Key " + (keyIndex + 1) + " (" + keyLength + "bit)");
+      "Histogram for " + "Key " + (keyIndex + 1) + " (" + keyLength + "bit)");
     return new ChartViewer(chart);
   }
 
@@ -796,9 +909,9 @@ public class GraphManager {
    * @return A ChartViewer containing the box plot.
    */
   private ChartViewer displayBoxPlot(DefaultBoxAndWhiskerCategoryDataset dataset, String title,
-      String categoryAxisLabel) {
+                                     String categoryAxisLabel) {
     JFreeChart boxplot = ChartFactory.createBoxAndWhiskerChart(
-        title, categoryAxisLabel, "Time (ms)", dataset, true);
+      title, categoryAxisLabel, "Time (ms)", dataset, true);
 
     return new ChartViewer(boxplot);
   }
@@ -808,22 +921,25 @@ public class GraphManager {
    *
    * @param keyIndex      Index of the key for which the box plot is prepared.
    * @param keyLength     Length of the key for which the box plot is generated.
-   * @param resultsModels A list of ResultsModel objects containing benchmarking data.
+   * @param resultsModels A list of ResultsModel objects containing
+   *                      benchmarking data.
    * @return A ChartViewer containing the box plot.
    */
   private ChartViewer displayBoxPlotForKey(int keyIndex, int keyLength,
-      List<ResultsModel> resultsModels) {
-    DefaultBoxAndWhiskerCategoryDataset dataset = prepareBoxPlotDatasetForKey(keyIndex,
-        resultsModels);
+                                           List<ResultsModel> resultsModels) {
+    DefaultBoxAndWhiskerCategoryDataset dataset =
+      prepareBoxPlotDatasetForKey(keyIndex,
+      resultsModels);
 
     // Create the chart
     JFreeChart chart = ChartFactory.createBoxAndWhiskerChart(
-        "Box plot for Key " + (keyIndex + 1) + " (" + keyLength + "bit)",    // Title
-        "Key " + (keyIndex + 1) + " (" + keyLength + "bit)",
-        // X-axis label
-        "Time (ms)",               // Y-axis label
-        dataset,               // Dataset
-        false                  // Not include legend
+      "Box plot for Key " + (keyIndex + 1) + " (" + keyLength + "bit)",    //
+      // Title
+      "Key " + (keyIndex + 1) + " (" + keyLength + "bit)",
+      // X-axis label
+      "Time (ms)",               // Y-axis label
+      dataset,               // Dataset
+      false                  // Not include legend
     );
 
     CategoryPlot plot = (CategoryPlot) chart.getPlot();
@@ -838,70 +954,89 @@ public class GraphManager {
 
 
   /**
-   * Displays a box plot for benchmarking results in comparison mode. This method generates a
-   * box-and-whisker plot that visually represents the distribution of results, such as median and
-   * quartiles, for each parameter set or key configuration. It's used to compare performance
+   * Displays a box plot for benchmarking results in comparison mode. This
+   * method generates a
+   * box-and-whisker plot that visually represents the distribution of
+   * results, such as median and
+   * quartiles, for each parameter set or key configuration. It's used to
+   * compare performance
    * metrics in a concise and informative way.
    *
-   * @param keyIndex                 Index of the key size for which the box plot is displayed.
-   * @param keyLength                Length of the key for which the box plot is generated.
-   * @param resultsModels            List of ResultsModel objects containing benchmarking data.
+   * @param keyIndex                 Index of the key size for which the box
+   *                                 plot is displayed.
+   * @param keyLength                Length of the key for which the box plot
+   *                                is generated.
+   * @param resultsModels            List of ResultsModel objects containing
+   *                                 benchmarking data.
    * @param comparisonModeRowHeaders Headers for rows in comparison mode.
    * @return A ChartViewer containing the generated box plot.
    */
 
-  private ChartViewer displayBoxPlotForComparisonMode(int keyIndex, int keyLength,
-      List<ResultsModel> resultsModels, List<String> comparisonModeRowHeaders) {
+  private ChartViewer displayBoxPlotForComparisonMode(int keyIndex,
+                                                      int keyLength,
+                                                      List<ResultsModel> resultsModels, List<String> comparisonModeRowHeaders) {
     DefaultBoxAndWhiskerCategoryDataset dataset;
     if (isSignatureOperationResults) {
-      dataset = prepareBoxPlotDatasetForComparisonModeSignatures(keyIndex, resultsModels);
+      dataset = prepareBoxPlotDatasetForComparisonModeSignatures(keyIndex,
+        resultsModels);
     } else {
       dataset = prepareBoxPlotDatasetForComparisonMode(keyIndex, resultsModels,
-          comparisonModeRowHeaders);
+        comparisonModeRowHeaders);
     }
     return displayBoxPlot(dataset,
-        "Box Plot for " + "Key Size " + (keyIndex + 1) + " (" + keyLength + "bit)",
-        "Parameter Type");
+      "Box Plot for " + "Key Size " + (keyIndex + 1) + " (" + keyLength +
+        "bit)",
+      "Parameter Type");
   }
 
 
   /**
-   * Displays a line graph for mean times in comparison mode. This method shows a line graph that
-   * represents the average performance across different parameter sets or key configurations. This
-   * visual representation is especially useful in comparison mode, where multiple configurations
+   * Displays a line graph for mean times in comparison mode. This method
+   * shows a line graph that
+   * represents the average performance across different parameter sets or
+   * key configurations. This
+   * visual representation is especially useful in comparison mode, where
+   * multiple configurations
    * are benchmarked against each other.
    *
-   * @param keyIndex                 Index of the key size for which the line graph is displayed.
+   * @param keyIndex                 Index of the key size for which the line
+   *                                graph is displayed.
    * @param keyLength                Length of the key used in the benchmarking.
-   * @param resultsModels            List of ResultsModel objects containing benchmarking data.
+   * @param resultsModels            List of ResultsModel objects containing
+   *                                 benchmarking data.
    * @param comparisonModeRowHeaders Headers for rows in comparison mode.
    * @return A ChartViewer containing the line graph.
    */
-  private ChartViewer displayLineGraphMeanForComparisonMode(int keyIndex, int keyLength,
-      List<ResultsModel> resultsModels, List<String> comparisonModeRowHeaders) {
+  private ChartViewer displayLineGraphMeanForComparisonMode(int keyIndex,
+                                                            int keyLength,
+                                                            List<ResultsModel> resultsModels, List<String> comparisonModeRowHeaders) {
     Pair<XYSeriesCollection, YIntervalSeriesCollection> datasets;
     if (isSignatureOperationResults) {
-      datasets = prepareLineChartMeanDatasetForComparisonModeSignatures(keyIndex, resultsModels);
+      datasets =
+        prepareLineChartMeanDatasetForComparisonModeSignatures(keyIndex,
+          resultsModels);
     } else {
-      datasets = prepareLineChartMeanDatasetForComparisonMode(keyIndex, resultsModels);
+      datasets = prepareLineChartMeanDatasetForComparisonMode(keyIndex,
+        resultsModels);
     }
 
     XYSeriesCollection meanDataset = datasets.getKey();
     YIntervalSeriesCollection errorDataset = datasets.getValue();
     return isSignatureOperationResults ? new ChartViewer(
-        createLineChartMeanForComparisonModeSignatures(meanDataset, errorDataset,
-            "Line Graph (Mean) for " + "Key Size " + (keyIndex + 1) + " (" + keyLength + "bit)"
-            , resultsModels))
-        : new ChartViewer(
-            createLineChartMeanForComparisonMode(meanDataset, errorDataset,
-                "Line Graph (Mean) for " + "Key Size " + (keyIndex + 1) + " (" + keyLength
-                    + "bit)", comparisonModeRowHeaders));
+      createLineChartMeanForComparisonModeSignatures(meanDataset, errorDataset,
+        "Line Graph (Mean) for " + "Key Size " + (keyIndex + 1) + " (" + keyLength + "bit)"
+        , resultsModels))
+      : new ChartViewer(
+      createLineChartMeanForComparisonMode(meanDataset, errorDataset,
+        "Line Graph (Mean) for " + "Key Size " + (keyIndex + 1) + " (" + keyLength
+          + "bit)", comparisonModeRowHeaders));
 
   }
 
 
   /**
-   * Observer for displaying a histogram view of results for the current key/key size.
+   * Observer for displaying a histogram view of results for the current
+   * key/key size.
    */
   class HistogramButtonObserver implements EventHandler<ActionEvent> {
 
@@ -922,7 +1057,8 @@ public class GraphManager {
 
 
   /**
-   * Observer for displaying a box plot graph view composed of relevant statistical averages from
+   * Observer for displaying a box plot graph view composed of relevant
+   * statistical averages from
    * the results for the current key/key size.
    */
   class BoxPlotButtonObserver implements EventHandler<ActionEvent> {
@@ -943,7 +1079,8 @@ public class GraphManager {
   }
 
   /**
-   * Observer for displaying a line graph view with mean times from the results for the current key
+   * Observer for displaying a line graph view with mean times from the
+   * results for the current key
    * size in comparison mode.
    */
   class LineGraphButtonMeanObserver implements EventHandler<ActionEvent> {
@@ -974,8 +1111,10 @@ public class GraphManager {
   }
 
   /**
-   * Displays the last selected graph type for the newly selected key size. This method triggers the
-   * display of the most recently viewed graph type, ensuring continuity in graph viewing when the
+   * Displays the last selected graph type for the newly selected key size.
+   * This method triggers the
+   * display of the most recently viewed graph type, ensuring continuity in
+   * graph viewing when the
    * key size changes.
    */
   public void displayLastSelectGraphForNewKeySize() {
@@ -983,8 +1122,10 @@ public class GraphManager {
   }
 
   /**
-   * Sets up observers for graph buttons common to both comparison and non-comparison mode. This
-   * method adds event handlers to the histogram and box plot buttons in the results view, enabling
+   * Sets up observers for graph buttons common to both comparison and
+   * non-comparison mode. This
+   * method adds event handlers to the histogram and box plot buttons in the
+   * results view, enabling
    * user interaction for graph switching.
    *
    * @param resultsView The results view that contains the graph buttons.
@@ -995,8 +1136,10 @@ public class GraphManager {
   }
 
   /**
-   * Sets up observers specifically for the graph buttons in comparison mode. This method extends
-   * the common graph observers setup by adding an observer for the line graph button, allowing
+   * Sets up observers specifically for the graph buttons in comparison mode.
+   * This method extends
+   * the common graph observers setup by adding an observer for the line
+   * graph button, allowing
    * users to switch to the line graph view in comparison mode.
    *
    * @param resultsView The results view that contains the graph buttons.
@@ -1008,12 +1151,16 @@ public class GraphManager {
 
 
   /**
-   * Sets the reference to the last selected graph button. This method is used to store the
-   * currently active graph button in the GraphManager. It allows the application to remember the
-   * user's last graph choice and maintain the active state of the corresponding button across
+   * Sets the reference to the last selected graph button. This method is
+   * used to store the
+   * currently active graph button in the GraphManager. It allows the
+   * application to remember the
+   * user's last graph choice and maintain the active state of the
+   * corresponding button across
    * different result sets and key sizes.
    *
-   * @param lastSelectedGraphButton The button that was last selected by the user.
+   * @param lastSelectedGraphButton The button that was last selected by the
+   *                                user.
    */
   public void setLastSelectedGraphButton(Button lastSelectedGraphButton) {
     this.lastSelectedGraphButton = lastSelectedGraphButton;

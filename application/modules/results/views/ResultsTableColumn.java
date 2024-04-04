@@ -1,7 +1,8 @@
 package uk.msci.project.rsa;
 
 /**
- * The {@code ResultsTableColumn} class represents a column in the results table.
+ * The {@code ResultsTableColumn} class represents a column in the results
+ * table.
  * It encapsulates the name of the column.
  */
 public class ResultsTableColumn {

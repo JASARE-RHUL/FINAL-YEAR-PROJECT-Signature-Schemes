@@ -54,7 +54,11 @@ public class SignatureVerificationControllerBenchmarking extends
    * count of signatures that will be verified during the benchmarking task.
    */
   int numSignatures;
-
+  /**
+   * The number of messages involved in the batch verification process.
+   * This field holds the total
+   * count of messages/trials that will be verified during the benchmarking task.
+   */
   int numTrials;
 
 
@@ -143,71 +147,73 @@ public class SignatureVerificationControllerBenchmarking extends
 
     private SignatureModelBenchmarking signatureModel;
 
-    public VerificationBenchmarkButtonObserver(
-      SignatureModelBenchmarking signatureModelBenchmarking) {
+    public VerificationBenchmarkButtonObserver(SignatureModelBenchmarking signatureModelBenchmarking) {
       this.signatureModel = signatureModelBenchmarking;
     }
 
+    // Event handler method for the benchmarking process.
     @Override
     public void handle(ActionEvent event) {
-
+      // Retrieves hash output size area from the view.
       hashOutputSize = verifyView.getHashOutputSizeArea();
 
-      if ((signatureModel.getNumTrials() == 0)
-        || signatureModel.getKeyBatchLength() == 0
-        || signatureModel.getSignatureType() == null || numSignatures == 0
-        || signatureModel.getHashType() == null) {
+      // Validation checks to ensure all required fields are populated.
+      if ((signatureModel.getNumTrials() == 0) || signatureModel.getKeyBatchLength() == 0 ||
+        signatureModel.getSignatureType() == null || numSignatures == 0 ||
+        signatureModel.getHashType() == null) {
         uk.msci.project.rsa.DisplayUtility.showErrorAlert(
           "You must provide an input for all fields. Please try again.");
         return;
       }
 
-      if ((signatureModel.getNumTrials() * signatureModel.getKeyBatchLength()
-        != numSignatures
-        && (!signatureModel.getRecoveryStatus())) || (
-        signatureModel.getRecoveryStatus()
-          && signatureModel.getNumTrials() != numSignatures)) {
+      // Check if the numbers of messages and signatures match
+      // This varies depending on whether it's a recovery scheme or not.
+      if ((signatureModel.getNumTrials() * signatureModel.getKeyBatchLength() != numSignatures &&
+        (!signatureModel.getRecoveryStatus())) ||
+        (signatureModel.getRecoveryStatus() && signatureModel.getNumTrials() != numSignatures)) {
         uk.msci.project.rsa.DisplayUtility.showErrorAlert(
           "The numbers of messages and signatures do not match. Please ensure" +
             " they match for a valid set of verification pairings.");
         return;
       }
 
-
+      // Sets hash size in the model based on user input.
       if (!setHashSizeInModelBenchmarking(verifyView, signatureModel)) {
         return;
       }
 
-
+      // Create a new BenchmarkingUtility instance for progress tracking.
       benchmarkingUtility = new BenchmarkingUtility();
       Task<Void> benchmarkingTask;
+
+      // Determine the type of task based on whether it's a recovery scheme.
       if (signatureModel.getRecoveryStatus()) {
+        // For recovery schemes, use a specific task that handles message recovery during verification.
         benchmarkingTask = new Task<Void>() {
           @Override
           protected Void call() throws Exception {
-            signatureModel.batchVerifySignaturesForRecovery(messageBatchFile,
-              signatureBatchFile,
+            // Batch verification for recovery schemes.
+            signatureModel.batchVerifySignaturesForRecovery(messageBatchFile, signatureBatchFile,
               progress -> Platform.runLater(() -> {
+                // Update progress in the UI.
                 benchmarkingUtility.updateProgress(progress);
-                benchmarkingUtility.updateProgressLabel(String.format("%.0f" +
-                  "%%", progress * 100));
+                benchmarkingUtility.updateProgressLabel(String.format("%.0f%%", progress * 100));
               }));
             return null;
           }
         };
       } else {
-        benchmarkingTask = createBenchmarkingTask(messageBatchFile,
-          signatureBatchFile, signatureModel);
+        // For non-recovery schemes, use the standard benchmarking task.
+        benchmarkingTask = createBenchmarkingTask(messageBatchFile, signatureBatchFile, signatureModel);
       }
-      // Show the progress dialog
-      BenchmarkingUtility.beginBenchmarkWithUtility(benchmarkingUtility,
-        "Signature Verification",
-        benchmarkingTask,
-        SignatureVerificationControllerBenchmarking.this::handleBenchmarkingCompletion,
+
+      // Display the progress dialog and begin the benchmarking process.
+      BenchmarkingUtility.beginBenchmarkWithUtility(benchmarkingUtility, "Signature Verification",
+        benchmarkingTask, SignatureVerificationControllerBenchmarking.this::handleBenchmarkingCompletion,
         mainController.getPrimaryStage());
     }
-
   }
+
 
 
   /**

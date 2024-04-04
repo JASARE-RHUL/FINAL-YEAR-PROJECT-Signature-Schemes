@@ -38,6 +38,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.testfx.util.NodeQueryUtils.hasText;
 import static uk.msci.project.tests.MainTestUtility.waitForExportDialogToShow;
 import static uk.msci.project.tests.PublicKeyTest.deleteFilesWithSuffix;
+
 import uk.msci.project.tests.MainTestUtility;
 import uk.msci.project.rsa.MainController;
 import uk.msci.project.rsa.SignView;
@@ -49,11 +50,15 @@ import uk.msci.project.rsa.BenchmarkingUtility;
 
 
 /**
- * This class provides automated UI tests for the signature generation feature in the Signature
- * Scheme benchmarking application. It employs the TestFX framework to simulate user interactions with the
- * signing view and ensures that all aspects of the UI are functioning as expected.
+ * This class provides automated UI tests for the signature generation
+ * feature in the Signature
+ * Scheme benchmarking application. It employs the TestFX framework to
+ * simulate user interactions with the
+ * signing view and ensures that all aspects of the UI are functioning as
+ * expected.
  *
- * <p>Each test method is designed to be independent, setting up the necessary preconditions and
+ * <p>Each test method is designed to be independent, setting up the
+ * necessary preconditions and
  * cleaning up afterward to avoid side effects that could affect other tests.
  *
  * @see Test
@@ -81,8 +86,10 @@ public class SignBenchmarkingFunctionalityTest extends ApplicationTest {
   }
 
   /**
-   * Prepares the application's UI for the sign view before each test. It deletes files with a
-   * specific suffix to ensure a clean state and navigates to the sign view by simulating a button
+   * Prepares the application's UI for the sign view before each test. It
+   * deletes files with a
+   * specific suffix to ensure a clean state and navigates to the sign view
+   * by simulating a button
    * click.
    */
   @BeforeEach
@@ -95,11 +102,16 @@ public class SignBenchmarkingFunctionalityTest extends ApplicationTest {
     robot.clickOn("#signDocumentButton");
     WaitForAsyncUtils.waitForFxEvents();
 
-    Field signViewField = SignatureCreationControllerBenchmarking.class.getDeclaredField("signView");
+    Field signViewField =
+      SignatureCreationControllerBenchmarking.class.getDeclaredField(
+        "signView");
     signViewField.setAccessible(true);
-    signViewVal = (SignView) signViewField.get(mainController.getSignatureCreationControllerBenchmarking());
+    signViewVal =
+      (SignView) signViewField.get(mainController.getSignatureCreationControllerBenchmarking());
 
-    Field signatureModelField = SignatureCreationControllerBenchmarking.class.getDeclaredField("signatureModel");
+    Field signatureModelField =
+      SignatureCreationControllerBenchmarking.class.getDeclaredField(
+        "signatureModel");
     signatureModelField.setAccessible(true);
     signatureModelVal = (SignatureModelBenchmarking)
       signatureModelField.get(mainController.getSignatureCreationControllerBenchmarking());
@@ -110,7 +122,8 @@ public class SignBenchmarkingFunctionalityTest extends ApplicationTest {
    * Creates an invalid message batch for testing purposes.
    *
    * @param filename The  name of the file.
-   * @param type     The type of invalid content (e.g., "Incorrect number of messages", "Contains empty lines after non-empty lines").
+   * @param type     The type of invalid content (e.g., "Incorrect number of
+   *                 messages", "Contains empty lines after non-empty lines").
    * @return The created file.
    * @throws IOException If an I/O error occurs.
    */
@@ -134,7 +147,8 @@ public class SignBenchmarkingFunctionalityTest extends ApplicationTest {
           writer.newLine(); // Add an empty line to simulate improper formatting
           break;
         case "Contains empty lines in the middle":
-          // Write some valid messages, then an empty line, and then more valid messages
+          // Write some valid messages, then an empty line, and then more
+          // valid messages
           for (int i = 0; i < 3; i++) {
             writer.write("Message " + i);
             writer.newLine();
@@ -216,10 +230,11 @@ public class SignBenchmarkingFunctionalityTest extends ApplicationTest {
 
 
   /**
-   * Ensures that the application properly notifies the user when the provided private key batch is
+   * Ensures that the application properly notifies the user when the
+   * provided private key batch is
    * corrupted or otherwise unreadable.
    *
-   * @throws IOException            if there is an issue handling the key files.
+   * @throws IOException if there is an issue handling the key files.
    */
   @Test
   void shouldHandleErrorWhenCorruptedKeyBatch() throws IOException {
@@ -244,9 +259,11 @@ public class SignBenchmarkingFunctionalityTest extends ApplicationTest {
   }
 
   /**
-   * Provides sets of valid key parameters for use in parameterised tests of key batch import.
+   * Provides sets of valid key parameters for use in parameterised tests of
+   * key batch import.
    *
-   * @return A stream of arguments, each representing a set of key parameters and an associated boolean flag.
+   * @return A stream of arguments, each representing a set of key parameters
+   * and an associated boolean flag.
    */
   private static Stream<Arguments> validKeyParams() {
     List<Pair<int[], Boolean>> keyParams1 = new ArrayList<>();
@@ -266,10 +283,13 @@ public class SignBenchmarkingFunctionalityTest extends ApplicationTest {
 
 
   /**
-   * Handles the import of a valid key batch. It checks if the UI components update correctly
-   * upon a successful import and also tests the UI response when the import is cancelled.
+   * Handles the import of a valid key batch. It checks if the UI components
+   * update correctly
+   * upon a successful import and also tests the UI response when the import
+   * is cancelled.
    *
-   * @param keyParams The key parameters to use for generating and importing the key batch.
+   * @param keyParams The key parameters to use for generating and importing
+   *                  the key batch.
    * @throws IOException if an I/O error occurs during file handling.
    */
   @ParameterizedTest
@@ -284,7 +304,8 @@ public class SignBenchmarkingFunctionalityTest extends ApplicationTest {
       progress -> Platform.runLater(() -> {
         try {
           benchmarkingUtility.updateProgress(progress);
-          benchmarkingUtility.updateProgressLabel(String.format("%.0f%%", progress * 100));
+          benchmarkingUtility.updateProgressLabel(String.format("%.0f%%",
+            progress * 100));
         } catch (NullPointerException e) {
         }
       }));
@@ -336,16 +357,21 @@ public class SignBenchmarkingFunctionalityTest extends ApplicationTest {
   }
 
   /**
-   * Provides parameters for generating invalid message batches to simulate various error conditions.
+   * Provides parameters for generating invalid message batches to simulate
+   * various error conditions.
    *
-   * @return A stream of arguments where each argument consists of a file with an invalid message batch
+   * @return A stream of arguments where each argument consists of a file
+   * with an invalid message batch
    * and the expected number of messages that should have been in the batch.
    * @throws IOException if an error occurs while creating the test files.
    */
   private static Stream<Arguments> invalidMessageBatchParams() throws IOException {
-    File wrongMessageCountFile = createInvalidMessageBatch("wrongMessageCount.txt", "Incorrect number of messages");
-    File improperlyFormattedFile = createInvalidMessageBatch("improperlyFormatted,txt", "Contains empty lines after non-empty lines");
-    File emptyLinesInMiddleFile = createInvalidMessageBatch("emptyLinesInMiddle.txt", "Contains empty lines in the middle");
+    File wrongMessageCountFile = createInvalidMessageBatch("wrongMessageCount" +
+      ".txt", "Incorrect number of messages");
+    File improperlyFormattedFile = createInvalidMessageBatch(
+      "improperlyFormatted,txt", "Contains empty lines after non-empty lines");
+    File emptyLinesInMiddleFile = createInvalidMessageBatch(
+      "emptyLinesInMiddle.txt", "Contains empty lines in the middle");
 
     // Assuming the expected number of messages is 5 for demonstration
     return Stream.of(
@@ -357,7 +383,8 @@ public class SignBenchmarkingFunctionalityTest extends ApplicationTest {
 
   @ParameterizedTest
   @MethodSource("invalidMessageBatchParams")
-  void shouldHandleInvalidMessageBatchImport(File invalidFile, int expectedNumMessages) throws Exception {
+  void shouldHandleInvalidMessageBatchImport(File invalidFile,
+                                             int expectedNumMessages) throws Exception {
     // Simulate setting the number of messages in the UI
     robot.clickOn("#numMessageField");
     robot.write(String.valueOf(expectedNumMessages));
@@ -380,15 +407,19 @@ public class SignBenchmarkingFunctionalityTest extends ApplicationTest {
   }
 
   /**
-   * Provides parameters for generating valid message batches to test the normal functioning of message batch imports.
+   * Provides parameters for generating valid message batches to test the
+   * normal functioning of message batch imports.
    *
-   * @return A stream of arguments where each argument consists of a file with a valid message batch
-   *         and the number of messages contained in that batch.
+   * @return A stream of arguments where each argument consists of a file
+   * with a valid message batch
+   * and the number of messages contained in that batch.
    * @throws IOException if an error occurs while creating the test files.
    */
   private static Stream<Arguments> validMessageBatchParams() throws IOException {
-    File validMessageBatchFile = createValidMessageBatch("validMessageBatch.txt", 5);
-    int expectedNumMessages = 5; // This should match the number of messages in your valid batch
+    File validMessageBatchFile = createValidMessageBatch("validMessageBatch" +
+      ".txt", 5);
+    int expectedNumMessages = 5; // This should match the number of messages
+    // in your valid batch
 
     return Stream.of(
       Arguments.of(validMessageBatchFile, expectedNumMessages)
@@ -397,16 +428,19 @@ public class SignBenchmarkingFunctionalityTest extends ApplicationTest {
 
 
   /**
-   * Handles the import of a valid message batch. It verifies the correct update of UI components
+   * Handles the import of a valid message batch. It verifies the correct
+   * update of UI components
    * and functionality of cancel buttons when a valid message batch is imported.
    *
-   * @param validFile The file containing the valid message batch.
-   * @param expectedNumMessages The expected number of messages that are contained in the batch.
+   * @param validFile           The file containing the valid message batch.
+   * @param expectedNumMessages The expected number of messages that are
+   *                            contained in the batch.
    * @throws Exception if an error occurs during the test execution.
    */
   @ParameterizedTest
   @MethodSource("validMessageBatchParams")
-  void shouldHandleValidMessageBatchImport(File validFile, int expectedNumMessages) throws Exception {
+  void shouldHandleValidMessageBatchImport(File validFile,
+                                           int expectedNumMessages) throws Exception {
 
     // Simulate setting the number of messages in the UI
     robot.clickOn("#numMessageField");
@@ -448,8 +482,10 @@ public class SignBenchmarkingFunctionalityTest extends ApplicationTest {
   }
 
   /**
-   * Verifies the options available in the hash function dropdown based on the selected parameter.
-   * This test checks if the correct hash function options are displayed when "Standard",
+   * Verifies the options available in the hash function dropdown based on
+   * the selected parameter.
+   * This test checks if the correct hash function options are displayed when
+   * "Standard",
    * "Provably Secure", and "Custom" radio buttons are selected.
    */
   @Test
@@ -460,11 +496,13 @@ public class SignBenchmarkingFunctionalityTest extends ApplicationTest {
 
     // Click on the "Provably Secure" radio button and check options
     robot.clickOn("#provablySecureParametersRadio");
-    verifyComboBoxItems("#hashFunctionDropdown", "SHA-256 with MGF1", "SHA-512 with MGF1", "SHAKE-128", "SHAKE-256");
+    verifyComboBoxItems("#hashFunctionDropdown", "SHA-256 with MGF1", "SHA" +
+      "-512 with MGF1", "SHAKE-128", "SHAKE-256");
 
     // Click on the "Custom" radio button and check options
     robot.clickOn("#customParametersRadio");
-    verifyComboBoxItems("#hashFunctionDropdown", "SHA-256 with MGF1", "SHA-512 with MGF1", "SHAKE-128", "SHAKE-256");
+    verifyComboBoxItems("#hashFunctionDropdown", "SHA-256 with MGF1", "SHA" +
+      "-512 with MGF1", "SHAKE-128", "SHAKE-256");
   }
 
   /**
@@ -476,13 +514,16 @@ public class SignBenchmarkingFunctionalityTest extends ApplicationTest {
   private void verifyComboBoxItems(String comboBoxQuery, String... items) {
     ComboBox<String> comboBox = lookup(comboBoxQuery).queryComboBox();
     for (String item : items) {
-      assertTrue(comboBox.getItems().contains(item), "ComboBox should contain: " + item);
+      assertTrue(comboBox.getItems().contains(item), "ComboBox should " +
+        "contain: " + item);
     }
   }
 
   /**
-   * Tests the visibility of the hash output size field based on the selected hash function.
-   * The field should be visible for provably secure and custom hash functions and hidden otherwise.
+   * Tests the visibility of the hash output size field based on the selected
+   * hash function.
+   * The field should be visible for provably secure and custom hash
+   * functions and hidden otherwise.
    */
   @Test
   void testHashOutputSizeFieldVisibility() {
@@ -493,18 +534,22 @@ public class SignBenchmarkingFunctionalityTest extends ApplicationTest {
   }
 
   /**
-   * Selects a hash function in the dropdown and checks the visibility of the hash output size field.
+   * Selects a hash function in the dropdown and checks the visibility of the
+   * hash output size field.
    *
    * @param hashFunction       The hash function to be selected.
-   * @param expectedVisibility Expected visibility of the hash output size field.
+   * @param expectedVisibility Expected visibility of the hash output size
+   *                           field.
    */
-  private void selectHashFunctionAndCheckVisibility(String hashFunction, boolean expectedVisibility) {
+  private void selectHashFunctionAndCheckVisibility(String hashFunction,
+                                                    boolean expectedVisibility) {
     // Select the hash function from the dropdown
     Platform.runLater(() -> {
       robot.clickOn("#customParametersRadio");
     });
     WaitForAsyncUtils.waitForFxEvents();
-    ComboBox<String> hashFunctionDropdown = lookup("#hashFunctionDropdown").queryComboBox();
+    ComboBox<String> hashFunctionDropdown =
+      lookup("#hashFunctionDropdown").queryComboBox();
 
     Platform.runLater(() -> {
       robot.clickOn(hashFunctionDropdown);
@@ -517,16 +562,20 @@ public class SignBenchmarkingFunctionalityTest extends ApplicationTest {
     WaitForAsyncUtils.waitForFxEvents();
 
     // Cast the result of the query to TextArea
-    TextArea hashOutputSizeField = (TextArea) lookup("#hashOutputSizeField").query();
+    TextArea hashOutputSizeField =
+      (TextArea) lookup("#hashOutputSizeField").query();
     if (expectedVisibility) {
-      assertTrue(hashOutputSizeField.isVisible(), "HashOutputSizeField should be visible for " + hashFunction);
+      assertTrue(hashOutputSizeField.isVisible(), "HashOutputSizeField should" +
+        " be visible for " + hashFunction);
     } else {
-      assertFalse(hashOutputSizeField.isVisible(), "HashOutputSizeField should not be visible for " + hashFunction);
+      assertFalse(hashOutputSizeField.isVisible(), "HashOutputSizeField " +
+        "should not be visible for " + hashFunction);
     }
   }
 
   /**
-   * Tests the application's behavior when attempting to enable comparison benchmarking which
+   * Tests the application's behavior when attempting to enable comparison
+   * benchmarking which
    * is not permitted to be enabled in normal benchmarking mode.
    */
   @Test
@@ -550,7 +599,8 @@ public class SignBenchmarkingFunctionalityTest extends ApplicationTest {
   }
 
   /**
-   * Tests the application's response when attempting to sign text without providing a key batch.
+   * Tests the application's response when attempting to sign text without
+   * providing a key batch.
    *
    * @throws IOException if there is an issue handling the message batch file.
    */
@@ -565,7 +615,8 @@ public class SignBenchmarkingFunctionalityTest extends ApplicationTest {
     Platform.runLater(() -> {
       try {
         mainController.getSignatureCreationControllerBenchmarking()
-          .handleMessageBatch(createValidMessageBatch("validMessageBatch.txt", 5),
+          .handleMessageBatch(createValidMessageBatch("validMessageBatch.txt"
+              , 5),
             signViewVal,
             signatureModelVal);
       } catch (IOException e) {
@@ -575,11 +626,13 @@ public class SignBenchmarkingFunctionalityTest extends ApplicationTest {
     WaitForAsyncUtils.waitForFxEvents();
 
 
-    ComboBox<String> signatureSchemeDropdown = robot.lookup("#signatureSchemeDropdown")
+    ComboBox<String> signatureSchemeDropdown = robot.lookup(
+      "#signatureSchemeDropdown")
       .queryAs(ComboBox.class);
     robot.clickOn(signatureSchemeDropdown);
     robot.clickOn("PKCS#1 v1.5");
-    ComboBox<String> hashFunctionDropdown = lookup("#hashFunctionDropdown").queryComboBox();
+    ComboBox<String> hashFunctionDropdown =
+      lookup("#hashFunctionDropdown").queryComboBox();
     robot.clickOn(hashFunctionDropdown);
     robot.clickOn("SHA-256");
     robot.scroll(10, VerticalDirection.UP);
@@ -592,10 +645,13 @@ public class SignBenchmarkingFunctionalityTest extends ApplicationTest {
   }
 
   /**
-   * Handles errors when no message batch is provided for the signature creation process.
-   * This test ensures that the application properly notifies the user of the missing message batch.
+   * Handles errors when no message batch is provided for the signature
+   * creation process.
+   * This test ensures that the application properly notifies the user of the
+   * missing message batch.
    *
-   * @throws IOException if there is an issue with file handling during the test.
+   * @throws IOException if there is an issue with file handling during the
+   * test.
    */
   @Test
   void shouldHandleErrorWhenNoMessageBatchProvided() throws IOException {
@@ -616,7 +672,8 @@ public class SignBenchmarkingFunctionalityTest extends ApplicationTest {
       progress -> Platform.runLater(() -> {
         try {
           benchmarkingUtility.updateProgress(progress);
-          benchmarkingUtility.updateProgressLabel(String.format("%.0f%%", progress * 100));
+          benchmarkingUtility.updateProgressLabel(String.format("%.0f%%",
+            progress * 100));
         } catch (NullPointerException e) {
         }
       }));
@@ -637,11 +694,13 @@ public class SignBenchmarkingFunctionalityTest extends ApplicationTest {
     WaitForAsyncUtils.waitForFxEvents();
 
 
-    ComboBox<String> signatureSchemeDropdown = robot.lookup("#signatureSchemeDropdown")
+    ComboBox<String> signatureSchemeDropdown = robot.lookup(
+      "#signatureSchemeDropdown")
       .queryAs(ComboBox.class);
     robot.clickOn(signatureSchemeDropdown);
     robot.clickOn("PKCS#1 v1.5");
-    ComboBox<String> hashFunctionDropdown = lookup("#hashFunctionDropdown").queryComboBox();
+    ComboBox<String> hashFunctionDropdown =
+      lookup("#hashFunctionDropdown").queryComboBox();
     robot.clickOn(hashFunctionDropdown);
     robot.clickOn("SHA-256");
     robot.scroll(10, VerticalDirection.UP);
@@ -655,9 +714,11 @@ public class SignBenchmarkingFunctionalityTest extends ApplicationTest {
 
   /**
    * Handles errors when no signature scheme is selected.
-   * This test checks the application's response to the absence of a selected signature scheme.
+   * This test checks the application's response to the absence of a selected
+   * signature scheme.
    *
-   * @throws IOException if there is an issue with file handling during the test.
+   * @throws IOException if there is an issue with file handling during the
+   * test.
    */
   @Test
   void shouldHandleErrorWhenNoSchemeSelected() throws IOException {
@@ -670,7 +731,8 @@ public class SignBenchmarkingFunctionalityTest extends ApplicationTest {
     Platform.runLater(() -> {
       try {
         mainController.getSignatureCreationControllerBenchmarking()
-          .handleMessageBatch(createValidMessageBatch("validMessageBatch.txt", 5),
+          .handleMessageBatch(createValidMessageBatch("validMessageBatch.txt"
+              , 5),
             signViewVal,
             signatureModelVal);
       } catch (IOException e) {
@@ -689,7 +751,8 @@ public class SignBenchmarkingFunctionalityTest extends ApplicationTest {
       progress -> Platform.runLater(() -> {
         try {
           benchmarkingUtility.updateProgress(progress);
-          benchmarkingUtility.updateProgressLabel(String.format("%.0f%%", progress * 100));
+          benchmarkingUtility.updateProgressLabel(String.format("%.0f%%",
+            progress * 100));
         } catch (NullPointerException e) {
         }
       }));
@@ -709,7 +772,8 @@ public class SignBenchmarkingFunctionalityTest extends ApplicationTest {
 
     WaitForAsyncUtils.waitForFxEvents();
 
-    ComboBox<String> hashFunctionDropdown = lookup("#hashFunctionDropdown").queryComboBox();
+    ComboBox<String> hashFunctionDropdown =
+      lookup("#hashFunctionDropdown").queryComboBox();
     robot.clickOn(hashFunctionDropdown);
     robot.clickOn("SHA-256");
     robot.scroll(10, VerticalDirection.UP);
@@ -723,9 +787,11 @@ public class SignBenchmarkingFunctionalityTest extends ApplicationTest {
 
   /**
    * Handles errors when no hash function is provided.
-   * This test ensures the application displays an appropriate error message when a hash function is not selected.
+   * This test ensures the application displays an appropriate error message
+   * when a hash function is not selected.
    *
-   * @throws IOException if there is an issue with file handling during the test.
+   * @throws IOException if there is an issue with file handling during the
+   * test.
    */
   @Test
   void shouldHandleErrorWhenNoHashFunctionProvided() throws IOException {
@@ -738,7 +804,8 @@ public class SignBenchmarkingFunctionalityTest extends ApplicationTest {
     Platform.runLater(() -> {
       try {
         mainController.getSignatureCreationControllerBenchmarking()
-          .handleMessageBatch(createValidMessageBatch("validMessageBatch.txt", 5),
+          .handleMessageBatch(createValidMessageBatch("validMessageBatch.txt"
+              , 5),
             signViewVal,
             signatureModelVal);
       } catch (IOException e) {
@@ -757,7 +824,8 @@ public class SignBenchmarkingFunctionalityTest extends ApplicationTest {
       progress -> Platform.runLater(() -> {
         try {
           benchmarkingUtility.updateProgress(progress);
-          benchmarkingUtility.updateProgressLabel(String.format("%.0f%%", progress * 100));
+          benchmarkingUtility.updateProgressLabel(String.format("%.0f%%",
+            progress * 100));
         } catch (NullPointerException e) {
         }
       }));
@@ -778,7 +846,8 @@ public class SignBenchmarkingFunctionalityTest extends ApplicationTest {
     WaitForAsyncUtils.waitForFxEvents();
 
 
-    ComboBox<String> signatureSchemeDropdown = robot.lookup("#signatureSchemeDropdown")
+    ComboBox<String> signatureSchemeDropdown = robot.lookup(
+      "#signatureSchemeDropdown")
       .queryAs(ComboBox.class);
     robot.clickOn(signatureSchemeDropdown);
     robot.clickOn("PKCS#1 v1.5");
@@ -793,10 +862,13 @@ public class SignBenchmarkingFunctionalityTest extends ApplicationTest {
   }
 
   /**
-   * Handles errors when no custom hash output size is provided when the custom hash function size is selected.
-   * The test checks the application's response to the absence of a specified hash output size.
+   * Handles errors when no custom hash output size is provided when the
+   * custom hash function size is selected.
+   * The test checks the application's response to the absence of a specified
+   * hash output size.
    *
-   * @throws IOException if there is an issue with file handling during the test.
+   * @throws IOException if there is an issue with file handling during the
+   * test.
    */
   @Test
   void shouldHandleErrorWhenNoCustomHashOutputIsProvided() throws IOException {
@@ -816,7 +888,8 @@ public class SignBenchmarkingFunctionalityTest extends ApplicationTest {
     Platform.runLater(() -> {
       try {
         mainController.getSignatureCreationControllerBenchmarking()
-          .handleMessageBatch(createValidMessageBatch("validMessageBatch.txt", 5),
+          .handleMessageBatch(createValidMessageBatch("validMessageBatch.txt"
+              , 5),
             signViewVal,
             signatureModelVal);
       } catch (IOException e) {
@@ -835,7 +908,8 @@ public class SignBenchmarkingFunctionalityTest extends ApplicationTest {
       progress -> Platform.runLater(() -> {
         try {
           benchmarkingUtility.updateProgress(progress);
-          benchmarkingUtility.updateProgressLabel(String.format("%.0f%%", progress * 100));
+          benchmarkingUtility.updateProgressLabel(String.format("%.0f%%",
+            progress * 100));
         } catch (NullPointerException e) {
         }
       }));
@@ -856,12 +930,14 @@ public class SignBenchmarkingFunctionalityTest extends ApplicationTest {
     WaitForAsyncUtils.waitForFxEvents();
 
 
-    ComboBox<String> signatureSchemeDropdown = robot.lookup("#signatureSchemeDropdown")
+    ComboBox<String> signatureSchemeDropdown = robot.lookup(
+      "#signatureSchemeDropdown")
       .queryAs(ComboBox.class);
     robot.clickOn(signatureSchemeDropdown);
     robot.clickOn("PKCS#1 v1.5");
     robot.scroll(10, VerticalDirection.UP);
-    ComboBox<String> hashFunctionDropdown = lookup("#hashFunctionDropdown").queryComboBox();
+    ComboBox<String> hashFunctionDropdown =
+      lookup("#hashFunctionDropdown").queryComboBox();
     Platform.runLater(() -> {
       robot.clickOn("#customParametersRadio");
     });
@@ -880,7 +956,8 @@ public class SignBenchmarkingFunctionalityTest extends ApplicationTest {
       WaitForAsyncUtils.waitForFxEvents();
 
       Platform.runLater(() -> {
-        // Attempting to perform the operation without providing the custom output size
+        // Attempting to perform the operation without providing the custom
+        // output size
         robot.clickOn("#SigBenchmarkButton");
       });
       WaitForAsyncUtils.waitForFxEvents();
@@ -902,13 +979,17 @@ public class SignBenchmarkingFunctionalityTest extends ApplicationTest {
 
   /**
    * Displays benchmarking results for valid input scenarios.
-   * This test ensures that the application correctly processes and displays the results of the benchmarking process.
+   * This test ensures that the application correctly processes and displays
+   * the results of the benchmarking process.
    *
-   * @throws IOException      if there is an issue with file handling during the test.
-   * @throws TimeoutException if the test takes longer than the maximum allowable time.
+   * @throws IOException      if there is an issue with file handling during
+   * the test.
+   * @throws TimeoutException if the test takes longer than the maximum
+   * allowable time.
    */
   @Test
-  void shouldDisplayResultsOnValidInputs() throws IOException, TimeoutException {
+  void shouldDisplayResultsOnValidInputs() throws IOException,
+    TimeoutException {
     // Simulate setting the number of messages in the UI
     robot.clickOn("#numMessageField");
     robot.write(String.valueOf(5));
@@ -918,7 +999,8 @@ public class SignBenchmarkingFunctionalityTest extends ApplicationTest {
     Platform.runLater(() -> {
       try {
         mainController.getSignatureCreationControllerBenchmarking()
-          .handleMessageBatch(createValidMessageBatch("validMessageBatch.txt", 5),
+          .handleMessageBatch(createValidMessageBatch("validMessageBatch.txt"
+              , 5),
             signViewVal,
             signatureModelVal);
       } catch (IOException e) {
@@ -939,7 +1021,8 @@ public class SignBenchmarkingFunctionalityTest extends ApplicationTest {
       progress -> Platform.runLater(() -> {
         try {
           benchmarkingUtility.updateProgress(progress);
-          benchmarkingUtility.updateProgressLabel(String.format("%.0f%%", progress * 100));
+          benchmarkingUtility.updateProgressLabel(String.format("%.0f%%",
+            progress * 100));
         } catch (NullPointerException e) {
         }
       }));
@@ -960,11 +1043,13 @@ public class SignBenchmarkingFunctionalityTest extends ApplicationTest {
     WaitForAsyncUtils.waitForFxEvents();
 
 
-    ComboBox<String> signatureSchemeDropdown = robot.lookup("#signatureSchemeDropdown")
+    ComboBox<String> signatureSchemeDropdown = robot.lookup(
+      "#signatureSchemeDropdown")
       .queryAs(ComboBox.class);
     robot.clickOn(signatureSchemeDropdown);
     robot.clickOn("PKCS#1 v1.5");
-    ComboBox<String> hashFunctionDropdown = lookup("#hashFunctionDropdown").queryComboBox();
+    ComboBox<String> hashFunctionDropdown =
+      lookup("#hashFunctionDropdown").queryComboBox();
     robot.clickOn(hashFunctionDropdown);
     robot.clickOn("SHA-256");
     robot.scroll(10, VerticalDirection.UP);
@@ -975,22 +1060,29 @@ public class SignBenchmarkingFunctionalityTest extends ApplicationTest {
     WaitForAsyncUtils.waitForFxEvents();
 
 
-    ProgressBar progressBar = robot.lookup("#progressBar").queryAs(ProgressBar.class);
+    ProgressBar progressBar =
+      robot.lookup("#progressBar").queryAs(ProgressBar.class);
     WaitForAsyncUtils.waitForFxEvents();
-    WaitForAsyncUtils.waitFor(1, TimeUnit.SECONDS, () -> progressBar.getProgress() >= 1);
+    WaitForAsyncUtils.waitFor(1, TimeUnit.SECONDS,
+      () -> progressBar.getProgress() >= 1);
 
 
     // Check that the results title label is displayed and correct
     Platform.runLater(() -> {
-      Label resultsTitleLabel = robot.lookup("#resultsLabel").queryAs(Label.class);
-      assertEquals("Benchmarking Results for Signature Creation (PKCS#1 v1.5 Signature Scheme-SHA-256)", resultsTitleLabel.getText());
+      Label resultsTitleLabel =
+        robot.lookup("#resultsLabel").queryAs(Label.class);
+      assertEquals("Benchmarking Results for Signature Creation (PKCS#1 v1.5 " +
+        "Signature Scheme-SHA-256)", resultsTitleLabel.getText());
     });
     WaitForAsyncUtils.waitForFxEvents();
     // Verify that the JFXTabPane exists
-    JFXTabPane sideTabContainer = robot.lookup("#sideTabContainer").queryAs(JFXTabPane.class);
-    assertNotNull(sideTabContainer, "The side tab container should be present.");
+    JFXTabPane sideTabContainer =
+      robot.lookup("#sideTabContainer").queryAs(JFXTabPane.class);
+    assertNotNull(sideTabContainer, "The side tab container should be present" +
+      ".");
 
-    assertEquals(totalKeys, sideTabContainer.getTabs().size(), "There should be tabs equal to the total number of keys.");
+    assertEquals(totalKeys, sideTabContainer.getTabs().size(), "There should " +
+      "be tabs equal to the total number of keys.");
     robot.scroll(10, VerticalDirection.UP);
 
     for (int i = 0; i < totalKeys; i++) {
@@ -1005,15 +1097,18 @@ public class SignBenchmarkingFunctionalityTest extends ApplicationTest {
 
       // Check the VBox has two children: ImageView and Label
       List<Node> vboxChildren = graphicBox.getChildren();
-      assertEquals(2, vboxChildren.size(), "The graphic box should have an image and a label.");
+      assertEquals(2, vboxChildren.size(), "The graphic box should have an " +
+        "image and a label.");
 
       // Check for Label and its text
       Label keyLabel = (Label) vboxChildren.get(1);
-      assertEquals("Key " + (i + 1) + " (" + keyLengths[i] + "bit)", keyLabel.getText(),
+      assertEquals("Key " + (i + 1) + " (" + keyLengths[i] + "bit)",
+        keyLabel.getText(),
         "The label should have the correct text.");
 
 
-      Button exportBenchmarkingResultsBtn = robot.lookup("#exportBenchmarkingResultsBtn").queryAs(Button.class);
+      Button exportBenchmarkingResultsBtn = robot.lookup(
+        "#exportBenchmarkingResultsBtn").queryAs(Button.class);
 
 
       robot.clickOn(exportBenchmarkingResultsBtn);
@@ -1026,23 +1121,30 @@ public class SignBenchmarkingFunctionalityTest extends ApplicationTest {
 
 
       Optional<File> benchmarkingResultsFile = MainTestUtility.getFile(
-        "Benchmarking Results for Signature Creation (PKCS#1 v1.5 Signature Scheme)_" + keyLengths[i] + "bit", ".csv");
-      assertTrue(benchmarkingResultsFile.isPresent(), "Expected export file not found.");
-      assertTrue(benchmarkingResultsFile.get().exists(), "Exported file should exist.");
+        "Benchmarking Results for Signature Creation (PKCS#1 v1.5 Signature " +
+          "Scheme)_" + keyLengths[i] + "bit", ".csv");
+      assertTrue(benchmarkingResultsFile.isPresent(), "Expected export file " +
+        "not found.");
+      assertTrue(benchmarkingResultsFile.get().exists(), "Exported file " +
+        "should exist.");
 
       // Verify that the statistics table is populated
-      TableView<?> tableView = robot.lookup("#tableView").queryAs(TableView.class);
-      assertFalse(tableView.getItems().isEmpty(), "The table should have data.");
+      TableView<?> tableView =
+        robot.lookup("#tableView").queryAs(TableView.class);
+      assertFalse(tableView.getItems().isEmpty(), "The table should have data" +
+        ".");
 
 
     }
 
 
     // Check for the presence of the export buttons and their texts
-    Button signatureBatchBtn = robot.lookup("#exportSignatureBatchBtn").queryAs(Button.class);
+    Button signatureBatchBtn =
+      robot.lookup("#exportSignatureBatchBtn").queryAs(Button.class);
 
     // Verify that buttons are visible and then simulate clicks
-    assertTrue(signatureBatchBtn.isVisible(), "Export signature batch button should be visible.");
+    assertTrue(signatureBatchBtn.isVisible(), "Export signature batch button " +
+      "should be visible.");
 
 
     robot.clickOn(signatureBatchBtn);
@@ -1054,27 +1156,37 @@ public class SignBenchmarkingFunctionalityTest extends ApplicationTest {
       .queryButton());
     waitForExportDialogToShow(robot);
 
-    //logic to verify that the keys were actually exported by checking for existence of signature batch file
-    //if there are multiple signature files then the files are exported with an increasing number suffix
-    // getFile retrieves the most recently exported file i.e., the highest number suffix
+    //logic to verify that the keys were actually exported by checking for
+    // existence of signature batch file
+    //if there are multiple signature files then the files are exported with
+    // an increasing number suffix
+    // getFile retrieves the most recently exported file i.e., the highest
+    // number suffix
 
-    Optional<File> signatureBatchFile = MainTestUtility.getFile("signatureBatch", ".rsa");
-    assertTrue(signatureBatchFile.isPresent(), "Expected exported file not found.");
-    assertTrue(signatureBatchFile.get().exists(), "Exported file should exist.");
+    Optional<File> signatureBatchFile = MainTestUtility.getFile(
+      "signatureBatch", ".rsa");
+    assertTrue(signatureBatchFile.isPresent(), "Expected exported file not " +
+      "found.");
+    assertTrue(signatureBatchFile.get().exists(), "Exported file should exist" +
+      ".");
 
   }
 
 
   /**
-   * This test checks the application's response to invalid custom hash output values provided by the
+   * This test checks the application's response to invalid custom hash
+   * output values provided by the
    * user. A valid input is fraction under 1 e.g., 1/2.
    *
-   * @throws IOException if there is an issue with file handling during the test.
+   * @throws IOException if there is an issue with file handling during the
+   * test.
    */
   @Test
   void shouldHandleCustomHashOutput() throws IOException {
-    String hashFunction = "SHA-256 with MGF1"; // Testing for one hash function for simplicity
-    String[] invalidInputs = {"", "a/b", "1/", "/1", "test", "67", "2/1", "1.5/2", "10/10", "-1/2", "0/1", "!@#$%^&*()"};
+    String hashFunction = "SHA-256 with MGF1"; // Testing for one hash
+    // function for simplicity
+    String[] invalidInputs = {"", "a/b", "1/", "/1", "test", "67", "2/1", "1" +
+      ".5/2", "10/10", "-1/2", "0/1", "!@#$%^&*()"};
 
     // Simulate setting the number of messages in the UI
     robot.clickOn("#numMessageField");
@@ -1085,7 +1197,8 @@ public class SignBenchmarkingFunctionalityTest extends ApplicationTest {
     Platform.runLater(() -> {
       try {
         mainController.getSignatureCreationControllerBenchmarking()
-          .handleMessageBatch(createValidMessageBatch("validMessageBatch.txt", 5),
+          .handleMessageBatch(createValidMessageBatch("validMessageBatch.txt"
+              , 5),
             signViewVal,
             signatureModelVal);
       } catch (IOException e) {
@@ -1104,7 +1217,8 @@ public class SignBenchmarkingFunctionalityTest extends ApplicationTest {
       progress -> Platform.runLater(() -> {
         try {
           benchmarkingUtility.updateProgress(progress);
-          benchmarkingUtility.updateProgressLabel(String.format("%.0f%%", progress * 100));
+          benchmarkingUtility.updateProgressLabel(String.format("%.0f%%",
+            progress * 100));
         } catch (NullPointerException e) {
         }
       }));
@@ -1125,7 +1239,8 @@ public class SignBenchmarkingFunctionalityTest extends ApplicationTest {
     WaitForAsyncUtils.waitForFxEvents();
 
 
-    ComboBox<String> signatureSchemeDropdown = robot.lookup("#signatureSchemeDropdown")
+    ComboBox<String> signatureSchemeDropdown = robot.lookup(
+      "#signatureSchemeDropdown")
       .queryAs(ComboBox.class);
     robot.clickOn(signatureSchemeDropdown);
     robot.clickOn("PKCS#1 v1.5");
@@ -1137,7 +1252,8 @@ public class SignBenchmarkingFunctionalityTest extends ApplicationTest {
     Platform.runLater(() -> {
       robot.clickOn("#customParametersRadio");
     });
-    ComboBox<String> hashFunctionDropdown = lookup("#hashFunctionDropdown").queryComboBox();
+    ComboBox<String> hashFunctionDropdown =
+      lookup("#hashFunctionDropdown").queryComboBox();
 
     WaitForAsyncUtils.waitForFxEvents();
 
@@ -1152,7 +1268,8 @@ public class SignBenchmarkingFunctionalityTest extends ApplicationTest {
     });
     WaitForAsyncUtils.waitForFxEvents();
 
-    TextArea hashOutputSizeField = lookup("#hashOutputSizeField").queryAs(TextArea.class);
+    TextArea hashOutputSizeField =
+      lookup("#hashOutputSizeField").queryAs(TextArea.class);
 
     for (String input : invalidInputs) {
       // Enter each invalid input and attempt to perform the operation
@@ -1179,12 +1296,16 @@ public class SignBenchmarkingFunctionalityTest extends ApplicationTest {
   }
 
   /**
-   * Tests the recovery options for ISO/IEC 9796-2 Scheme 1 in the signature benchmarking process.
-   * Verifies the correctness of the benchmarking results and the availability of export options
+   * Tests the recovery options for ISO/IEC 9796-2 Scheme 1 in the signature
+   * benchmarking process.
+   * Verifies the correctness of the benchmarking results and the
+   * availability of export options
    * for signature batches and non-recoverable messages.
    *
-   * @throws IOException      if there is an issue handling files during the test.
-   * @throws TimeoutException if the test execution exceeds the allowable duration.
+   * @throws IOException      if there is an issue handling files during the
+   * test.
+   * @throws TimeoutException if the test execution exceeds the allowable
+   * duration.
    */
   @Test
   void testISOrecoveryOptions() throws IOException, TimeoutException {
@@ -1197,7 +1318,8 @@ public class SignBenchmarkingFunctionalityTest extends ApplicationTest {
     Platform.runLater(() -> {
       try {
         mainController.getSignatureCreationControllerBenchmarking()
-          .handleMessageBatch(createValidMessageBatch("validMessageBatch.txt", 5),
+          .handleMessageBatch(createValidMessageBatch("validMessageBatch.txt"
+              , 5),
             signViewVal,
             signatureModelVal);
       } catch (IOException e) {
@@ -1218,7 +1340,8 @@ public class SignBenchmarkingFunctionalityTest extends ApplicationTest {
       progress -> Platform.runLater(() -> {
         try {
           benchmarkingUtility.updateProgress(progress);
-          benchmarkingUtility.updateProgressLabel(String.format("%.0f%%", progress * 100));
+          benchmarkingUtility.updateProgressLabel(String.format("%.0f%%",
+            progress * 100));
         } catch (NullPointerException e) {
         }
       }));
@@ -1239,11 +1362,13 @@ public class SignBenchmarkingFunctionalityTest extends ApplicationTest {
     WaitForAsyncUtils.waitForFxEvents();
 
 
-    ComboBox<String> signatureSchemeDropdown = robot.lookup("#signatureSchemeDropdown")
+    ComboBox<String> signatureSchemeDropdown = robot.lookup(
+      "#signatureSchemeDropdown")
       .queryAs(ComboBox.class);
     robot.clickOn(signatureSchemeDropdown);
     robot.clickOn("ISO\\IEC 9796-2 Scheme 1");
-    ComboBox<String> hashFunctionDropdown = lookup("#hashFunctionDropdown").queryComboBox();
+    ComboBox<String> hashFunctionDropdown =
+      lookup("#hashFunctionDropdown").queryComboBox();
     robot.clickOn(hashFunctionDropdown);
     robot.clickOn("SHA-256");
     robot.scroll(10, VerticalDirection.UP);
@@ -1254,22 +1379,29 @@ public class SignBenchmarkingFunctionalityTest extends ApplicationTest {
     WaitForAsyncUtils.waitForFxEvents();
 
 
-    ProgressBar progressBar = robot.lookup("#progressBar").queryAs(ProgressBar.class);
+    ProgressBar progressBar =
+      robot.lookup("#progressBar").queryAs(ProgressBar.class);
     WaitForAsyncUtils.waitForFxEvents();
-    WaitForAsyncUtils.waitFor(1, TimeUnit.SECONDS, () -> progressBar.getProgress() >= 1);
+    WaitForAsyncUtils.waitFor(1, TimeUnit.SECONDS,
+      () -> progressBar.getProgress() >= 1);
 
 
     // Check that the results title label is displayed and correct
     Platform.runLater(() -> {
-      Label resultsTitleLabel = robot.lookup("#resultsLabel").queryAs(Label.class);
-      assertEquals("Benchmarking Results for Signature Creation (ISO/IEC 9796-2 Scheme 1-SHA-256)", resultsTitleLabel.getText());
+      Label resultsTitleLabel =
+        robot.lookup("#resultsLabel").queryAs(Label.class);
+      assertEquals("Benchmarking Results for Signature Creation (ISO/IEC " +
+        "9796-2 Scheme 1-SHA-256)", resultsTitleLabel.getText());
     });
     WaitForAsyncUtils.waitForFxEvents();
     // Verify that the JFXTabPane exists
-    JFXTabPane sideTabContainer = robot.lookup("#sideTabContainer").queryAs(JFXTabPane.class);
-    assertNotNull(sideTabContainer, "The side tab container should be present.");
+    JFXTabPane sideTabContainer =
+      robot.lookup("#sideTabContainer").queryAs(JFXTabPane.class);
+    assertNotNull(sideTabContainer, "The side tab container should be present" +
+      ".");
 
-    assertEquals(totalKeys, sideTabContainer.getTabs().size(), "There should be tabs equal to the total number of keys.");
+    assertEquals(totalKeys, sideTabContainer.getTabs().size(), "There should " +
+      "be tabs equal to the total number of keys.");
     robot.scroll(10, VerticalDirection.UP);
 
     for (int i = 0; i < totalKeys; i++) {
@@ -1284,15 +1416,18 @@ public class SignBenchmarkingFunctionalityTest extends ApplicationTest {
 
       // Check the VBox has two children: ImageView and Label
       List<Node> vboxChildren = graphicBox.getChildren();
-      assertEquals(2, vboxChildren.size(), "The graphic box should have an image and a label.");
+      assertEquals(2, vboxChildren.size(), "The graphic box should have an " +
+        "image and a label.");
 
       // Check for Label and its text
       Label keyLabel = (Label) vboxChildren.get(1);
-      assertEquals("Key " + (i + 1) + " (" + keyLengths[i] + "bit)", keyLabel.getText(),
+      assertEquals("Key " + (i + 1) + " (" + keyLengths[i] + "bit)",
+        keyLabel.getText(),
         "The label should have the correct text.");
 
 
-      Button exportBenchmarkingResultsBtn = robot.lookup("#exportBenchmarkingResultsBtn").queryAs(Button.class);
+      Button exportBenchmarkingResultsBtn = robot.lookup(
+        "#exportBenchmarkingResultsBtn").queryAs(Button.class);
 
       robot.clickOn(exportBenchmarkingResultsBtn);
       waitForExportDialogToShow(robot);
@@ -1304,26 +1439,35 @@ public class SignBenchmarkingFunctionalityTest extends ApplicationTest {
 
 
       Optional<File> benchmarkingResultsFile = MainTestUtility.getFile(
-        "Benchmarking Results for Signature Creation (ISO-IEC 9796-2 Scheme 1)_" + keyLengths[i] + "bit", ".csv");
-      assertTrue(benchmarkingResultsFile.isPresent(), "Expected export file not found.");
-      assertTrue(benchmarkingResultsFile.get().exists(), "Exported file should exist.");
+        "Benchmarking Results for Signature Creation (ISO-IEC 9796-2 Scheme " +
+          "1)_" + keyLengths[i] + "bit", ".csv");
+      assertTrue(benchmarkingResultsFile.isPresent(), "Expected export file " +
+        "not found.");
+      assertTrue(benchmarkingResultsFile.get().exists(), "Exported file " +
+        "should exist.");
 
       // Verify that the statistics table is populated
-      TableView<?> tableView = robot.lookup("#tableView").queryAs(TableView.class);
-      assertFalse(tableView.getItems().isEmpty(), "The table should have data.");
+      TableView<?> tableView =
+        robot.lookup("#tableView").queryAs(TableView.class);
+      assertFalse(tableView.getItems().isEmpty(), "The table should have data" +
+        ".");
 
 
     }
 
 
     // Check for the presence of the export buttons and their texts
-    Button signatureBatchBtn = robot.lookup("#exportSignatureBatchBtn").queryAs(Button.class);
-    Button exportNonRecoverableMessageBatchBtn = robot.lookup("#exportNonRecoverableMessageBatchBtn").queryAs(Button.class);
+    Button signatureBatchBtn =
+      robot.lookup("#exportSignatureBatchBtn").queryAs(Button.class);
+    Button exportNonRecoverableMessageBatchBtn = robot.lookup(
+      "#exportNonRecoverableMessageBatchBtn").queryAs(Button.class);
 
 
     // Verify that buttons are visible and then simulate clicks
-    assertTrue(signatureBatchBtn.isVisible(), "Export signature batch button should be visible.");
-    assertTrue(exportNonRecoverableMessageBatchBtn.isVisible(), "Export non recoverable message batch button should be visible.");
+    assertTrue(signatureBatchBtn.isVisible(), "Export signature batch button " +
+      "should be visible.");
+    assertTrue(exportNonRecoverableMessageBatchBtn.isVisible(), "Export non " +
+      "recoverable message batch button should be visible.");
 
 
     robot.clickOn(signatureBatchBtn);
@@ -1342,13 +1486,18 @@ public class SignBenchmarkingFunctionalityTest extends ApplicationTest {
       .queryButton());
 
 
-    Optional<File> signatureBatchFile = MainTestUtility.getFile("signatureBatch", ".rsa");
-    assertTrue(signatureBatchFile.isPresent(), "Expected exported file not found.");
-    assertTrue(signatureBatchFile.get().exists(), "Exported file should exist.");
+    Optional<File> signatureBatchFile = MainTestUtility.getFile(
+      "signatureBatch", ".rsa");
+    assertTrue(signatureBatchFile.isPresent(), "Expected exported file not " +
+      "found.");
+    assertTrue(signatureBatchFile.get().exists(), "Exported file should exist" +
+      ".");
     Optional<File> nonRecoverableMessageBatchFile = MainTestUtility.
       getFile("nonRecoverableMessageBatch", ".txt");
-    assertTrue(nonRecoverableMessageBatchFile.isPresent(), "Expected exported file not found.");
-    assertTrue(nonRecoverableMessageBatchFile.get().exists(), "Exported file should exist.");
+    assertTrue(nonRecoverableMessageBatchFile.isPresent(), "Expected exported" +
+      " file not found.");
+    assertTrue(nonRecoverableMessageBatchFile.get().exists(), "Exported file " +
+      "should exist.");
 
 
   }

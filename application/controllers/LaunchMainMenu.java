@@ -5,8 +5,10 @@ import javafx.stage.Stage;
 import uk.msci.project.rsa.MainController;
 
 /**
- * Entry point for a JavaFX application that initializes and displays the main menu. This class
- * extends the Application class from JavaFX and overrides the start method to set up the primary
+ * Entry point for a JavaFX application that initializes and displays the
+ * main menu. This class
+ * extends the Application class from JavaFX and overrides the start method
+ * to set up the primary
  * stage of the application.
  */
 public class LaunchMainMenu extends Application {
@@ -20,7 +22,8 @@ public class LaunchMainMenu extends Application {
   }
 
   /**
-   * The main entry point for all JavaFX applications. The launch method is called to start the
+   * The main entry point for all JavaFX applications. The launch method is
+   * called to start the
    * application.
    *
    * @param args Command line arguments passed to the application.

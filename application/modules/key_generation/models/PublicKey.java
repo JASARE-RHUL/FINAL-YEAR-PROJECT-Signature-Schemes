@@ -3,6 +3,7 @@ package uk.msci.project.rsa;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
+
 import uk.msci.project.rsa.Key;
 
 /**
@@ -11,8 +12,10 @@ import uk.msci.project.rsa.Key;
 public class PublicKey extends Key {
 
   /**
-   * Constructs public key by parsing a string representation (comma delimited modulus and exponent)
-   * of the key. This constructor delegates the parsing to the superclass constructor.
+   * Constructs public key by parsing a string representation (comma
+   * delimited modulus and exponent)
+   * of the key. This constructor delegates the parsing to the superclass
+   * constructor.
    *
    * @param key The string representation of the public key.
    */
@@ -31,8 +34,10 @@ public class PublicKey extends Key {
   }
 
   /**
-   * Constructs a public key by first importing the key from a file and then parsing resulting string.
-   * This constructor delegates the file reading and parsing to the superclass constructor.
+   * Constructs a public key by first importing the key from a file and then
+   * parsing resulting string.
+   * This constructor delegates the file reading and parsing to the
+   * superclass constructor.
    *
    * @param keyFile The file from which to read the public key.
    * @throws IOException If an I/O error occurs while reading the key file.

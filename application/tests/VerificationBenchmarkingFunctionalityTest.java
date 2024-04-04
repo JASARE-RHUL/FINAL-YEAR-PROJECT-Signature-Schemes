@@ -39,6 +39,7 @@ import static org.testfx.util.NodeQueryUtils.hasText;
 import static uk.msci.project.tests.MainTestUtility.waitForExportDialogToShow;
 import static uk.msci.project.tests.PublicKeyTest.deleteFilesWithSuffix;
 import static uk.msci.project.tests.SignBenchmarkingFunctionalityTest.createValidMessageBatch;
+
 import uk.msci.project.tests.MainTestUtility;
 import uk.msci.project.rsa.MainController;
 import uk.msci.project.rsa.VerifyView;
@@ -48,11 +49,15 @@ import uk.msci.project.rsa.GenModelBenchmarking;
 import uk.msci.project.rsa.BenchmarkingUtility;
 
 /**
- * This class provides automated UI tests for the signature verification feature in the Signature
- * Scheme benchmarking application. It employs the TestFX framework to simulate user interactions with the
- * verification view and ensures that all aspects of the UI are functioning as expected.
+ * This class provides automated UI tests for the signature verification
+ * feature in the Signature
+ * Scheme benchmarking application. It employs the TestFX framework to
+ * simulate user interactions with the
+ * verification view and ensures that all aspects of the UI are functioning
+ * as expected.
  *
- * <p>Each test method is designed to be independent, setting up the necessary preconditions and
+ * <p>Each test method is designed to be independent, setting up the
+ * necessary preconditions and
  * cleaning up afterward to avoid side effects that could affect other tests.
  *
  * @see Test
@@ -81,9 +86,11 @@ public class VerificationBenchmarkingFunctionalityTest extends ApplicationTest {
 
   /**
    * Prepares the application's UI for the verification view before each test.
-   * It deletes files with a specific suffix to ensure a clean state and navigates to the verification view by simulating a button click.
+   * It deletes files with a specific suffix to ensure a clean state and
+   * navigates to the verification view by simulating a button click.
    *
-   * @throws IllegalAccessException if the fields in the controller are not accessible
+   * @throws IllegalAccessException if the fields in the controller are not
+   *                                accessible
    * @throws NoSuchFieldException   if the fields in the controller do not exist
    */
   @BeforeEach
@@ -96,11 +103,16 @@ public class VerificationBenchmarkingFunctionalityTest extends ApplicationTest {
     robot.clickOn("#verifySignatureButton");
     WaitForAsyncUtils.waitForFxEvents();
 
-    Field verifyViewField = SignatureVerificationControllerBenchmarking.class.getDeclaredField("verifyView");
+    Field verifyViewField =
+      SignatureVerificationControllerBenchmarking.class.getDeclaredField(
+        "verifyView");
     verifyViewField.setAccessible(true);
-    verifyViewVal = (VerifyView) verifyViewField.get(mainController.getSignatureVerificationControllerBenchmarking());
+    verifyViewVal =
+      (VerifyView) verifyViewField.get(mainController.getSignatureVerificationControllerBenchmarking());
 
-    Field signatureModelField = SignatureVerificationControllerBenchmarking.class.getDeclaredField("signatureModel");
+    Field signatureModelField =
+      SignatureVerificationControllerBenchmarking.class.getDeclaredField(
+        "signatureModel");
     signatureModelField.setAccessible(true);
     signatureModelVal = (SignatureModelBenchmarking)
       signatureModelField.get(mainController.getSignatureVerificationControllerBenchmarking());
@@ -109,7 +121,8 @@ public class VerificationBenchmarkingFunctionalityTest extends ApplicationTest {
 
 
   /**
-   * Verifies the presence of all necessary UI components within the verification view.
+   * Verifies the presence of all necessary UI components within the
+   * verification view.
    */
   @Test
   void shouldContainUIComponents() {
@@ -171,20 +184,26 @@ public class VerificationBenchmarkingFunctionalityTest extends ApplicationTest {
 
 
   /**
-   * Tests the application's behavior with valid input scenarios and verifies that the results of verification
+   * Tests the application's behavior with valid input scenarios and verifies
+   * that the results of verification
    * and benchmarking processes are displayed correctly.
    *
-   * @throws IOException      If there is an issue with file handling during the test.
-   * @throws TimeoutException If the test takes longer than the maximum allowable time.
+   * @throws IOException      If there is an issue with file handling during
+   *                          the test.
+   * @throws TimeoutException If the test takes longer than the maximum
+   *                          allowable time.
    */
   @Test
-  void shouldDisplayResultsOnValidInputs() throws IOException, TimeoutException {
-    //valid input means number of messages * number of keys = number of signatures
+  void shouldDisplayResultsOnValidInputs() throws IOException,
+    TimeoutException {
+    //valid input means number of messages * number of keys = number of
+    // signatures
     // Simulate invoking the file import method directly
     Platform.runLater(() -> {
       try {
         mainController.getSignatureVerificationControllerBenchmarking()
-          .handleMessageBatch(createValidMessageBatch("validMessageBatch.txt", 5),
+          .handleMessageBatch(createValidMessageBatch("validMessageBatch.txt"
+              , 5),
             verifyViewVal,
             signatureModelVal);
       } catch (IOException e) {
@@ -205,7 +224,8 @@ public class VerificationBenchmarkingFunctionalityTest extends ApplicationTest {
       progress -> Platform.runLater(() -> {
         try {
           benchmarkingUtility.updateProgress(progress);
-          benchmarkingUtility.updateProgressLabel(String.format("%.0f%%", progress * 100));
+          benchmarkingUtility.updateProgressLabel(String.format("%.0f%%",
+            progress * 100));
         } catch (NullPointerException e) {
         }
       }));
@@ -229,7 +249,8 @@ public class VerificationBenchmarkingFunctionalityTest extends ApplicationTest {
     Platform.runLater(() -> {
       try {
         mainController.getSignatureVerificationControllerBenchmarking()
-          .handleSignatureBatch(createSignatureBatch("signatureBatch.rsa", 10), verifyViewVal, signatureModelVal);
+          .handleSignatureBatch(createSignatureBatch("signatureBatch.rsa",
+            10), verifyViewVal, signatureModelVal);
       } catch (IOException e) {
         throw new RuntimeException(e);
       }
@@ -238,11 +259,13 @@ public class VerificationBenchmarkingFunctionalityTest extends ApplicationTest {
     WaitForAsyncUtils.waitForFxEvents();
 
     robot.scroll(10, VerticalDirection.UP);
-    ComboBox<String> signatureSchemeDropdown = robot.lookup("#signatureSchemeDropdown")
+    ComboBox<String> signatureSchemeDropdown = robot.lookup(
+        "#signatureSchemeDropdown")
       .queryAs(ComboBox.class);
     robot.clickOn(signatureSchemeDropdown);
     robot.clickOn("PKCS#1 v1.5");
-    ComboBox<String> hashFunctionDropdown = lookup("#hashFunctionDropdown").queryComboBox();
+    ComboBox<String> hashFunctionDropdown =
+      lookup("#hashFunctionDropdown").queryComboBox();
     robot.clickOn(hashFunctionDropdown);
     robot.clickOn("SHA-256");
     Platform.runLater(() -> {
@@ -252,23 +275,30 @@ public class VerificationBenchmarkingFunctionalityTest extends ApplicationTest {
     WaitForAsyncUtils.waitForFxEvents();
 
 
-    ProgressBar progressBar = robot.lookup("#progressBar").queryAs(ProgressBar.class);
+    ProgressBar progressBar =
+      robot.lookup("#progressBar").queryAs(ProgressBar.class);
     WaitForAsyncUtils.waitForFxEvents();
-    WaitForAsyncUtils.waitFor(1, TimeUnit.SECONDS, () -> progressBar.getProgress() >= 1);
+    WaitForAsyncUtils.waitFor(1, TimeUnit.SECONDS,
+      () -> progressBar.getProgress() >= 1);
 
 
     // Check that the results title label is displayed and correct
     Platform.runLater(() -> {
-      Label resultsTitleLabel = robot.lookup("#resultsLabel").queryAs(Label.class);
-      assertEquals("Benchmarking Results for Signature Verification (PKCS#1 v1.5 Signature Scheme-SHA-256)",
+      Label resultsTitleLabel =
+        robot.lookup("#resultsLabel").queryAs(Label.class);
+      assertEquals("Benchmarking Results for Signature Verification (PKCS#1 " +
+          "v1.5 Signature Scheme-SHA-256)",
         resultsTitleLabel.getText());
     });
     WaitForAsyncUtils.waitForFxEvents();
     // Verify that the JFXTabPane exists
-    JFXTabPane sideTabContainer = robot.lookup("#sideTabContainer").queryAs(JFXTabPane.class);
-    assertNotNull(sideTabContainer, "The side tab container should be present.");
+    JFXTabPane sideTabContainer =
+      robot.lookup("#sideTabContainer").queryAs(JFXTabPane.class);
+    assertNotNull(sideTabContainer, "The side tab container should be present" +
+      ".");
 
-    assertEquals(totalKeys, sideTabContainer.getTabs().size(), "There should be tabs equal to the total number of keys.");
+    assertEquals(totalKeys, sideTabContainer.getTabs().size(), "There should " +
+      "be tabs equal to the total number of keys.");
     robot.scroll(10, VerticalDirection.UP);
 
     for (int i = 0; i < totalKeys; i++) {
@@ -283,16 +313,20 @@ public class VerificationBenchmarkingFunctionalityTest extends ApplicationTest {
 
       // Check the VBox has two children: ImageView and Label
       List<Node> vboxChildren = graphicBox.getChildren();
-      assertEquals(2, vboxChildren.size(), "The graphic box should have an image and a label.");
+      assertEquals(2, vboxChildren.size(), "The graphic box should have an " +
+        "image and a label.");
 
       // Check for Label and its text
       Label keyLabel = (Label) vboxChildren.get(1);
-      assertEquals("Key " + (i + 1) + " (" + keyLengths[i] + "bit)", keyLabel.getText(),
+      assertEquals("Key " + (i + 1) + " (" + keyLengths[i] + "bit)",
+        keyLabel.getText(),
         "The label should have the correct text.");
 
 
-      Button exportBenchmarkingResultsBtn = robot.lookup("#exportBenchmarkingResultsBtn").queryAs(Button.class);
-      Button exportVerificationResultsBtn = robot.lookup("#exportVerificationResultsBtn").queryAs(Button.class);
+      Button exportBenchmarkingResultsBtn = robot.lookup(
+        "#exportBenchmarkingResultsBtn").queryAs(Button.class);
+      Button exportVerificationResultsBtn = robot.lookup(
+        "#exportVerificationResultsBtn").queryAs(Button.class);
 
 
       robot.clickOn(exportBenchmarkingResultsBtn);
@@ -313,18 +347,26 @@ public class VerificationBenchmarkingFunctionalityTest extends ApplicationTest {
 
 
       Optional<File> benchmarkingResultsFile = MainTestUtility.getFile(
-        "Benchmarking Results for Signature Verification (PKCS#1 v1.5 Signature Scheme)_" +
+        "Benchmarking Results for Signature Verification (PKCS#1 v1.5 " +
+          "Signature Scheme)_" +
           keyLengths[i] + "bit", ".csv");
-      assertTrue(benchmarkingResultsFile.isPresent(), "Expected export file not found.");
-      assertTrue(benchmarkingResultsFile.get().exists(), "Exported file should exist.");
+      assertTrue(benchmarkingResultsFile.isPresent(), "Expected export file " +
+        "not found.");
+      assertTrue(benchmarkingResultsFile.get().exists(), "Exported file " +
+        "should exist.");
       Optional<File> verificationResultsFile = MainTestUtility.getFile(
-        "verificationResults_" + keyLengths[i] + "bit_PKCS#1_v1.5_Signature_Scheme", ".csv");
-      assertTrue(verificationResultsFile.isPresent(), "Expected export file not found.");
-      assertTrue(verificationResultsFile.get().exists(), "Exported file should exist.");
+        "verificationResults_" + keyLengths[i] + "bit_PKCS#1_v1" +
+          ".5_Signature_Scheme", ".csv");
+      assertTrue(verificationResultsFile.isPresent(), "Expected export file " +
+        "not found.");
+      assertTrue(verificationResultsFile.get().exists(), "Exported file " +
+        "should exist.");
 
       // Verify that the statistics table is populated
-      TableView<?> tableView = robot.lookup("#tableView").queryAs(TableView.class);
-      assertFalse(tableView.getItems().isEmpty(), "The table should have data.");
+      TableView<?> tableView =
+        robot.lookup("#tableView").queryAs(TableView.class);
+      assertFalse(tableView.getItems().isEmpty(), "The table should have data" +
+        ".");
 
 
     }
@@ -333,20 +375,25 @@ public class VerificationBenchmarkingFunctionalityTest extends ApplicationTest {
   }
 
   /**
-   * Tests the application's behavior with valid input scenarios specifically for the ISO message recovery scheme
+   * Tests the application's behavior with valid input scenarios specifically
+   * for the ISO message recovery scheme
    * and verifies that the results are displayed correctly.
    *
-   * @throws IOException      If there is an issue with file handling during the test.
-   * @throws TimeoutException If the test takes longer than the maximum allowable time.
+   * @throws IOException      If there is an issue with file handling during
+   *                          the test.
+   * @throws TimeoutException If the test takes longer than the maximum
+   *                          allowable time.
    */
   @Test
-  void shouldDisplayResultsOnValidInputForISO() throws IOException, TimeoutException {
+  void shouldDisplayResultsOnValidInputForISO() throws IOException,
+    TimeoutException {
     //valid input means equal number of non-recoverable messages and signature
     // Simulate invoking the file import method directly
     Platform.runLater(() -> {
       try {
         mainController.getSignatureVerificationControllerBenchmarking()
-          .handleMessageBatch(createValidMessageBatch("validMessageBatch.txt", 10),
+          .handleMessageBatch(createValidMessageBatch("validMessageBatch.txt"
+              , 10),
             verifyViewVal,
             signatureModelVal);
       } catch (IOException e) {
@@ -367,7 +414,8 @@ public class VerificationBenchmarkingFunctionalityTest extends ApplicationTest {
       progress -> Platform.runLater(() -> {
         try {
           benchmarkingUtility.updateProgress(progress);
-          benchmarkingUtility.updateProgressLabel(String.format("%.0f%%", progress * 100));
+          benchmarkingUtility.updateProgressLabel(String.format("%.0f%%",
+            progress * 100));
         } catch (NullPointerException e) {
         }
       }));
@@ -391,7 +439,8 @@ public class VerificationBenchmarkingFunctionalityTest extends ApplicationTest {
     Platform.runLater(() -> {
       try {
         mainController.getSignatureVerificationControllerBenchmarking()
-          .handleSignatureBatch(createSignatureBatch("signatureBatch.rsa", 10), verifyViewVal, signatureModelVal);
+          .handleSignatureBatch(createSignatureBatch("signatureBatch.rsa",
+            10), verifyViewVal, signatureModelVal);
       } catch (IOException e) {
         throw new RuntimeException(e);
       }
@@ -400,11 +449,13 @@ public class VerificationBenchmarkingFunctionalityTest extends ApplicationTest {
     WaitForAsyncUtils.waitForFxEvents();
 
     robot.scroll(10, VerticalDirection.UP);
-    ComboBox<String> signatureSchemeDropdown = robot.lookup("#signatureSchemeDropdown")
+    ComboBox<String> signatureSchemeDropdown = robot.lookup(
+        "#signatureSchemeDropdown")
       .queryAs(ComboBox.class);
     robot.clickOn(signatureSchemeDropdown);
     robot.clickOn("ISO\\IEC 9796-2 Scheme 1");
-    ComboBox<String> hashFunctionDropdown = lookup("#hashFunctionDropdown").queryComboBox();
+    ComboBox<String> hashFunctionDropdown =
+      lookup("#hashFunctionDropdown").queryComboBox();
     robot.clickOn(hashFunctionDropdown);
     robot.clickOn("SHA-256");
     Platform.runLater(() -> {
@@ -414,23 +465,30 @@ public class VerificationBenchmarkingFunctionalityTest extends ApplicationTest {
     WaitForAsyncUtils.waitForFxEvents();
 
 
-    ProgressBar progressBar = robot.lookup("#progressBar").queryAs(ProgressBar.class);
+    ProgressBar progressBar =
+      robot.lookup("#progressBar").queryAs(ProgressBar.class);
     WaitForAsyncUtils.waitForFxEvents();
-    WaitForAsyncUtils.waitFor(1, TimeUnit.SECONDS, () -> progressBar.getProgress() >= 1);
+    WaitForAsyncUtils.waitFor(1, TimeUnit.SECONDS,
+      () -> progressBar.getProgress() >= 1);
 
 
     // Check that the results title label is displayed and correct
     Platform.runLater(() -> {
-      Label resultsTitleLabel = robot.lookup("#resultsLabel").queryAs(Label.class);
-      assertEquals("Benchmarking Results for Signature Verification (ISO/IEC 9796-2 Scheme 1-SHA-256)",
+      Label resultsTitleLabel =
+        robot.lookup("#resultsLabel").queryAs(Label.class);
+      assertEquals("Benchmarking Results for Signature Verification (ISO/IEC " +
+          "9796-2 Scheme 1-SHA-256)",
         resultsTitleLabel.getText());
     });
     WaitForAsyncUtils.waitForFxEvents();
     // Verify that the JFXTabPane exists
-    JFXTabPane sideTabContainer = robot.lookup("#sideTabContainer").queryAs(JFXTabPane.class);
-    assertNotNull(sideTabContainer, "The side tab container should be present.");
+    JFXTabPane sideTabContainer =
+      robot.lookup("#sideTabContainer").queryAs(JFXTabPane.class);
+    assertNotNull(sideTabContainer, "The side tab container should be present" +
+      ".");
 
-    assertEquals(totalKeys, sideTabContainer.getTabs().size(), "There should be tabs equal to the total number of keys.");
+    assertEquals(totalKeys, sideTabContainer.getTabs().size(), "There should " +
+      "be tabs equal to the total number of keys.");
     robot.scroll(10, VerticalDirection.UP);
 
     for (int i = 0; i < totalKeys; i++) {
@@ -445,16 +503,20 @@ public class VerificationBenchmarkingFunctionalityTest extends ApplicationTest {
 
       // Check the VBox has two children: ImageView and Label
       List<Node> vboxChildren = graphicBox.getChildren();
-      assertEquals(2, vboxChildren.size(), "The graphic box should have an image and a label.");
+      assertEquals(2, vboxChildren.size(), "The graphic box should have an " +
+        "image and a label.");
 
       // Check for Label and its text
       Label keyLabel = (Label) vboxChildren.get(1);
-      assertEquals("Key " + (i + 1) + " (" + keyLengths[i] + "bit)", keyLabel.getText(),
+      assertEquals("Key " + (i + 1) + " (" + keyLengths[i] + "bit)",
+        keyLabel.getText(),
         "The label should have the correct text.");
 
 
-      Button exportBenchmarkingResultsBtn = robot.lookup("#exportBenchmarkingResultsBtn").queryAs(Button.class);
-      Button exportVerificationResultsBtn = robot.lookup("#exportVerificationResultsBtn").queryAs(Button.class);
+      Button exportBenchmarkingResultsBtn = robot.lookup(
+        "#exportBenchmarkingResultsBtn").queryAs(Button.class);
+      Button exportVerificationResultsBtn = robot.lookup(
+        "#exportVerificationResultsBtn").queryAs(Button.class);
 
 
       robot.clickOn(exportBenchmarkingResultsBtn);
@@ -475,18 +537,26 @@ public class VerificationBenchmarkingFunctionalityTest extends ApplicationTest {
 
 
       Optional<File> benchmarkingResultsFile = MainTestUtility.getFile(
-        "Benchmarking Results for Signature Verification (ISO-IEC 9796-2 Scheme 1)_" +
+        "Benchmarking Results for Signature Verification (ISO-IEC 9796-2 " +
+          "Scheme 1)_" +
           keyLengths[i] + "bit", ".csv");
-      assertTrue(benchmarkingResultsFile.isPresent(), "Expected export file not found.");
-      assertTrue(benchmarkingResultsFile.get().exists(), "Exported file should exist.");
+      assertTrue(benchmarkingResultsFile.isPresent(), "Expected export file " +
+        "not found.");
+      assertTrue(benchmarkingResultsFile.get().exists(), "Exported file " +
+        "should exist.");
       Optional<File> verificationResultsFile = MainTestUtility.getFile(
-        "verificationResults_" + keyLengths[i] + "bit_ISO-IEC_9796-2_Scheme_1", ".csv");
-      assertTrue(verificationResultsFile.isPresent(), "Expected export file not found.");
-      assertTrue(verificationResultsFile.get().exists(), "Exported file should exist.");
+        "verificationResults_" + keyLengths[i] + "bit_ISO-IEC_9796-2_Scheme_1"
+        , ".csv");
+      assertTrue(verificationResultsFile.isPresent(), "Expected export file " +
+        "not found.");
+      assertTrue(verificationResultsFile.get().exists(), "Exported file " +
+        "should exist.");
 
       // Verify that the statistics table is populated
-      TableView<?> tableView = robot.lookup("#tableView").queryAs(TableView.class);
-      assertFalse(tableView.getItems().isEmpty(), "The table should have data.");
+      TableView<?> tableView =
+        robot.lookup("#tableView").queryAs(TableView.class);
+      assertFalse(tableView.getItems().isEmpty(), "The table should have data" +
+        ".");
 
 
     }
@@ -496,10 +566,12 @@ public class VerificationBenchmarkingFunctionalityTest extends ApplicationTest {
 
 
   /**
-   * Provides pairs of message and signature counts that are expected to cause failures during the verification benchmarking process
+   * Provides pairs of message and signature counts that are expected to
+   * cause failures during the verification benchmarking process
    * due to unbalanced pairs for Appendix schemes.
    *
-   * @return Stream of arguments containing the number of messages and the number of signatures.
+   * @return Stream of arguments containing the number of messages and the
+   * number of signatures.
    */
   private static Stream<Arguments> provideMessageSignaturePairsForFailureAppendix() {
     return Stream.of(
@@ -510,8 +582,10 @@ public class VerificationBenchmarkingFunctionalityTest extends ApplicationTest {
 
 
   /**
-   * Parameterised test that checks for the application's ability to handle cases
-   * where the number of messages and signatures are unbalanced for Appendix signature schemes.
+   * Parameterised test that checks for the application's ability to handle
+   * cases
+   * where the number of messages and signatures are unbalanced for Appendix
+   * signature schemes.
    * This mismatch is expected to cause a verification failure.
    *
    * @param messageCount   The number of messages to be used in the test.
@@ -521,12 +595,14 @@ public class VerificationBenchmarkingFunctionalityTest extends ApplicationTest {
   @ParameterizedTest
   @MethodSource("provideMessageSignaturePairsForFailureAppendix")
   void shouldHandleUnbalancedMessageSignatureBatchPairingAppendixSchemes(int messageCount, int signatureCount) throws IOException {
-    //invalid/unbalanced input means number of messages * number of keys != number of signatures
+    //invalid/unbalanced input means number of messages * number of keys !=
+    // number of signatures
     // Simulate invoking the file import method directly
     Platform.runLater(() -> {
       try {
         mainController.getSignatureVerificationControllerBenchmarking()
-          .handleMessageBatch(createValidMessageBatch("validMessageBatch.txt", messageCount),
+          .handleMessageBatch(createValidMessageBatch("validMessageBatch.txt"
+              , messageCount),
             verifyViewVal,
             signatureModelVal);
       } catch (IOException e) {
@@ -545,7 +621,8 @@ public class VerificationBenchmarkingFunctionalityTest extends ApplicationTest {
       progress -> Platform.runLater(() -> {
         try {
           benchmarkingUtility.updateProgress(progress);
-          benchmarkingUtility.updateProgressLabel(String.format("%.0f%%", progress * 100));
+          benchmarkingUtility.updateProgressLabel(String.format("%.0f%%",
+            progress * 100));
         } catch (NullPointerException e) {
         }
       }));
@@ -569,7 +646,8 @@ public class VerificationBenchmarkingFunctionalityTest extends ApplicationTest {
     Platform.runLater(() -> {
       try {
         mainController.getSignatureVerificationControllerBenchmarking()
-          .handleSignatureBatch(createSignatureBatch("signatureBatch.rsa", signatureCount), verifyViewVal, signatureModelVal);
+          .handleSignatureBatch(createSignatureBatch("signatureBatch.rsa",
+            signatureCount), verifyViewVal, signatureModelVal);
       } catch (IOException e) {
         throw new RuntimeException(e);
       }
@@ -578,11 +656,13 @@ public class VerificationBenchmarkingFunctionalityTest extends ApplicationTest {
     WaitForAsyncUtils.waitForFxEvents();
 
     robot.scroll(10, VerticalDirection.UP);
-    ComboBox<String> signatureSchemeDropdown = robot.lookup("#signatureSchemeDropdown")
+    ComboBox<String> signatureSchemeDropdown = robot.lookup(
+        "#signatureSchemeDropdown")
       .queryAs(ComboBox.class);
     robot.clickOn(signatureSchemeDropdown);
     robot.clickOn("PKCS#1 v1.5");
-    ComboBox<String> hashFunctionDropdown = lookup("#hashFunctionDropdown").queryComboBox();
+    ComboBox<String> hashFunctionDropdown =
+      lookup("#hashFunctionDropdown").queryComboBox();
     robot.clickOn(hashFunctionDropdown);
     robot.clickOn("SHA-256");
 
@@ -596,15 +676,19 @@ public class VerificationBenchmarkingFunctionalityTest extends ApplicationTest {
         ((Button) button).getText().equals(ButtonType.OK.getText())).tryQuery().orElseThrow(
         () -> new AssertionError("Button with text '" + ButtonType.OK.getText() + "' not found.")
       ),
-      "Failure popup box ok button should exist because number of messages and signature do not match");
+      "Failure popup box ok button should exist because number of messages " +
+        "and signature do not match");
 
   }
 
   /**
-   * Provides pairs of message and signature counts that are expected to cause failures
-   * during the verification benchmarking process due to unbalanced pairs for ISO message recovery schemes.
+   * Provides pairs of message and signature counts that are expected to
+   * cause failures
+   * during the verification benchmarking process due to unbalanced pairs for
+   * ISO message recovery schemes.
    *
-   * @return Stream of arguments containing the number of messages and the number of signatures.
+   * @return Stream of arguments containing the number of messages and the
+   * number of signatures.
    */
   private static Stream<Arguments> provideMessageSignaturePairsForFailureRecovery() {
     return Stream.of(
@@ -615,23 +699,29 @@ public class VerificationBenchmarkingFunctionalityTest extends ApplicationTest {
 
 
   /**
-   * Parameterized test that checks for the application's ability to handle cases where the number of non-recoverable messages
-   * and signatures are unbalanced for ISO message recovery schemes. This mismatch is expected to cause a verification failure.
+   * Parameterized test that checks for the application's ability to handle
+   * cases where the number of non-recoverable messages
+   * and signatures are unbalanced for ISO message recovery schemes. This
+   * mismatch is expected to cause a verification failure.
    *
-   * @param messageCount   The number of non-recoverable messages to be used in the test.
+   * @param messageCount   The number of non-recoverable messages to be used
+   *                       in the test.
    * @param signatureCount The number of signatures to be used in the test.
    * @throws IOException      If an I/O error occurs during the test.
-   * @throws TimeoutException If the test takes longer than the maximum allowable time.
+   * @throws TimeoutException If the test takes longer than the maximum
+   *                          allowable time.
    */
   @ParameterizedTest
   @MethodSource("provideMessageSignaturePairsForFailureRecovery")
   void shouldHandleUnbalancedMessageSignatureBatchPairingISO_messageRecovery(int messageCount, int signatureCount) throws IOException, TimeoutException {
-    //invalid/unbalanced input means number of non-recoverable messages != number of signatures
+    //invalid/unbalanced input means number of non-recoverable messages !=
+    // number of signatures
     // Simulate invoking the file import method directly
     Platform.runLater(() -> {
       try {
         mainController.getSignatureVerificationControllerBenchmarking()
-          .handleMessageBatch(createValidMessageBatch("validMessageBatch.txt", messageCount),
+          .handleMessageBatch(createValidMessageBatch("validMessageBatch.txt"
+              , messageCount),
             verifyViewVal,
             signatureModelVal);
       } catch (IOException e) {
@@ -651,7 +741,8 @@ public class VerificationBenchmarkingFunctionalityTest extends ApplicationTest {
       progress -> Platform.runLater(() -> {
         try {
           benchmarkingUtility.updateProgress(progress);
-          benchmarkingUtility.updateProgressLabel(String.format("%.0f%%", progress * 100));
+          benchmarkingUtility.updateProgressLabel(String.format("%.0f%%",
+            progress * 100));
         } catch (NullPointerException e) {
         }
       }));
@@ -675,7 +766,8 @@ public class VerificationBenchmarkingFunctionalityTest extends ApplicationTest {
     Platform.runLater(() -> {
       try {
         mainController.getSignatureVerificationControllerBenchmarking()
-          .handleSignatureBatch(createSignatureBatch("signatureBatch.rsa", signatureCount),
+          .handleSignatureBatch(createSignatureBatch("signatureBatch.rsa",
+              signatureCount),
             verifyViewVal, signatureModelVal);
       } catch (IOException e) {
         throw new RuntimeException(e);
@@ -685,11 +777,13 @@ public class VerificationBenchmarkingFunctionalityTest extends ApplicationTest {
     WaitForAsyncUtils.waitForFxEvents();
 
     robot.scroll(10, VerticalDirection.UP);
-    ComboBox<String> signatureSchemeDropdown = robot.lookup("#signatureSchemeDropdown")
+    ComboBox<String> signatureSchemeDropdown = robot.lookup(
+        "#signatureSchemeDropdown")
       .queryAs(ComboBox.class);
     robot.clickOn(signatureSchemeDropdown);
     robot.clickOn("ISO\\IEC 9796-2 Scheme 1");
-    ComboBox<String> hashFunctionDropdown = lookup("#hashFunctionDropdown").queryComboBox();
+    ComboBox<String> hashFunctionDropdown =
+      lookup("#hashFunctionDropdown").queryComboBox();
     robot.clickOn(hashFunctionDropdown);
     robot.clickOn("SHA-256");
 
@@ -703,7 +797,8 @@ public class VerificationBenchmarkingFunctionalityTest extends ApplicationTest {
         ((Button) button).getText().equals(ButtonType.OK.getText())).tryQuery().orElseThrow(
         () -> new AssertionError("Button with text '" + ButtonType.OK.getText() + "' not found.")
       ),
-      "Failure popup box ok button should exist because number of messages and signature do not match");
+      "Failure popup box ok button should exist because number of messages " +
+        "and signature do not match");
 
   }
 

@@ -5,17 +5,23 @@ import uk.msci.project.rsa.GenControllerStandard;
 import uk.msci.project.rsa.GenControllerBenchmarking;
 import uk.msci.project.rsa.GenControllerComparisonBenchmarking;
 import uk.msci.project.rsa.GenView;
+
 /**
- * This class acts as an intermediary between the main controller of the application and the key
- * generation controller assembly. It handles the setup and coordination of key generation across
- * different operational modes, including standard, benchmarking, and comparison benchmarking. This
- * class ensures the appropriate controllers are utilised and configured based on the operational
+ * This class acts as an intermediary between the main controller of the
+ * application and the key
+ * generation controller assembly. It handles the setup and coordination of
+ * key generation across
+ * different operational modes, including standard, benchmarking, and
+ * comparison benchmarking. This
+ * class ensures the appropriate controllers are utilised and configured
+ * based on the operational
  * context and mode.
  */
 public class KeyGenerationMediator {
 
   /**
-   * Main controller instance to manage transitions between different application views and
+   * Main controller instance to manage transitions between different
+   * application views and
    * high-level logic execution.
    */
   private MainController mainController;
@@ -31,21 +37,25 @@ public class KeyGenerationMediator {
   private GenControllerBenchmarking genControllerBenchmarking;
 
   /**
-   * Controller for handling key generation functionality in comparison benchmarking mode.
+   * Controller for handling key generation functionality in comparison
+   * benchmarking mode.
    */
   private GenControllerComparisonBenchmarking genControllerComparisonBenchmarking;
 
   /**
-   * Constructor that initialises a new KeyGenerationMediator with a reference to the main
+   * Constructor that initialises a new KeyGenerationMediator with a
+   * reference to the main
    * application controller.
    *
-   * @param mainController The central controller that coordinates the flow of the application.
+   * @param mainController The central controller that coordinates the flow
+   *                       of the application.
    */
   public KeyGenerationMediator(MainController mainController) {
     this.mainController = mainController;
     genControllerStandard = new GenControllerStandard(mainController);
     genControllerBenchmarking = new GenControllerBenchmarking(mainController);
-    genControllerComparisonBenchmarking = new GenControllerComparisonBenchmarking(mainController);
+    genControllerComparisonBenchmarking =
+      new GenControllerComparisonBenchmarking(mainController);
   }
 
   /**
@@ -67,7 +77,8 @@ public class KeyGenerationMediator {
   }
 
   /**
-   * Retrieves the controller responsible for key generation in comparison benchmarking mode.
+   * Retrieves the controller responsible for key generation in comparison
+   * benchmarking mode.
    *
    * @return The comparison benchmarking mode key generation controller.
    */
@@ -97,18 +108,23 @@ public class KeyGenerationMediator {
   }
 
   /**
-   * Sets the GenControllerComparisonBenchmarking instance for the mediator and facilitates a switch
+   * Sets the GenControllerComparisonBenchmarking instance for the mediator
+   * and facilitates a switch
    * between normal comparison mode and custom comparison mode.
    *
-   * @param genControllerComparisonBenchmarking The instance of GenControllerComparisonBenchmarking
+   * @param genControllerComparisonBenchmarking The instance of
+   *                                            GenControllerComparisonBenchmarking
    *                                            to be set.
-   * @param genView                             The GenView instance associated with the comparison
+   * @param genView                             The GenView instance
+   *                                            associated with the comparison
    *                                            benchmarking mode.
    */
   public void setGenControllerComparisonBenchmarking(
-      GenControllerComparisonBenchmarking genControllerComparisonBenchmarking, GenView genView) {
-    this.genControllerComparisonBenchmarking = genControllerComparisonBenchmarking;
+    GenControllerComparisonBenchmarking genControllerComparisonBenchmarking,
+    GenView genView) {
+    this.genControllerComparisonBenchmarking =
+      genControllerComparisonBenchmarking;
     this.genControllerComparisonBenchmarking.setupCrossBenchmarkingObservers(
-        mainController.getPrimaryStage(), genView);
+      mainController.getPrimaryStage(), genView);
   }
 }

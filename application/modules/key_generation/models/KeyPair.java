@@ -1,10 +1,13 @@
 package uk.msci.project.rsa;
+
 import uk.msci.project.rsa.PublicKey;
 import uk.msci.project.rsa.PrivateKey;
 
 /**
- * This class represents a pair of associated cryptographic keys that are generated together and
- * mathematically related: a public key and a private key. Instances of this class are used to group
+ * This class represents a pair of associated cryptographic keys that are
+ * generated together and
+ * mathematically related: a public key and a private key. Instances of this
+ * class are used to group
  * a public key with its corresponding private key.
  */
 public class KeyPair {

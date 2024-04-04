@@ -11,7 +11,8 @@ import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
 
 /**
- * Utility class for file handling, providing functionality to import from and export to files.
+ * Utility class for file handling, providing functionality to import from
+ * and export to files.
  */
 
 public class FileHandle {
@@ -34,8 +35,9 @@ public class FileHandle {
 
     StringBuilder content = new StringBuilder();
     try (FileInputStream fis = new FileInputStream(file);
-        InputStreamReader isr = new InputStreamReader(fis, StandardCharsets.UTF_8);
-        BufferedReader br = new BufferedReader(isr)) {
+         InputStreamReader isr = new InputStreamReader(fis,
+           StandardCharsets.UTF_8);
+         BufferedReader br = new BufferedReader(isr)) {
 
       String line;
       while ((line = br.readLine()) != null) {
@@ -46,8 +48,10 @@ public class FileHandle {
   }
 
   /**
-   * Exports content to a file with a specified file name. If a file with the same name already
-   * exists, a number suffix will be added to the file name to avoid overwriting the existing file.
+   * Exports content to a file with a specified file name. If a file with the
+   * same name already
+   * exists, a number suffix will be added to the file name to avoid
+   * overwriting the existing file.
    *
    * @param fileName The name of the file to which content should be exported.
    * @param content  The content to be written to the file.
@@ -58,17 +62,20 @@ public class FileHandle {
     keyFile = createUniqueFile(fileName);
 
     try (FileOutputStream fos = new FileOutputStream(keyFile);
-        OutputStreamWriter osw = new OutputStreamWriter(fos, StandardCharsets.UTF_8);
-        BufferedWriter bw = new BufferedWriter(osw)) {
+         OutputStreamWriter osw = new OutputStreamWriter(fos,
+           StandardCharsets.UTF_8);
+         BufferedWriter bw = new BufferedWriter(osw)) {
       bw.write(content);
     }
   }
+
   static File createUniqueFile(String fileName) {
     File file = new File(System.getProperty("user.dir"), fileName);
     int count = 0;
     while (file.exists()) {
       count++;
-      String newFileName = fileName.replaceFirst("^(.*?)(\\.[^.]*)?$", "$1_" + count + "$2");
+      String newFileName = fileName.replaceFirst("^(.*?)(\\.[^.]*)?$",
+        "$1_" + count + "$2");
       file = new File(System.getProperty("user.dir"), newFileName);
     }
     return file;

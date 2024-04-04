@@ -1,13 +1,16 @@
 package uk.msci.project.rsa;
 
 import java.io.IOException;
+
 import uk.msci.project.rsa.BenchmarkingContext;
 import uk.msci.project.rsa.GenModelBenchmarking;
 
 
 /**
- * This class is a specialised context for the benchmarking of key generation operations. It extends
- * BenchmarkingContext to provide functionality specific to key generation, such as exporting
+ * This class is a specialised context for the benchmarking of key generation
+ * operations. It extends
+ * BenchmarkingContext to provide functionality specific to key generation,
+ * such as exporting
  * generated public and private key batches on generalised results view.
  */
 public class KeyGenerationContext extends BenchmarkingContext {
@@ -18,7 +21,8 @@ public class KeyGenerationContext extends BenchmarkingContext {
   private GenModelBenchmarking genModel;
 
   /**
-   * Constructs a KeyGenerationContext with a specified GenModel. Initializes the key generation
+   * Constructs a KeyGenerationContext with a specified GenModel. Initializes
+   * the key generation
    * process.
    *
    * @param genModel The GenModel instance responsible for key generation.
@@ -28,7 +32,8 @@ public class KeyGenerationContext extends BenchmarkingContext {
   }
 
   /**
-   * Exports the batch of public keys generated during the benchmarking process. Delegates the
+   * Exports the batch of public keys generated during the benchmarking
+   * process. Delegates the
    * operation to the GenModel.
    *
    * @throws IOException If an I/O error occurs during the export.
@@ -39,7 +44,8 @@ public class KeyGenerationContext extends BenchmarkingContext {
   }
 
   /**
-   * Exports the batch of private keys generated during the benchmarking process. Delegates the
+   * Exports the batch of private keys generated during the benchmarking
+   * process. Delegates the
    * operation to the GenModel.
    *
    * @throws IOException If an I/O error occurs during the export.
@@ -50,7 +56,8 @@ public class KeyGenerationContext extends BenchmarkingContext {
   }
 
   /**
-   * Indicates whether the export public key batch button should be shown. Always returns true for
+   * Indicates whether the export public key batch button should be shown.
+   * Always returns true for
    * KeyGenerationContext.
    *
    * @return true, indicating the button should be shown.
@@ -61,7 +68,8 @@ public class KeyGenerationContext extends BenchmarkingContext {
   }
 
   /**
-   * Indicates whether the export private key batch button should be shown. Always returns true for
+   * Indicates whether the export private key batch button should be shown.
+   * Always returns true for
    * KeyGenerationContext.
    *
    * @return true, indicating the button should be shown.
@@ -77,9 +85,12 @@ public class KeyGenerationContext extends BenchmarkingContext {
    * @return A string label describing the key generation benchmarking results.
    */
   /**
-   * Provides a context-specific label for the results view based on the specific signature
-   * operation that was benchmarked. This label is used to display relevant information about the
-   * benchmarking context in the UI, offering users a clear understanding of the results being
+   * Provides a context-specific label for the results view based on the
+   * specific signature
+   * operation that was benchmarked. This label is used to display relevant
+   * information about the
+   * benchmarking context in the UI, offering users a clear understanding of
+   * the results being
    * presented.
    *
    * @param isComparisonMode A boolean flag indicating whether the benchmarking.

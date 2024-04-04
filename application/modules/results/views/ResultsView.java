@@ -1,6 +1,7 @@
 package uk.msci.project.rsa;
 
 import com.jfoenix.controls.JFXTabPane;
+
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -8,6 +9,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.List;
 import java.util.ResourceBundle;
+
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.event.ActionEvent;
@@ -27,8 +29,10 @@ import uk.msci.project.rsa.FileHandle;
 import uk.msci.project.rsa.ResultsTableColumn;
 
 /**
- * The {@code ResultsView} class is responsible for displaying the statistical results of the
- * benchmarking process in the digital signature application. It contains elements to visualise
+ * The {@code ResultsView} class is responsible for displaying the
+ * statistical results of the
+ * benchmarking process in the digital signature application. It contains
+ * elements to visualise
  * various statistics and buttons to export different types of data.
  */
 public class ResultsView implements Initializable {
@@ -135,8 +139,10 @@ public class ResultsView implements Initializable {
   private Button exportVerificationResultsBtn;
 
   /**
-   * The sideTabContainer field represents the JFXTabPane container for displaying side tabs
-   * corresponding to different keys that will trigger the displaying of their corresponding
+   * The sideTabContainer field represents the JFXTabPane container for
+   * displaying side tabs
+   * corresponding to different keys that will trigger the displaying of
+   * their corresponding
    * results.
    */
   @FXML
@@ -144,71 +150,90 @@ public class ResultsView implements Initializable {
 
 
   /**
-   * StatisticData object representing the number of trials in the benchmarking process.
+   * StatisticData object representing the number of trials in the
+   * benchmarking process.
    */
-  StatisticData numTrials = new StatisticData("Number of trials:", "XXXX.XX ms");
+  StatisticData numTrials = new StatisticData("Number of trials:", "XXXX.XX " +
+    "ms");
 
   /**
-   * StatisticData object representing the overall time taken in the benchmarking process.
+   * StatisticData object representing the overall time taken in the
+   * benchmarking process.
    */
-  StatisticData overallData = new StatisticData("Overall time taken:", "XXXX.XX ms");
+  StatisticData overallData = new StatisticData("Overall time taken:", "XXXX" +
+    ".XX ms");
 
   /**
-   * StatisticData object representing the mean time taken in the benchmarking process.
+   * StatisticData object representing the mean time taken in the
+   * benchmarking process.
    */
   StatisticData meanData = new StatisticData("Mean:", "XXXX.XX ms");
 
   /**
-   * StatisticData object representing the confidence interval in the benchmarking process.
+   * StatisticData object representing the confidence interval in the
+   * benchmarking process.
    */
-  StatisticData confidenceInterval = new StatisticData("Confidence Interval:", "XXXX.XX ms");
+  StatisticData confidenceInterval = new StatisticData("Confidence Interval:"
+    , "XXXX.XX ms");
 
   /**
-   * StatisticData object representing the 25th percentile of time measurements in the benchmarking
+   * StatisticData object representing the 25th percentile of time
+   * measurements in the benchmarking
    * process.
    */
-  StatisticData percentile25Data = new StatisticData("25th Percentile:", "XXXX.XX ms");
+  StatisticData percentile25Data = new StatisticData("25th Percentile:",
+    "XXXX.XX ms");
 
   /**
-   * StatisticData object representing the median time measurement in the benchmarking process.
+   * StatisticData object representing the median time measurement in the
+   * benchmarking process.
    */
   StatisticData medianData = new StatisticData("Median:", "XXXX.XX ms");
 
   /**
-   * StatisticData object representing the 75th percentile of time measurements in the benchmarking
+   * StatisticData object representing the 75th percentile of time
+   * measurements in the benchmarking
    * process.
    */
-  StatisticData percentile75Data = new StatisticData("75th Percentile:", "XXXX.XX ms");
+  StatisticData percentile75Data = new StatisticData("75th Percentile:",
+    "XXXX.XX ms");
 
   /**
-   * StatisticData object representing the range of time measurements in the benchmarking process.
+   * StatisticData object representing the range of time measurements in the
+   * benchmarking process.
    */
   StatisticData rangeData = new StatisticData("Range:", "XXXX.XX ms");
 
   /**
-   * StatisticData object representing the standard deviation of time measurements in the
+   * StatisticData object representing the standard deviation of time
+   * measurements in the
    * benchmarking process.
    */
-  StatisticData stdDeviationData = new StatisticData("Standard Deviation:", "XXXX.XX ms");
+  StatisticData stdDeviationData = new StatisticData("Standard Deviation:",
+    "XXXX.XX ms");
 
   /**
-   * StatisticData object representing the variance of time measurements in the benchmarking
+   * StatisticData object representing the variance of time measurements in
+   * the benchmarking
    * process.
    */
   StatisticData varianceData = new StatisticData("Variance:", "XXXX.XX ms");
 
   /**
-   * StatisticData object representing the minimum time measurement in the benchmarking process.
+   * StatisticData object representing the minimum time measurement in the
+   * benchmarking process.
    */
   StatisticData minTimeData = new StatisticData("Minimum Time:", "XXXX.XX ms");
 
   /**
-   * StatisticData object representing the maximum time measurement in the benchmarking process.
+   * StatisticData object representing the maximum time measurement in the
+   * benchmarking process.
    */
   StatisticData maxTimeData = new StatisticData("Maximum Time:", "XXXX.XX ms");
 
   /**
-   * Adds a key switch tab (for switching view of results) to the sideTabContainer.
+   * Adds a key switch tab (for switching view of results) to the
+   * sideTabContainer.
    *
    * @param keyTab The tab to be added for key switching.
    */
@@ -229,7 +254,8 @@ public class ResultsView implements Initializable {
   /**
    * Registers an observer for the event of exporting benchmarking results.
    *
-   * @param observer the event handler to be invoked on export benchmarking results action.
+   * @param observer the event handler to be invoked on export benchmarking
+   *                 results action.
    */
   public void addExportBenchmarkingResultsObserver(EventHandler<ActionEvent> observer) {
     exportBenchmarkingResultsBtn.setOnAction(observer);
@@ -238,7 +264,8 @@ public class ResultsView implements Initializable {
   /**
    * Registers an observer for the event of exporting private key batch.
    *
-   * @param observer the event handler to be invoked on export private key batch action.
+   * @param observer the event handler to be invoked on export private key
+   *                 batch action.
    */
   public void addExportPrivateKeyBatchObserver(EventHandler<ActionEvent> observer) {
     exportPrivateKeyBatchBtn.setOnAction(observer);
@@ -247,7 +274,8 @@ public class ResultsView implements Initializable {
   /**
    * Registers an observer for the event of exporting public key batch.
    *
-   * @param observer the event handler to be invoked on export public key batch action.
+   * @param observer the event handler to be invoked on export public key
+   *                 batch action.
    */
   public void addExportPublicKeyBatchObserver(EventHandler<ActionEvent> observer) {
     exportPublicKeyBatchBtn.setOnAction(observer);
@@ -256,7 +284,8 @@ public class ResultsView implements Initializable {
   /**
    * Registers an observer for the event of exporting signature batch.
    *
-   * @param observer the event handler to be invoked on export signature batch action.
+   * @param observer the event handler to be invoked on export signature
+   *                 batch action.
    */
   public void addExportSignatureBatchObserver(EventHandler<ActionEvent> observer) {
     exportSignatureBatchBtn.setOnAction(observer);
@@ -265,16 +294,19 @@ public class ResultsView implements Initializable {
   /**
    * Registers an observer for the event of exporting recoverable message batch.
    *
-   * @param observer the event handler to be invoked on export recoverable message batch action.
+   * @param observer the event handler to be invoked on export recoverable
+   *                 message batch action.
    */
   public void addExportRecoverableMessageBatchObserver(EventHandler<ActionEvent> observer) {
     exportRecoverableMessageBatchBtn.setOnAction(observer);
   }
 
   /**
-   * Registers an observer for the event of exporting non-recoverable message batch.
+   * Registers an observer for the event of exporting non-recoverable message
+   * batch.
    *
-   * @param observer the event handler to be invoked on export non-recoverable message batch
+   * @param observer the event handler to be invoked on export
+   *                 non-recoverable message batch
    *                 action.
    */
   public void addExportNonRecoverableMessageBatchObserver(EventHandler<ActionEvent> observer) {
@@ -284,7 +316,8 @@ public class ResultsView implements Initializable {
   /**
    * Registers an observer for the event of exporting verification results.
    *
-   * @param observer the event handler to be invoked on export verification results action.
+   * @param observer the event handler to be invoked on export verification
+   *                 results action.
    */
   public void addExportVerificationResultsObserver(EventHandler<ActionEvent> observer) {
     exportVerificationResultsBtn.setOnAction(observer);
@@ -383,7 +416,8 @@ public class ResultsView implements Initializable {
 
 
   /**
-   * Sets the text of the results label to the digital signature operation that benchmarking was
+   * Sets the text of the results label to the digital signature operation
+   * that benchmarking was
    * performed for.
    *
    * @param text The text to be displayed in the results label.
@@ -540,11 +574,14 @@ public class ResultsView implements Initializable {
 
 
   /**
-   * Initialises the ResultsView, setting up the table view and populating it with data.
+   * Initialises the ResultsView, setting up the table view and populating it
+   * with data.
    *
-   * @param location  The location used to resolve relative paths for the root object, or null if
+   * @param location  The location used to resolve relative paths for the
+   *                  root object, or null if
    *                  unknown.
-   * @param resources The resources used to localize the root object, or null if not localized.
+   * @param resources The resources used to localize the root object, or null
+   *                 if not localized.
    */
   @Override
   public void initialize(URL location, ResourceBundle resources) {
@@ -557,7 +594,8 @@ public class ResultsView implements Initializable {
   public void setupTableView() {
     // Configure the columns to use the property names from StatisticData
     nameColumn.setCellValueFactory(new PropertyValueFactory<>("statisticName"));
-    valueColumn.setCellValueFactory(new PropertyValueFactory<>("statisticValue"));
+    valueColumn.setCellValueFactory(new PropertyValueFactory<>(
+      "statisticValue"));
   }
 
 
@@ -568,9 +606,9 @@ public class ResultsView implements Initializable {
     // Add the StatisticData instances to the tableView
     tableView.getItems().clear();
     tableView.getItems().addAll(numTrials,
-        overallData, meanData, confidenceInterval, percentile25Data,
-        medianData, percentile75Data, rangeData, stdDeviationData,
-        varianceData, minTimeData, maxTimeData
+      overallData, meanData, confidenceInterval, percentile25Data,
+      medianData, percentile75Data, rangeData, stdDeviationData,
+      varianceData, minTimeData, maxTimeData
     );
     resizeTableView();
   }
@@ -611,10 +649,11 @@ public class ResultsView implements Initializable {
   public void addValueColumns(List<ResultsTableColumn> resultsTableColumn) {
     for (int i = 0; i < resultsTableColumn.size(); i++) {
       ResultsTableColumn metadata = resultsTableColumn.get(i);
-      TableColumn<StatisticData, String> column = new TableColumn<>(metadata.getColumnName());
+      TableColumn<StatisticData, String> column =
+        new TableColumn<>(metadata.getColumnName());
       int columnIndex = i;
       column.setCellValueFactory(cellData ->
-          new SimpleStringProperty(cellData.getValue().getStatisticValues().get(columnIndex))
+        new SimpleStringProperty(cellData.getValue().getStatisticValues().get(columnIndex))
       );
       tableView.getColumns().add(column);
     }
@@ -637,21 +676,27 @@ public class ResultsView implements Initializable {
   }
 
   /**
-   * Exports the data from a comparison table to a CSV file. This method iterates through each item
-   * in the table and writes the data to a file with a CSV format. It also formats confidence
-   * interval values for better readability and replaces the column header "Conf. Interval" with
+   * Exports the data from a comparison table to a CSV file. This method
+   * iterates through each item
+   * in the table and writes the data to a file with a CSV format. It also
+   * formats confidence
+   * interval values for better readability and replaces the column header
+   * "Conf. Interval" with
    * "Confidence Interval".
    *
-   * @param fileName The name of the file where the table data will be exported. This file will be
+   * @param fileName The name of the file where the table data will be
+   *                 exported. This file will be
    *                 created if it does not exist.
    */
   public void exportComparisonTableResultsToCSV(String fileName) {
     File resultsFile = FileHandle.createUniqueFile(fileName);
-    try (BufferedWriter fileWriter = new BufferedWriter(new FileWriter(resultsFile))) {
+    try (BufferedWriter fileWriter =
+           new BufferedWriter(new FileWriter(resultsFile))) {
       // Write the header line
       for (TableColumn<StatisticData, ?> column : tableView.getColumns()) {
         String header =
-            column.getText().equals("Conf. Interval") ? "Confidence Interval" : column.getText();
+          column.getText().equals("Conf. Interval") ? "Confidence Interval" :
+            column.getText();
         fileWriter.append(header).append(",");
       }
       fileWriter.append("\n");
@@ -678,12 +723,16 @@ public class ResultsView implements Initializable {
   }
 
   /**
-   * Formats a confidence interval string from a format like "95% with bounds [0.41813, 0.53444]" to
-   * "95% with bounds 0.41813 ms - 0.53444 ms". This method is used to ensure that the confidence
+   * Formats a confidence interval string from a format like "95% with bounds
+   * [0.41813, 0.53444]" to
+   * "95% with bounds 0.41813 ms - 0.53444 ms". This method is used to ensure
+   * that the confidence
    * interval values are formatted correctly for CSV output.
    *
-   * @param interval The confidence interval string in the format "95% with bounds [lower, upper]".
-   * @return A formatted string of the confidence interval in the format "95% with bounds lower ms -
+   * @param interval The confidence interval string in the format "95% with
+   *                 bounds [lower, upper]".
+   * @return A formatted string of the confidence interval in the format "95%
+   * with bounds lower ms -
    * upper ms".
    */
   private String formatConfidenceInterval(String interval) {
@@ -703,9 +752,11 @@ public class ResultsView implements Initializable {
   }
 
   /**
-   * Sets the text of the header of the first column in the results table to a specified text
+   * Sets the text of the header of the first column in the results table to
+   * a specified text
    *
-   * @param text The text to be displayed header of the first column in the results table.
+   * @param text The text to be displayed header of the first column in the
+   *             results table.
    */
   public void setNameColumnText(String text) {
     this.nameColumn.setText(text);
@@ -714,8 +765,10 @@ public class ResultsView implements Initializable {
   /**
    * Sets the visibility of the line graph button for mean values.
    *
-   * @param visible If true, the line graph button for mean values is visible and managed by the
-   *                layout. If false, the button is not visible and not managed by the layout,
+   * @param visible If true, the line graph button for mean values is visible
+   *               and managed by the
+   *                layout. If false, the button is not visible and not
+   *                managed by the layout,
    *                meaning it does not take any space in the layout.
    */
   public void setLineGraphButtonMeanVisibility(boolean visible) {
@@ -724,53 +777,65 @@ public class ResultsView implements Initializable {
   }
 
   /**
-   * Updates the graph display area with a new chart. The current contents of the graph area are
-   * cleared, and the provided ChartViewer is added as the new content. The ChartViewer is set to
+   * Updates the graph display area with a new chart. The current contents of
+   * the graph area are
+   * cleared, and the provided ChartViewer is added as the new content. The
+   * ChartViewer is set to
    * fill the entire space of the graph area.
    *
-   * @param chartViewer The ChartViewer containing the chart to be displayed in the graph area.
+   * @param chartViewer The ChartViewer containing the chart to be displayed
+   *                    in the graph area.
    */
   public void updateGraphArea(ChartViewer chartViewer) {
     graphArea.getChildren().clear();
     graphArea.getChildren().add(chartViewer);
-    chartViewer.setPrefSize(graphArea.getWidth(), graphArea.getHeight()); // Set preferred size
+    chartViewer.setPrefSize(graphArea.getWidth(), graphArea.getHeight()); //
+    // Set preferred size
     graphArea.requestLayout(); // Request layout refresh
   }
 
 
   /**
-   * Adds an observer to the histogram button that will be triggered on button action.
+   * Adds an observer to the histogram button that will be triggered on
+   * button action.
    *
-   * @param observer The event handler to be triggered when the histogram button is clicked.
+   * @param observer The event handler to be triggered when the histogram
+   *                 button is clicked.
    */
   void addHistogramButtonObserver(EventHandler<ActionEvent> observer) {
     histogramButton.setOnAction(observer);
   }
 
   /**
-   * Adds an observer to the box plot button that will be triggered on button action.
+   * Adds an observer to the box plot button that will be triggered on button
+   * action.
    *
-   * @param observer The event handler to be triggered when the box plot button is clicked.
+   * @param observer The event handler to be triggered when the box plot
+   *                 button is clicked.
    */
   void addBoxPlotButtonObserver(EventHandler<ActionEvent> observer) {
     boxPlotButton.setOnAction(observer);
   }
 
   /**
-   * Adds an observer to the line graph button for mean values that will be triggered on button
+   * Adds an observer to the line graph button for mean values that will be
+   * triggered on button
    * action.
    *
-   * @param observer The event handler to be triggered when the mean line graph button is clicked.
+   * @param observer The event handler to be triggered when the mean line
+   *                 graph button is clicked.
    */
   void addLineGraphButtonMeanObserver(EventHandler<ActionEvent> observer) {
     lineGraphButtonMean.setOnAction(observer);
   }
 
   /**
-   * Adds an observer to the line graph button for all times that will be triggered on button
+   * Adds an observer to the line graph button for all times that will be
+   * triggered on button
    * action.
    *
-   * @param observer The event handler to be triggered when the all times line graph button is
+   * @param observer The event handler to be triggered when the all times
+   *                 line graph button is
    *                 clicked.
    */
   void addLineGraphButtonAllTimesObserver(EventHandler<ActionEvent> observer) {
@@ -815,9 +880,12 @@ public class ResultsView implements Initializable {
 
 
   /**
-   * Removes the last row from the results table view. This method is used to manage the dynamic
-   * nature of the results displayed in the table. The method is typically called prior to adding
-   * new data to the table to remove any outdated or no longer relevant information.
+   * Removes the last row from the results table view. This method is used to
+   * manage the dynamic
+   * nature of the results displayed in the table. The method is typically
+   * called prior to adding
+   * new data to the table to remove any outdated or no longer relevant
+   * information.
    */
   public void removeLastRow() {
     if (!tableView.getItems().isEmpty()) {

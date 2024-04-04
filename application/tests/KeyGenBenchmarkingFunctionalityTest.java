@@ -37,14 +37,17 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.testfx.api.FxAssert.verifyThat;
 import static org.testfx.util.NodeQueryUtils.hasText;
 import static uk.msci.project.tests.MainTestUtility.waitForExportDialogToShow;
+
 import uk.msci.project.tests.MainTestUtility;
 
 
-
 /**
- * Tests the key generation functionality of the Signature Scheme benchmarking application. This includes
- * verifying the presence and correct behavior of UI components related to key generation benchmarking, as well
- * as the validation and handling of user input and the successful export of generated keys.
+ * Tests the key generation functionality of the Signature Scheme
+ * benchmarking application. This includes
+ * verifying the presence and correct behavior of UI components related to
+ * key generation benchmarking, as well
+ * as the validation and handling of user input and the successful export of
+ * generated keys.
  */
 public class KeyGenBenchmarkingFunctionalityTest extends ApplicationTest {
   private FxRobot robot;
@@ -75,30 +78,38 @@ public class KeyGenBenchmarkingFunctionalityTest extends ApplicationTest {
 
 
   /**
-   * Checks if key components necessary for the application, like toggles and buttons, are present.
+   * Checks if key components necessary for the application, like toggles and
+   * buttons, are present.
    */
   @Test
   void shouldContainKeyComponents() {
     WaitForAsyncUtils.waitForFxEvents();
-    ToggleSwitch benchmarkingModeToggle = (ToggleSwitch) robot.lookup("#benchmarkingModeToggle").query();
+    ToggleSwitch benchmarkingModeToggle = (ToggleSwitch) robot.lookup(
+      "#benchmarkingModeToggle").query();
     assertNotNull(benchmarkingModeToggle, "The component should exist.");
-    ToggleSwitch crossParameterBenchmarkingModeToggle = (ToggleSwitch) robot.lookup("#crossParameterBenchmarkingModeToggle").query();
-    assertNotNull(crossParameterBenchmarkingModeToggle, "The component should exist.");
-    TextField numKeysTextField = (TextField) robot.lookup("#numKeysTextField").query();
+    ToggleSwitch crossParameterBenchmarkingModeToggle =
+      (ToggleSwitch) robot.lookup("#crossParameterBenchmarkingModeToggle").query();
+    assertNotNull(crossParameterBenchmarkingModeToggle, "The component should" +
+      " exist.");
+    TextField numKeysTextField =
+      (TextField) robot.lookup("#numKeysTextField").query();
     assertNotNull(numKeysTextField, "The component should exist.");
     Button numKeysButton = (Button) robot.lookup("#numKeysButton").query();
     assertNotNull(numKeysButton, "The component should exist.");
   }
 
   /**
-   * Validates that the number of keys input field rejects invalid input and shows an appropriate error
+   * Validates that the number of keys input field rejects invalid input and
+   * shows an appropriate error
    * message.
    */
   @Test
   void shouldValidateNumKeysInput() {
-    String[] invalidInputs = {"invalid input", "@#\\%\\&*[(\\$", "adewfrgtrvbc125663", "", "7.8", "-5", "0", "1/2"};
+    String[] invalidInputs = {"invalid input", "@#\\%\\&*[(\\$",
+      "adewfrgtrvbc125663", "", "7.8", "-5", "0", "1/2"};
     WaitForAsyncUtils.waitForFxEvents();
-    TextField numKeysTextField = robot.lookup("#numKeysTextField").queryAs(TextField.class);
+    TextField numKeysTextField =
+      robot.lookup("#numKeysTextField").queryAs(TextField.class);
     for (String input : invalidInputs) {
       // Enter each invalid input and attempt to perform the operation
       Platform.runLater(() -> {
@@ -128,13 +139,15 @@ public class KeyGenBenchmarkingFunctionalityTest extends ApplicationTest {
 
 
   /**
-   * Verifies that the dialog for entering key fields appears correctly upon valid input in the number of keys field.
+   * Verifies that the dialog for entering key fields appears correctly upon
+   * valid input in the number of keys field.
    * This sets the stage for further interaction with key field inputs.
    */
   @Test
   void shouldDisplayKeyFieldsDialogOnValidInput() {
     WaitForAsyncUtils.waitForFxEvents();
-    TextField keySizeTextField = robot.lookup("#numKeysTextField").queryAs(TextField.class);
+    TextField keySizeTextField =
+      robot.lookup("#numKeysTextField").queryAs(TextField.class);
 
     // Input a valid value
     robot.clickOn(keySizeTextField).write("2");
@@ -152,12 +165,16 @@ public class KeyGenBenchmarkingFunctionalityTest extends ApplicationTest {
 
     // Check the number of TextField and CheckBox pairs
     // Use robot.from() to scope the search to the dialog window only
-    Set<Node> fields = robot.from(dialogStage.getScene().getRoot()).lookup(".text-field").queryAll();
-    Set<Node> checkBoxes = robot.from(dialogStage.getScene().getRoot()).lookup(".check-box").queryAll();
+    Set<Node> fields = robot.from(dialogStage.getScene().getRoot()).lookup(
+      ".text-field").queryAll();
+    Set<Node> checkBoxes =
+      robot.from(dialogStage.getScene().getRoot()).lookup(".check-box").queryAll();
 
     // Assert the expected number of fields and checkboxes
-    assertEquals(2, fields.size(), "Expected number of text fields does not match.");
-    assertEquals(2, checkBoxes.size(), "Expected number of check boxes does not match.");
+    assertEquals(2, fields.size(), "Expected number of text fields does not " +
+      "match.");
+    assertEquals(2, checkBoxes.size(), "Expected number of check boxes does " +
+      "not match.");
 
   }
 
@@ -168,7 +185,8 @@ public class KeyGenBenchmarkingFunctionalityTest extends ApplicationTest {
   @Test
   void shouldValidateKeyFieldsDialogTextFields() {
     WaitForAsyncUtils.waitForFxEvents();
-    TextField keySizeTextField = robot.lookup("#numKeysTextField").queryAs(TextField.class);
+    TextField keySizeTextField =
+      robot.lookup("#numKeysTextField").queryAs(TextField.class);
 
     // Input a valid value
     robot.clickOn(keySizeTextField).write("2");
@@ -197,7 +215,8 @@ public class KeyGenBenchmarkingFunctionalityTest extends ApplicationTest {
 
     // Check the text fields for the red background
     String redErrorFieldColour = "-fx-control-inner-background: #FFDDDD;";
-    Set<TextField> textFields = robot.from(dialogStage.getScene().getRoot()).lookup(".text-field").queryAllAs(TextField.class);
+    Set<TextField> textFields =
+      robot.from(dialogStage.getScene().getRoot()).lookup(".text-field").queryAllAs(TextField.class);
     for (TextField textField : textFields) {
       String style = textField.getStyle();
       assertEquals(redErrorFieldColour, style);
@@ -216,7 +235,8 @@ public class KeyGenBenchmarkingFunctionalityTest extends ApplicationTest {
 
 
     /**
-     * Tests error handling when less than the required amount of prime factors is inputted for a key configuration text field.
+     * Tests error handling when less than the required amount of prime
+     * factors is inputted for a key configuration text field.
 
      */
     robot.clickOn(secondTextField).write("1024");
@@ -226,7 +246,8 @@ public class KeyGenBenchmarkingFunctionalityTest extends ApplicationTest {
 
 
     /**
-     * Tests error handling when special characters are inputted for a key configuration text field
+     * Tests error handling when special characters are inputted for a key
+     * configuration text field
      */
     robot.clickOn(secondTextField).write("!@#$%^&*()");
     robot.clickOn(okButton);
@@ -234,15 +255,18 @@ public class KeyGenBenchmarkingFunctionalityTest extends ApplicationTest {
     secondTextField.clear();
 
     /**
-     * Tests error handling when an excessively long numeric input is provided for a key configuration text field
+     * Tests error handling when an excessively long numeric input is
+     * provided for a key configuration text field
      */
-    robot.clickOn(secondTextField).write("11111111111111111111111111111111111111");
+    robot.clickOn(secondTextField).write(
+      "11111111111111111111111111111111111111");
     robot.clickOn(okButton);
     assertEquals(redErrorFieldColour, secondTextField.getStyle());
     secondTextField.clear();
 
     /**
-     * Tests error handling when an alphanumeric input is provided for a key configuration text field
+     * Tests error handling when an alphanumeric input is provided for a key
+     * configuration text field
      */
     robot.clickOn(secondTextField).write("abc123");
     robot.clickOn(okButton);
@@ -256,16 +280,22 @@ public class KeyGenBenchmarkingFunctionalityTest extends ApplicationTest {
       Arguments.of(new Pair<>("512,512", true), new Pair<>("1024,1024", true)),
       Arguments.of(new Pair<>("512,512", true), new Pair<>("1024,1024", false)),
       Arguments.of(new Pair<>("512,512", false), new Pair<>("1024,1024", true)),
-      Arguments.of(new Pair<>("512,512", false), new Pair<>("1024,1024", false)),
-      Arguments.of(new Pair<>("1024,1024", true), new Pair<>("1024,1024", true)),
-      Arguments.of(new Pair<>("1024,1024", true), new Pair<>("1024,1024", false)),
-      Arguments.of(new Pair<>("1024,1024", false), new Pair<>("1024,1024", true)),
-      Arguments.of(new Pair<>("1024,1024", false), new Pair<>("1024,1024", false))
+      Arguments.of(new Pair<>("512,512", false), new Pair<>("1024,1024",
+        false)),
+      Arguments.of(new Pair<>("1024,1024", true), new Pair<>("1024,1024",
+        true)),
+      Arguments.of(new Pair<>("1024,1024", true), new Pair<>("1024,1024",
+        false)),
+      Arguments.of(new Pair<>("1024,1024", false), new Pair<>("1024,1024",
+        true)),
+      Arguments.of(new Pair<>("1024,1024", false), new Pair<>("1024,1024",
+        false))
     );
   }
 
   /**
-   * Ensures that the dialog for specifying the number of trials is correctly displayed for valid key configurations.
+   * Ensures that the dialog for specifying the number of trials is correctly
+   * displayed for valid key configurations.
    *
    * @param keyConfig1 The first key configuration.
    * @param keyConfig2 The second key configuration.
@@ -274,7 +304,8 @@ public class KeyGenBenchmarkingFunctionalityTest extends ApplicationTest {
   @MethodSource("validKeyConfigurationPairs")
   void shouldDisplayNumTrialsDialogOnValidKeys(Pair<String, Boolean> keyConfig1, Pair<String, Boolean> keyConfig2) {
     WaitForAsyncUtils.waitForFxEvents();
-    TextField keySizeTextField = robot.lookup("#numKeysTextField").queryAs(TextField.class);
+    TextField keySizeTextField =
+      robot.lookup("#numKeysTextField").queryAs(TextField.class);
 
     // Input a valid value
     robot.clickOn(keySizeTextField).write("2");
@@ -298,15 +329,19 @@ public class KeyGenBenchmarkingFunctionalityTest extends ApplicationTest {
     // Wait for potential UI updates
     WaitForAsyncUtils.waitForFxEvents();
 
-    Set<TextField> textFieldsSet = robot.from(dialogStage.getScene().getRoot()).lookup(".text-field").queryAllAs(TextField.class);
-    Set<Node> checkBoxesSet = robot.from(dialogStage.getScene().getRoot()).lookup(".check-box").queryAll();
+    Set<TextField> textFieldsSet =
+      robot.from(dialogStage.getScene().getRoot()).lookup(".text-field").queryAllAs(TextField.class);
+    Set<Node> checkBoxesSet =
+      robot.from(dialogStage.getScene().getRoot()).lookup(".check-box").queryAll();
 
     // Convert Sets to Lists for easier access by index
     List<TextField> textFields = new ArrayList<>(textFieldsSet);
-    List<CheckBox> checkBoxes = checkBoxesSet.stream().map(node -> (CheckBox) node).collect(Collectors.toList());
+    List<CheckBox> checkBoxes =
+      checkBoxesSet.stream().map(node -> (CheckBox) node).collect(Collectors.toList());
 
 
-    // Write the key configurations and select checkboxes as per the provided pairs
+    // Write the key configurations and select checkboxes as per the provided
+    // pairs
     if (!textFields.isEmpty() && checkBoxes.size() >= 2) {
 
       textFields.get(0).setText(keyConfig1.getKey());
@@ -327,13 +362,16 @@ public class KeyGenBenchmarkingFunctionalityTest extends ApplicationTest {
   }
 
   /**
-   * Validates error handling for various invalid inputs in the number of trials dialog.
-   * Ensures that the user's input for the number of trials is correctly validated.
+   * Validates error handling for various invalid inputs in the number of
+   * trials dialog.
+   * Ensures that the user's input for the number of trials is correctly
+   * validated.
    */
   @Test
   void shouldValidateNumTrialsDialogTextField() {
     WaitForAsyncUtils.waitForFxEvents();
-    TextField keySizeTextField = robot.lookup("#numKeysTextField").queryAs(TextField.class);
+    TextField keySizeTextField =
+      robot.lookup("#numKeysTextField").queryAs(TextField.class);
 
     // Input a valid value
     robot.clickOn(keySizeTextField).write("2");
@@ -357,7 +395,8 @@ public class KeyGenBenchmarkingFunctionalityTest extends ApplicationTest {
     // Wait for potential UI updates
     WaitForAsyncUtils.waitForFxEvents();
 
-    Set<TextField> textFields = robot.from(dialogStage.getScene().getRoot()).lookup(".text-field").queryAllAs(TextField.class);
+    Set<TextField> textFields =
+      robot.from(dialogStage.getScene().getRoot()).lookup(".text-field").queryAllAs(TextField.class);
 
     Iterator<TextField> textFieldIterator = textFields.iterator();
 
@@ -435,7 +474,8 @@ public class KeyGenBenchmarkingFunctionalityTest extends ApplicationTest {
 
 
     /**
-     * Tests error handling when the trials field contains a sequence of special characters
+     * Tests error handling when the trials field contains a sequence of
+     * special characters
      */
     robot.clickOn(trialsField).write("!@#$%^&*()");
     robot.clickOn(okButton);
@@ -497,20 +537,23 @@ public class KeyGenBenchmarkingFunctionalityTest extends ApplicationTest {
   }
 
 
-
-
   /**
-   * Tests the final stage of the key generation functionality where results should be correctly displayed
-   * and the corresponding files are expected to be exported for valid numbers of trials.
-   * This test verifies the culmination of all previous stages in the key generation workflow.
+   * Tests the final stage of the key generation functionality where results
+   * should be correctly displayed
+   * and the corresponding files are expected to be exported for valid
+   * numbers of trials.
+   * This test verifies the culmination of all previous stages in the key
+   * generation workflow.
    *
-   * @throws IOException If an I/O error occurs.
+   * @throws IOException      If an I/O error occurs.
    * @throws TimeoutException If the test times out.
    */
   @Test
-  void shouldDisplayResultsOnValidNumTrials() throws IOException, TimeoutException {
+  void shouldDisplayResultsOnValidNumTrials() throws IOException,
+    TimeoutException {
     WaitForAsyncUtils.waitForFxEvents();
-    TextField keySizeTextField = robot.lookup("#numKeysTextField").queryAs(TextField.class);
+    TextField keySizeTextField =
+      robot.lookup("#numKeysTextField").queryAs(TextField.class);
     int totalKeys = 2;
     int[] keyLengths = new int[]{1024, 2048};
 
@@ -535,15 +578,19 @@ public class KeyGenBenchmarkingFunctionalityTest extends ApplicationTest {
 
     // Wait for potential UI updates
     WaitForAsyncUtils.waitForFxEvents();
-    Set<TextField> textFieldsSet = robot.from(dialogStage.getScene().getRoot()).lookup(".text-field").queryAllAs(TextField.class);
-    Set<Node> checkBoxesSet = robot.from(dialogStage.getScene().getRoot()).lookup(".check-box").queryAll();
+    Set<TextField> textFieldsSet =
+      robot.from(dialogStage.getScene().getRoot()).lookup(".text-field").queryAllAs(TextField.class);
+    Set<Node> checkBoxesSet =
+      robot.from(dialogStage.getScene().getRoot()).lookup(".check-box").queryAll();
 
     // Convert Sets to Lists for easier access by index
     List<TextField> textFields = new ArrayList<>(textFieldsSet);
-    List<CheckBox> checkBoxes = checkBoxesSet.stream().map(node -> (CheckBox) node).collect(Collectors.toList());
+    List<CheckBox> checkBoxes =
+      checkBoxesSet.stream().map(node -> (CheckBox) node).collect(Collectors.toList());
 
 
-    // Write the key configurations and select checkboxes as per the provided pairs
+    // Write the key configurations and select checkboxes as per the provided
+    // pairs
     if (!textFields.isEmpty() && checkBoxes.size() >= totalKeys) {
 
       textFields.get(0).setText("512,512");
@@ -573,22 +620,29 @@ public class KeyGenBenchmarkingFunctionalityTest extends ApplicationTest {
     WaitForAsyncUtils.waitForFxEvents();
 
 
-    ProgressBar progressBar = robot.lookup("#progressBar").queryAs(ProgressBar.class);
+    ProgressBar progressBar =
+      robot.lookup("#progressBar").queryAs(ProgressBar.class);
     WaitForAsyncUtils.waitForFxEvents();
-    WaitForAsyncUtils.waitFor(1, TimeUnit.SECONDS, () -> progressBar.getProgress() >= 1);
+    WaitForAsyncUtils.waitFor(1, TimeUnit.SECONDS,
+      () -> progressBar.getProgress() >= 1);
 
 
     // Check that the results title label is displayed and correct
     Platform.runLater(() -> {
-      Label resultsTitleLabel = robot.lookup("#resultsLabel").queryAs(Label.class);
-      assertEquals("Benchmarking Results for Key Generation", resultsTitleLabel.getText());
+      Label resultsTitleLabel =
+        robot.lookup("#resultsLabel").queryAs(Label.class);
+      assertEquals("Benchmarking Results for Key Generation",
+        resultsTitleLabel.getText());
     });
     WaitForAsyncUtils.waitForFxEvents();
     // Verify that the JFXTabPane exists
-    JFXTabPane sideTabContainer = robot.lookup("#sideTabContainer").queryAs(JFXTabPane.class);
-    assertNotNull(sideTabContainer, "The side tab container should be present.");
+    JFXTabPane sideTabContainer =
+      robot.lookup("#sideTabContainer").queryAs(JFXTabPane.class);
+    assertNotNull(sideTabContainer, "The side tab container should be present" +
+      ".");
 
-    assertEquals(totalKeys, sideTabContainer.getTabs().size(), "There should be tabs equal to the total number of keys.");
+    assertEquals(totalKeys, sideTabContainer.getTabs().size(), "There should " +
+      "be tabs equal to the total number of keys.");
     robot.scroll(10, VerticalDirection.UP);
 
     for (int i = 0; i < totalKeys; i++) {
@@ -603,15 +657,18 @@ public class KeyGenBenchmarkingFunctionalityTest extends ApplicationTest {
 
       // Check the VBox has two children: ImageView and Label
       List<Node> vboxChildren = graphicBox.getChildren();
-      assertEquals(2, vboxChildren.size(), "The graphic box should have an image and a label.");
+      assertEquals(2, vboxChildren.size(), "The graphic box should have an " +
+        "image and a label.");
 
       // Check for Label and its text
       Label keyLabel = (Label) vboxChildren.get(1);
-      assertEquals("Key " + (i + 1) + " (" + keyLengths[i] + "bit)", keyLabel.getText(),
+      assertEquals("Key " + (i + 1) + " (" + keyLengths[i] + "bit)",
+        keyLabel.getText(),
         "The label should have the correct text.");
 
 
-      Button exportBenchmarkingResultsBtn = robot.lookup("#exportBenchmarkingResultsBtn").queryAs(Button.class);
+      Button exportBenchmarkingResultsBtn = robot.lookup(
+        "#exportBenchmarkingResultsBtn").queryAs(Button.class);
 
 
       robot.clickOn(exportBenchmarkingResultsBtn);
@@ -624,25 +681,34 @@ public class KeyGenBenchmarkingFunctionalityTest extends ApplicationTest {
 
 
       Optional<File> benchmarkingResultsFile = MainTestUtility.getFile(
-        "Benchmarking Results for Key Generation" + "_" + keyLengths[i] + "bit", ".csv");
-      assertTrue(benchmarkingResultsFile.isPresent(), "Expected exported file not found.");
-      assertTrue(benchmarkingResultsFile.get().exists(), "Exported file should exist.");
+        "Benchmarking Results for Key Generation" + "_" + keyLengths[i] +
+          "bit", ".csv");
+      assertTrue(benchmarkingResultsFile.isPresent(), "Expected exported file" +
+        " not found.");
+      assertTrue(benchmarkingResultsFile.get().exists(), "Exported file " +
+        "should exist.");
 
       // Verify that the statistics table is populated
-      TableView<?> tableView = robot.lookup("#tableView").queryAs(TableView.class);
-      assertFalse(tableView.getItems().isEmpty(), "The table should have data.");
+      TableView<?> tableView =
+        robot.lookup("#tableView").queryAs(TableView.class);
+      assertFalse(tableView.getItems().isEmpty(), "The table should have data" +
+        ".");
 
 
     }
 
 
     // Check for the presence of the export buttons and their texts
-    Button exportPrivateKeyBatchBtn = robot.lookup("#exportPrivateKeyBatchBtn").queryAs(Button.class);
-    Button exportPublicKeyBatchBtn = robot.lookup("#exportPublicKeyBatchBtn").queryAs(Button.class);
+    Button exportPrivateKeyBatchBtn = robot.lookup("#exportPrivateKeyBatchBtn"
+    ).queryAs(Button.class);
+    Button exportPublicKeyBatchBtn =
+      robot.lookup("#exportPublicKeyBatchBtn").queryAs(Button.class);
 
     // Verify that buttons are visible and then simulate clicks
-    assertTrue(exportPrivateKeyBatchBtn.isVisible(), "Export private Key batch button should be visible.");
-    assertTrue(exportPublicKeyBatchBtn.isVisible(), "Export public Key batch button should be visible.");
+    assertTrue(exportPrivateKeyBatchBtn.isVisible(), "Export private Key " +
+      "batch button should be visible.");
+    assertTrue(exportPublicKeyBatchBtn.isVisible(), "Export public Key batch " +
+      "button should be visible.");
 
 
     robot.clickOn(exportPrivateKeyBatchBtn);
@@ -660,18 +726,27 @@ public class KeyGenBenchmarkingFunctionalityTest extends ApplicationTest {
       .match(hasText("OK"))
       .queryButton());
 
-    //logic to verify that the keys were actually exported by checking for existence of key files
-    //if there are multiple key files then the files are exported with an increasing number suffix
-    // getFile retrieves the most recently exported file i.e., the highest number suffix
+    //logic to verify that the keys were actually exported by checking for
+    // existence of key files
+    //if there are multiple key files then the files are exported with an
+    // increasing number suffix
+    // getFile retrieves the most recently exported file i.e., the highest
+    // number suffix
 
 
-    Optional<File> privateKeyBatchFile = MainTestUtility.getFile("batchKey", ".rsa");
-    assertTrue(privateKeyBatchFile.isPresent(), "Expected exported file not found.");
-    assertTrue(privateKeyBatchFile.get().exists(), "Exported file should exist.");
+    Optional<File> privateKeyBatchFile = MainTestUtility.getFile("batchKey",
+      ".rsa");
+    assertTrue(privateKeyBatchFile.isPresent(), "Expected exported file not " +
+      "found.");
+    assertTrue(privateKeyBatchFile.get().exists(), "Exported file should " +
+      "exist.");
 
-    Optional<File> publicKeyBatchFile = MainTestUtility.getFile("batchPublicKey", ".rsa");
-    assertTrue(publicKeyBatchFile.isPresent(), "Expected exported file not found.");
-    assertTrue(publicKeyBatchFile.get().exists(), "Exported file should exist.");
+    Optional<File> publicKeyBatchFile = MainTestUtility.getFile(
+      "batchPublicKey", ".rsa");
+    assertTrue(publicKeyBatchFile.isPresent(), "Expected exported file not " +
+      "found.");
+    assertTrue(publicKeyBatchFile.get().exists(), "Exported file should exist" +
+      ".");
 
 
   }

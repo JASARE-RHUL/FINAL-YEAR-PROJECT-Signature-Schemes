@@ -8,8 +8,10 @@ import java.util.zip.DataFormatException;
 /**
  * This interface defines the essential functionalities of a signature scheme.
  * <p>
- * It is intended to be implemented by classes that provide concrete implementations of signature
- * schemes. The methods defined are fundamental to any digital signature scheme and provide a
+ * It is intended to be implemented by classes that provide concrete
+ * implementations of signature
+ * schemes. The methods defined are fundamental to any digital signature
+ * scheme and provide a
  * standardised contract to sign and verify data.
  */
 public interface SigSchemeInterface {
@@ -37,36 +39,47 @@ public interface SigSchemeInterface {
    * Converts an octet string (byte array) to a non-negative integer.
    *
    * @param EM The encoded message as a byte array.
-   * @return A BigInteger representing the non-negative integer obtained from the byte array.
+   * @return A BigInteger representing the non-negative integer obtained from
+   * the byte array.
    */
   BigInteger OS2IP(byte[] EM);
 
   /**
-   * Converts a BigInteger to an octet string of length emLen where emLen is the ceiling of
+   * Converts a BigInteger to an octet string of length emLen where emLen is
+   * the ceiling of
    * ((modBits - 1)/8) and modBits is the bit length of the RSA modulus.
    *
    * @param m The BigInteger to be converted into an octet string.
-   * @return A byte array representing the BigInteger in its octet string form, of length emLen.
-   * @throws IllegalArgumentException If the BigInteger's byte array representation is not of the
-   *                                  expected length or has an unexpected leading byte.
+   * @return A byte array representing the BigInteger in its octet string
+   * form, of length emLen.
+   * @throws IllegalArgumentException If the BigInteger's byte array
+   * representation is not of the
+   *                                  expected length or has an unexpected
+   *                                  leading byte.
    */
   byte[] I2OSP(BigInteger m) throws IllegalArgumentException;
 
   /**
-   * Calculates the RSA signature of a given message representative by raising it to the power of
+   * Calculates the RSA signature of a given message representative by
+   * raising it to the power of
    * the private exponent as outlined by the RSA algorithm.
    *
-   * @param m The message representative, an integer representation of the message.
-   * @return The signature representative, an integer representation of the signature.
+   * @param m The message representative, an integer representation of the
+   *          message.
+   * @return The signature representative, an integer representation of the
+   * signature.
    */
   BigInteger RSASP1(BigInteger m);
 
   /**
-   * Facilitates the verification of RSA signature by raising it to the power of the public exponent
+   * Facilitates the verification of RSA signature by raising it to the power
+   * of the public exponent
    * as outlined by the RSA algorithm.
    *
-   * @param s The signature representative, an integer representation of the signature.
-   * @return The message representative, an integer representation of the message.
+   * @param s The signature representative, an integer representation of the
+   *          signature.
+   * @return The message representative, an integer representation of the
+   * message.
    */
   BigInteger RSAVP1(BigInteger s);
 

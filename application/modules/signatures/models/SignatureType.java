@@ -1,7 +1,8 @@
 package uk.msci.project.rsa;
 
 /**
- * This Enum represents the full suite of deterministic and standardised RSA digital signature
+ * This Enum represents the full suite of deterministic and standardised RSA
+ * digital signature
  * schemes.
  */
 public enum SignatureType {
@@ -42,7 +43,8 @@ public enum SignatureType {
   }
 
   /**
-   * Returns the string representation of the signature type. This method overrides the {@code
+   * Returns the string representation of the signature type. This method
+   * overrides the {@code
    * toString} method in the enum superclass.
    *
    * @return The name of the signature scheme as a string.

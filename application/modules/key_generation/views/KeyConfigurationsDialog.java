@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
 import uk.msci.project.rsa.HashFunctionSelection;
 import uk.msci.project.rsa.HashFunctionItem;
 import uk.msci.project.rsa.DigestType;
@@ -36,15 +37,20 @@ public class KeyConfigurationsDialog {
    */
   private int keysPerGroup;
   /**
-   * A list storing dynamic key configuration data. Each entry in the list is a pair, where the
-   * first element is an array of integers representing key configuration parameters and the second
-   * element is a boolean indicating the use of a small 'e' value in the key generation.
+   * A list storing dynamic key configuration data. Each entry in the list is
+   * a pair, where the
+   * first element is an array of integers representing key configuration
+   * parameters and the second
+   * element is a boolean indicating the use of a small 'e' value in the key
+   * generation.
    */
   private List<Pair<int[], Boolean>> dynamicKeyConfigurationsData;
 
   /**
-   * Maps each key configuration group to a list of hash function selections. Each entry in the map
-   * associates a group index with a list of {@link HashFunctionSelection} instances, representing
+   * Maps each key configuration group to a list of hash function selections.
+   * Each entry in the map
+   * associates a group index with a list of {@link HashFunctionSelection}
+   * instances, representing
    * hash function choices and their provable security status.
    */
   private Map<Integer, List<HashFunctionSelection>> keyConfigToHashFunctionsMap = new HashMap<>();
@@ -53,14 +59,17 @@ public class KeyConfigurationsDialog {
    * Constructs a new dialog for setting key configurations.
    *
    * @param primaryStage                 The primary stage of the application.
-   * @param dynamicKeyConfigurationsData A list of dynamic key configurations data.
-   * @param keyConfigToHashFunctionsMap  A map of key configuration groups to their corresponding
+   * @param dynamicKeyConfigurationsData A list of dynamic key configurations
+   *                                    data.
+   * @param keyConfigToHashFunctionsMap  A map of key configuration groups to
+   *                                    their corresponding
    *                                     hash functions.
-   * @param keysPerGroup                 The number of keys per configuration group.
+   * @param keysPerGroup                 The number of keys per configuration
+   *                                    group.
    */
   public KeyConfigurationsDialog(Stage primaryStage,
-      List<Pair<int[], Boolean>> dynamicKeyConfigurationsData,
-      Map<Integer, List<HashFunctionSelection>> keyConfigToHashFunctionsMap, int keysPerGroup) {
+                                 List<Pair<int[], Boolean>> dynamicKeyConfigurationsData,
+                                 Map<Integer, List<HashFunctionSelection>> keyConfigToHashFunctionsMap, int keysPerGroup) {
     this.primaryStage = primaryStage;
     this.dynamicKeyConfigurationsData = dynamicKeyConfigurationsData;
     this.keyConfigToHashFunctionsMap = keyConfigToHashFunctionsMap;
@@ -81,7 +90,8 @@ public class KeyConfigurationsDialog {
 
     ScrollPane scrollPane = createScrollPane(content);
     ButtonType okButtonType = new ButtonType("Submit", ButtonData.OK_DONE);
-    ButtonType cancelButtonType = new ButtonType("Cancel", ButtonData.CANCEL_CLOSE);
+    ButtonType cancelButtonType = new ButtonType("Cancel",
+      ButtonData.CANCEL_CLOSE);
     setupDialogPane(dialog, scrollPane, okButtonType, cancelButtonType);
 
     return showDialog(dialog, content, okButtonType);
@@ -101,7 +111,8 @@ public class KeyConfigurationsDialog {
   }
 
   /**
-   * Adds dynamically generated input fields for key configurations to the provided VBox container.
+   * Adds dynamically generated input fields for key configurations to the
+   * provided VBox container.
    *
    * @param numberOfFields Number of fields to be added.
    * @param content        The VBox container to which the fields are added.
@@ -125,20 +136,22 @@ public class KeyConfigurationsDialog {
   }
 
   /**
-   * Creates a new group VBox with predefined styling for grouping related UI elements.
+   * Creates a new group VBox with predefined styling for grouping related UI
+   * elements.
    *
    * @return A new VBox instance representing a group of UI elements.
    */
   private VBox createNewGroup() {
     VBox currentGroup = new VBox(5);
     currentGroup.setStyle("-fx-padding: 10; -fx-border-style: solid inside; " +
-        "-fx-border-width: 2; -fx-border-insets: 5; " +
-        "-fx-border-radius: 5; -fx-border-color: blue;");
+      "-fx-border-width: 2; -fx-border-insets: 5; " +
+      "-fx-border-radius: 5; -fx-border-color: blue;");
     return currentGroup;
   }
 
   /**
-   * Creates a horizontal box (HBox) containing a text field and a checkbox for inputting key
+   * Creates a horizontal box (HBox) containing a text field and a checkbox
+   * for inputting key
    * configuration details.
    *
    * @return A HBox with configured components for key size configuration input.
@@ -158,35 +171,43 @@ public class KeyConfigurationsDialog {
   /**
    * Adds hash function selection controls to the given group container.
    *
-   * @param currentGroup The group container where hash function controls will be added.
+   * @param currentGroup The group container where hash function controls
+   *                     will be added.
    */
   private void addHashFunctionSelection(VBox currentGroup) {
     Label label = new Label("Group Hash Function(s):");
     label.setMinWidth(140);
 
-    ListView<HashFunctionItem> hashFunctionCheckComboBox = createHashFunctionComboBox();
+    ListView<HashFunctionItem> hashFunctionCheckComboBox =
+      createHashFunctionComboBox();
     HBox hashHbox = new HBox(4, label, hashFunctionCheckComboBox);
     currentGroup.getChildren().add(hashHbox);
   }
 
 
   /**
-   * Creates and configures a ListView for hash function selection. Each list item is represented by
-   * a custom view comprising a CheckBox for selection, a Label for displaying hash function output,
-   * a ComboBox for selecting hash function type, and an optional TextField for specifying custom
-   * hash function sizes. The ListView allows multiple hash functions to be selected, each with
+   * Creates and configures a ListView for hash function selection. Each list
+   * item is represented by
+   * a custom view comprising a CheckBox for selection, a Label for
+   * displaying hash function output,
+   * a ComboBox for selecting hash function type, and an optional TextField
+   * for specifying custom
+   * hash function sizes. The ListView allows multiple hash functions to be
+   * selected, each with
    * their specific configurations.
    *
-   * @return A ListView of HashFunctionItem objects, each representing a hash function with
+   * @return A ListView of HashFunctionItem objects, each representing a hash
+   * function with
    * configurable settings.
    */
   private ListView<HashFunctionItem> createHashFunctionComboBox() {
     ListView<HashFunctionItem> hashFunctionCheckComboBox = new ListView<>();
     hashFunctionCheckComboBox.setItems(FXCollections.observableArrayList(
-        new HashFunctionItem("SHA-256"),
-        new HashFunctionItem("SHA-512"), new HashFunctionItem("SHA-256 with MGF1"),
-        new HashFunctionItem("SHA-512 with MGF1"),
-        new HashFunctionItem("SHAKE-128"), new HashFunctionItem("SHAKE-256")
+      new HashFunctionItem("SHA-256"),
+      new HashFunctionItem("SHA-512"), new HashFunctionItem("SHA-256 with " +
+        "MGF1"),
+      new HashFunctionItem("SHA-512 with MGF1"),
+      new HashFunctionItem("SHAKE-128"), new HashFunctionItem("SHAKE-256")
     ));
 
     hashFunctionCheckComboBox.setCellFactory(lv -> new ListCell<>() {
@@ -215,7 +236,8 @@ public class KeyConfigurationsDialog {
       @Override
       protected void updateItem(HashFunctionItem item, boolean empty) {
         super.updateItem(item, empty);
-        customTextField.setPromptText("Enter hash size as a fraction of each key size (e.g., 1/2)");
+        customTextField.setPromptText("Enter hash size as a fraction of each " +
+          "key size (e.g., 1/2)");
         customTextField.setMinWidth(260);
 
         // Resetting the setup for reuse
@@ -234,7 +256,8 @@ public class KeyConfigurationsDialog {
         content.getChildren().add(checkBox);
 
         // Conditionally add ComboBox if not fixed size hash
-        if (!item.getName().equals("SHA-256") && !item.getName().equals("SHA-512")) {
+        if (!item.getName().equals("SHA-256") && !item.getName().equals("SHA" +
+          "-512")) {
           content.getChildren().addAll(label, comboBox);
           comboBox.valueProperty().addListener((obs, oldVal, newVal) -> {
             if ("Custom".equals(newVal)) {
@@ -266,7 +289,8 @@ public class KeyConfigurationsDialog {
    * @return A ComboBox with predefined options for hash function selection.
    */
   private ComboBox<String> createComboBox() {
-    return new ComboBox<>(FXCollections.observableArrayList("Provably Secure", "Custom"));
+    return new ComboBox<>(FXCollections.observableArrayList("Provably Secure"
+      , "Custom"));
   }
 
   /**
@@ -296,15 +320,17 @@ public class KeyConfigurationsDialog {
   }
 
   /**
-   * Sets up the dialog pane with necessary components like scroll pane, buttons, etc.
+   * Sets up the dialog pane with necessary components like scroll pane,
+   * buttons, etc.
    *
    * @param dialog           The dialog to which the pane is to be added.
    * @param scrollPane       The scroll pane containing dialog content.
    * @param okButtonType     The ButtonType for the OK button.
    * @param cancelButtonType The ButtonType for the Cancel button.
    */
-  private void setupDialogPane(Dialog<Void> dialog, ScrollPane scrollPane, ButtonType okButtonType,
-      ButtonType cancelButtonType) {
+  private void setupDialogPane(Dialog<Void> dialog, ScrollPane scrollPane,
+                               ButtonType okButtonType,
+                               ButtonType cancelButtonType) {
     DialogPane dialogPane = dialog.getDialogPane();
     dialogPane.getButtonTypes().addAll(okButtonType, cancelButtonType);
     dialogPane.setContent(scrollPane);
@@ -315,21 +341,25 @@ public class KeyConfigurationsDialog {
    * Displays the dialog and processes user input upon submission.
    *
    * @param dialog       The dialog to be displayed.
-   * @param content      The container holding user input fields within the dialog.
+   * @param content      The container holding user input fields within the
+   *                     dialog.
    * @param okButtonType The ButtonType for the OK button.
    * @return True if the dialog operation is completed successfully.
    */
-  private boolean showDialog(Dialog<Void> dialog, VBox content, ButtonType okButtonType) {
+  private boolean showDialog(Dialog<Void> dialog, VBox content,
+                             ButtonType okButtonType) {
     final boolean[] isCompleted = {false};
 
-    Button okButton = (Button) dialog.getDialogPane().lookupButton(okButtonType);
+    Button okButton =
+      (Button) dialog.getDialogPane().lookupButton(okButtonType);
     okButton.addEventFilter(ActionEvent.ACTION, event -> {
       if (isValidInputMultiPrime(content)) {
         isCompleted[0] = true;
       } else {
         event.consume(); // Prevent dialog from closing
         uk.msci.project.rsa.DisplayUtility.showErrorAlert(
-            "You must provide valid input for all required fields, please try again.");
+          "You must provide valid input for all required fields, please try " +
+            "again.");
       }
     });
 
@@ -356,11 +386,13 @@ public class KeyConfigurationsDialog {
     for (Node groupNode : content.getChildren()) {
       if (groupNode instanceof VBox) {
         VBox currentGroup = (VBox) groupNode;
-        List<HashFunctionSelection> currentGroupHashFunctionSelections = new ArrayList<>();
+        List<HashFunctionSelection> currentGroupHashFunctionSelections =
+          new ArrayList<>();
 
         invalidField =
-            processGroupNodes(currentGroup, currentGroupHashFunctionSelections, groupIndex)
-                || invalidField;
+          processGroupNodes(currentGroup, currentGroupHashFunctionSelections,
+            groupIndex)
+            || invalidField;
         groupIndex++;
       }
     }
@@ -368,17 +400,20 @@ public class KeyConfigurationsDialog {
   }
 
   /**
-   * Processes user input from each group in the dialog and updates the key configuration data
+   * Processes user input from each group in the dialog and updates the key
+   * configuration data
    * accordingly.
    *
-   * @param currentGroup                       The group containing the input fields.
-   * @param currentGroupHashFunctionSelections A list to store selected hash functions for the
+   * @param currentGroup                       The group containing the input
+   *                                          fields.
+   * @param currentGroupHashFunctionSelections A list to store selected hash
+   *                                           functions for the
    *                                           current group.
    * @param groupIndex                         The index of the current group.
    * @return True if an invalid input is found, false otherwise.
    */
   private boolean processGroupNodes(VBox currentGroup,
-      List<HashFunctionSelection> currentGroupHashFunctionSelections, int groupIndex) {
+                                    List<HashFunctionSelection> currentGroupHashFunctionSelections, int groupIndex) {
     boolean invalidField = false;
 
     for (int configIndex = 0; configIndex < currentGroup.getChildren().size(); configIndex++) {
@@ -387,10 +422,12 @@ public class KeyConfigurationsDialog {
       if (configNode instanceof HBox) {
         HBox hbox = (HBox) configNode;
 
-        if (isHashFunctionConfiguration(hbox, configIndex, currentGroup.getChildren().size())) {
+        if (isHashFunctionConfiguration(hbox, configIndex,
+          currentGroup.getChildren().size())) {
           invalidField =
-              processHashFunctionConfiguration(hbox, currentGroupHashFunctionSelections, groupIndex)
-                  || invalidField;
+            processHashFunctionConfiguration(hbox,
+              currentGroupHashFunctionSelections, groupIndex)
+              || invalidField;
         } else {
           invalidField = processKeySizeConfiguration(hbox) || invalidField;
         }
@@ -400,66 +437,81 @@ public class KeyConfigurationsDialog {
   }
 
   /**
-   * Checks if a given HBox is for hash function configuration based on its position within the
+   * Checks if a given HBox is for hash function configuration based on its
+   * position within the
    * group.
    *
    * @param hbox        The HBox to check.
    * @param configIndex The index of the HBox within its parent group.
    * @param groupSize   The total number of nodes in the group.
-   * @return True if the HBox is for hash function configuration, false otherwise.
+   * @return True if the HBox is for hash function configuration, false
+   * otherwise.
    */
-  private boolean isHashFunctionConfiguration(HBox hbox, int configIndex, int groupSize) {
+  private boolean isHashFunctionConfiguration(HBox hbox, int configIndex,
+                                              int groupSize) {
     return configIndex == groupSize - 1;
   }
 
   /**
    * Processes the hash function configuration input from the given HBox.
    *
-   * @param hbox                               The HBox containing hash function configuration
+   * @param hbox                               The HBox containing hash
+   *                                           function configuration
    *                                           controls.
-   * @param currentGroupHashFunctionSelections A list to store selected hash functions for the
+   * @param currentGroupHashFunctionSelections A list to store selected hash
+   *                                           functions for the
    *                                           current group.
    * @param groupIndex                         The index of the current group.
    * @return True if an invalid input is found, false otherwise.
    */
   private boolean processHashFunctionConfiguration(HBox hbox,
-      List<HashFunctionSelection> currentGroupHashFunctionSelections, int groupIndex) {
-    Node hashFunctionNode = hbox.getChildren().get(hbox.getChildren().size() - 1);
-    ListView<HashFunctionItem> hashFunctionCheckComboBox = (ListView<HashFunctionItem>) hashFunctionNode;
+                                                   List<HashFunctionSelection> currentGroupHashFunctionSelections, int groupIndex) {
+    Node hashFunctionNode =
+      hbox.getChildren().get(hbox.getChildren().size() - 1);
+    ListView<HashFunctionItem> hashFunctionCheckComboBox =
+      (ListView<HashFunctionItem>) hashFunctionNode;
 
-    ObservableList<HashFunctionItem> checkedItems = hashFunctionCheckComboBox.getItems()
-        .stream()
-        .filter(HashFunctionItem::isChecked)
-        .collect(Collectors.toCollection(FXCollections::observableArrayList));
+    ObservableList<HashFunctionItem> checkedItems =
+      hashFunctionCheckComboBox.getItems()
+      .stream()
+      .filter(HashFunctionItem::isChecked)
+      .collect(Collectors.toCollection(FXCollections::observableArrayList));
 
     if (checkedItems.isEmpty()) {
       hashFunctionCheckComboBox.setStyle("-fx-border-color: red;");
       return true;
     } else {
       hashFunctionCheckComboBox.setStyle("-fx-border-color: green;");
-      return addHashFunctionSelections(checkedItems, currentGroupHashFunctionSelections,
-          groupIndex);
+      return addHashFunctionSelections(checkedItems,
+        currentGroupHashFunctionSelections,
+        groupIndex);
     }
   }
 
   /**
-   * Adds selected hash functions and their configurations to the current group's hash function
+   * Adds selected hash functions and their configurations to the current
+   * group's hash function
    * list.
    *
-   * @param checkedItems                       List of selected hash function items.
-   * @param currentGroupHashFunctionSelections List to store hash function selections for the
+   * @param checkedItems                       List of selected hash function
+   *                                          items.
+   * @param currentGroupHashFunctionSelections List to store hash function
+   *                                           selections for the
    *                                           current group.
    * @param groupIndex                         Index of the current group.
    * @return True if an invalid input is found, false otherwise.
    */
   private boolean addHashFunctionSelections(List<HashFunctionItem> checkedItems,
-      List<HashFunctionSelection> currentGroupHashFunctionSelections, int groupIndex) {
+                                            List<HashFunctionSelection> currentGroupHashFunctionSelections, int groupIndex) {
     boolean invalidField = false;
     for (HashFunctionItem item : checkedItems) {
-      // Check if the custom size is valid only when the ComboBox selection is "Custom"
+      // Check if the custom size is valid only when the ComboBox selection
+      // is "Custom"
       String customSize = item.getCustomHashSize();
-      String hashFunctionName = item.getName(); // Retrieve the hash function name
-      String comboBoxSelection = item.getComboBoxSelection(); // Retrieve the ComboBox selection
+      String hashFunctionName = item.getName(); // Retrieve the hash function
+      // name
+      String comboBoxSelection = item.getComboBoxSelection(); // Retrieve the
+      // ComboBox selection
       int[] fractionsArray = new int[2];
       if ("Custom".equals(comboBoxSelection)) {
         fractionsArray = validateFraction(customSize);
@@ -467,15 +519,17 @@ public class KeyConfigurationsDialog {
       }
 
       boolean isProvablySecure = "Provably Secure".equals(comboBoxSelection);
-      DigestType digestType = DigestType.getDigestTypeFromCustomString(hashFunctionName);
+      DigestType digestType =
+        DigestType.getDigestTypeFromCustomString(hashFunctionName);
       currentGroupHashFunctionSelections.add(
-          new HashFunctionSelection(digestType, isProvablySecure, fractionsArray));
+        new HashFunctionSelection(digestType, isProvablySecure,
+          fractionsArray));
 
 
     }
 
     keyConfigToHashFunctionsMap.put(groupIndex,
-        new ArrayList<>(currentGroupHashFunctionSelections));
+      new ArrayList<>(currentGroupHashFunctionSelections));
     return invalidField;
   }
 
@@ -495,7 +549,7 @@ public class KeyConfigurationsDialog {
     // Validate the text field input
     String inputText = textField.getText().trim();
     if (!inputText.isEmpty() && inputText.matches(
-        "^\\s*(\\d+/\\d+\\s*)(,\\s*\\d+/\\d+\\s*)*$")) {
+      "^\\s*(\\d+/\\d+\\s*)(,\\s*\\d+/\\d+\\s*)*$")) {
       String[] fractionStrings = inputText.split(",");
       double totalSum = 0;
       for (String fraction : fractionStrings) {
@@ -516,7 +570,8 @@ public class KeyConfigurationsDialog {
           fractionsArray[i * 2] = Integer.parseInt(parts[0]);
           fractionsArray[i * 2 + 1] = Integer.parseInt(parts[1]);
         }
-        dynamicKeyConfigurationsData.add(new Pair<>(fractionsArray, checkBoxValue));
+        dynamicKeyConfigurationsData.add(new Pair<>(fractionsArray,
+          checkBoxValue));
       }
     } else {
       invalidField = true;

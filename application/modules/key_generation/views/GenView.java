@@ -2,6 +2,7 @@ package uk.msci.project.rsa;
 
 import java.util.*;
 import java.util.regex.Pattern;
+
 import javafx.beans.value.ChangeListener;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -35,13 +36,15 @@ import uk.msci.project.rsa.KeyGenUtil;
 
 
 /**
- * The domain object corresponding to GenView FXML file that will serve as a controllers interface
+ * The domain object corresponding to GenView FXML file that will serve as a
+ * controllers interface
  * into observing and manipulating the graphical layout of the view.
  */
 public class GenView {
 
   /**
-   * ImageView that possibly contains a logo or relevant image for the application.
+   * ImageView that possibly contains a logo or relevant image for the
+   * application.
    */
   @FXML
   private ImageView logoImageView;
@@ -65,7 +68,8 @@ public class GenView {
   private TextField numKeysTextField;
 
   /**
-   * Button that triggers the dynamic generation of corresponding text fields for user to input
+   * Button that triggers the dynamic generation of corresponding text fields
+   * for user to input
    * multiple keys
    */
   @FXML
@@ -144,18 +148,24 @@ public class GenView {
   private ToggleSwitch crossParameterBenchmarkingModeToggle;
 
   /**
-   * List of pairs, each holding an array of integers and a boolean. This list stores dynamic key
-   * data, where each pair consists of an array representing key sizes and a boolean indicating
+   * List of pairs, each holding an array of integers and a boolean. This
+   * list stores dynamic key
+   * data, where each pair consists of an array representing key sizes and a
+   * boolean indicating
    * whether a small exponent 'e' is used.
    */
   private List<Pair<int[], Boolean>> dynamicKeyData = new ArrayList<>();
 
   /**
-   * A list storing dynamic key configuration data. Each entry in the list is a pair, where the
-   * first element is an array of integers representing key configuration parameters and the second
-   * element is a boolean indicating the use of a small 'e' value in the key generation.
+   * A list storing dynamic key configuration data. Each entry in the list is
+   * a pair, where the
+   * first element is an array of integers representing key configuration
+   * parameters and the second
+   * element is a boolean indicating the use of a small 'e' value in the key
+   * generation.
    */
-  private List<Pair<int[], Boolean>> dynamicKeyConfigurationsData = new ArrayList<>();
+  private List<Pair<int[], Boolean>> dynamicKeyConfigurationsData =
+    new ArrayList<>();
 
   /**
    * List of integers representing dynamically generated key sizes.
@@ -164,13 +174,15 @@ public class GenView {
 
 
   /**
-   * Integer holding the number of trials for key generation. This is used primarily in benchmarking
+   * Integer holding the number of trials for key generation. This is used
+   * primarily in benchmarking
    * mode to specify how many times key generation should be performed per key.
    */
   private int numTrials;
 
   /**
-   * Stores the number of key configurations specified by the user for benchmarking.
+   * Stores the number of key configurations specified by the user for
+   * benchmarking.
    */
   private int numKeyConfigs;
 
@@ -182,15 +194,18 @@ public class GenView {
   private ToggleSwitch benchmarkingModeToggle;
 
   /**
-   * VBox for standard key generation mode. This VBox contains the UI elements relevant to the
-   * standard key generation mode, including input fields for key size and the generate keys
+   * VBox for standard key generation mode. This VBox contains the UI
+   * elements relevant to the
+   * standard key generation mode, including input fields for key size and
+   * the generate keys
    * button.
    */
   @FXML
   private VBox standardModeVBox;
 
   /**
-   * VBox for benchmarking mode. This VBox contains UI elements specific to the benchmarking mode,
+   * VBox for benchmarking mode. This VBox contains UI elements specific to
+   * the benchmarking mode,
    * such as the field for entering the number of keys to be generated.
    */
   @FXML
@@ -221,23 +236,30 @@ public class GenView {
   private ToggleGroup smallEToggleGroup;
 
   /**
-   * Maps each key configuration group to a list of hash function selections. Each entry in the map
-   * associates a group index with a list of {@link HashFunctionSelection} instances, representing
+   * Maps each key configuration group to a list of hash function selections.
+   * Each entry in the map
+   * associates a group index with a list of {@link HashFunctionSelection}
+   * instances, representing
    * hash function choices and their provable security status.
    */
   private Map<Integer, List<HashFunctionSelection>> keyConfigToHashFunctionsMap = new HashMap<>();
 
   /**
-   * Specifies the number of keys per group in a custom cross-parameter benchmarking session. This
-   * value is used to determine how many keys are processed together with the same set of hash
-   * functions, allowing for batch processing and comparison under similar cryptographic
+   * Specifies the number of keys per group in a custom cross-parameter
+   * benchmarking session. This
+   * value is used to determine how many keys are processed together with the
+   * same set of hash
+   * functions, allowing for batch processing and comparison under similar
+   * cryptographic
    * conditions.
    */
   private int keysPerGroup;
 
   /**
-   * Initialises the domain object class. This method is automatically called after the FXML file
-   * has been loaded. It sets up the toggle group for cross-benchmarking options.
+   * Initialises the domain object class. This method is automatically called
+   * after the FXML file
+   * has been loaded. It sets up the toggle group for cross-benchmarking
+   * options.
    */
   public void initialize() {
     crossBenchMarkingToggleGroup = new ToggleGroup();
@@ -261,12 +283,15 @@ public class GenView {
 
 
   /**
-   * Gets the selected option for whether to use a small public exponent in the generation of kay.
+   * Gets the selected option for whether to use a small public exponent in
+   * the generation of kay.
    *
-   * @return String representing the selected cross-parameter benchmarking option.
+   * @return String representing the selected cross-parameter benchmarking
+   * option.
    */
   public String getSmallEToggle() {
-    RadioButton selectedButton = (RadioButton) smallEToggleGroup.getSelectedToggle();
+    RadioButton selectedButton =
+      (RadioButton) smallEToggleGroup.getSelectedToggle();
     return selectedButton != null ? selectedButton.getText() : "";
   }
 
@@ -274,10 +299,12 @@ public class GenView {
   /**
    * Gets the selected option for cross-parameter benchmarking.
    *
-   * @return String representing the selected cross-parameter benchmarking option.
+   * @return String representing the selected cross-parameter benchmarking
+   * option.
    */
   public String getCrossBenchMarkingToggle() {
-    RadioButton selectedButton = (RadioButton) crossBenchMarkingToggleGroup.getSelectedToggle();
+    RadioButton selectedButton =
+      (RadioButton) crossBenchMarkingToggleGroup.getSelectedToggle();
     return selectedButton != null ? selectedButton.getText() : "";
   }
 
@@ -431,12 +458,15 @@ public class GenView {
   }
 
   /**
-   * Displays a dialog for dynamic field generation based on the number of fields specified. This
+   * Displays a dialog for dynamic field generation based on the number of
+   * fields specified. This
    * method allows users to enter multiple key sizes and small e selections.
    *
-   * @param numberOfFields The number of key fields to be generated in the dialog.
+   * @param numberOfFields The number of key fields to be generated in the
+   *                       dialog.
    * @param primaryStage   The primary stage of the application.
-   * @return boolean indicating if the dialog submission was completed successfully.
+   * @return boolean indicating if the dialog submission was completed
+   * successfully.
    */
   boolean showDynamicFieldsDialog(int numberOfFields, Stage primaryStage) {
     Dialog<Void> dialog = new Dialog<>();
@@ -458,11 +488,13 @@ public class GenView {
     }
     ScrollPane scrollPane = new ScrollPane(content);
     scrollPane.setVbarPolicy(ScrollBarPolicy.AS_NEEDED);
-    scrollPane.setHbarPolicy(ScrollBarPolicy.NEVER); // Disable horizontal scrolling
+    scrollPane.setHbarPolicy(ScrollBarPolicy.NEVER); // Disable horizontal
+    // scrolling
     scrollPane.setFitToWidth(true);
 
     ButtonType okButtonType = new ButtonType("Submit", ButtonData.OK_DONE);
-    ButtonType cancelButtonType = new ButtonType("Cancel", ButtonData.CANCEL_CLOSE);
+    ButtonType cancelButtonType = new ButtonType("Cancel",
+      ButtonData.CANCEL_CLOSE);
 
     // Set the dialog content and buttons
     DialogPane dialogPane = dialog.getDialogPane();
@@ -492,29 +524,38 @@ public class GenView {
 
 
   /**
-   * Shows a dialog for dynamic configuration of key parameters, such as key sizes and hash
-   * functions. This method is used for setting up the benchmarking mode where each key group can
+   * Shows a dialog for dynamic configuration of key parameters, such as key
+   * sizes and hash
+   * functions. This method is used for setting up the benchmarking mode
+   * where each key group can
    * have different key configurations, associated with sets of hash functions.
    *
-   * @param numberOfFields The number of configuration fields to generate in the dialog.
+   * @param numberOfFields The number of configuration fields to generate in
+   *                       the dialog.
    * @param primaryStage   The primary stage of the application.
-   * @return boolean indicating if the dialog submission was completed successfully.
+   * @return boolean indicating if the dialog submission was completed
+   * successfully.
    */
   boolean showKeyConfigurationsDialog(int numberOfFields, Stage primaryStage) {
-    KeyConfigurationsDialog keyConfigDialog = new KeyConfigurationsDialog(primaryStage,
-        dynamicKeyConfigurationsData, keyConfigToHashFunctionsMap, keysPerGroup);
+    KeyConfigurationsDialog keyConfigDialog =
+      new KeyConfigurationsDialog(primaryStage,
+      dynamicKeyConfigurationsData, keyConfigToHashFunctionsMap, keysPerGroup);
     return keyConfigDialog.showKeyConfigurationsDialog(numberOfFields);
   }
 
   /**
-   * Displays a dialog for dynamic field generation in comparison mode. This dialog allows users to
+   * Displays a dialog for dynamic field generation in comparison mode. This
+   * dialog allows users to
    * enter single bit sizes for each key.
    *
-   * @param numberOfFields The number of key fields to be generated in the dialog.
+   * @param numberOfFields The number of key fields to be generated in the
+   *                       dialog.
    * @param primaryStage   The primary stage of the application.
-   * @return boolean indicating if the dialog submission was completed successfully.
+   * @return boolean indicating if the dialog submission was completed
+   * successfully.
    */
-  boolean showDynamicFieldsDialogComparisonMode(int numberOfFields, Stage primaryStage) {
+  boolean showDynamicFieldsDialogComparisonMode(int numberOfFields,
+                                                Stage primaryStage) {
     Dialog<Void> dialog = new Dialog<>();
     dialog.setTitle("Key Size Fields");
     dialog.initModality(Modality.APPLICATION_MODAL);
@@ -532,11 +573,13 @@ public class GenView {
     }
     ScrollPane scrollPane = new ScrollPane(content);
     scrollPane.setVbarPolicy(ScrollBarPolicy.AS_NEEDED);
-    scrollPane.setHbarPolicy(ScrollBarPolicy.NEVER); // Disable horizontal scrolling
+    scrollPane.setHbarPolicy(ScrollBarPolicy.NEVER); // Disable horizontal
+    // scrolling
     scrollPane.setFitToWidth(true);
 
     ButtonType okButtonType = new ButtonType("Submit", ButtonData.OK_DONE);
-    ButtonType cancelButtonType = new ButtonType("Cancel", ButtonData.CANCEL_CLOSE);
+    ButtonType cancelButtonType = new ButtonType("Cancel",
+      ButtonData.CANCEL_CLOSE);
 
     // Set the dialog content and buttons
     DialogPane dialogPane = dialog.getDialogPane();
@@ -554,7 +597,8 @@ public class GenView {
       } else {
         event.consume(); // Prevent dialog from closing
         uk.msci.project.rsa.DisplayUtility.showErrorAlert(
-            "Each Key Size must be a valid integer between 1024 and 7680. Please try again.");
+          "Each Key Size must be a valid integer between 1024 and 7680. " +
+            "Please try again.");
       }
     });
 
@@ -567,12 +611,16 @@ public class GenView {
   }
 
   /**
-   * Validates the input provided in the dynamic fields within the given VBox. It checks if the text
-   * fields contain valid key size patterns and updates `dynamicKeyData` with the entered key sizes
-   * and small e options. If invalid input is detected, the method highlights the respective text
+   * Validates the input provided in the dynamic fields within the given VBox
+   * . It checks if the text
+   * fields contain valid key size patterns and updates `dynamicKeyData` with
+   * the entered key sizes
+   * and small e options. If invalid input is detected, the method highlights
+   * the respective text
    * field(s) and returns false.
    *
-   * @param content The VBox containing dynamically generated text fields and checkboxes.
+   * @param content The VBox containing dynamically generated text fields and
+   *               checkboxes.
    * @return boolean indicating whether the input in all text fields is valid.
    */
   private boolean isValidInput(VBox content) {
@@ -609,11 +657,13 @@ public class GenView {
   }
 
 
-
   /**
-   * Validates the input provided in the dynamic fields for comparison mode within the given VBox.
-   * It checks if the text fields contain valid single bit sizes and updates `dynamicKeySizeData`
-   * with the entered key sizes. If invalid input is detected, the respective text field(s) are
+   * Validates the input provided in the dynamic fields for comparison mode
+   * within the given VBox.
+   * It checks if the text fields contain valid single bit sizes and updates
+   * `dynamicKeySizeData`
+   * with the entered key sizes. If invalid input is detected, the respective
+   * text field(s) are
    * highlighted and false is returned.
    *
    * @param content The VBox containing dynamically generated text fields.
@@ -629,7 +679,7 @@ public class GenView {
         textField.setStyle("");
 
         if (!(Pattern.compile("(102[4-9]|[1-6][0-9]{3}|7680)").matcher(textField.getText())
-            .matches())) {
+          .matches())) {
           invalidField = true;
           textField.setStyle("-fx-control-inner-background: #FFDDDD;");
         } else {
@@ -643,11 +693,13 @@ public class GenView {
   }
 
   /**
-   * Displays a dialog for entering the number of trials for key generation. This method allows
+   * Displays a dialog for entering the number of trials for key generation.
+   * This method allows
    * users to input the number of trials for benchmarking.
    *
    * @param primaryStage The primary stage of the application.
-   * @return boolean indicating if the dialog submission was completed successfully.
+   * @return boolean indicating if the dialog submission was completed
+   * successfully.
    */
   boolean showTrialsDialog(Stage primaryStage) {
     Dialog<Void> dialog = new Dialog<>();
@@ -666,7 +718,8 @@ public class GenView {
 
     // Add OK and Cancel buttons
     ButtonType okButtonType = new ButtonType("OK", ButtonData.OK_DONE);
-    ButtonType cancelButtonType = new ButtonType("Cancel", ButtonData.CANCEL_CLOSE);
+    ButtonType cancelButtonType = new ButtonType("Cancel",
+      ButtonData.CANCEL_CLOSE);
     dialogPane.getButtonTypes().addAll(okButtonType, cancelButtonType);
 
     // Event handling
@@ -682,7 +735,7 @@ public class GenView {
       } catch (NumberFormatException e) {
         // Show an error alert if the input is not a valid integer
         uk.msci.project.rsa.DisplayUtility.showErrorAlert(
-            "You must provide a valid number of trials. Please try again.");
+          "You must provide a valid number of trials. Please try again.");
         event.consume(); // Prevent the dialog from closing
       }
     });
@@ -697,17 +750,24 @@ public class GenView {
   }
 
   /**
-   * Displays a dialog for configuring the number of key configurations and the number of keys per
-   * group. This dialog allows the user to specify how many different key configurations (i.e., sets
-   * of keys with unique properties or parameters) will be used, as well as how many keys are
+   * Displays a dialog for configuring the number of key configurations and
+   * the number of keys per
+   * group. This dialog allows the user to specify how many different key
+   * configurations (i.e., sets
+   * of keys with unique properties or parameters) will be used, as well as
+   * how many keys are
    * included in each group for batch processing.
    * <p>
-   * If the user enters invalid data (e.g., non-integer values, mismatched group sizes), the dialog
+   * If the user enters invalid data (e.g., non-integer values, mismatched
+   * group sizes), the dialog
    * will display an error message and prompt for correction.
    *
-   * @param primaryStage The primary stage of the application, used to set the owner of the dialog.
-   * @return boolean indicating whether the user successfully completed the dialog. Returns true if
-   * the user entered valid data and confirmed their choices, false if the dialog was cancelled or
+   * @param primaryStage The primary stage of the application, used to set
+   *                     the owner of the dialog.
+   * @return boolean indicating whether the user successfully completed the
+   * dialog. Returns true if
+   * the user entered valid data and confirmed their choices, false if the
+   * dialog was cancelled or
    * closed without valid input.
    */
   boolean showNumKeyConfigsDialog(Stage primaryStage) {
@@ -728,20 +788,24 @@ public class GenView {
     keysPerGroupField.setPrefWidth(200);
 
     Label infoTooltip = new Label(
-        "Configure Batch Benchmarking per Key Sizes:\n\n" +
-            "- Number of Key Configurations: Define the uniform number of key configurations to benchmark per key size.\n"
-            +
-            "- Keys per Group: Specify the number of keys within each group of configurations.\n\n"
-            +
-            "Example Configuration:\n" +
-            "   Total Key Configurations: 10\n" +
-            "   Keys Per Group: 5\n" +
-            "   In this setup:\n" +
-            "   - The first group comprises the initial 5 key configurations, each using a its own set of hash functions.\n"
-            +
-            "   - The subsequent group includes the remaining 5 key configurations, again with a its own set of hash functions.\n"
-            +
-            "   - These groups are processed one after the other."
+      "Configure Batch Benchmarking per Key Sizes:\n\n" +
+        "- Number of Key Configurations: Define the uniform number of key " +
+        "configurations to benchmark per key size.\n"
+        +
+        "- Keys per Group: Specify the number of keys within each group of " +
+        "configurations.\n\n"
+        +
+        "Example Configuration:\n" +
+        "   Total Key Configurations: 10\n" +
+        "   Keys Per Group: 5\n" +
+        "   In this setup:\n" +
+        "   - The first group comprises the initial 5 key configurations, " +
+        "each using a its own set of hash functions.\n"
+        +
+        "   - The subsequent group includes the remaining 5 key " +
+        "configurations, again with a its own set of hash functions.\n"
+        +
+        "   - These groups are processed one after the other."
     );
 
     infoTooltip.setWrapText(true);
@@ -752,13 +816,15 @@ public class GenView {
 
     // Create and set the dialog content
     DialogPane dialogPane = dialog.getDialogPane();
-    VBox content = new VBox(10, keyConfigsField, keysPerGroupContainer, infoTooltip);
+    VBox content = new VBox(10, keyConfigsField, keysPerGroupContainer,
+      infoTooltip);
     dialogPane.setContent(content);
     dialogPane.setPrefSize(350, 470);
 
     // Add OK and Cancel buttons
     ButtonType okButtonType = new ButtonType("OK", ButtonData.OK_DONE);
-    ButtonType cancelButtonType = new ButtonType("Cancel", ButtonData.CANCEL_CLOSE);
+    ButtonType cancelButtonType = new ButtonType("Cancel",
+      ButtonData.CANCEL_CLOSE);
     dialogPane.getButtonTypes().addAll(okButtonType, cancelButtonType);
 
     // Event handling
@@ -771,7 +837,8 @@ public class GenView {
 
         if (numKeyConfigs % keysPerGroup != 0) {
           throw new IllegalArgumentException(
-              "The number of keys per group must evenly divide the total number of key configurations.");
+            "The number of keys per group must evenly divide the total number" +
+              " of key configurations.");
         }
 
         this.numKeyConfigs = numKeyConfigs;
@@ -779,7 +846,8 @@ public class GenView {
         isCompleted[0] = true;
       } catch (NumberFormatException e) {
         uk.msci.project.rsa.DisplayUtility.showErrorAlert(
-            "The number of keys per group must evenly divide the total number of key configurations.");
+          "The number of keys per group must evenly divide the total number " +
+            "of key configurations.");
         event.consume();
       } catch (IllegalArgumentException e) {
         uk.msci.project.rsa.DisplayUtility.showErrorAlert(e.getMessage());
@@ -797,7 +865,8 @@ public class GenView {
   }
 
   /**
-   * Retrieves a list of key parameters (sizes and small e options) specified by the user.
+   * Retrieves a list of key parameters (sizes and small e options) specified
+   * by the user.
    *
    * @return List<Pair < int [ ], Boolean>> containing the key parameters.
    */
@@ -808,7 +877,8 @@ public class GenView {
   /**
    * Retrieves the dynamic key configurations data specified by the user.
    *
-   * @return A list of pairs, each containing key configuration parameters and a boolean indicating
+   * @return A list of pairs, each containing key configuration parameters
+   * and a boolean indicating
    * the use of a small 'e' value.
    */
   public List<Pair<int[], Boolean>> getDynamicKeyConfigurationsData() {
@@ -834,7 +904,8 @@ public class GenView {
   }
 
   /**
-   * Registers an observer for when the benchmarking mode toggle switch value changes.
+   * Registers an observer for when the benchmarking mode toggle switch value
+   * changes.
    *
    * @param observer The change listener to be registered.
    */
@@ -845,7 +916,8 @@ public class GenView {
   /**
    * Sets the visibility of the standardModeVBox.
    *
-   * @param visible A boolean indicating whether the standardModeVBox should be visible.
+   * @param visible A boolean indicating whether the standardModeVBox should
+   *                be visible.
    */
   public void setStandardModeVBoxVisibility(boolean visible) {
     standardModeVBox.setVisible(visible);
@@ -855,7 +927,8 @@ public class GenView {
   /**
    * Sets the visibility of the benchmarkingModeVBox.
    *
-   * @param visible A boolean indicating whether the benchmarkingModeVBox should be visible.
+   * @param visible A boolean indicating whether the benchmarkingModeVBox
+   *                should be visible.
    */
   public void setBenchmarkingModeVBoxVisibility(boolean visible) {
     benchmarkingModeVBox.setVisible(visible);
@@ -865,7 +938,8 @@ public class GenView {
   /**
    * Sets the visibility of the numKeysButton.
    *
-   * @param visible A boolean indicating whether the numKeysButton should be visible.
+   * @param visible A boolean indicating whether the numKeysButton should be
+   *                visible.
    */
   public void setNumKeysButtonVisibility(boolean visible) {
     numKeysButton.setVisible(visible);
@@ -875,7 +949,8 @@ public class GenView {
   /**
    * Sets the visibility of the generateButton.
    *
-   * @param visible A boolean indicating whether the generateButton should be visible.
+   * @param visible A boolean indicating whether the generateButton should be
+   *               visible.
    */
   public void setGenerateButtonVisibility(boolean visible) {
     generateButton.setVisible(visible);
@@ -893,7 +968,8 @@ public class GenView {
   }
 
   /**
-   * Checks to see if the comparison mode key sizes label is currently being displayed.
+   * Checks to see if the comparison mode key sizes label is currently being
+   * displayed.
    *
    * @return A boolean indicating whether the label is visible.
    */
@@ -932,14 +1008,16 @@ public class GenView {
   /**
    * Adds an observer for changes in the provable scheme selection.
    *
-   * @param observer the observer to be notified when the scheme selection changes.
+   * @param observer the observer to be notified when the scheme selection
+   *                 changes.
    */
   public void addCrossParameterRadioChangeObserver(ChangeListener<Toggle> observer) {
     crossBenchMarkingToggleGroup.selectedToggleProperty().addListener(observer);
   }
 
   /**
-   * Retrieves the number of key configurations specified by the user in the initialisation of
+   * Retrieves the number of key configurations specified by the user in the
+   * initialisation of
    * custom cross parameter benchmarking session.
    *
    * @return number represent the current number of key configurations.
@@ -949,11 +1027,14 @@ public class GenView {
   }
 
   /**
-   * Retrieves the mapping of key configuration groups to their respective hash functions. This
-   * method is used to obtain the configured hash functions for each group of keys in the
+   * Retrieves the mapping of key configuration groups to their respective
+   * hash functions. This
+   * method is used to obtain the configured hash functions for each group of
+   * keys in the
    * cross-parameter benchmarking mode.
    *
-   * @return A map where each key is a group index and the value is a list of hash function
+   * @return A map where each key is a group index and the value is a list of
+   * hash function
    * selections.
    */
   public Map<Integer, List<HashFunctionSelection>> getKeyConfigToHashFunctionsMap() {
@@ -961,8 +1042,10 @@ public class GenView {
   }
 
   /**
-   * Gets the number of keys per group in the cross-parameter benchmarking mode. This value is
-   * essential for organising the key groups and associating them with their respective hash
+   * Gets the number of keys per group in the cross-parameter benchmarking
+   * mode. This value is
+   * essential for organising the key groups and associating them with their
+   * respective hash
    * function selections.
    *
    * @return int representing the number of keys per group.

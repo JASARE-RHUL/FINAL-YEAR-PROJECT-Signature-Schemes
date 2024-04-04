@@ -185,7 +185,7 @@ public class SignatureVerificationControllerComparisonBenchmarking extends
   /**
    * Handles the completion of the benchmarking task in comparison mode. This method is called when
    * the benchmarking task successfully completes in the context of cross-parameter benchmarking. It
-   * resets the pre-loaded key parameters, initialises the ResultsController with the appropriate
+   * resets the preloaded key parameters, initialises the ResultsController with the appropriate
    * context, and displays the results view with the gathered benchmarking data. This method is
    * pivotal in finalising the benchmarking process and presenting the results to the user.
    */

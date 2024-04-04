@@ -2,16 +2,21 @@ package uk.msci.project.rsa;
 
 
 import java.io.IOException;
+
 import uk.msci.project.rsa.GenRSA;
 import uk.msci.project.rsa.GenView;
 import uk.msci.project.rsa.KeyPair;
 
 
 /**
- * This class is part of the Model component specific to the RSA key generation module in the
- * application, handling the data and logic associated with RSA key generation. This includes
- * maintaining the state of the key generation process, tracking parameters, and managing the
- * execution of key generation in standard modea. The class provides functionalities for initiating
+ * This class is part of the Model component specific to the RSA key
+ * generation module in the
+ * application, handling the data and logic associated with RSA key
+ * generation. This includes
+ * maintaining the state of the key generation process, tracking parameters,
+ * and managing the
+ * execution of key generation in standard modea. The class provides
+ * functionalities for initiating
  * key generation, and exporting generated keys,
  */
 public class GenModel {
@@ -38,8 +43,10 @@ public class GenModel {
 
 
   /**
-   * Constructor for GenModel. This initialises the model which will be bound to the runtime
-   * behavior of the signature program. At the point of launch, the model does not have any state
+   * Constructor for GenModel. This initialises the model which will be bound
+   * to the runtime
+   * behavior of the signature program. At the point of launch, the model
+   * does not have any state
    * until it is initiated by the user.
    */
   public GenModel() {
@@ -49,7 +56,8 @@ public class GenModel {
    * Sets the key parameters for RSA key generation.
    *
    * @param k      The number of prime factors in the modulus.
-   * @param lambda An array of integers representing the bit sizes for each prime factor.
+   * @param lambda An array of integers representing the bit sizes for each
+   *               prime factor.
    */
   public void setKeyParameters(int k, int[] lambda) {
     this.k = k;
@@ -58,28 +66,36 @@ public class GenModel {
 
 
   /**
-   * Initialises the state of the RSA key generation process. This method sets up the current
-   * generation process with the specified parameters for the number of primes and their bit
-   * lengths. It also allows for the option to use a smaller exponent 'e' in the RSA key
+   * Initialises the state of the RSA key generation process. This method
+   * sets up the current
+   * generation process with the specified parameters for the number of
+   * primes and their bit
+   * lengths. It also allows for the option to use a smaller exponent 'e' in
+   * the RSA key
    * generation.
    *
-   * @param isSmallE A boolean flag indicating whether a smaller 'e' should be used in the
-   *                 generation process. If true, a smaller 'e' is used. If false, a standard size
+   * @param isSmallE A boolean flag indicating whether a smaller 'e' should
+   *                 be used in the
+   *                 generation process. If true, a smaller 'e' is used. If
+   *                 false, a standard size
    *                 'e' is used.
    */
   public void setGen(boolean isSmallE) {
-    this.currentGen = isSmallE ? new GenRSA(k, lambda, true) : new GenRSA(k, lambda);
+    this.currentGen = isSmallE ? new GenRSA(k, lambda, true) : new GenRSA(k,
+      lambda);
   }
 
 
   /**
    * Generates an RSA key with using the currently tracked generation process.
    *
-   * @throws IllegalStateException if key parameters are not set before key generation.
+   * @throws IllegalStateException if key parameters are not set before key
+   * generation.
    */
   public void generateKey() {
     if (currentGen == null) {
-      throw new IllegalStateException("Key Size needs to be set before a key can be generated");
+      throw new IllegalStateException("Key Size needs to be set before a key " +
+        "can be generated");
     }
     generatedKeyPair = currentGen.generateKeyPair();
   }
@@ -96,7 +112,8 @@ public class GenModel {
   /**
    * Exports the generated RSA key pair to respective files.
    *
-   * @throws IOException           if there is an error during the export process.
+   * @throws IOException           if there is an error during the export
+   * process.
    * @throws IllegalStateException if no key has been generated yet.
    */
   public void export() throws IOException {

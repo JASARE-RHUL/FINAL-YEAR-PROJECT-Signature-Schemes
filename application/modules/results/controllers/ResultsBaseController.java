@@ -291,18 +291,28 @@ public abstract class ResultsBaseController {
    * signature operations.
    */
   void splitResults() {
+    // Iterate through each key to process results specific to that key
     for (int keyIndex = 0; keyIndex < totalKeys; keyIndex++) {
       int startIndex = keyIndex * (this.totalTrials / totalKeys);
       int endIndex = startIndex + (this.totalTrials / totalKeys);
+
+      // Extract the results specific to the current key using the calculated
+      // indices
       List<Long> keySpecificResults = results.subList(startIndex, endIndex);
+
+      // Create a new ResultsModel with the key-specific results
       ResultsModel resultsModel = new ResultsModel(keySpecificResults);
+
+      // If the results are for signature operations, associate the correct
+      // hash function
       if (isSignatureOperationResults) {
         setHashFunctionForModel(resultsModel);
       }
       resultsModel.calculateStatistics();
+
+      // Add the processed ResultsModel to the list of results models
       resultsModels.add(resultsModel);
     }
-
   }
 
   /**
@@ -316,21 +326,31 @@ public abstract class ResultsBaseController {
    *              information.
    */
   public void setHashFunctionForModel(ResultsModel model) {
+    // Retrieve and set the key length for the model based on the current key
+    // index
     int keyLength = keyLengths.get(keyIndex);
     model.setKeyLength(keyLength);
+
+    // Get the fraction representing the custom hash size if specified, or
+    // set default for provably secure context
     int[] hashSizeFractions = currentContext.getCustomHashSizeFraction();
     if (currentContext.getProvablySecure()) {
-      hashSizeFractions = new int[]{1, 2};
+      hashSizeFractions = new int[]{1, 2}; // Default for provably secure
+      // context
     }
+
+    // Calculate the digest size based on the key length and hash size fractions
     int digestSize = hashSizeFractions == null ? 0
       : (int) Math.round((keyLength * hashSizeFractions[0])
       / (double) hashSizeFractions[1]);
+
+    // Construct the hash function name, including digest size if applicable
     String hashFunctionName =
       digestSize != 0 ? currentContext.getHashType().toString()
-        + " (" + digestSize + "bit" + ")" :
+        + " (" + digestSize + "bit)" :
         currentContext.getHashType().toString();
-    model.setHashFunctionName(hashFunctionName);
 
+    model.setHashFunctionName(hashFunctionName);
   }
 
   /**
