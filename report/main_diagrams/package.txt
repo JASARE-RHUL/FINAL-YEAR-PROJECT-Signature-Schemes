@@ -1,0 +1,83 @@
+@startuml
+
+package "Digital Signature System" {
+
+  package "Key Management" {
+    [Generate Key]
+    [Generate batch Key]
+    [Save Key to File]
+    [Load Key from File]
+    [Save Key batch to File]
+    [Load Key batch from File]
+    [Generate Cross parameter \n benchmarking compatible key batches]
+    [Initiate Cross parameter benchmarking]
+    [Preload Cross parameter benchmarking compatible key batches \n into signature verification/creation sub systems]
+    [Preload provably secure compatible key batches \n (batches with every generated using small e) \n into signature verification/creation sub systems]
+    [Preload provably secure compatible key \n into signature verification/creation sub systems]
+  }
+
+  package "Signature Functions" {
+    package "Signing" {
+      [Input Message]
+      [Input Message batch]
+      [Load Private Key]
+      [Load Private Key batch]
+      [Select Hash Function output size \n (fixed, variable length, or provably secure)]
+      [Select Hash Function(s) \n (SHA-256, SHA-512, SHA-256 with MGF1, \n SHA-512 with MFG1, SHAKE-128, SHAKE-256)]
+      [Create Signature]
+      [Create Signature batch batch \n corresponding to normal benchmarking]
+      [Create Signature batch \n corresponding to cross-parameter \n (comparison) benchmarking run]
+      [Save Signature to File]
+      [Copy Signature to Clipboard]
+      [Load Signature from File]
+      [Load Signature batch from File]
+    }
+
+    package "Signature Schemes" {
+      [PKCS#1 v1.5 Scheme]
+      [ANSI X9.31 rDSA Scheme]
+      [ISO/IEC 9796-2:2010 Scheme 1]
+    }
+
+    package "Verification" {
+      [Input Verification Message]
+      [Input Verification Message batch]
+      [Load Signature for Verification]
+      [Load Signature batch for Verification]
+      [Load Public Key]
+      [Load Public Key batch]
+      [Select Hash Function output size \n (fixed, variable length, or provably secure)]
+      [Select Hash Function(s) \n (SHA-256, SHA-512, SHA-256 with MGF1, \n SHA-512 with MFG1, SHAKE-128, SHAKE-256)]
+      [Verify Signature]
+      [Verify Signature batch corresponding \n to normal benchmarking run]
+      [Verify Signature batch corresponding \n to cross-parameter (comparison) \n benchmarking run]
+    }
+
+    [Signing] ..> [Signature Schemes] : << use >>
+    [Verification] ..> [Signature Schemes] : << use >>
+  }
+
+  package "Results" {
+    [View benchmarking results \n (statistical averages comprising rows \n overall key results table) \n corresponding to benchmarking run by key]
+    [View benchmarking results \n (statistical averages) corresponding \n to cross parameter benchmarking run by key size \n subdivided into by multiple keys \n comprising rows of overall key size results table]
+    [Export Signature batch]
+    [Export benchmarking results by key]
+    [Export benchmarking results by key size]
+    [Export verification results by key]
+    [Export verification results by key size]
+  }
+
+  package "Graph" {
+    [Display box plot]
+    [Display Histogram]
+    [Display Line Chart of mean times \n (Cross parameter benchmarking)]
+  }
+  [Results] ..> [Signature Functions] : << use >>
+  [Results] ..> [Key Management] : << use >>
+  [Signing] ..> [Key Management] : << use >>
+  [Results] ..> [Graph] : << use >>
+  [Verification] ..> [Key Management] : << use >>
+
+}
+
+@enduml

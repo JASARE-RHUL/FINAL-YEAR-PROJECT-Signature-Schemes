@@ -1,0 +1,97 @@
+@startuml
+
+class uk.msci.project.rsa.SignatureMediator {
+  {field} -signatureControllerStandard : \n AbstractSignatureBaseController
+  {field} -signatureControllerBenchmarking : \n AbstractSignatureBaseControllerBenchmarking
+  {field} -signatureControllerComparisonBenchmarking : \n AbstractSignatureBaseControllerBenchmarking
+	{method} +showSignatureViewBenchmarking () : void
+	{method} +showSignatureViewComparisonBenchmarking () : void
+	{method} +showSignatureViewStandard () : void
+}
+
+class uk.msci.project.rsa.SignatureVerificationMediator extends uk.msci.project.rsa.SignatureMediator{
+}
+
+class uk.msci.project.rsa.SignatureCreationMediator extends uk.msci.project.rsa.SignatureMediator {
+}
+
+abstract class uk.msci.project.rsa.AbstractSignatureBaseController {
+  {field} ~signatureModel : SignatureModel
+}
+
+class uk.msci.project.rsa.SignatureCreationControllerStandard extends uk.msci.project.rsa.AbstractSignatureBaseController{
+  {field} ~signView : SignView
+}
+
+class uk.msci.project.rsa.SignatureVerificationControllerStandard extends uk.msci.project.rsa.AbstractSignatureBaseController {
+	 {field} -verifyView : VerifyView
+}
+
+abstract class uk.msci.project.rsa.AbstractSignatureBaseControllerBenchmarking extends uk.msci.project.rsa.AbstractSignatureBaseController {
+   {field} -benchmarkingUtility : BenchmarkingUtility
+   {method} ~handleMessageBatch ( file : File ) : void
+   {method} -handleBenchmarkingCompletion () : void
+  {method} +showBenchmarkingView ( primaryStage : \n Stage ) : void
+  {method} +showCrossBenchmarkingView ( primaryStage : \n Stage ) : void
+  {method} +showStandardView ( primaryStage : \n Stage ) : void
+}
+
+class uk.msci.project.rsa.SignatureCreationControllerBenchmarking extends uk.msci.project.rsa.AbstractSignatureBaseControllerBenchmarking {
+  {field} ~signView : SignView
+    {field} ~signatureModel : SignatureModelBenchmarking
+	{method} ~createBenchmarkingTask ( messageFile : \n File ) : Task
+	{method} +showBenchmarkingView ( primaryStage : \n Stage ) : void
+}
+
+class uk.msci.project.rsa.SignatureCreationControllerComparisonBenchmarking extends uk.msci.project.rsa.SignatureCreationControllerBenchmarking {
+  {field} ~signatureModel : \n SignatureModelComparisonBenchmarking
+	{method} +showCrossBenchmarkingView ( primaryStage : \n Stage ) : void
+}
+
+class uk.msci.project.rsa.SignatureVerificationControllerBenchmarking extends uk.msci.project.rsa.AbstractSignatureBaseControllerBenchmarking {
+  {field} ~signatureModel : \n SignatureModelBenchmarking
+   {field} ~verifyView : VerifyView
+  	{field} ~numSignatures : int
+  	{field} ~numTrials : int
+  	{method} ~createBenchmarkingTask ( messageFile : File , \n batchSignatureFile : File ) : Task
+  	{method} +handleSignatureBatch ( file : File ) : void
+	{method} +showBenchmarkingView ( primaryStage : \n Stage ) : void
+}
+
+class uk.msci.project.rsa.SignatureVerificationControllerComparisonBenchmarking extends uk.msci.project.rsa.SignatureVerificationControllerBenchmarking {
+  {field} ~signatureModel : \n SignatureModelComparisonBenchmarking
+	{method} +showCrossBenchmarkingView ( primaryStage : \n Stage ) : void
+}
+
+class uk.msci.project.rsa.BenchmarkingUtility {
+	{field} ~progressBar : ProgressBar
+	{field} ~progressLabel : Label
+}
+
+abstract class uk.msci.project.rsa.SignatureBaseView {}
+class uk.msci.project.rsa.SignView extends uk.msci.project.rsa.SignatureBaseView{}
+class uk.msci.project.rsa.VerifyView extends uk.msci.project.rsa.SignatureBaseView {}
+
+
+uk.msci.project.rsa.SignatureCreationControllerStandard -->  uk.msci.project.rsa.SignView
+uk.msci.project.rsa.SignatureCreationControllerStandard <..  uk.msci.project.rsa.SignView
+
+
+uk.msci.project.rsa.SignatureVerificationControllerStandard -->  uk.msci.project.rsa.VerifyView
+uk.msci.project.rsa.SignatureVerificationControllerStandard <.. uk.msci.project.rsa.VerifyView
+
+uk.msci.project.rsa.AbstractSignatureBaseController --> uk.msci.project.rsa.SignatureModel
+
+uk.msci.project.rsa.SignatureCreationControllerBenchmarking --> uk.msci.project.rsa.SignatureModelBenchmarking
+uk.msci.project.rsa.SignatureVerificationControllerBenchmarking --> uk.msci.project.rsa.SignatureModelBenchmarking
+
+uk.msci.project.rsa.SignatureCreationControllerComparisonBenchmarking--> uk.msci.project.rsa.SignatureModelComparisonBenchmarking
+uk.msci.project.rsa.SignatureVerificationControllerComparisonBenchmarking --> uk.msci.project.rsa.SignatureModelComparisonBenchmarking
+
+uk.msci.project.rsa.AbstractSignatureBaseControllerBenchmarking *--  uk.msci.project.rsa.BenchmarkingUtility
+
+uk.msci.project.rsa.SignatureMediator o-- uk.msci.project.rsa.AbstractSignatureBaseController : signatureControllerStandard
+uk.msci.project.rsa.SignatureMediator o-- uk.msci.project.rsa.AbstractSignatureBaseController :  signatureControllerBenchmarking
+uk.msci.project.rsa.SignatureMediator o-- uk.msci.project.rsa.AbstractSignatureBaseController : signatureControllerComparisonBenchmarking
+
+@enduml

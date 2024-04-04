@@ -1,0 +1,32 @@
+@startuml
+
+participant "Signer" as S
+participant "System" as Sys
+participant "File System" as FS
+
+note over S: Key Generation and Benchmarking
+S -> Sys: Input Key configurations,specify whether to use small e for each, and number of trials
+activate Sys
+
+alt Valid Key Sizes and e Options
+    Sys -> Sys: Generate Batch Key Pairs
+    Sys -> Sys: Benchmark Key Generation
+    alt Key Generation and Benchmark Successful
+        alt Option for small E was specified for all key configurations
+           Sys --> Sys: Preload provably secure private key batch (Signature Creation)
+           Sys --> Sys: Preload provably secure public key batch (Signature verification)
+        end alt
+        Sys --> S: Notify Key Generation and Benchmark Success
+        opt Save to File
+            S -> Sys: Request to Save Keys to File
+            Sys -> FS: Export Key Pair Batches
+        end opt
+    else Key Generation or Benchmark Error
+        Sys --> S: Display Key Generation or Benchmark Error
+    end alt
+else Invalid Key Sizes or e Options
+    Sys --> S: Display Invalid Key Sizes or e Options Error
+end alt
+deactivate Sys
+
+@enduml

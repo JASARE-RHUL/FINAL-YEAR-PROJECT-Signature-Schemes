@@ -1,0 +1,5 @@
+Parameter Type,Trials,Overall time,Mean,Std Dev,Variance,Confidence Interval,25th Percentile,Median,75th Percentile,Range,Min,Max,
+Standard Parameters (2 Primes (1/2N+1/2N) with arbitrary e selection):,3847,32500.03302 ms,8.44815 ms,3.06326 ms,9.38357 ms²,95% with bounds 8.35135 ms - 8.54495 ms,6.45296 ms,7.93108 ms,9.81196 ms,109.36288 ms,4.48542 ms,113.84829 ms,
+Standard Parameters (3 Primes (1/4N+1/4N+1/2N) with arbitrary e selection):,3847,25971.95539 ms,6.75122 ms,2.77931 ms,7.72459 ms²,95% with bounds 6.66340 ms - 6.83905 ms,5.04292 ms,6.25900 ms,7.93117 ms,110.15567 ms,3.46463 ms,113.62029 ms,
+Provable Parameters (2 Primes (1/2N+1/2N) with small e selection):,3847,31838.01822 ms,8.27606 ms,2.98431 ms,8.90612 ms²,95% with bounds 8.18176 ms - 8.37037 ms,6.27650 ms,7.78642 ms,9.73663 ms,98.98717 ms,4.30804 ms,103.29521 ms,
+Provable Parameters (3 Primes (1/4N+1/4N+1/2N) with small e selection):,3847,24060.58383 ms,6.25438 ms,2.58707 ms,6.69292 ms²,95% with bounds 6.17262 ms - 6.33613 ms,4.61788 ms,5.72271 ms,7.32038 ms,100.38979 ms,3.45338 ms,103.84317 ms,

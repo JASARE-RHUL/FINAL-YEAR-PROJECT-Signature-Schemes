@@ -160,7 +160,7 @@ remaining loose ends, ensuring that all elements of the project are polished.
 
 ## Diary Entry - Week of 15th January - 21st January 2024
 
-This week was centered around preparing for the development of the more comprehensive Term 2
+This week was centred around preparing for the development of the more comprehensive Term 2
 benchmarking program. I started with a supervisor meeting, receiving positive feedback on my interim
 submission and noting that I could simplify the directory structure of my codebase, specific
 requirements for the benchmarking program. My focus then shifted to researching and conceptualising
@@ -204,8 +204,8 @@ On Friday, I designed a benchmarking results screen with tabulated layout and op
 and visual representation, and improved efficiency through multi-core processing.
 
 Over the weekend, I structured the development and publication of benchmarking changes,
-incorporating them into the genModel, and finalizing the BenchmarkingUtility class. Sunday was
-dedicated to integrating these changes into the view assembly for key generation and finalizing
+incorporating them into the genModel, and finalising the BenchmarkingUtility class. Sunday was
+dedicated to integrating these changes into the view assembly for key generation and finalsing
 updates to the genModel.
 
 ## Diary Entry - Week of 5th February - 11th February 2024
@@ -301,7 +301,7 @@ customCrossParameterBenchmarkingMode, a feature allowing users to specify precis
 configurations for benchmarking in comparison mode. This involved modifying the GenModel to handle
 user-defined configurations and introducing new methods for generating readable string formats for
 these custom configurations. Additionally, I implemented a toggle switch in the key generation view
-and introduced dialog interactions for user input of configurations as multiple fractions.
+and introduced dialog interactions for user input of configurations as multiple comma separated fractions.
 
 Further refining the Signature model, I enabled the setting of a generalised number of key
 configurations per key size for use in batch generation methods for comparison mode. I also enhanced
@@ -311,7 +311,7 @@ tasks.
 
 The latter part of the week saw me wrapping up the refactoring of the SignView and VerifyView domain
 objects by creating a unified SignatureBaseView class. This significantly reduced code duplication
-and streamlined handling across different signature views. I then conceptualized a new feature:
+and streamlined handling across different signature views. I then conceptualised a new feature:
 Multi-Hash Function Selection for Cross-Parameter Benchmarking, focusing on the specification and
 management of custom key configurations.
 
@@ -396,7 +396,7 @@ schemes and ran a comprehensive session across six key sizes for key generation.
 for the PKCS and ANSI schemes, I encountered challenges with the ISO scheme during verification, which I aimed to
 address subsequently.
 
-On Wednesday, I updated the signature benchmarking model, adding specialized methods for verifying signatures and
+On Wednesday, I updated the signature benchmarking model, adding specialised methods for verifying signatures and
 exporting verification results, particularly for the ISO/IEC 9796-2 Scheme 1. This resolved the issues I faced with the
 ISO scheme verification. However, the day was also spent troubleshooting various errors related to variable length hash
 functions and verification accuracy in the ISO scheme.
@@ -411,6 +411,24 @@ the report was also part of the day’s work.
 
 Over the weekend, I focused on writing detailed descriptions and discussions for the benchmarking results. On Saturday,
 this included the key generation and signature creation benchmarking for the PKCS and ANSI schemes. On Sunday, my
-efforts were directed at summarizing and discussing the signature creation benchmarking results for the ISO Scheme, and
+efforts were directed at summarising and discussing the signature creation benchmarking results for the ISO Scheme, and
 I started on the descriptions for signature verification across all schemes, completing a preliminary summary for the
 PKCS scheme.
+
+## Diary Entry - Week of 25th March – 1st April 2024
+
+On Monday, I finished summarising and describing the benchmarking results for the ANSI and ISO schemes. Recognising the
+similar patterns in signature verification results across schemes, I refined the sections to build upon one another. In
+an effort to streamline the report, I moved the result tables and their descriptions for these schemes
+to the appendix. I concluded the say by sending the latest draft of the report, albeit without the conclusion and
+professional issues sections, to my supervisor for their input.
+
+Later in the week, I turned my attention to implementing integration tests for each of the core application modules,
+including key generation, signing, and verifying. Utilising the TestFX framework, I completed the integration test code
+for key generation and published these changes to the Git repository by Friday's end. I also initiated coding for
+integration  tests of the signature module and its associated MVC components.
+
+By the end of the week, on Sunday, I had successfully completed the integration tests for the signature module. This
+included finalising tests for both signature creation and verification, and updating the project repository accordingly.
+Alongside this, I began the process of documenting systems test cases that I had previously conducted. Starting with the
+key generation systems tests, I added these descriptions to the corresponding section in the report’s appendix.

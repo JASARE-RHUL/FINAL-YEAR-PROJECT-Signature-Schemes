@@ -1,0 +1,72 @@
+@startuml
+
+participant "Signer" as S
+participant "System" as Sys
+participant "File System" as FS
+
+note over S: Signature Creation Benchmarking
+alt Provably Secure private key batch was preloaded
+  S -> Sys: Input Message Batch, Number of Messages
+else No Provably Secure private key batch was preloaded
+  S -> Sys: Input Message Batch, Number of Messages, and Private Key Batch
+  S -> Sys: Input choice on whether to instantiate scheme with provably secure parameters
+end alt
+S -> Sys: Select Hash Function Size
+alt Option for Instantiation of scheme with provably secure parameters was selected
+  Sys --> S: Display Options for only variable length hash functions
+  S -> Sys: Select variable length hash function
+  Sys --> Sys: Set Hash function output size for when signing with each key to 1/2 of modulus length
+end alt
+alt Option for Provably Secure hash size selected
+  Sys --> S: Display Options for only variable length hash functions
+  S -> Sys: Select variable length hash function
+  Sys --> Sys: Set Hash function output size for when signing with each key to 1/2 of modulus length
+end alt
+alt Option for custom hash size selected
+  Sys --> S: Display Options for only variable length hash functions
+  S -> Sys: Select variable length hash function
+  Sys --> S: Display Option to input custom hash size adjacent to hash function selection
+  S -> Sys: Input custom hash size as fraction
+  Sys --> Sys: Set Hash function output size for when signing with each key to user specified fraction of modulus length
+end alt
+alt Option for standard hash size selected
+  Sys --> S: Display Options for only fixed length hash functions
+  S -> Sys: Select fixed length hash function
+end alt
+S -> Sys: Select Signature Scheme
+activate Sys
+
+alt Valid Inputs and Parameters
+    Sys -> Sys: Create Batch Signatures with Selected Parameters
+    Sys -> Sys: Benchmark Signature Creation
+    alt Signature Creation Benchmark Successful
+        Sys --> S: Notify Signature Creation Benchmark Success
+        Sys --> S: Display Benchmarking Results
+        opt Save Benchmarking Results to File
+            S -> Sys: Save Benchmarking Results to File
+            Sys -> FS: Save Benchmarking Results Batch
+        end opt
+        alt Signature Scheme is ISO/IEC 9796-2
+            Sys --> S: Offer Saving Messages Batch
+            opt Save Messages Batch to File
+                S -> Sys: Save Messages Batch to File
+                Sys -> FS: Export Messages Batch
+            end opt
+        end alt
+        opt Save Signatures to File
+            S -> Sys: Save Computed Signature Batch to File
+            Sys -> FS: Save Signatures Batch
+        end opt
+        opt Save Signature batch to File
+            S -> Sys: Save Computed Signature Batch to File
+            Sys -> FS: Save Signature Batch
+        end opt
+    else Signature Creation or Benchmark Error
+        Sys --> S: Display Signature Creation or Benchmark Error
+    end alt
+else Invalid Inputs or Parameters
+    Sys --> S: Display Invalid Input or Parameter Error
+end alt
+deactivate Sys
+
+@enduml

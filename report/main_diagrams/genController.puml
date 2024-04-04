@@ -1,0 +1,68 @@
+@startuml
+
+class uk.msci.project.rsa.KeyGenerationMediator {
+  {field} -genControllerStandard : GenControllerStandard
+  {field} -genControllerBenchmarking : \n GenControllerBenchmarking
+  {field} -genControllerComparisonBenchmarking : \n GenControllerComparisonBenchmarking
+	{method} +showBenchmarkingView () : void
+	{method} +showCrossBenchmarkingView () : void
+	{method} +showStandardView () : void
+}
+
+abstract class uk.msci.project.rsa.AbstractGenController {
+	{field} ~genView : GenView
+	{field} ~genModel : genModel
+	{method} +showBenchmarkingView ( primaryStage : \n Stage ) : void
+	{method} ~showCrossBenchmarkingView ( primaryStage : \n Stage ) : void
+	{method} ~showStandardView ( primaryStage : \n Stage ) : void
+}
+
+class uk.msci.project.rsa.GenControllerStandard extends uk.msci.project.rsa.AbstractGenController {
+	{method} +showStandardView ( primaryStage : \n Stage ) : void
+}
+
+class uk.msci.project.rsa.GenControllerBenchmarking extends uk.msci.project.rsa.AbstractGenController {
+  {field} ~genModel : GenModelBenchmarking
+  {field} ~benchmarkingUtility : BenchmarkingUtility
+	{field} ~numTrials : int
+	{method} ~createBenchmarkingTask ( numTrials : int , \n keyParams : List ) : Task
+	{method} -handleBenchmarkingCompletion () : void
+	{method} +showBenchmarkingView ( primaryStage : \n Stage ) : void
+}
+
+class uk.msci.project.rsa.GenControllerComparisonBenchmarking extends uk.msci.project.rsa.GenControllerBenchmarking{
+	{method} ~createBenchmarkingTask ( keyConfigurationsData : List , \n keyParams : List , numTrials : int ) : Task
+	{method} +showCrossBenchmarkingView ( primaryStage : \n Stage ) : void
+	{method} ~handleBenchmarkingInitiation ( numKeys : int ) : void
+}
+
+class uk.msci.project.rsa.GenControllerCustomComparisonBenchmarking extends uk.msci.project.rsa.GenControllerComparisonBenchmarking {
+  	{method} ~handleBenchmarkingInitiation ( numKeys : int ) : void
+}
+
+class uk.msci.project.rsa.GenView {}
+
+class uk.msci.project.rsa.KeyConfigurationsDialog {
+	{method} ~showKeyConfigurationsDialog ( numberOfFields : \n int ) : boolean
+}
+
+class uk.msci.project.rsa.BenchmarkingUtility {
+	{field} ~progressBar : ProgressBar
+	{field} ~progressLabel : Label
+}
+
+uk.msci.project.rsa.AbstractGenController -->  uk.msci.project.rsa.GenView
+uk.msci.project.rsa.AbstractGenController <..  uk.msci.project.rsa.GenView
+
+uk.msci.project.rsa.KeyGenerationMediator o--  uk.msci.project.rsa.GenControllerBenchmarking
+uk.msci.project.rsa.KeyGenerationMediator o-- uk.msci.project.rsa.GenControllerComparisonBenchmarking
+uk.msci.project.rsa.KeyGenerationMediator o-- uk.msci.project.rsa.GenControllerStandard
+
+uk.msci.project.rsa.AbstractGenController -->  uk.msci.project.rsa.GenModel
+uk.msci.project.rsa.GenControllerBenchmarking -->  uk.msci.project.rsa.GenModelBenchmarking
+
+uk.msci.project.rsa.GenView ..>  uk.msci.project.rsa.KeyConfigurationsDialog
+
+uk.msci.project.rsa.GenControllerBenchmarking *-- uk.msci.project.rsa.BenchmarkingUtility
+
+@enduml

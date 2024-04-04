@@ -1,0 +1,68 @@
+@startuml
+
+participant "System" as Sys
+participant "Verifier" as V
+participant "File System" as FS
+
+note over V: Signature Verification Benchmarking
+alt Provably Secure public key batch was preloaded
+  V -> Sys: Input Message Batch, Number of Messages
+  V -> Sys: Input choice on whether to instantiate scheme with provably secure parameters
+else No Provably Secure public key batch was preloaded
+  V -> Sys: Input Message Batch, Number of Messages, and Private Key Batch
+end alt
+V -> Sys: Select Hash Function Size
+alt Option for Instantiation of scheme with provably secure parameters was selected
+  Sys --> V: Display Options for only variable length hash functions
+  V -> Sys: Select variable length hash function
+  Sys --> Sys: Set Hash function output size for when verifying with each key to 1/2 of modulus length
+end alt
+alt Option for Provably Secure hash size selected
+  Sys --> V: Display Options for only variable length hash functions
+  V -> Sys: Select variable length hash function
+  Sys --> Sys: Set Hash function output size for when signing with each key to 1/2 of modulus length
+end alt
+alt Option for custom hash size selected
+  Sys --> V: Display Options for only variable length hash functions
+  V -> Sys: Select variable length hash function
+  Sys --> V: Display Option to input custom hash size adjacent to hash function selection
+  V -> Sys: Input custom hash size as fraction
+  Sys --> Sys: Set Hash function output size for when signing with each key to user specified fraction of modulus length
+end alt
+alt Option for standard hash size selected
+  Sys --> V: Display Options for only fixed length hash functions
+  V -> Sys: Select fixed length hash function
+end alt
+V -> Sys: Select Verification Scheme
+activate Sys
+
+alt Valid Inputs for Verification
+    Sys -> Sys: Verify Signature Batch
+    Sys -> Sys: Benchmark Signature Verification
+    alt Verification Benchmark Successful
+        Sys --> V: Notify Verification Benchmark Success
+        Sys --> V: Display Benchmarking Results
+        opt Save Benchmarking Results to File
+            V -> Sys: Save Benchmarking Results to File
+            Sys -> FS: Save Benchmarking Results Batch
+        end opt
+        alt Verification Scheme is ISO/IEC 9796-2
+            Sys --> V: Offer Saving Recovered Messages Batch
+            opt Save Recovered Messages Batch to File
+                V -> Sys: Save Recovered Messages Batch to File
+                Sys -> FS: Export Recovered Messages Batch
+            end opt
+        end alt
+        opt Save Verification Results to File
+            V -> Sys: Save Verification Results to File
+            Sys -> FS: Export Verification Results
+        end opt
+    else Verification or Benchmark Error
+        Sys --> V: Display Verification or Benchmark Error
+    end alt
+else Invalid Inputs for Verification
+    Sys --> V: Display Invalid Input Error
+end alt
+deactivate Sys
+
+@enduml

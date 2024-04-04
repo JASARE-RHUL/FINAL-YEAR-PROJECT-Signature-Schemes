@@ -112,8 +112,8 @@ classes, each designed for a specific application mode:
 
 Standard Mode: Classes like GenModelStandard and GenControllerStandard are responsible for routine tasks
 like generating a single key or signature, without the complexity of benchmarking.
-Benchmarking Mode: Classes like GenModelBenchmarking and GenControllerBenchmarking specialize in processing and
-evaluating batches of operations, delivering detailed results for individual keys.
+Benchmarking Mode: Classes like GenModelBenchmarking and GenControllerBenchmarking specialise in processing and
+evaluating batches of operations, delivering results for individual keys.
 Comparison Mode: Comparison classes, such as GenModelComparisonBenchmarking and GenControllerComparisonBenchmarking,
 enable comparative analysis across different key sizes, contrasting parameters and outcomes side by side.
 
@@ -141,6 +141,9 @@ The following additional source directories are configured:
 - `application/modules/signatures/views`
 - `application/modules/signatures/controllers`
 - `application/modules/signatures/utility`
+- `application/modules/results/models`
+- `application/modules/results/views`
+- `application/modules/results/controllers`
 
 ### Test Directories
 
@@ -159,6 +162,7 @@ Resources are configured to be included from the following directories:
 - `application/resources`
 - `application/modules/key_generation/resources`
 - `application/modules/signatures/resources`
+- `application/modules/results/resources`
 
 ---
 

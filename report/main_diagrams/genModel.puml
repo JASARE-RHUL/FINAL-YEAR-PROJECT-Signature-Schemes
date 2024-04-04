@@ -1,0 +1,48 @@
+@startuml
+
+class uk.msci.project.rsa.GenModel{
+	{field} ~keySize : [I
+	{field} ~currentGen : GenRSA
+	{field} ~generatedKeyPair : KeyPair
+}
+
+
+class uk.msci.project.rsa.GenModelBenchmarking extends uk.msci.project.rsa.GenModel {
+	{field} ~clockTimesPerTrial : List<Long>
+	{field} ~completedWork : int
+	{field} ~keyParams : List<Pair<int[], Boolean>>
+	{field} ~privateKeyBatch : String
+	{field} ~publicKeyBatch : String
+	{field} ~totalWork : int
+	{method} +batchGenerateKeys ( numTrials : int , \n keyParams : List<Pair<int[], Boolean>> , \n progressUpdater : DoubleConsumer ) : void
+
+
+}
+
+
+class uk.msci.project.rsa.GenModelComparisonBenchmarking extends uk.msci.project.rsa.GenModelBenchmarking{
+	{field} {static} ~FIRST_ROW_COMPARISON_MODE : String
+	{field} {static} ~FOURTH_ROW_COMPARISON_MODE : String
+	{field} {static} ~SECOND_ROW_COMPARISON_MODE : String
+	{field} {static} ~THIRD_ROW_COMPARISON_MODE : String
+	{field} -numKeySizesForComparisonMode : int
+	{method} +batchGenerateKeysInComparisonMode ( keyConfigurationsData : \n ListList<Pair<int[], Boolean>>, \n keySizes : List<Int> , numTrials : int , \n progressUpdater : DoubleConsumer ) : void
+	{method} +formatCustomKeyConfigurations ( keyConfigurationsData : \n List<Pair<int[], Boolean>> ) : List<String>
+	{method} +getDefaultKeyConfigurationsData () : List<Pair<int[], Boolean>>
+  {method} +formatDefaultKeyConfigurations () : List<String>
+
+}
+
+
+class uk.msci.project.rsa.GenRSA {}
+
+
+uk.msci.project.rsa.GenModelBenchmarking --> uk.msci.project.rsa.GenRSA
+
+uk.msci.project.rsa.GenModelComparisonBenchmarking --> uk.msci.project.rsa.GenRSA
+
+
+
+
+@enduml
+

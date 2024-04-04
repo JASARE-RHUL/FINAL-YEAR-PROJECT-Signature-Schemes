@@ -1,0 +1,42 @@
+@startuml
+abstract class Key {
+    # keyValue : String
+    # exponent : BigInteger
+    # modulus : BigInteger
+    + Key(key : String)
+    + Key(keyFile : File)
+    + Key(modulus : BigInteger, exponent : BigInteger)
+    # parseKeyValue(keyValue : String) : void
+    # importFromFile(keyFile : File) : String
+    # exportToFile(fileName : String) : void
+}
+
+class PrivateKey {
+    + PrivateKey(N : BigInteger, d : BigInteger)
+}
+
+class PublicKey {
+    + PublicKey(N : BigInteger, e : BigInteger)
+}
+
+class KeyPair {
+    - privateKey : PrivateKey
+    - publicKey : PublicKey
+    + KeyPair(privateKey : PrivateKey, publicKey : PublicKey)
+}
+
+class GenRSA {
+  - k: int
+  - lambda: int[]
+  + GenRSA(int k, int[] lambda)
+  - generatePrimeComponents() : BigInteger[]
+  - genModulus(BigInteger[] primes) : BigInteger
+  + generateKeyPair() : KeyPair
+}
+
+PrivateKey --|> Key : extends
+PublicKey --|> Key : extends
+KeyPair *-- PrivateKey
+KeyPair *-- PublicKey
+GenRSA ..> KeyPair : creates
+@enduml

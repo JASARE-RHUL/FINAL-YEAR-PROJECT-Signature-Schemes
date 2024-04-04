@@ -1,0 +1,137 @@
+@startuml
+
+
+class uk.msci.project.rsa.SignatureModel {
+	{field} ~currentSignatureScheme : SigSchemeInterface
+  {field} ~key : Key
+  {field} ~currentType : SignatureType
+  {field} ~currentHashType : DigestType
+  {field} ~isProvablySecure : boolean
+}
+
+abstract class uk.msci.project.rsa.AbstractSignatureModelBenchmarking extends uk.msci.project.rsa.SignatureModel  {
+  {field} ~keyBatch : List<Key>
+	{field} ~clockTimesPerTrial : List<Long>
+	{field} ~keyLengths : List <Int>
+	{field} ~nonRecoverableMessages : List<[B>
+	{field} ~recoverableMessages : List<[B>
+	{field} ~signaturesFromBenchmark : List<[B>
+	{field} ~numTrials : int
+	{field} ~completedWork : int
+	{field} ~totalWork : int
+	{field} ~verificationResults : List<Boolean>
+	{method} +addKeyToBatch ( key : Key ) : void
+	{method}  {abstract} ~batchCreateSignatures ( batchMessageFile : File , \n progressUpdater : DoubleConsumer ) : void
+	{method}  {abstract} ~batchVerifySignatures ( batchMessageFile : File , \n batchSignatureFile : File , \n progressUpdater : DoubleConsumer ) : void
+	{method}  {abstract} ~exportVerificationResultsToCSV ( keyIndex : int ) : void
+
+}
+
+
+class uk.msci.project.rsa.SignatureModelBenchmarking extends uk.msci.project.rsa.AbstractSignatureModelBenchmarking {}
+
+
+class uk.msci.project.rsa.SignatureModelComparisonBenchmarking extends uk.msci.project.rsa.AbstractSignatureModelBenchmarking {
+  {field} ~currentFixedHashTypeList_ComparisonMode : \n List<HashFunctionSelection>
+  {field} ~currentProvableHashTypeList_ComparisonMode : \n List<HashFunctionSelection>
+	{field} +keyConfigToHashFunctionsMap : Map
+	{field} -keyConfigurationStrings : List<String>
+	{field} +keysPerGroup : int
+	{field} -numKeySizesForComparisonMode : int
+	{field} -totalGroups : int
+	{method} +createDefaultKeyConfigToHashFunctionsMap () : void
+
+}
+
+class uk.msci.project.rsa.HashFunctionSelection  {
+  {field} ~digestType : DigestType
+  {field} ~isProvablySecure : boolean
+  {field} ~customSize : [I
+}
+
+
+
+' Enum and Factory
+enum uk.msci.project.rsa.SignatureType {
+	{field} +ANSI X9.31 rDSA
+	{field} +ISO/IEC 9796-2 Scheme 1
+	{field} +PKCS#1 v1.5 Signature Scheme
+}
+
+class uk.msci.project.rsa.SchemeFactory {
+   {method} +createScheme(type : \n SignatureType): SigSchemeInterface
+}
+
+interface uk.msci.project.rsa.SigSchemeInterface {
+  sign(M : byte[]) : byte[]
+  verify(M : byte[], signature : byte[]) : boolean
+}
+
+class uk.msci.project.rsa.SigScheme implements uk.msci.project.rsa.SigSchemeInterface {
+  {field} ~currentHashType : DigestType
+  {field} ~hashID : [B
+  {field} ~hashSize : Int
+  {field} ~isProvablySecureParams : boolean
+  {method} +computeHashWithOptionalMasking \n ( message : [B ) : [B
+	{method} +computeShakeHash ( message : [B ) : [B
+	{method} +setDigest ( digestType : DigestType ) : void
+	{method} +setDigest ( digestType : DigestType, \n customHashSize : int ) : void
+}
+
+class uk.msci.project.rsa.RSASSA_PKCS1_v1_5 extends uk.msci.project.rsa.SigScheme {
+  {field} {static} -MGF_1_SHA_256_HASH_ID : [B
+  {field} {static} -MGF_1_SHA_512_HASH_ID : [B
+  {field} {static} -SHAKE_128_HASH_ID : [B
+  {field} {static} -SHAKE_256_HASH_ID : [B
+  {field} {static} -SHA_256_HASH_ID : [B
+  {field} {static} -SHA_512_HASH_ID : [B
+}
+
+class uk.msci.project.rsa.ANSI_X9_31_RDSA extends uk.msci.project.rsa.SigScheme {
+	{field} {static} -SHAKE_HASH_ID : [B
+	{field} {static} -SHA_256_HASH_ID : [B
+	{field} {static} -SHA_512_HASH_ID : [B
+}
+
+class uk.msci.project.rsa.ISO_IEC_9796_2_SCHEME_1 extends uk.msci.project.rsa.SigScheme {
+}
+
+class uk.msci.project.rsa.DigestFactory {
+	{method}  {static} +getMessageDigest ( digestType : \n DigestType ) : MessageDigest
+}
+
+
+enum uk.msci.project.rsa.DigestType {
+	{field} +SHA-256
+	{field} +SHA-256 with MGF1
+	{field} +SHA-512
+	{field} +SHA-512 with MGF1
+	{field} +SHAKE-128
+	{field} +SHAKE-256
+}
+
+class uk.msci.project.rsa.MGF1 {
+	{field} -digest : MessageDigest
+	{method} +generateMask ( mgfSeed : \n [B , maskLen : int ) : [B
+}
+
+
+uk.msci.project.rsa.SignatureModel --> uk.msci.project.rsa.SchemeFactory
+uk.msci.project.rsa.SchemeFactory --> uk.msci.project.rsa.SignatureType: uses
+uk.msci.project.rsa.SchemeFactory --> uk.msci.project.rsa.SigSchemeInterface: creates
+
+uk.msci.project.rsa.SignatureModel --> uk.msci.project.rsa.DigestFactory
+uk.msci.project.rsa.DigestFactory --> uk.msci.project.rsa.DigestType: uses
+
+uk.msci.project.rsa.SigScheme --> uk.msci.project.rsa.DigestFactory
+uk.msci.project.rsa.SigScheme --> uk.msci.project.rsa.DigestType
+uk.msci.project.rsa.SigScheme --> uk.msci.project.rsa.MGF1
+
+uk.msci.project.rsa.SignatureModelComparisonBenchmarking "1" o-- "0..*"  uk.msci.project.rsa.HashFunctionSelection
+uk.msci.project.rsa.SignatureModelComparisonBenchmarking "1" o-- "0..*"  uk.msci.project.rsa.HashFunctionSelection
+uk.msci.project.rsa.HashFunctionSelection *--  uk.msci.project.rsa.DigestType : digestType
+
+
+
+@enduml
+

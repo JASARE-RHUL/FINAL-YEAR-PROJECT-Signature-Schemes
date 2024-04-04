@@ -1,0 +1,45 @@
+@startuml
+
+class uk.msci.project.rsa.MainController {
+  {field} -mainMenuView : MainMenuView
+  {field} -keyGenerationMediator : \n KeyGenerationMediator
+  {field} -signatureCreationMediator : \n SignatureCreationMediator
+  {field} -signatureVerificationMediator : \n SignatureVerificationMediator
+  {method} ~showMainMenuView () : void
+}
+
+class uk.msci.project.rsa.MainMenuView {
+}
+
+class uk.msci.project.rsa.SignatureMediator {
+  {field} -signatureControllerStandard : \n AbstractSignatureBaseController
+  {field} -signatureControllerBenchmarking : \n AbstractSignatureBaseControllerBenchmarking
+  {field} -signatureControllerComparisonBenchmarking : \n AbstractSignatureBaseControllerBenchmarking
+  {method} +showSignatureViewBenchmarking () : void
+  {method} +showSignatureViewComparisonBenchmarking () : void
+  {method} +showSignatureViewStandard () : void
+}
+
+class uk.msci.project.rsa.SignatureVerificationMediator extends uk.msci.project.rsa.SignatureMediator {
+}
+
+class uk.msci.project.rsa.SignatureCreationMediator extends uk.msci.project.rsa.SignatureMediator {
+}
+
+class uk.msci.project.rsa.KeyGenerationMediator {
+  {field} -genControllerStandard : \n GenControllerStandard
+  {field} -genControllerBenchmarking : \n GenControllerBenchmarking
+  {field} -genControllerComparisonBenchmarking : \n GenControllerComparisonBenchmarking
+  {method} +showBenchmarkingView () : void
+  {method} +showCrossBenchmarkingView () : void
+  {method} +showStandardView () : void
+}
+
+uk.msci.project.rsa.MainController -->  uk.msci.project.rsa.MainMenuView
+uk.msci.project.rsa.MainController <..  uk.msci.project.rsa.MainMenuView
+
+uk.msci.project.rsa.MainController *--  uk.msci.project.rsa.KeyGenerationMediator
+uk.msci.project.rsa.MainController *--  uk.msci.project.rsa.SignatureCreationMediator
+uk.msci.project.rsa.MainController *--  uk.msci.project.rsa.SignatureVerificationMediator
+
+@enduml

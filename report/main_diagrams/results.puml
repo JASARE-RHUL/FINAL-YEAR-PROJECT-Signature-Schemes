@@ -1,0 +1,125 @@
+@startuml
+
+class uk.msci.project.rsa.GraphManager {
+	{field} -precomputedGraphs : Map
+	{method} ~precomputeGraphs ( resultsModels : List , \n keyLengths : List ) : void
+	{method} ~precomputeGraphsComparisonMode \n ( resultsModels : List ,\n comparisonModeRowHeaders : List , \n results : List , keyLengths : List ) : void
+
+}
+
+abstract class uk.msci.project.rsa.ResultsBaseController {
+  {field} ~currentContext : BenchmarkingContext
+	{field} ~isSignatureOperationResults : boolean
+	{field} ~resultsModel : ResultsModel
+	{field} ~resultsModels : List<ResultsModel>
+	{field} ~resultsView : ResultsView
+	{field} ~graphManager : GraphManager
+	{method} +displayCurrentContextButtons () : void
+	{method}  {abstract} +displayResultsForKey ( keyIndex : int ) : void
+	{method}  {abstract} ~initialiseKeySwitchButtons () : void
+	{method} +setContext ( context : BenchmarkingContext ) : void
+	{method}  {abstract} +showResultsView ( comparisonModeRowHeaders : \n List<String> , results : List<Long>, \n keyLengths : List<Int> , isComparisonMode : \n boolean , numKeySizesForComparisonMode : int ) : void
+	{method} ~splitResults () : void
+}
+
+
+class uk.msci.project.rsa.ResultsControllerComparisonBenchmarking extends uk.msci.project.rsa.ResultsBaseController {
+	{method} -createComparisonModeColumnHeaders () : List<String>
+}
+
+
+class uk.msci.project.rsa.ResultsControllerNormalBenchmarking extends uk.msci.project.rsa.ResultsBaseController {}
+
+
+class uk.msci.project.rsa.ResultsModel {
+	{field} +hashFunctionName : String
+	{field} -keyLength : int
+	{field} -rangeData : double
+	{field} -results : List<Long>
+	{method} +exportStatisticsToCSV ( fileName : String ) : void
+}
+
+
+
+class uk.msci.project.rsa.ResultsView {
+	{field} -graphArea : AnchorPane
+	{field} -tableView : TableView
+}
+
+
+abstract class uk.msci.project.rsa.BenchmarkingContext {
+	{method} +exportNonRecoverableMessages () : void
+	{method} +exportPrivateKeyBatch () : void
+	{method} +exportPublicKeyBatch () : void
+	{method} +exportSignatureBatch () : void
+	{method} +exportVerificationResults ( keyIndex : int ) : void
+	{method}  {abstract} +getResultsLabel ( \n isComparisonMode : boolean ) : String
+	{method} +showExportPrivateKeyBatchButton () : boolean
+	{method} +showExportPublicKeyBatchButton () : boolean
+	{method} +showExportSignatureBatchButton () : boolean
+	{method} +showExportVerificationResultsButton () : boolean
+	{method} +showNonRecoverableBatchButton () : boolean
+}
+
+abstract class uk.msci.project.rsa.SignatureBaseContext extends uk.msci.project.rsa.BenchmarkingContext{
+  {field} -signatureModel : AbstractSignatureModelBenchmarking
+	{method} +getResultsLabel ( isComparisonMode : boolean ) : String
+	{method}  {abstract} +getSignatureResultsLabel ( \n isComparisonMode : boolean ) : String
+
+}
+
+
+
+class uk.msci.project.rsa.SignatureCreationContext extends uk.msci.project.rsa.SignatureBaseContext{
+  {method} +exportNonRecoverableMessages () : void
+	{method} +exportSignatureBatch () : void
+}
+
+class uk.msci.project.rsa.SignatureVerificationContext extends uk.msci.project.rsa.SignatureBaseContext{
+  {method} +exportVerificationResults ( keyIndex : int ) : void
+}
+
+class uk.msci.project.rsa.KeyGenerationContext extends uk.msci.project.rsa.BenchmarkingContext{
+ {field} -genModel : GenModelBenchmarking
+}
+
+class uk.msci.project.rsa.GenControllerBenchmarking {}
+
+
+class uk.msci.project.rsa.GenControllerComparisonBenchmarking extends uk.msci.project.rsa.GenControllerBenchmarking{}
+
+
+class uk.msci.project.rsa.GenControllerCustomComparisonBenchmarking extends uk.msci.project.rsa.GenControllerComparisonBenchmarking {}
+
+
+' remove
+class uk.msci.project.rsa.SignatureVerificationControllerBenchmarking extends uk.msci.project.rsa.AbstractSignatureBaseControllerBenchmarking {}
+class uk.msci.project.rsa.SignatureVerificationControllerComparisonBenchmarking extends uk.msci.project.rsa.SignatureVerificationControllerBenchmarking {}
+class uk.msci.project.rsa.SignatureCreationControllerBenchmarking extends uk.msci.project.rsa.AbstractSignatureBaseControllerBenchmarking {}
+class uk.msci.project.rsa.SignatureCreationControllerComparisonBenchmarking extends uk.msci.project.rsa.SignatureCreationControllerBenchmarking {}
+
+uk.msci.project.rsa.ResultsBaseController *--  uk.msci.project.rsa.BenchmarkingContext
+uk.msci.project.rsa.ResultsBaseController *--  uk.msci.project.rsa.GraphManager : graphManager
+
+uk.msci.project.rsa.ResultsBaseController -->  uk.msci.project.rsa.ResultsView
+uk.msci.project.rsa.ResultsBaseController <..  uk.msci.project.rsa.ResultsView
+
+uk.msci.project.rsa.ResultsBaseController "1" o-- "0..*"  uk.msci.project.rsa.ResultsModel : resultsModels
+uk.msci.project.rsa.ResultsBaseController -->  uk.msci.project.rsa.ResultsModel : resultsModel
+
+uk.msci.project.rsa.GenControllerBenchmarking -->  uk.msci.project.rsa.KeyGenerationContext
+uk.msci.project.rsa.SignatureCreationControllerBenchmarking -->  uk.msci.project.rsa.SignatureCreationContext
+uk.msci.project.rsa.SignatureVerificationControllerBenchmarking -->  uk.msci.project.rsa.SignatureVerificationContext
+
+uk.msci.project.rsa.GenControllerBenchmarking -->  uk.msci.project.rsa.ResultsControllerNormalBenchmarking
+uk.msci.project.rsa.GenControllerComparisonBenchmarking -->  uk.msci.project.rsa.ResultsControllerComparisonBenchmarking
+
+uk.msci.project.rsa.SignatureCreationControllerBenchmarking -->  uk.msci.project.rsa.ResultsControllerNormalBenchmarking
+uk.msci.project.rsa.SignatureCreationControllerComparisonBenchmarking -->  uk.msci.project.rsa.ResultsControllerComparisonBenchmarking
+
+uk.msci.project.rsa.SignatureVerificationControllerBenchmarking -->  uk.msci.project.rsa.ResultsControllerNormalBenchmarking
+uk.msci.project.rsa.SignatureVerificationControllerComparisonBenchmarking -->  uk.msci.project.rsa.ResultsControllerComparisonBenchmarking
+
+
+@enduml
+
