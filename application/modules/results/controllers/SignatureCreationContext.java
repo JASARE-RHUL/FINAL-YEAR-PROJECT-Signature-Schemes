@@ -31,9 +31,7 @@ public class SignatureCreationContext extends SignatureBaseContext {
    */
   @Override
   public void exportSignatureBatch() throws IOException {
-
     signatureModel.exportSignatureBatch("signatureBatch.rsa");
-
   }
 
   /**

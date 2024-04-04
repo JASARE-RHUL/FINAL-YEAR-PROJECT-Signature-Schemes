@@ -75,11 +75,6 @@ public class HashFunctionItem {
     this.checked.set(checked);
   }
 
-  /**
-   * Gets the BooleanProperty representing the selection status.
-   *
-   * @return The BooleanProperty for checked status.
-   */
   public BooleanProperty checkedProperty() {
     return checked;
   }
@@ -103,11 +98,6 @@ public class HashFunctionItem {
     this.comboBoxSelection.set(selection);
   }
 
-  /**
-   * Gets the StringProperty for hash function output mode selection.
-   *
-   * @return The StringProperty for comboBoxSelection.
-   */
   public StringProperty comboBoxSelectionProperty() {
     return comboBoxSelection;
   }
@@ -130,11 +120,6 @@ public class HashFunctionItem {
     this.customHashSize.set(size);
   }
 
-  /**
-   * Gets the StringProperty for custom hash size.
-   *
-   * @return The StringProperty for customHashSize.
-   */
   public StringProperty customHashSizeProperty() {
     return customHashSize;
   }

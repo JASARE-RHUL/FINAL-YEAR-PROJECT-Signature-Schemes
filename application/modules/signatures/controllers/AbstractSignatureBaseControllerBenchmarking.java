@@ -462,6 +462,9 @@ public abstract class AbstractSignatureBaseControllerBenchmarking extends
    *                                   batch.
    * @param signatureModelBenchmarking The benchmarking model for which the
    *                                   keys are imported.
+   * @param keyFieldString             The string to update the text field
+   *                                   used for prompting the import of key
+   *                                   on successful import
    */
   public void updateWithImportedKeyBatch(SignatureBaseView signatureView,
                                          AbstractSignatureModelBenchmarking signatureModelBenchmarking,
@@ -581,8 +584,11 @@ public abstract class AbstractSignatureBaseControllerBenchmarking extends
    * user's input on the view.
    * <p>
    *
-   * @param signatureView The signature view that provides context for hash
-   *                      size setting.
+   * @param signatureView              The signature view that provides
+   *                                   context for hash
+   *                                   size setting.
+   * @param signatureModelBenchmarking The benchmarking model to update with
+   *                                   the hash size on successful validation.
    * @return Boolean value indicating if validation failed.
    */
   boolean setHashSizeInModelBenchmarking(SignatureBaseView signatureView,

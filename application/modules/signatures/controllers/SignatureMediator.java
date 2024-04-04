@@ -157,6 +157,9 @@ public class SignatureMediator {
    * allow for later instantiation of a signature scheme with provably secure
    * parameters. The key
    * pairing can be set in non-benchmarking mode.
+   *
+   * @param key string representation of the key to be preloaded for a
+   *            signature process
    */
   public void setProvableKeyForSignatureProcesses(String key) {
     signatureControllerStandard.importSingleKeyFromKeyGeneration(key);

@@ -262,6 +262,9 @@ public abstract class ResultsBaseController {
    * making the comparison
    * meaningful.
    *
+   * @param comparisonModeRowHeaders     list of custom row
+   *                                     headers used in the results
+   *                                     table for comparison mode.
    * @param results                      List of benchmarking results,
    *                                     ordered by keys. Each entry
    *                                     in the list represents the result of
@@ -417,8 +420,9 @@ public abstract class ResultsBaseController {
    * Sets statistical results in the results view based on the data from the
    * provided ResultsModel.
    *
-   * @param model The ResultsModel instance containing statistical data to
-   *              display.
+   * @param model    The ResultsModel instance containing statistical data to
+   *                 display.
+   * @param keyIndex The index of the key for which results correspond to.
    */
   public abstract void setStatsResultsView(ResultsModel model, int keyIndex);
 

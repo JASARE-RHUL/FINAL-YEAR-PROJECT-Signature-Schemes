@@ -87,14 +87,11 @@ public class ResultsControllerNormalBenchmarking extends ResultsBaseController {
    * <p>
    * In comparison mode, the view is configured to compare results across
    * multiple key sizes and
-   * parameter sets (provably secure vs standard or any custom arrangement).
-   * Takes an additional
-   * parameter 'comparisonModeRowHeaders' which is a list of custom row
-   * headers used in the results
-   * table for comparison mode. These headers provide context for each row,
-   * making the comparison
-   * meaningful.
+   * parameter sets (provably secure vs standard or any custom arrangement).*
    *
+   * @param comparisonModeRowHeaders     list of custom row
+   *                                     headers used in the results
+   *                                     table for comparison mode.
    * @param results                      List of benchmarking results,
    *                                     ordered by keys. Each entry
    *                                     in the list represents the result of
@@ -144,8 +141,9 @@ public class ResultsControllerNormalBenchmarking extends ResultsBaseController {
    * Sets statistical results in the results view based on the data from the
    * provided ResultsModel.
    *
-   * @param model The ResultsModel instance containing statistical data to
-   *              display.
+   * @param model    The ResultsModel instance containing statistical data to
+   *                 display.
+   * @param keyIndex The index of the key for which results correspond to.
    */
   public void setStatsResultsView(ResultsModel model, int keyIndex) {
     resultsView.setNumTrials(String.valueOf(model.getNumTrials()));

@@ -164,6 +164,15 @@ public class SignatureModel {
    * @throws InvalidSignatureTypeException if the parameter passed
    *                                       SignatureType is not valid or
    *                                       supported.
+   * @throws NoSuchAlgorithmException      if the parameter passed digest
+   * type is not supported.
+   *                                       in the underlying signature factory.
+   * @throws InvalidDigestException        if an invalid digest exception occurs
+   *                                       during the signature scheme
+   *                                       instantiation.
+   * @throws NoSuchProviderException       if a no such provider exception
+   *                                       occurs in attempt to retrieve a
+   *                                       digest algorithm.
    */
   public void instantiateSignatureScheme()
     throws InvalidSignatureTypeException, NoSuchAlgorithmException,

@@ -261,7 +261,13 @@ public abstract class AbstractSignatureBaseController {
    */
   @FunctionalInterface
   public interface TriConsumer<T, U, V> {
-
+    /**
+     * Performs this operation on the given arguments.
+     *
+     * @param t the first input argument.
+     * @param u the second input argument.
+     * @param v the third input argument.
+     */
     void accept(T t, U u, V v);
   }
 
@@ -887,6 +893,9 @@ public abstract class AbstractSignatureBaseController {
    * Validates the hash output size input by the user. Ensures that it is a
    * non-negative integer and
    * that it is provided when required based on the view's visibility settings.
+   * <p>
+   * * @param signatureView The signature view to be updated with error popup
+   * for invalid hash size if applicable.
    *
    * @return true if the hash output size is valid, false otherwise.
    */
@@ -931,14 +940,27 @@ public abstract class AbstractSignatureBaseController {
   }
 
   /**
-   * An indication of whether there is single key that has been pre-loaded
-   * for the signature
-   * creation process in non benchmarking mode.
+   * An indication of whether there is single key that has been preloaded
+   * for the signature process in non benchmarking mode.
+   *
+   * @return true if a provably secure key has been preloaded successfully,
+   * false
+   * otherwise.
    */
   public boolean getIsSingleKeyProvablySecure() {
     return isSingleKeyProvablySecure;
   }
 
+
+  /**
+   * Displays a signature view in standard mode. This abstract method needs
+   * to be implemented by each type of signature controller to provide the
+   * functionality for
+   * switching to its corresponding standard mode screen
+   *
+   * @param primaryStage The primary stage of the application where the view
+   *                     will be displayed.
+   */
   public abstract void showStandardView(Stage primaryStage);
 
   /**
@@ -952,6 +974,14 @@ public abstract class AbstractSignatureBaseController {
    */
   public abstract void showBenchmarkingView(Stage primaryStage);
 
+  /**
+   * Returns the key batch preloaded from a key generation session. This
+   * method fetches the key/batch of keys
+   * that have been imported into the system for use in digital signature
+   * processes.
+   *
+   * @return A String representation of the imported key batch.
+   */
   public String getImportedKeyBatch() {
     return importedKeyBatch;
   }

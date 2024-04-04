@@ -229,6 +229,7 @@ public class GenModelBenchmarking extends GenModel {
   /**
    * Generates a batch of keys based on the previously set key parameters.
    *
+   * @return true if all keys in the batch are provably secure, otherwise false.
    * @throws IllegalStateException if key parameters are not set.
    */
   public boolean generateKeyBatch() {

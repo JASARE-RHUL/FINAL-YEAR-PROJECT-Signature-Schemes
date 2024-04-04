@@ -455,6 +455,8 @@ public abstract class SignatureBaseView {
    * Sets the visibility of the image for the checkmark to indicate the
    * status of the import of a
    * message.
+   *
+   * @param visible true to make the checkmark visible, false to hide it.
    */
   public void setTextFieldCheckmarkImageVisibility(boolean visible) {
     this.textFileCheckmarkImage.setVisible(visible);
@@ -682,7 +684,7 @@ public abstract class SignatureBaseView {
    * its properties.
    *
    * @param visible true to make the benchmarking mode toggle switch visible,
-   *               false to hide it.
+   *                false to hide it.
    */
   public void setBenchmarkingModeToggleVisibility(boolean visible) {
     benchmarkingModeToggle.setVisible(visible);
@@ -756,7 +758,7 @@ public abstract class SignatureBaseView {
    * Sets the visibility of the messageBatchField and manages its properties.
    *
    * @param visible true to make the messageBatchField visible, false to hide
-   *               it.
+   *                it.
    */
   public void setMessageBatchFieldVisibility(boolean visible) {
     messageBatchField.setVisible(visible);

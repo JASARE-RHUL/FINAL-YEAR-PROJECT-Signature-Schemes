@@ -353,6 +353,10 @@ public class GenView {
     return numKeysTextField.getText();
   }
 
+  /**
+   * Sets the number of keys (intended to be generated in a benchmarking)
+   * specified in the corresponding TextField.
+   */
   public void setNumKeys(String text) {
     numKeysTextField.setText(text);
   }
@@ -539,7 +543,8 @@ public class GenView {
   boolean showKeyConfigurationsDialog(int numberOfFields, Stage primaryStage) {
     KeyConfigurationsDialog keyConfigDialog =
       new KeyConfigurationsDialog(primaryStage,
-      dynamicKeyConfigurationsData, keyConfigToHashFunctionsMap, keysPerGroup);
+        dynamicKeyConfigurationsData, keyConfigToHashFunctionsMap,
+        keysPerGroup);
     return keyConfigDialog.showKeyConfigurationsDialog(numberOfFields);
   }
 
@@ -620,7 +625,7 @@ public class GenView {
    * field(s) and returns false.
    *
    * @param content The VBox containing dynamically generated text fields and
-   *               checkboxes.
+   *                checkboxes.
    * @return boolean indicating whether the input in all text fields is valid.
    */
   private boolean isValidInput(VBox content) {
@@ -868,7 +873,10 @@ public class GenView {
    * Retrieves a list of key parameters (sizes and small e options) specified
    * by the user.
    *
-   * @return List<Pair < int [ ], Boolean>> containing the key parameters.
+   * @return List of Pair objects containing the key parameters. Each Pair
+   * consists of an array
+   * of integers representing key sizes and a Boolean indicating the small
+   * 'e' option.
    */
   public List<Pair<int[], Boolean>> getDynamicKeyData() {
     return dynamicKeyData;
@@ -888,7 +896,8 @@ public class GenView {
   /**
    * Retrieves a list of key sizes specified by the user in comparison mode.
    *
-   * @return List<Integer> containing the specified key sizes.
+   * @return List containing the specified key sizes, where each element in
+   * the list is an Integer.
    */
   public List<Integer> getDynamicKeySizeData() {
     return dynamicKeySizeData;
@@ -950,7 +959,7 @@ public class GenView {
    * Sets the visibility of the generateButton.
    *
    * @param visible A boolean indicating whether the generateButton should be
-   *               visible.
+   *                visible.
    */
   public void setGenerateButtonVisibility(boolean visible) {
     generateButton.setVisible(visible);

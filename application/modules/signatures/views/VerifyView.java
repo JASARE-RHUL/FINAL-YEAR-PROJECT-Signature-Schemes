@@ -195,7 +195,13 @@ public class VerifyView extends SignatureBaseView {
     this.importSigButton.setText(label);
   }
 
-
+  /**
+   * Sets the visibility of the importSigButton (standard mode operation and
+   * manages its properties.
+   *
+   * @param visible true to make the importSigButton visible, false to
+   *                hide it.
+   */
   public void setImportSigButtonVisibility(boolean visible) {
     importSigButton.setManaged(visible);
     importSigButton.setVisible(visible);
@@ -238,9 +244,11 @@ public class VerifyView extends SignatureBaseView {
   }
 
   /**
-   * Sets the visibility of the SigBenchmarkButton and manages its properties.
+   * Sets the visibility of the VerificationBenchmarkButton and manages its
+   * properties.
    *
-   * @param visible true to make the SigBenchmarkButton visible, false to
+   * @param visible true to make the VerificationBenchmarkButton visible,
+   *                false to
    *                hide it.
    */
   public void setVerificationBenchmarkButtonVisibility(boolean visible) {
@@ -248,6 +256,15 @@ public class VerifyView extends SignatureBaseView {
     verificationBenchmarkButton.setManaged(visible);
   }
 
+  /**
+   * Sets the visibility of the VerificationButton (standard mode operation)
+   * and manages its
+   * properties.
+   *
+   * @param visible true to make the VerificationButton visible,
+   *                false to
+   *                hide it.
+   */
   public void setVerificationButtonVisibility(boolean visible) {
     verifyBtn.setVisible(visible);
     verifyBtn.setManaged(visible);
@@ -265,9 +282,9 @@ public class VerifyView extends SignatureBaseView {
   }
 
   /**
-   * Sets the visibility of the messageBatchText and manages its properties.
+   * Sets the visibility of the signatureBatchText and manages its properties.
    *
-   * @param visible true to make the messageBatchText visible, false to hide it.
+   * @param visible true to make the signatureBatchText visible, false to hide it.
    */
   public void setSignatureBatchTextVisibility(boolean visible) {
     signatureBatchText.setVisible(visible);
@@ -275,16 +292,22 @@ public class VerifyView extends SignatureBaseView {
   }
 
   /**
-   * Sets the visibility of the messageBatchField and manages its properties.
+   * Sets the visibility of the signatureBatchField and manages its properties.
    *
-   * @param visible true to make the messageBatchField visible, false to hide
-   *               it.
+   * @param visible true to make the signatureBatchText visible, false to hide
+   *                it.
    */
   public void setSignatureBatchFieldVisibility(boolean visible) {
     signatureField.setVisible(visible);
     signatureField.setManaged(visible);
   }
 
+  /**
+   * Sets the prompting text of the signatureBatchField to urge the user to
+   * import a message batch
+   *
+   * @param text String representing the prompting text.
+   */
   public void setSignatureBatch(String text) {
     signatureField.setText(text);
   }

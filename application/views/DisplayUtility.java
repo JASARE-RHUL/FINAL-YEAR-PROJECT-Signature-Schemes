@@ -107,8 +107,10 @@ public class DisplayUtility {
    *
    * @param primaryStage The primary stage of the application.
    * @param activity     The name of the activity for which progress is being
-   *                    shown.
-   * @return Dialog<Void> representing the progress dialog.
+   *                     shown.
+   * @return A Dialog object representing the progress dialog. This Dialog
+   * does not return
+   * any result (Void).
    */
   protected static Dialog<Void> showProgressDialog(Stage primaryStage,
                                                    String activity) {
