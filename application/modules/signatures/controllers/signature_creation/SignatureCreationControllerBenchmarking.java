@@ -181,7 +181,7 @@ public class SignatureCreationControllerBenchmarking extends
     // Initialize the results controller for normal benchmarking mode
     ResultsControllerNormalBenchmarking resultsController =
       new ResultsControllerNormalBenchmarking(
-      mainController);
+        mainController);
     // Set the benchmarking context for signature creation
     BenchmarkingContext context = new SignatureCreationContext(signatureModel);
     resultsController.setContext(context);
@@ -213,51 +213,52 @@ public class SignatureCreationControllerBenchmarking extends
     // Check the file for non-empty lines and count the number of valid lines
     int numMessages = checkFileForNonEmptyLines(file, "message");
 
-    try {
-      // Proceed only if there are valid messages in the file
-      if (numMessages > 0) {
+
+    // Proceed only if there are valid messages in the file
+    if (numMessages > 0) {
+      int numMessagesFromField = 0;
+      try {
+         numMessagesFromField = Integer.parseInt(signatureView.getNumMessageField());
+      } catch (NumberFormatException e) {
+        uk.msci.project.rsa.DisplayUtility.showErrorAlert(
+          "Message batch could not be imported. Please ensure the number "
+            + "of messages contained in the file matches the number of " +
+            "messages "
+            + "entered in the above field");
+      }
+      // Validate that the number of messages in the file matches the
+      // number entered in the view
+      if (numMessages != numMessagesFromField) {
+        // Show error alert if numbers don't match
+        uk.msci.project.rsa.DisplayUtility.showErrorAlert(
+          "Message batch could not be imported. Please ensure the number "
+            + "of messages contained in the file matches the number of " +
+            "messages "
+            + "entered in the above field");
+      } else {
         // Store the file for future reference
         this.messageBatchFile = file;
+        // Update the model with the number of messages (trials)
+        signatureModel.setNumTrials(numMessages);
+        // Update the view with the name of the imported file
+        signatureView.setMessageBatch(file.getName());
+        // Update the view with a checkmark image to indicate successful
+        // import
+        signatureView.setTextFileCheckmarkImage();
+        signatureView.setTextFieldCheckmarkImageVisibility(true);
+        signatureView.setMessageBatchFieldVisibility(true);
+        // Make the message field non-editable as the messages are now
+        // imported
+        signatureView.setNumMessageFieldEditable(false);
+        // Hide the import button as the batch is already imported
+        signatureView.setImportTextBatchBtnVisibility(false);
+        // Show the cancel import button
+        signatureView.setCancelImportTextBatchButtonVisibility(true);
 
-        // Validate that the number of messages in the file matches the
-        // number entered in the view
-        if (numMessages != Integer.parseInt(signatureView.getNumMessageField())) {
-          // Show error alert if numbers don't match
-          uk.msci.project.rsa.DisplayUtility.showErrorAlert(
-            "Message batch could not be imported. Please ensure the number "
-              + "of messages contained in the file matches the number of " +
-              "messages "
-              + "entered in the above field");
-        } else {
-          // Update the model with the number of messages (trials)
-          signatureModel.setNumTrials(numMessages);
-          // Update the view with the name of the imported file
-          signatureView.setMessageBatch(file.getName());
-          // Update the view with a checkmark image to indicate successful
-          // import
-          signatureView.setTextFileCheckmarkImage();
-          signatureView.setTextFieldCheckmarkImageVisibility(true);
-          signatureView.setMessageBatchFieldVisibility(true);
-          // Make the message field non-editable as the messages are now
-          // imported
-          signatureView.setNumMessageFieldEditable(false);
-          // Hide the import button as the batch is already imported
-          signatureView.setImportTextBatchBtnVisibility(false);
-          // Show the cancel import button
-          signatureView.setCancelImportTextBatchButtonVisibility(true);
-
-          signatureView.addCancelImportTextBatchButtonObserver(
-            new CancelImportTextBatchButtonObserver(signatureView,
-              signatureModel));
-        }
+        signatureView.addCancelImportTextBatchButtonObserver(
+          new CancelImportTextBatchButtonObserver(signatureView,
+            signatureModel));
       }
-    } catch (NumberFormatException e) {
-      // Show error alert if there's a problem with parsing the number of
-      // messages
-      uk.msci.project.rsa.DisplayUtility.showErrorAlert(
-        "Message batch could not be imported. Please ensure the number "
-          + "of messages contained in the file matches the number of messages "
-          + "entered in the above field");
     }
   }
 
@@ -308,7 +309,7 @@ public class SignatureCreationControllerBenchmarking extends
    * benchmarking setups.
    *
    * @param primaryStage The primary stage of the application, serving as the
-   *                    main window for the
+   *                     main window for the
    *                     UI.
    */
   public void showStandardView(Stage primaryStage) {
@@ -324,7 +325,7 @@ public class SignatureCreationControllerBenchmarking extends
    * including standard and provably secure setups.
    *
    * @param primaryStage The primary stage of the application, serving as the
-   *                    main window for the
+   *                     main window for the
    *                     UI.
    */
   public void showCrossBenchmarkingView(Stage primaryStage) {
@@ -342,7 +343,7 @@ public class SignatureCreationControllerBenchmarking extends
    *
    * @param fxmlPath                   Path to the FXML file to load.
    * @param observerSetup              Runnable containing the observer setup
-   *                                  logic.
+   *                                   logic.
    * @param additionalSetupBasedOnMode Runnable containing additional setup
    *                                   logic specific to the
    *                                   mode.

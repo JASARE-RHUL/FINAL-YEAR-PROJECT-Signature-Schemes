@@ -420,9 +420,6 @@ public abstract class AbstractSignatureBaseControllerBenchmarking extends
         } else if (encounteredNonEmptyLine) {
           // Empty line encountered after non-empty line, indicating invalid
           // file
-          uk.msci.project.rsa.DisplayUtility.showErrorAlert(
-            "Invalid " + artefact + " batch. Please make sure the file " +
-              "contains no empty lines.");
           isValidFile = false;
           break;
         }
@@ -443,8 +440,7 @@ public abstract class AbstractSignatureBaseControllerBenchmarking extends
           " the above field.");
     }
 
-    return isValidFile ? numMessages : 0; // Return number of valid lines if
-    // file is valid, else 0
+    return isValidFile ? numMessages : 0;
   }
 
 
