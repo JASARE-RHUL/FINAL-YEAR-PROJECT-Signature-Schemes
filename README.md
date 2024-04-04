@@ -170,7 +170,14 @@ Resources are configured to be included from the following directories:
 
 ---
 
+## Application Release Notes
 
+## Release 1.0
 
-
-
+- This is the first major release of the digital signature benchmarking application.
+- This release marks the completion of benchmarking (in all its forms) and non-benchmarking functionality for all
+  application modules.
+- Additionally, inter-module communication (such as key generation preloading with provably secure key batches into
+  signature processes), although generally limited in the application, is now fully operational.
+- To ensure correctness, a full suite of functional system tests was conducted, covering the full scope of benchmarking
+  functionality for the core operations of key generation, signature creation, and signature verification.
