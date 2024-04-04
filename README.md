@@ -20,7 +20,7 @@ Java must be installed to run this application
 To run the application, using the provided jar, run
 
 ```
-java -jar digital-signature-poc-1.0.jar
+java -jar digital-signature-benchmarking-1.0.jar
 ```
 
 from the command line in the same directory that this README is contained in.
@@ -107,18 +107,22 @@ modules.
 
 ## Application Modes Context
 
-In the application, each MVC (Model-View-Controller) component for every module comprises an assembly of
-classes, each designed for a specific application mode:
+In the application, each MVC (Model-View-Controller) component for every module comprises an assembly of classes, each
+designed for a specific application mode:
 
-Standard Mode: Classes like GenModelStandard and GenControllerStandard are responsible for routine tasks
-like generating a single key or signature, without the complexity of benchmarking.
-Benchmarking Mode: Classes like GenModelBenchmarking and GenControllerBenchmarking specialise in processing and
-evaluating batches of operations, delivering results for individual keys.
-Comparison Mode: Comparison classes, such as GenModelComparisonBenchmarking and GenControllerComparisonBenchmarking,
-enable comparative analysis across different key sizes, contrasting parameters and outcomes side by side.
+- **Standard Mode**: Classes like `GenModelStandard` (from the model assembly for key generation)
+  and `GenControllerStandard` (from the controller assembly for key generation) are responsible for routine tasks like
+  generating a single key or signature, without the complexity of benchmarking.
 
-This pattern extends to the view assembly for key generation, as well as the respective assemblies for
-signatures modules.
+- **Benchmarking Mode**: Classes like `GenModelBenchmarking` and `GenControllerBenchmarking` specialize in processing
+  and evaluating batches of operations, delivering results for individual keys.
+
+- **Comparison Mode**: Comparison classes, such as `GenModelComparisonBenchmarking`
+  and `GenControllerComparisonBenchmarking`, enable comparative analysis across different key sizes, contrasting
+  parameters and outcomes side by side.
+
+This pattern extends to the view assembly for key generation, as well as the respective assemblies for signatures
+modules.
 
 ## Maven Configuration
 
