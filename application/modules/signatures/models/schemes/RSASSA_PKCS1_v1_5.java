@@ -37,34 +37,37 @@ public class RSASSA_PKCS1_v1_5 extends SigScheme {
     (byte) 0x30, (byte) 0x31, (byte) 0x30, (byte) 0x0D,
     (byte) 0x06, (byte) 0x09, (byte) 0x60, (byte) 0x86,
     (byte) 0x48, (byte) 0x01, (byte) 0x65, (byte) 0x03,
-    (byte) 0x04, (byte) 0x02, (byte) 0x0B, (byte) 0x04,
+    (byte) 0x04, (byte) 0x02, (byte) 0x0B, (byte) 0x05,
+    (byte) 0x00, (byte) 0x04,
     (byte) 0x20};
 
   private static final byte[] SHAKE_256_HASH_ID = new byte[]{
     (byte) 0x30, (byte) 0x51, (byte) 0x30, (byte) 0x0D,
     (byte) 0x06, (byte) 0x09, (byte) 0x60, (byte) 0x86,
     (byte) 0x48, (byte) 0x01, (byte) 0x65, (byte) 0x03,
-    (byte) 0x04, (byte) 0x02, (byte) 0x0C, (byte) 0x04,
+    (byte) 0x04, (byte) 0x02, (byte) 0x0C, (byte) 0x05,
+    (byte) 0x00, (byte) 0x04,
     (byte) 0x40};
 
   private static final byte[] MGF_1_SHA_256_HASH_ID = new byte[]{
     (byte) 0x30, (byte) 0x18, (byte) 0x06, (byte) 0x08,
     (byte) 0x2A, (byte) 0x86, (byte) 0x48, (byte) 0x86,
     (byte) 0xF7, (byte) 0x0D, (byte) 0x01, (byte) 0x01,
-    (byte) 0x08, (byte) 0x30, (byte) 0x0B, (byte) 0x06,
+    (byte) 0x08, (byte) 0x30, (byte) 0x0D, (byte) 0x06,
     (byte) 0x09, (byte) 0x60, (byte) 0x86, (byte) 0x48,
     (byte) 0x01, (byte) 0x65, (byte) 0x03, (byte) 0x04,
-    (byte) 0x02, (byte) 0x01};
+    (byte) 0x02, (byte) 0x01, (byte) 0x05, (byte) 0x00
+  };
 
   private static final byte[] MGF_1_SHA_512_HASH_ID = new byte[]{
     (byte) 0x30, (byte) 0x18,
     (byte) 0x06, (byte) 0x08, (byte) 0x2A, (byte) 0x86, (byte) 0x48,
     (byte) 0x86, (byte) 0xF7,
     (byte) 0x0D, (byte) 0x01, (byte) 0x01, (byte) 0x08,
-    (byte) 0x30, (byte) 0x0B,
+    (byte) 0x30, (byte) 0x0D,
     (byte) 0x06, (byte) 0x09, (byte) 0x60, (byte) 0x86, (byte) 0x48,
     (byte) 0x01, (byte) 0x65,
-    (byte) 0x03, (byte) 0x04, (byte) 0x02, (byte) 0x03
+    (byte) 0x03, (byte) 0x04, (byte) 0x02, (byte) 0x03, (byte) 0x05, (byte) 0x00
   };
 
 
@@ -116,7 +119,7 @@ public class RSASSA_PKCS1_v1_5 extends SigScheme {
    * @return A byte array representing the hash ID associated with the
    * specified digest type.
    * @throws IllegalArgumentException If the provided digest type is not
-   * supported.
+   *                                  supported.
    */
   public byte[] getHashID(DigestType digestType) {
     return switch (digestType) {
@@ -182,14 +185,14 @@ public class RSASSA_PKCS1_v1_5 extends SigScheme {
    * @param customHashSize The custom hash size, used only for
    *                       variable-length hash types.
    * @throws NoSuchAlgorithmException If the specified algorithm is not
-   * available in the
+   *                                  available in the
    *                                  environment.
    * @throws InvalidDigestException   If the specified digest type is invalid
-   * or unsupported.
+   *                                  or unsupported.
    * @throws NoSuchProviderException  If the specified provider for the
-   * algorithm is not available.
+   *                                  algorithm is not available.
    * @throws IllegalArgumentException If the custom hash size is not a
-   * positive integer that allows
+   *                                  positive integer that allows
    *                                  incorporation of minimum padding bytes.
    */
   @Override
@@ -211,7 +214,7 @@ public class RSASSA_PKCS1_v1_5 extends SigScheme {
    * algorithm ID to the corresponding generated hash.
    *
    * @param message The message to be included in the DigestInfo, represented
-   *               as a byte array.
+   *                as a byte array.
    * @return A byte array representing the DigestInfo structure, including
    * the hash algorithm ID and
    * the computed hash (masked or standard) of the message.
