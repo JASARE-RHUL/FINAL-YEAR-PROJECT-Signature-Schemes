@@ -50,7 +50,7 @@ public class RSASSA_PKCS1_v1_5 extends SigScheme {
     (byte) 0x40};
 
   private static final byte[] MGF_1_SHA_256_HASH_ID = new byte[]{
-    (byte) 0x30, (byte) 0x18, (byte) 0x06, (byte) 0x08,
+    (byte) 0x30, (byte) 0x1A, (byte) 0x06, (byte) 0x08,
     (byte) 0x2A, (byte) 0x86, (byte) 0x48, (byte) 0x86,
     (byte) 0xF7, (byte) 0x0D, (byte) 0x01, (byte) 0x01,
     (byte) 0x08, (byte) 0x30, (byte) 0x0D, (byte) 0x06,
@@ -60,7 +60,7 @@ public class RSASSA_PKCS1_v1_5 extends SigScheme {
   };
 
   private static final byte[] MGF_1_SHA_512_HASH_ID = new byte[]{
-    (byte) 0x30, (byte) 0x18,
+    (byte) 0x30, (byte) 0x1A,
     (byte) 0x06, (byte) 0x08, (byte) 0x2A, (byte) 0x86, (byte) 0x48,
     (byte) 0x86, (byte) 0xF7,
     (byte) 0x0D, (byte) 0x01, (byte) 0x01, (byte) 0x08,
