@@ -1090,6 +1090,7 @@ public class SignatureModelComparisonBenchmarking extends AbstractSignatureModel
    */
   public void setNumKeysPerKeySizeComparisonMode(int numKeysPerKeySizeComparisonMode) {
     this.numKeysPerKeySizeComparisonMode = numKeysPerKeySizeComparisonMode;
+    this.numKeySizesForComparisonMode = keyBatch.size() / this.numKeysPerKeySizeComparisonMode;
   }
 
   /**

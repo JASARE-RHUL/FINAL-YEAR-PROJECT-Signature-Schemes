@@ -122,9 +122,9 @@ public class SignatureMediator {
    * a more granular and
    * detailed analysis with arbitrary user provided key configurations.
    *
-   * @param keyBatch                     The batch of private keys used in
-   *                                     the signature creation
-   *                                     process. process.
+   * @param keyBatch                     The batch of keys used in
+   *                                     the signature creation/verificaton
+   *                                     process.
    * @param isKeyForComparisonMode       Indicates if the keys are used in
    *                                     comparison mode, enabling
    *                                     performance comparison.
