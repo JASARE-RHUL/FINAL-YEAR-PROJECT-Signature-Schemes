@@ -694,6 +694,7 @@ public abstract class AbstractSignatureBaseControllerBenchmarking extends
       signatureView.setImportKeyBatchButtonVisibility(false);
       signatureView.setCancelImportKeyButtonVisibility(true);
       signatureView.setProvableParamsHboxVisibility(true);
+      signatureView.addProvableSchemeChangeObserver(new ProvableParamsChangeObserver(signatureView));
       signatureView.setProvablySecureParametersRadioSelected(true);
       signatureView.setCustomParametersRadioVisibility(false);
       signatureView.setStandardParametersRadioVisibility(false);
