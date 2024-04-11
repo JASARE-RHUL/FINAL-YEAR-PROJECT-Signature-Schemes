@@ -1997,7 +1997,7 @@ Signature generation results can also be visualised graphically, accessible unde
 \begin{comment}
 Another way to interpret signature generation results is visually through graphical representation and this aligns with key configurations from the respective results table. The alternative view can be found under the "Graphs" tab, located in the central tab pane where the results table is placed. Accessing and interpreting these graphs follows the same procedure as those created during the benchmarking of key generation. 
 \end{comment}
-\subsection{Comparison Benchmarking: Signature Verification}
+\subsection{Signature Verification}
 
 \begin{figure}[H]
     \centering
@@ -2544,9 +2544,9 @@ At the largest tested size of 6144 bits \ref{keyGen_6144bit_table}, the efficien
 Throughout the analysis, as expected, the time taken for key generation increases with the key size. However, the increase is not linear; it tends to grow more than proportional, reflecting the greater computational complexity involved in generating and handling larger primes. This complexity becomes particularly evident through the marked rise in standard deviation and variance in larger key sizes for both standard and provably secure configurations.
 While provably secure parameters exhibit some efficiency improvements, these gains are relatively minimal, especially as key sizes grow larger. The increased variability at larger key sizes, as indicated by higher standard deviation and variance, obscures the true impact of opting for provably secure parameters since the small percentage difference may fall within the broader range of natural variability of the key generation process. Consequently, although provably secure configurations show efficiency improvements at smaller key sizes, their practical significance wanes with increasing key sizes.
 
-In essence, when considering solely the smaller value of e used in provably secure configurations as the distinguishing factor as compared to standard configurations, there is no significant difference in key generation between both types. Moreover the distinction between the two becomes negligible, with increasingly larger key sizes. 
+In essence, when considering solely the smaller value of e used in provably secure configurations as the distinguishing factor compared to standard configurations, there is no significant difference in key generation between both types. Moreover, the distinction between the two becomes negligible with increasingly larger key sizes. 
 
-However, if the increased number of primes (to three) used for both configuration types is taken into account, the results point towards a notable efficiency advantage for 3-prime configurations over 2-prime configurations across all key sizes. Notably, it's important to acknowledge that while the extra prime is utilised in both configuration types, its necessity stems also as implication of the proofs, so can thus be considered a form of provably secure key configuration in its own right. 
+However, if the increased number of primes (to three) used for both configuration types is taken into account, the results point towards a clear efficiency advantage for 3-prime configurations over 2-prime configurations for all key sizes. Notably, it's important to acknowledge that while the extra prime is utilised in both configuration types, its necessity stems also as implication of the proofs, so can thus be considered a form of provably secure key configuration in its own right. 
 
 The counterintuitive results suggests that adopting provably secure parameters—which would have been presumed to be less efficient due to enhancing security— actually offer performance benefits. The first scenario reflecting minimal improvements at lower key sizes can attributed to the use of  a smaller e values. In the second scenario, there is an inherent and significant advantage of using 3-prime configurations over 2-prime configuration and one that that intensifies with increasing key size.
 

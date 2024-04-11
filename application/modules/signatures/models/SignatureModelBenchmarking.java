@@ -63,8 +63,8 @@ public class SignatureModelBenchmarking extends AbstractSignatureModelBenchmarki
 
   /**
    * Processes a batch of messages to create digital signatures using the
-   * private keys in the
-   * batch.The method also updates the progress of the batch signing process
+   * current private key batch.The method also updates the progress of the
+   * batch signing process
    * using the provided
    * progressUpdater consumer.
    *
@@ -257,7 +257,7 @@ public class SignatureModelBenchmarking extends AbstractSignatureModelBenchmarki
   /**
    * Processes a batch of messages and their corresponding signatures to
    * verify the authenticity of
-   * the signatures using the public keys in the batch. This method updates
+   * the signatures using the current public key batch. This method updates
    * the progress of the
    * verification process using the progressUpdater consumer.
    *

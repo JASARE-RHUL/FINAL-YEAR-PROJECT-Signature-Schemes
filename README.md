@@ -11,7 +11,7 @@ Java must be installed to run this application
 
 ## Demo Video
 
-The following is the demo for the application, not inclusive of the additional features that can be found in this user
+The following is the demo for the application, not inclusive of the additional features that can be found in the user
 manual:
 
 1. demo link: https://youtu.be/5DHMEd1Vkok

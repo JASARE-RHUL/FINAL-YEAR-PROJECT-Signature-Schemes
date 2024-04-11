@@ -6,7 +6,7 @@
 
   <groupId>uk.msci.project.rsa</groupId>
   <artifactId>digital-signature-benchmarking</artifactId>
-  <version>1.0</version>
+  <version>1.0.4</version>
 
   <properties>
     <!-- Set a valid Java version here -->
