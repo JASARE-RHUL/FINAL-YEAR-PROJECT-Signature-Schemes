@@ -11,9 +11,10 @@ Java must be installed to run this application
 
 ## Demo Video
 
-1. Full demo of the application:
-2. Optional video (Recovering a partial message from a Signature (ISO\IEC 9796-2
-   Scheme 1)):
+The following is the demo for the application, not inclusive of the additional features that can be found in this user
+manual:
+
+1. demo link: https://youtu.be/5DHMEd1Vkok
 
 ## Running the application
 
@@ -181,3 +182,12 @@ Resources are configured to be included from the following directories:
   signature processes), although generally limited in the application, is now fully operational.
 - To ensure correctness, a full suite of functional system tests was conducted, covering the full scope of benchmarking
   functionality for the core operations of key generation, signature creation, and signature verification.
+
+## Release 1.03
+
+- This release fixes the issue of missing null values for the hash ids of variable length hash functions used with the
+  pkcs signature scheme.
+
+## Release 1.04
+
+- This release fixes the issue of signature verification failing cross-parameter benchmarking mode.

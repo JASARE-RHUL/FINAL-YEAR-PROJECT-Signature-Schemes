@@ -420,8 +420,9 @@ public class SignatureModelComparisonBenchmarking extends AbstractSignatureModel
         List<Future<Pair<Boolean, Pair<Long, List<byte[]>>>>> futures = new ArrayList<>();
         int messageCounter = 0;
         while ((messageLine = messageReader.readLine()) != null && messageCounter < numTrials) {
-
+          // Iterate over each key size to handle different configurations
           for (int keySizeIndex = 0; keySizeIndex < numKeySizesForComparisonMode; keySizeIndex++) {
+            // Offset to account for multiple key sizes in the key batch
             int keyOffset = keySizeIndex * keysPerKeySize;
 
             for (int groupIndex = 0; groupIndex < keyConfigToHashFunctionsMap.size();
@@ -571,7 +572,7 @@ public class SignatureModelComparisonBenchmarking extends AbstractSignatureModel
             // Offset to account for multiple key sizes in the key batch
             int keyOffset = keySizeIndex * keysPerKeySize;
 
-            // Iterate through each group of keys
+            // Iterate through each group
             for (int groupIndex = 0; groupIndex < keyConfigToHashFunctionsMap.size();
                 groupIndex++) {
               List<HashFunctionSelection> hashFunctions = keyConfigToHashFunctionsMap.get(
@@ -612,12 +613,14 @@ public class SignatureModelComparisonBenchmarking extends AbstractSignatureModel
                           / (double) hashFunction.getCustomSize()[1]);
                   digestSize = Math.floorDiv(digestSize + 7, 8);
                   boolean isProvablySecureHash = hashFunction.isProvablySecure();
+
                   if (keyLength == 1024 && digestSize == 0
                       && hashFunction.getDigestType() == DigestType.SHA_512
                       && isDefaultComparisonMode && !isProvablySecureHash) {
                     actualKeyIndex = (actualKeyIndex + 2);
                     isProvablySecureHash = true;
                   }
+
                   PublicKey publicKey = (PublicKey) keyBatch.get(actualKeyIndex);
 
                   int finalDigestSize = digestSize;
@@ -752,7 +755,7 @@ public class SignatureModelComparisonBenchmarking extends AbstractSignatureModel
       // Offset to account for multiple key sizes in the key batch
       int keyOffset = keySizeIndex * keysPerKeySize;
 
-      // Iterate through each group of keys
+      // Iterate through each group
       for (int groupIndex = 0; groupIndex < keyConfigToHashFunctionsMap.size(); groupIndex++) {
         List<HashFunctionSelection> hashFunctions = keyConfigToHashFunctionsMap.get(groupIndex);
 

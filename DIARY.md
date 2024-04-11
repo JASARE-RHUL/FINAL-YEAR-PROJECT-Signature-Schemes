@@ -8,7 +8,7 @@ of the aims for the project On Monday, I started writing about its importance, t
 widespread use and history. Tuesday was a continuation, emphasising why it’s such a vital system.
 
 By Wednesday, I added details on potential security issues, particularly focusing on something
-called the Bleichenbaucher attacks. I was initially puzzled about how these attacks affected the
+called the Bleichenbacher attacks. I was initially puzzled about how these attacks affected the
 signature scheme.
 
 On Thursday and Friday, after more research, I figured out the difference between how these attacks
@@ -45,7 +45,7 @@ signatures for my report.
 ## Diary Entry - Week of 9th October - 15th October 2023
 
 I Started the week with supervisor meeting, confirming my focus on the POC PKCS Signature for term 1
-and was given advise to potentially using the top 1000 English words for the signature program when
+and was given advice to potentially using the top 1000 English words for the signature program when
 I sought guidance on the type of data I could provide to be signed. I delved into textbook RSA,
 highlighting its vulnerabilities. By Friday, I had expanded on RSA's role in digital signatures,
 introducing potential attacks and Hashed RSA signatures. The weekend saw me laying the foundation
@@ -205,7 +205,7 @@ and visual representation, and improved efficiency through multi-core processing
 
 Over the weekend, I structured the development and publication of benchmarking changes,
 incorporating them into the genModel, and finalising the BenchmarkingUtility class. Sunday was
-dedicated to integrating these changes into the view assembly for key generation and finalsing
+dedicated to integrating these changes into the view assembly for key generation and finalising
 updates to the genModel.
 
 ## Diary Entry - Week of 5th February - 11th February 2024
@@ -426,9 +426,30 @@ professional issues sections, to my supervisor for their input.
 Later in the week, I turned my attention to implementing integration tests for each of the core application modules,
 including key generation, signing, and verifying. Utilising the TestFX framework, I completed the integration test code
 for key generation and published these changes to the Git repository by Friday's end. I also initiated coding for
-integration  tests of the signature module and its associated MVC components.
+integration tests of the signature module and its associated MVC components.
 
 By the end of the week, on Sunday, I had successfully completed the integration tests for the signature module. This
 included finalising tests for both signature creation and verification, and updating the project repository accordingly.
 Alongside this, I began the process of documenting systems test cases that I had previously conducted. Starting with the
 key generation systems tests, I added these descriptions to the corresponding section in the report’s appendix.
+
+## Diary Entry - Week of 1st April – 7th April 2024
+
+This week I focussed on finalising documentation and refining my project. I completed the documentation of
+system tests for signature modules and began shaping the professional issues section of my report, deciding to focus on
+the adherence to cryptography standards. After drafting and refining, I produced a completed version, incorporating my
+supervisor's feedback to replace result screenshots with textual tables in the report.
+
+On the coding front, I streamlined the code by generalising enum comparisons in the signature scheme class and
+restructured the project directory to simplify the codebase, updating the readme accordingly. I also cleaned up the code
+and JavaDoc across the project and added the updated documentation to the project docs directory.
+
+By the end of the week, after acting on feedback to convert result screenshots to textual tables, I discovered and fixed
+logical errors in the PKCS signature scheme related to hash IDs. I ended the week by completing the
+conclusion section of my report over the course of the weekend.
+
+## Diary Entry - Week of 8th April – 11th April 2024
+
+Started by completing the user manual section on Monday. On Tuesday, cleaned up and improved sections of the report for
+clarity. I concluded things by recording a demo video for the application on Thursday, and putting the finishing touches
+to all deliverables, in preparation for the final submission.

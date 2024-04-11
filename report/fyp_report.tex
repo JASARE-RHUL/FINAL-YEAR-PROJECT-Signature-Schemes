@@ -1,6 +1,6 @@
 \documentclass[]{final_report}
 \usepackage{graphicx}
-\usepackage{hyperref}
+
 \usepackage{titlesec}
 \usepackage[utf8]{inputenc}
 \usepackage[backend=biber, style=ieee]{biblatex}
@@ -32,12 +32,18 @@
 \usepackage{fancyhdr} % Required for custom headers and footers
 \usepackage{everypage}
 \usepackage{lipsum}
+\usepackage{url}
+\usepackage{longtable}
+
+
 
 
 
 
 \addbibresource{fyp.bib}
 \usepackage{amsthm}
+
+
 \theoremstyle{definition}
 \newtheorem{definition}{Definition}[chapter]
 \newtheorem{basic}{Basic Definition}
@@ -82,7 +88,7 @@
       \egroup
   \fi
 }
-
+\usepackage{hyperref}
 % Add the page number command to every page
 \AddEverypageHook{\Lpagenumber}
 \newcommand{\mycomment}[1]{}
@@ -90,15 +96,40 @@
 %%% Input project details
 \def\studentname{Jude Asare}
 \def\reportyear{2023/2024}
-\def\projecttitle{Implementing PKCS\#1 v1.5 and other deterministic RSA Signature Schemes with provably secure parameters}
+\def\projecttitle{Implementing the PKCS\#1 v1.5 and other deterministic RSA Signature Schemes with provably secure parameters}
 \def\supervisorname{Saqib Kakvi}
 \def\degree{MSci (Hons) in Computer Science (Information Security)}
 \def\fullOrHalfUnit{MSci} 
-\def\finalOrInterim{Interim Report} 
+\def\finalOrInterim{Final Report} 
 \begin{document}
 
 \maketitle
 
+
+%TC:ignore
+
+\pagenumbering{roman} % Start with Roman numerals
+
+
+\chapter*{Declaration}
+
+This report has been prepared on the basis of my own work. Where other published and unpublished source materials have been used, these have been acknowledged.
+
+\vskip3em
+
+Word Count: 17565
+\begin{itemize}
+\item Includes a section on professional issues.
+\item Excludes the appendix (optional for perusal) which contains full documentation of requirements, design, testing, and remaining results tables.
+\end{itemize}
+\vskip3em
+
+Student Name: \studentname
+
+
+\newpage
+
+%TC:endignore
 
 
 
@@ -133,9 +164,10 @@ Guided by this revelation, this project seeks to concretely implement these sign
 \end{comment}
 \newpage
 
-
+\pagenumbering{arabic}
 %%%%%%%%%%%%%%%%%%%%%%
 %%% Introduction
+
 \chapter{Introduction}
 
 
@@ -158,7 +190,8 @@ The project pursued a methodical approach to assess the impact on computational 
 The investigation spanned across various signature scheme standards as means of enhancing the reliability and accuracy of the findings by offering views into the computational overhead from within the context of different schemes. The final deliverable constituted an all-incorporative user-interfaced benchmarking program for which results from each of the signature schemes working on batches of data for multiple key sizes were generated.
 
 \subsection{Overview of Results}
-Overall, the results indicated that the integration of provably secure parameters into deterministic signature schemes, far from being a computational burden, can rather lead to substantial improvements in verification times (hash function dependent), while there is no observed impact on signature creation and the impact on key generation remains minimal becoming negligible for larger key sizes.
+Overall, the results indicated that the integration of provably secure parameters into deterministic signature schemes, far from being a computational burden, can rather lead to substantial improvements in verification times (hash function dependent), while there is no observed impact on signature creation. In terms of key generation, the impact varies based on whether the focus is on the use of smaller exponent values ('e') or the inclusion of additional primes. While smaller 'e' values show minimal effects, the introduction of a third prime factor notably enhances key generation efficiency across all key sizes.
+
 
 
 
@@ -518,7 +551,7 @@ A java implementation of the schemes encoding is as follows:
     return EM;
   }
 \end{lstlisting}
-The full class can be found at application/modules/signatures/models/schemes/RSASSA\_PKCS1\_v1\_5.java.
+The full class can be found at \url{application/modules/signatures/models/schemes/RSASSA\_PKCS1\_v1\_5.java}
 
 \section{ANSI X9.31 rDSA Signatures}
 ANSI X9.31 \cite{ANSI-1998-X9-31} is another Hash-and-Sign signature scheme standardised around a similar time to RSASSA-PKCS. Designed for use in the banking sector, the scheme is very similar to RSASSA-PKCS1-v1.5. Both variants of the signature schemes with appendix class of signatures, the two differ slightly with respect to padding and ordering of hash related data.
@@ -526,7 +559,7 @@ ANSI X9.31 \cite{ANSI-1998-X9-31} is another Hash-and-Sign signature scheme stan
 
 \[PS\|D\]
 
-The format ends with a segment labeled 'D' representing the encoded message, which again includes a hash identifier and the message hash. Notably, the sequence here is inverted from the PKCS format: the message's hash is placed before the hash identifier. Before 'D', there's a padding string (PS) which is set to the sequence 0x6B...BA. Within this, 0xB...B represents the repetitive part of padding, which fills up the necessary space to ensure that the message representative's length matches the length of the modulus. An initial 0x6 nibble signifies the start of padding while a trailing 0x0A nibble indicates the end of padding.
+This format ends with a segment labeled 'D' representing the encoded message, which again includes a hash identifier and the message hash. Notably, the sequence here is inverted from the PKCS format: the message's hash is placed before the hash identifier. Before 'D', there's a padding string (PS) which is set to the sequence 0x6B...BA. Within this, 0xB...B represents the repetitive part of padding, which fills up the necessary space to ensure that the message representative's length matches the length of the modulus. An initial 0x6 nibble signifies the start of padding while a trailing 0x0A nibble indicates the end of padding.
 \[0x6B . . . BA\|H(m)\|ID_{H}\]
 
 It should be noted that the considered changes to padding are insignificant in the context of the proofs to follow, as they are both for arbitrary padding.
@@ -598,7 +631,7 @@ A java implementation of the schemes encoding is as follows:
     return EM;
   }
 \end{lstlisting}
-The full class can be found at application/modules/signatures/models//schemes/ANSI\_X9\_31\_RDSA.java.
+The full class can be found at \url{application/modules/signatures/models/schemes/ANSI\_X9\_31\_RDSA.java}
 
 \section{ISO/IEC 9796-2:2010 Signature Scheme 1}
 The ISO/IEC 9796-2:2010 \cite{ISO/2010/9796-2-2010} Signature Scheme is the final standardised scheme to be considered. The scheme has widespread practical significance, primarily in the payments sector where it is used in the EMV (Europay, Mastercard, and Visa) payment system for chip and pin cards. 
@@ -766,7 +799,7 @@ A java implementation of the schemes encoding with the message recovery mode imp
   }
 \end{lstlisting}
 
-The full class can be found at application/modules/signatures/models//schemes/ISO\_IEC\_9796\_2\_SCHEME\_1.java.
+The full class can be found at \url{application/modules/signatures/models/schemes/ISO\_IEC\_9796\_2\_SCHEME\_1.java}
 
 
 
@@ -1120,7 +1153,7 @@ Both proofs work only with a hash function that has an uncommonly large output. 
 
 The PKCS\#1 v2.2 standard, includes in Appendix B of RFC 8017 \cite{rfc8017}, a method for transforming a cryptographic hash function to generate outputs of any desired size. This method, known as Mask Generation Function 1 (MGF1) involves the recurrent application of a conventional hash function to the input alongside incrementally changing counter values to achieve the required output length.
 
-Alternatively, the NIST FIPS 202 standard \cite{1421} specifies extendable-output functions (XOFs), called SHAKE-128 and SHAKE-256 under the SHA-3 umbrella, that have arbitrary length output. The method forming the basis for this is known as the Keccak construction \cite{bertoni2011keccak}. It involves two phases: absorption, where input is padded, divided, and XORed with a state, and squeezing, where the state is repeatedly permuted to generate output of desired length.
+Alternatively, the NIST FIPS 202 standard \cite{1421} specifies extendable-output functions (XOFs), called SHAKE-128 and SHAKE-256 under the SHA-3 umbrella, that have arbitrary length output. The method forming the basis for this is known as the Keccak construction \cite{bertoni2011keccak}. It involves two phases: absorption: where input is padded, divided, and XORed with a state, followed the phase 2 of squeezing: where the state is repeatedly permuted to generate output of desired length.
 
 \begin{comment}
 The first of these is the absorbing phase, where a variable-length input is padded and divided into blocks of equal size. Each block is then XORed with a specific memory area called the state, followed by the application of an internal permutation to the state. This process is repeated for each input block, continuously altering the state. The construction then shifts to the squeezing phase where the permutation is applied repeatedly to the state, each time extracting a portion of the state to extend the output. This continues until the output reaches the desired length.
@@ -1180,7 +1213,7 @@ Scheme & Proof methodology & Assumption & No. prime factors & Exponent \( e \) &
 
 \section{Notion of a Provably secure Key Configuration}
 
-
+\label{notionProv}
 \begin{comment}
 Taking note of parameter sizes as defined by the considered proofs, there are two potential impacts in relation to the choice of the public exponent e. The second one as per implication \ref{IMP:PHI} of the 2-\(\phi\)HA[\(\lambda\)] proof introduces a constrained selection of \( e \) and helps to facilitate a practical compromise. This recommendation contrasts with the allowance for the selection of any value of e permitted under the 2-RSA[\(\lambda\)] proof.
 
@@ -1212,7 +1245,7 @@ It is important to note that the construction of keys using both 2 and 3 prime f
 \label{sec:ProvablySecureInstantiation}
 
 
-As detailed in Section \ref{hashOutput}, employing a hash output of at least \(\frac{\lambda}{2}\) is essential for provable security in signature schemes. However, this enhanced hash output is not the sole requirement for a scheme's provable security. It must be complemented with a provably secure key configuration as defined in Definition \ref{PROVKEY}. A signature scheme is thus considered provably secure when it combines both a large hash output and a provablt secure key configuration. This leads to the definition of two primary parameter types referenced throughour this report:
+Employing a hash output of at least \(\frac{\lambda}{2}\) is a factor that contributes to provable security in signature schemes. However, this enhanced hash output is not the sole requirement for determining the provable security of a scheme. It must be complemented with a provably secure key configuration as defined above in \ref{PROVKEY}. A signature scheme is thus considered provably secure when it combines both a large hash output and a provably secure key configuration. This leads to the definition of two primary parameter types referenced throughout this report:
 
 
 \begin{comment}
@@ -1252,9 +1285,19 @@ The overall goal of the system is to provide a benchmarking tool designed to qua
     \hline
     \textbf{Actor / Role Name} & \textbf{Role Description and Objective} \\
     \hline
-        User/Signer & The individual in this role seeks to benchmark the signing process. For Key Generation, they select the number of keys,  configure key sizes (e.g., 256, 256, 512) with an optional selection of small e for each, and start key generation benchmarking to run for a number of trials  For signature creation, they supply a message batch, key batch, hash function, and launch benchmarking for their desired signature scheme and. The aim is to assess the efficiency of different signing configurations, including provably secure parameters. \\
+        User/Signer & The individual in this role seeks to benchmark the signing process. 
+        
+        For Key Generation, they select the number of keys,  configure multiple keys (e.g., Key 1: 256, 256, 512,  Key 2: 512, 512) with an optional selection of small e for each, and start key generation benchmarking to run for a number of trials. 
+        
+        For signature creation, they supply a message batch, key batch, hash function, and launch benchmarking for their desired signature scheme. 
+        
+        The aim is to assess the efficiency of different signing configurations, including provably secure parameters. \\
     \hline
-       Verifier & Responsible for benchmarking the verification process. The verifier provides a batch of signed messages and public keys, chooses a hash function, and starts verification benchmarking. The objective is to understand the verification efficiency of selected signature schemes with different parameter types, including standard and provably secure parameters.  \\
+       Verifier & Responsible for benchmarking the verification process. 
+       
+       The verifier provides a batch of signed messages and public keys, chooses a hash function, and starts verification benchmarking. 
+       
+       The objective is to understand the verification efficiency of selected signature schemes with different parameter types, including standard and provably secure parameters.  \\
     \hline
     \end{tabular}
 \end{table}
@@ -1399,7 +1442,7 @@ Embedded within the architecture is a deliberate emphasis on separation of conce
 \subsection{MVC pattern}
 At the heart of the design is the MainController, which orchestrates the application flow by responding to user actions and coordinating the display of different views linked to the specialised modules. 
 
-There are two applications of the MVC coordinated by the MainController i.e., the applications two functional (pre-benchmarking) modules: the signatures and additionally the Key Generation module. Most essentially, each of these module's, controller assembly's are encapsulated using a respective mediator class. The role of the mediator classes are to act as an intermediary between the main controller of the application and controller assembly of the relevant functional module. This is required because the application is to consist of various operational modes: i.e, standard, benchmarking, and comparison benchmarking. This class ensures the appropriate controllers are utilised and configured based on the operational context and mode. The mediator pattern fulfils this by obviating the need for the MainController to interact with each controller for an application module individually. The first of these to be considered SignatureMediator.
+There are two applications of the MVC coordinated by the MainController i.e., the applications two functional (pre-benchmarking) modules: the signatures and additionally the Key Generation module. Most essentially, each of these module's, controller assembly's are encapsulated using a respective mediator class. The role of the mediator classes are to act as an intermediary between the main controller of the application and controller assembly of the relevant functional module. This is required because the application is to consist of various operational modes: i.e., standard, benchmarking, and comparison benchmarking. This class ensures the appropriate controllers are utilised and configured based on the operational context and mode. The mediator pattern fulfils this by obviating the need for the MainController to interact with each controller for an application module individually. The first of these to be considered SignatureMediator.
 
 
 
@@ -1680,10 +1723,10 @@ The application comprises four main portals, each linked to functionalities esse
 \begin{comment}
  including Benchmarking (default), Comparison Benchmarking, and Custom Comparison Benchmarking. However this 
 \end{comment}
-The application offers four modalities, categorised into standard mode and a suite of benchmarking modes. This section focusses on the preset Comparison Benchmarking mode since it most directly aligns with the project's aim to assess the burden on computational time that arises when using provably secure parameters in deterministic RSA signature schemes. 
+The application offers four modalities, categorised into standard mode and a suite of benchmarking modes. This section focusses on the preset Comparison Benchmarking mode since it most directly aligns with the project's aim to assess the burden on computational time that arises when using provably secure parameters in deterministic RSA signature schemes. Please see the user manual for a user friendly explanation of the remaining modes.
 
 
-Comparison Benchmarking mode offers a direct comparative analysis between standard and provably secure key configuration groups (with user selected hash functions for each group). This allows evaluation of the performance of the Standard and Provably Secure groupings, with all trials repeated for each hash function and key configuration within each group. Results are then presented side by side in a table and/or overlaid graphs for each entered key size.
+Comparison Benchmarking mode offers a direct comparative analysis between standard and provably secure key configuration groups (with user selected hash functions for each group). This allows evaluation of the performance of the Standard and Provably Secure groupings, with all trials repeated for every hash function and key configuration combination for each group. Results are then presented side by side in a table and/or overlaid graphs for each entered key size.
 
 \subsection{Main Menu}
 
@@ -1741,7 +1784,7 @@ The equivalent pattern is followed for all other components in the design of the
     \begin{minipage}{0.495\textwidth}
         \centering
         \fbox{\includegraphics[width=\textwidth]{main_pictures/ui/keyGen/keyGen1.png}} % Adding border here
-        \caption{Key Generation (number of key sizes)}
+        \caption{Comparison Benchmarking: Key Generation (number of key sizes)}
         \label{fig:image1}
     \end{minipage}
     \hfill % Add some space between the images
@@ -1749,14 +1792,14 @@ The equivalent pattern is followed for all other components in the design of the
     \begin{minipage}{0.495\textwidth}
         \centering
         \fbox{\includegraphics[width=\textwidth]{main_pictures/ui/keyGen/keyGen2.png}} % Adding border here
-        \caption{Key Generation (key sizes)}
+        \caption{Comparison Benchmarking: Key Generation (key sizes)}
         \label{fig:image2}
     \end{minipage}
     
      \begin{minipage}{0.55\textwidth}
         \centering
         \fbox{\includegraphics[width=\textwidth]{main_pictures/ui/keyGen/keyGen3.png}} % Adding border here
-        \caption{Key Generation (number of trials)}
+        \caption{Comparison Benchmarking: Key Generation (number of trials)}
         \label{fig:image2}
     \end{minipage}
 \end{figure}
@@ -1790,7 +1833,7 @@ Clicking the "OK" button on the number of trials dialog sets the benchmarking pr
 \begin{figure}[H]
     \centering
     \includegraphics[scale= 0.325]{main_pictures/ui/keyGen/keyGen4.png}
-    \caption{Key Generation (Results Screen)}
+    \caption{Comparison Benchmarking: Key Generation (Results Screen)}
 \end{figure}
 Upon completion of benchmarking, the ResultsController is engaged to display the results from benchmarking. The results screen contains a side pane with buttons corresponding to each individual key size previously entered. Within each side tab, the results table displays a row by row sequence of statistical metrics for all 4 key configurations.  The ordering is by parameter set (i.e., 2 key configurations for standard parameter key results first, followed by the 2 key configurations for provably secure parameter results second). Below the results table, the application also provides the functionality to export the benchmarking results and if desired public or private key batches corresponding to a global set of keys matching the key configurations enumerated in a sequence for all key sizes.
 
@@ -1804,7 +1847,7 @@ Upon completion of benchmarking, the ResultsController is engaged to display the
     \begin{minipage}{0.7\textwidth}
         \centering
         \fbox{\includegraphics[width=\textwidth]{main_pictures/ui/keyGen/keyGen5.png}} % Adding border here
-        \caption{Key Generation: Overlaid Histogram}
+        \caption{Comparison Benchmarking: Key Generation: Overlaid Histogram}
         \label{fig:image1}
     \end{minipage}
     \hfill % Add some space between the images
@@ -1812,13 +1855,13 @@ Upon completion of benchmarking, the ResultsController is engaged to display the
     \begin{minipage}{0.7\textwidth}
         \centering
         \fbox{\includegraphics[width=\textwidth]{main_pictures/ui/keyGen/keyGen6.png}} % Adding border here
-        \caption{Key Generation: Overlaid Box plot graph}
+        \caption{Comparison Benchmarking: Key Generation: Overlaid Box plot graph}
         \label{fig:image2}
     \end{minipage}
      \begin{minipage}{0.7\textwidth}
         \centering
         \fbox{\includegraphics[width=\textwidth]{main_pictures/ui/keyGen/keyGen7.png}} % Adding border here
-        \caption{Key Generation: Overlaid Line graph for mean times}
+        \caption{Comparison Benchmarking: Key Generation: Overlaid Line graph for mean times}
         \label{fig:image2}
     \end{minipage}
 \end{figure}
@@ -1850,7 +1893,7 @@ This explains the state of cross-parameter benchmarking toggle being set as swit
     \begin{minipage}{0.58\textwidth}
         \centering
         \fbox{\includegraphics[width=\textwidth]{main_pictures/ui/signing/signing3.png}} % Adding border here
-        \caption{Signature Creation (Imported message batch)}
+        \caption{Comparison Benchmarking: Signature Creation (Imported message batch)}
         \label{fig:image2}
     \end{minipage}
 \end{figure}
@@ -1865,7 +1908,7 @@ The signature creation screen is first organised with a pair of fields related t
     \begin{minipage}{0.49\textwidth}
         \centering
         \fbox{\includegraphics[width=\textwidth]{main_pictures/ui/signing/signing4.png}} % Adding border here
-        \caption{Signature Creation (Standard Parameter Hash Functions)}
+        \caption{Comparison Benchmarking: Signature Creation (Standard Parameter Hash Functions)}
         \label{fig:image1}
     \end{minipage}
     \hfill % Add some space between the images
@@ -1873,13 +1916,13 @@ The signature creation screen is first organised with a pair of fields related t
     \begin{minipage}{0.49\textwidth}
         \centering
         \fbox{\includegraphics[width=\textwidth]{main_pictures/ui/signing/signing5.png}} % Adding border here
-        \caption{Signature Creation (Provably Secure Parameter Hash Functions)}
+        \caption{Comparison Benchmarking: Signature Creation (Provably Secure Parameter Hash Functions)}
         \label{fig:image2}
     \end{minipage}
       \begin{minipage}{0.55\textwidth}
         \centering
         \fbox{\includegraphics[width=1.2\textwidth]{main_pictures/ui/signing/signing6.png}} % Adding border here
-        \caption{Signature Creation (All inputs provided)}
+        \caption{Comparison Benchmarking: Signature Creation (All inputs provided)}
         \label{fig:image2}
     \end{minipage}
 \end{figure}
@@ -1887,7 +1930,7 @@ The signature creation screen is first organised with a pair of fields related t
 In comparison benchmarking mode for signature generation, users select hash functions for standard (fixed-length) and provably secure (variable-length) parameters via a multi-choice drop-down menu. The process involves:
 
 Computing signatures for each selected fixed-length hash function, using the first two key configurations (standard parameters).
-Computing signatures for each chosen variable-length hash function, using the last two key configurations (provably secure parameters).This is done sequentially for each key size.
+Computing signatures for each chosen variable-length hash function, using the last two key configurations (provably secure parameters). This is done sequentially for each key size.
 
 The "Start Signature Benchmarking" button initiates a series of checks and processes. The SignatureController validates the message batch, private key batch, signature scheme, and hash function choices. If any issues are detected, an alert prompts the user to correct them.
 
@@ -1908,26 +1951,20 @@ Once the preliminary checks are met, the SignatureModel assumes control to perfo
 \begin{figure}[H]
     \centering
     \includegraphics[scale= 0.325]{main_pictures/ui/signing/signing7-2.png}
-    \caption{Signature Generation (Results Screen)}
+    \caption{Comparison Benchmarking: Signature Generation (Results Screen)}
 \end{figure}
 
-After completing signature generation benchmarking, the ResultsController displays the results. The results screen features a side pane with tabs for each key size entered. Each tab reveals a results table displaying statistical metrics for all four key configurations.
+After completing signature generation benchmarking, the ResultsController displays the results. The results screen features a side pane with tabs for each key size entered. Each tab reveals a results table displaying statistical metrics for all hash function-key combinations.
 
 The table format aligns with the user's hash function choices. For example, selecting one hash function (e.g., SHA-256) for standard parameters results in two rows for this set. For provably secure parameters, if two functions like SHA-256 with MGF1 and SHAKE-128 are chosen, they each generate two rows, totalling four rows. This format leads to six rows per key size, each row representing signature computations for the full message batch.
 
 Below the table, options are available to export benchmarking results and signature batches for each key size. The exported signature batch aligns with the key configurations and hash function combinations used, covering all key sizes in a single file.
 
-\begin{comment}
-Upon completion of benchmarking, the ResultsController is engaged to display the results from benchmarking of signature generation. The results screen contains a side pane with buttons corresponding to each individual key size previously entered. Within each side pane tab, the results table displays a row by row sequence of statistical metrics for all 4 key configurations.  
-
-The table format reflects the selection of hash functions by the user for each parameter set. For instance, if one hash function, such as SHA-256 is chosen for the standard parameter set, the table will dedicate 2 rows for each hash function, totalling two rows for the standard parameter set. An identical approach is taken for the provably secure parameter set; if two hash functions like SHA-256 with MGF1 and SHAKE-128 are selected, they will each occupy two rows (because the two provably secure keys would iterate over the full message batch with both hash functions in order) resulting in four additional rows. This arrangement would ensure a presentation of six rows per key size, with each row corresponding to a computation of signatures for the full message batch.
-
-Below the results table, the application provides the functionality to export the benchmarking results for each key size. Additionally signature generation exclusive functionality is provided with an option to export the signature batch corresponding to the global set of keys. The signatures match the key configurations and relevant hash function combinations enumerated sequentially across all key sizes in one file.
-\end{comment}
 
 
-\newpage
-\textbf{Signature Generation Results Screen Graphs}
+%TC:ignore
+\textbf{Comparison Benchmarking: Signature Generation Results Screen Graphs}
+%TC:endignore
 
 \begin{figure}[H]
     \centering % Center the images
@@ -1936,7 +1973,7 @@ Below the results table, the application provides the functionality to export th
     \begin{minipage}{0.7\textwidth}
         \centering
         \fbox{\includegraphics[width=\textwidth]{main_pictures/ui/signing/signing8-2.png}} % Adding border here
-        \caption{Signature Generation: Overlaid Histogram}
+        \caption{Comparison Benchmarking: Signature Generation: Overlaid Histogram}
         \label{fig:image1}
     \end{minipage}
     \hfill % Add some space between the images
@@ -1944,28 +1981,28 @@ Below the results table, the application provides the functionality to export th
     \begin{minipage}{0.7\textwidth}
         \centering
         \fbox{\includegraphics[width=\textwidth]{main_pictures/ui/signing/signing9-2.png}} % Adding border here
-        \caption{Signature Generation: Overlaid Box plot graph}
+        \caption{Comparison Benchmarking: Signature Generation: Overlaid Box plot graph}
         \label{fig:image2}
     \end{minipage}
         \begin{minipage}{0.7\textwidth}
         \centering
         \fbox{\includegraphics[width=\textwidth]{main_pictures/ui/signing/signing10-2.png}} % Adding border here
-        \caption{Signature Generation: Overlaid Line graph for mean times}
+        \caption{Comparison Benchmarking: Signature Generation: Overlaid Line graph for mean times}
         \label{fig:image2}
     \end{minipage}
 \end{figure}
 
-Signature generation results can also be visualised graphically, accessible under the "Graphs" tab in the central pane. These graphs, correlating with key configurations from the results table, offer an alternate method for interpreting data.
+Signature generation results can also be visualised graphically, accessible under the "Graphs" tab in the central pane. These graphs, which correlate to key configuration-hash function combinations from the results table, offer an alternate method for interpreting the results.
 
 \begin{comment}
 Another way to interpret signature generation results is visually through graphical representation and this aligns with key configurations from the respective results table. The alternative view can be found under the "Graphs" tab, located in the central tab pane where the results table is placed. Accessing and interpreting these graphs follows the same procedure as those created during the benchmarking of key generation. 
 \end{comment}
-\subsection{Signature Verification}
+\subsection{Comparison Benchmarking: Signature Verification}
 
 \begin{figure}[H]
     \centering
     \includegraphics[scale= 0.4]{main_pictures/ui/verifying/verifying0.png}
-    \caption{Signature Verification (Comparison Benchmarking)}
+    \caption{Comparison Benchmarking: Signature Verification}
 \end{figure}
 
 Similar to the process for signature generation, the signature verification screen for comparison benchmarking is accessible after completing a key generation benchmark in comparison mode. This procedure also includes preloading a batch of keys. However, the key distinction lies in the type of key batch loaded. In the case of signature verification, it's a public key batch that gets preloaded, as opposed to a private key batch used for signature generation.
@@ -1986,7 +2023,7 @@ Similar to the process for signature generation, the signature verification scre
     \begin{minipage}{0.58\textwidth}
         \centering
         \fbox{\includegraphics[width=\textwidth]{main_pictures/ui/verifying/verifying2.png}} % Adding border here
-        \caption{Signature Verification (Imported message batch)}
+        \caption{Comparison Benchmarking: Signature Verification (Imported message batch)}
         \label{fig:image2}
     \end{minipage}
 \end{figure}
@@ -2001,7 +2038,7 @@ Aside from the preloaded public key batch used for comparison benchmarking, the 
     \begin{minipage}{0.49\textwidth}
         \centering
         \fbox{\includegraphics[width=\textwidth]{main_pictures/ui/verifying/verifying3.png}} % Adding border here
-        \caption{Signature Verification (Standard Parameter Hash Functions)}
+        \caption{Comparison Benchmarking: Signature Verification (Standard Parameter Hash Functions)}
         \label{fig:image1}
     \end{minipage}
     \hfill % Add some space between the images
@@ -2009,7 +2046,7 @@ Aside from the preloaded public key batch used for comparison benchmarking, the 
     \begin{minipage}{0.49\textwidth}
         \centering
         \fbox{\includegraphics[width=\textwidth]{main_pictures/ui/verifying/verifying4.png}} % Adding border here
-        \caption{Signature Verification (Provably Secure Parameter Hash Functions)}
+        \caption{Comparison Benchmarking: Signature Verification (Provably Secure Parameter Hash Functions)}
         \label{fig:image2}
     \end{minipage}
 \end{figure}
@@ -2031,15 +2068,17 @@ Once the preliminary checks are met, the SignatureModel assumes control to execu
 
 
 \newpage
-\textbf{Signature Verification Results Screen}
+%TC:ignore
+\textbf{Comparison Benchmarking: Signature Verification Results Screen}
+%TC:endignore
 
 \begin{figure}[H]
     \centering
     \includegraphics[scale= 0.325]{main_pictures/ui/verifying/verifying6.png}
-    \caption{Signature Verification (Results Screen)}
+    \caption{Comparison Benchmarking: Signature Verification (Results Screen)}
 \end{figure}
 
-Once the signature verification benchmarking concludes, the ResultsController takes over to showcase the obtained results. The layout of this results screen is largely as was shown for signature generation. The distinction is the enabling of the export of verification results for each key size. displayed below each results table.
+Once the signature verification benchmarking concludes, the ResultsController takes over to showcase the obtained results. The layout of this results screen is largely as was shown for signature generation. The distinction is the enabling of the export of verification results for each key size displayed below each results table.
 
 \begin{figure}[H]
     \centering % Center the images
@@ -2048,7 +2087,7 @@ Once the signature verification benchmarking concludes, the ResultsController ta
     \begin{minipage}{0.7\textwidth}
         \centering
         \fbox{\includegraphics[width=\textwidth]{main_pictures/ui/verifying/verifying7.png}} % Adding border here
-        \caption{Signature Verification: Overlaid Histogram}
+        \caption{Comparison Benchmarking: Signature Verification: Overlaid Histogram}
         \label{fig:image1}
     \end{minipage}
     \hfill % Add some space between the images
@@ -2056,18 +2095,18 @@ Once the signature verification benchmarking concludes, the ResultsController ta
     \begin{minipage}{0.7\textwidth}
         \centering
         \fbox{\includegraphics[width=\textwidth]{main_pictures/ui/verifying/verifying8.png}} % Adding border here
-        \caption{Signature Verification: Overlaid Box plot graph}
+        \caption{Comparison Benchmarking: Signature Verification: Overlaid Box plot graph}
         \label{fig:image2} 
     \end{minipage}
      \begin{minipage}{0.7\textwidth}
         \centering
         \fbox{\includegraphics[width=\textwidth]{main_pictures/ui/verifying/verifying9.png}} % Adding border here
-        \caption{Signature Verification: Overlaid Line graph for mean times}
+        \caption{Comparison Benchmarking: Signature Verification: Overlaid Line graph for mean times}
         \label{fig:image2}
     \end{minipage}
 \end{figure}
 
-\subsection{Signature Processing for Message Recovery Schemes}
+\subsection{Comparison Benchmarking: Signature Processing for Message Recovery Schemes}
 
 In the Signature processes, when utilising the message recovery ISO/IEC 9796-2 Scheme, there is a specific approach for handling non-recoverable portion when signature generation is performed and recovered portion of messages when signature verification is performed.
 
@@ -2087,13 +2126,13 @@ In the Signature processes, when utilising the message recovery ISO/IEC 9796-2 S
     \begin{minipage}{0.7\textwidth}
         \centering
          \fbox{\includegraphics[width=\textwidth]{main_pictures/ui/signing/signing11.png}} % Adding border here
-        \caption{Signature Generation with ISO scheme selected}        \label{fig:image2}
+        \caption{Comparison Benchmarking: Signature Generation with ISO scheme selected}        \label{fig:image2}
     \end{minipage}
     
       \begin{minipage}{0.7\textwidth}
         \centering
          \fbox{\includegraphics[width=\textwidth]{main_pictures/ui/signing/signing12.png}} % Adding border here
-        \caption{Signature Generation Results Screen (with Message Recovery Options)}        \label{fig:image2}
+        \caption{Comparison Benchmarking: Signature Generation Results Screen (with Message Recovery Options)}        \label{fig:image2}
     \end{minipage}
 \end{figure}
 
@@ -2103,13 +2142,18 @@ For signature generation this process involves exporting a batch of non-recovera
 \begin{figure}[H]
     \centering
     \includegraphics[width=\textwidth]{main_pictures/ui/verifying/verifying10.png}
-    \caption{Signature verification with ISO scheme selected}
+    \caption{Comparison Benchmarking: Signature verification with ISO scheme selected}
 \end{figure}
 
 The corresponding verification of signatures necessitates import of a non-recoverable message batch file generated from the preceding signature generation benchmarking process. As discussed it contains entries aligned with each signature, organised line by line where each entry starts with a "1" or "0" flag, indicating whether a non-recoverable message part is present or absent, respectively. The application then leverages these non-recoverable message parts, to construct the content of a recovered message batch. This information is then displayed as a dedicated column in the verificationResults CSV files, which users can export for further analysis.
 
 
-\textcolor{red} {For insight into the testing process see Appendix B.3 for more details.}
+\textcolor{red} {
+\begin{itemize}
+\item For insight into the testing process see Appendix B.3 for more details.
+\item For full code documentation in the form of javadoc, please see the application/docs/apidocs directory.
+\end{itemize}
+}
 \begin{comment} (the the basis for many other de facto standards including ANSI X9, IETF, TLS) t \end{comment}
 \chapter{Professional Issues: Adherence to Standards in Cryptography}
 
@@ -2133,7 +2177,7 @@ Standards distill theoretical cryptographic techniques into clear guidelines cov
 This delineation of responsibilities ensures that each group can focus on their area of expertise while relying on shared, vetted practices. Standards in cryptography thus serve as a common language, enabling developers to adopt secure algorithms without needing to understand their theoretical underpinnings fully.
 
 
-The world of cryptography offers numerous instances where implementations found not to follow standards correctly led to critical vulnerabilities \cite{4223237, 10.1145/2382196.2382205, 10.1145/2382196.2382204,  bleichenbacher1998chosen}. Among these, the Bleichenbacher signature forgery attacks \cite{finney2006bleichenbacher, kuhn2008variants} stands out as a prime example. This class of attacks, which worked on vulnerable implementations of the PKCS\#1 signature scheme, showcased the potential for serious security breaches with. A real-world example targeting Facebook  \cite{bock2018return} in 2018 underscored the risk and during the same period, had been found to be affecting almost a third of the top 100 domains in the Alexa Top 1 Million list. Going further, such was severity of the threat, that a server could potentially be impersonated without accessing its private key. This starkly demonstrate how deviations from standards can lead to severe security breaches, and emphasises how it should be professional responsibility to implement these standards correctly.
+The world of cryptography offers numerous instances where implementations found not to follow standards correctly led to critical vulnerabilities \cite{4223237, 10.1145/2382196.2382205, 10.1145/2382196.2382204,  bleichenbacher1998chosen}. Among these, the Bleichenbacher signature forgery attacks \cite{finney2006bleichenbacher, kuhn2008variants} stands out as a prime example. This class of attacks, which worked on vulnerable implementations of the PKCS\#1 signature scheme, showcased the potential for serious security breaches. A real-world example targeting Facebook  \cite{bock2018return} in 2018 underscored the risk and during the same period, had been found to be affecting almost a third of the top 100 domains in the Alexa Top 1 Million list. Going further, such was severity of the threat, that a server could potentially be impersonated without accessing its private key. This starkly demonstrate how deviations from standards can lead to severe security breaches, and emphasises how it should be professional responsibility to implement these standards correctly.
 
 
 In the context of this project, a key consideration was adhering to the standards defining the implemented signature schemes. It was paramount, not only to ensure that my initial implementations of these schemes conformed to the respective standards delineating them, but also to ensure that any modifications made for incorporating provably secure parameters aligned with established standards.
@@ -2143,7 +2187,7 @@ For example considering the latter, the first change included implementing  sign
 Furthermore, it was important for me that alignment with standards was to be achieved in a manner that was both ethical and practical. Since cryptographic algorithms are almost always necessary for securing sensitive data that might be communicated or stored, implementation of cryptographic standards, therefore, transcends mere technical expertise. It encompasses a broader professional and ethical responsibility towards safeguarding data and protecting privacy. This responsibility becomes increasingly significant in the current era where data breaches and cyberattacks are commonplace. Thus the approach of attempting to adhere to cryptographic standards I did not view simply a professional mandate but also as an ethical imperative to uphold the integrity and security of digital systems. This holds even in the context of my project which while academic, strived to emulate real-world conditions and implement actual signature schemes.
 Throughout the project, I was cognisant of these factors and took steps to ensure that my implementations and modifications did not stray significantly from the path charted by the standards.
 
-One example of a hurdle I faced was the foremost one: obtaining the required documentation for the standards related to schemes. Specifically, accessing ANSI X9.31 and ISO/IEC 9796-2 standards was difficult as they are not publicly available, and ISO/IEC standards, in general, are often not freely accessible and can be costly.
+One example of a hurdle I faced was the foremost one: obtaining the required documentation for the standards related to schemes. Specifically, accessing the ANSI X9.31 and ISO/IEC 9796-2 standards was difficult as they are not publicly available, and ISO/IEC standards, in general, are often not freely accessible and can be costly.
 
 Fortunately, the BSI website offers free access to ISO/IEC standards for students at institutions with subscriptions. As Royal Holloway has such a subscription \cite{BSIWebsite}, I was able to obtain the ISO/IEC 9796-2 standard. Meanwhile, the PKCS\#1 standard was readily available as it is published as part of the Internet Engineering Task Force's (IETF) RFC (Request for comments) series, specifically as RFC 8017 \cite{rfc8017}.
 
@@ -2202,112 +2246,257 @@ The following hardware specifications outline the computing environment used for
 \item \textbf{Instruction set:} ARMv8-A64 (64 bit)
 \item \textbf{Memory:} 32 GB (LPDDR5 RAM)
 \end{itemize}
-\begin{comment}
-The selected hardware represents a modern computing environment. Therefore, the results obtained from the benchmarking are indicative of the performance one might expect in similar modern computational settings.
-\end{comment}
-It's important to note, that the considered deterministic schemes, often operate in environments vastly different from this testing setup which constitutes a modern computing environment. These include constrained legacy devices or low-performance environments, such as those found in payment/banking systems (e.g., EMV chip-and-pin cards) and secure network protocols.  Consequently benchmarking results may not be fully applicable or generalisable to the diverse range of use cases where these older schemes are still operational.  
+
+The selected hardware represents a modern consumer-grade computing environment. Therefore, the results obtained from the benchmarking are indicative of the performance one might expect in similar settings.
 
 \begin{comment}
+It's important to note, that the considered deterministic schemes, often operate in environments vastly different from this testing setup which constitutes a modern computing environment. These include constrained legacy devices or low-performance environments, such as those found in payment/banking systems (e.g., EMV chip-and-pin cards) and secure network protocols.  Consequently benchmarking results may not be fully applicable or generalisable to the diverse range of use cases where these older schemes are still operational.  
+\end{comment}
+\begin{comment}
+
 While the benchmarking results provide valuable insights into the performance of cryptographic operations on modern hardware, they may not be fully applicable or generalisable to the diverse range of use cases where these older schemes are still operational. Therefore, caution should be exercised when interpreting these results outside the specific context of the testing environment.
 \end{comment}
 
 \section{Results}
-The results of the timing, using the developed application for key generation and subsequently and signature creation/verification for each deterministic signature scheme is summarised in tables. 
+The timing results for key generation, signature creation, and verification across each deterministic signature scheme were captured using the developed application. These results are summarised in tables presented in textual format. These tables were generated from CSV exports file provided by and corresponding with the tables displayed on the application’s results screen when benchmarking was performed.
 
-\textit{*For the views of the complete result tables and subsequent breakdown by parameter type, specific to the ANSI X9.31 rDSA and ISO/IEC 9796-2:2010 Signature Schemes, please consult Appendix D.}
+
+\textit{*For the views of the complete result tables and subsequent breakdown by parameter type, specific to the ANSI X9.31 rDSA and ISO/IEC 9796-2:2010 Signature Schemes, please consult Appendix D.} 
+
+
+\begin{landscape}
+\pagestyle{empty}%
 
 \section{Key Generation Results}
 
-\begin{figure}[H]
+%TC:ignore
+\begin{table}[H]
+\caption{\textbf{Standard vs Provably Secure Key Configurations for 1024-bit Key Size}}
+\centering
 
-    \centering % Center the images
-     \caption{Standard vs Provably Secure Key Configurations for 1024-bit Key Size}
-    % First image in a minipage
-    \begin{minipage}{\textwidth}
-        \centering
-        \fbox{\includegraphics[width=\textwidth]{main_pictures/keyGen/keyGen_1024bit_table1_1.png}} 
-        \fbox{\includegraphics[width=\textwidth]{main_pictures/keyGen/keyGen_1024bit_table2_1.png}}
-        \label{fig:image1}
-    \end{minipage}
-        \label{keyGen_1024bit_table}
-  \end{figure}
+\begin{tabular}{|p{2.5cm}|p{1cm}|p{1.5cm}|p{1.5cm}|p{1.3cm}|p{1.5cm}|p{2.5cm}|p{1.5cm}|p{1.5cm}|p{1.5cm}|p{1.5cm}|p{1.5cm}|p{1.5cm}|}
+
+\hline
+\textbf{Parameter Type} & \textbf{Trials} & \textbf{Overall Time} & \textbf{Mean} & \textbf{Std Dev} & \textbf{Variance} & \textbf{Conf. Interval} & \textbf{25th Percentile} & \textbf{Median} & \textbf{75th Percentile} & \textbf{Range} & \textbf{Min} & \textbf{Max} \\
+\hline
+Standard Parameters (2 Primes) & 3847 & 32500.
+03302 ms & 8.44815 ms & 3.06326 ms & 9.38357 ms\textsuperscript{2} & 95\% [8.35135 ms - 8.54495 ms] & 6.45296 ms & 7.93108 ms & 9.81196 ms & 109.36288 ms & 4.48542 ms & 113.84
+829 ms \\
+\hline
+Standard Parameters (3 Primes) & 3847 & 25971.
+95539 ms & 6.75122 ms & 2.77931 ms & 7.72459 ms\textsuperscript{2} & 95\% [6.66340 ms - 6.83905 ms] & 5.04292 ms & 6.25900 ms & 7.93117 ms & 110.15567 ms & 3.46463 ms & 113.62
+029 ms \\
+\hline
+Provable Parameters (2 Primes) & 3847 & 31838.
+01822 ms & 8.27606 ms & 2.98431 ms & 8.90612 ms\textsuperscript{2} & 95\% [8.18176 ms - 8.37037 ms] & 6.27650 ms & 7.78642 ms & 9.73663 ms & 98.98717 ms & 4.30804 ms & 103.29
+521 ms \\
+\hline
+Provable Parameters (3 Primes) & 3847 & 24060.
+58383 ms & 6.25438 ms & 2.58707 ms & 6.69292 ms\textsuperscript{2} & 95\% [6.17262 ms - 6.33613 ms] & 4.61788 ms & 5.72271 ms & 7.32038 ms & 100.38979 ms & 3.45338 ms & 103.84
+317 ms \\
+\hline
+\end{tabular}
+    \label{keyGen_1024bit_table}
+\end{table}
+
+\begin{table}[H]
+\caption{\textbf{Standard vs Provably Secure Key Configurations for 2048-bit Key Size}}
+\centering
+
+\begin{tabular}{|p{2.5cm}|p{1cm}|p{1.5cm}|p{1.5cm}|p{1.3cm}|p{1.5cm}|p{2.5cm}|p{1.5cm}|p{1.5cm}|p{1.5cm}|p{1.5cm}|p{1.5cm}|p{1.6cm}|}
+
+\hline
+\textbf{Parameter Type} & \textbf{Trials} & \textbf{Overall Time} & \textbf{Mean} & \textbf{Std Dev} & \textbf{Variance} & \textbf{Conf. Interval} & \textbf{25th Percentile} & \textbf{Median} & \textbf{75th Percentile} & \textbf{Range} & \textbf{Min} & \textbf{Max} \\
+\hline
+Standard Parameters (2 Primes) & 3847 & 216832.
+70813 ms & 56.36410 ms & 25.11093 ms & 630.
+55905 ms\textsuperscript{2} & 95\% [55.57060 ms - 57.15761 ms] & 38.30242 ms & 50.84733 ms & 69.46363 ms & 251.96708 ms & 20.66575 ms & 272.63283 ms \\
+\hline
+Standard Parameters (3 Primes) & 3847 & 142789.
+88957 ms & 37.11721 ms & 18.77580 ms & 352.
+53051 ms\textsuperscript{2} & 95\% [36.52389 ms - 37.71052 ms] & 24.18892 ms & 31.63142 ms & 43.91163 ms & 149.11308 ms & 15.19508 ms & 164.30817 ms \\
+\hline
+Provable Parameters (2 Primes) & 3847 & 211874.
+31649 ms & 55.07521 ms & 25.43492 ms & 646.
+93532 ms\textsuperscript{2} & 95\% [54.27146 ms - 55.87895 ms] & 36.39042 ms & 48.82779 ms & 67.61679 ms & 225.86154 ms & 19.86850 ms & 245.73004 ms \\
+\hline
+Provable Parameters (3 Primes) & 3847 & 140797.
+38616 ms & 36.59927 ms & 18.11657 ms & 328.
+21007 ms\textsuperscript{2} & 95\% [36.02679 ms - 37.17175 ms] & 23.74371 ms & 31.40804 ms & 43.76967 ms & 164.12904 ms & 14.48221 ms & 178.61125 ms \\
+\hline
+\end{tabular}
+\label{keyGen_2048bit_table}
+\end{table}
+\begin{table}[H]
+\caption{\textbf{Standard vs Provably Secure Key Configurations for 3072-bit Key Size}}
+\centering
+
+\begin{tabular}{|p{2.5cm}|p{1cm}|p{1.5cm}|p{1.5cm}|p{1.3cm}|p{1.5cm}|p{2.5cm}|p{1.5cm}|p{1.5cm}|p{1.5cm}|p{1.5cm}|p{1.5cm}|p{1.6cm}|}
+
+\hline
+\textbf{Parameter Type} & \textbf{Trials} & \textbf{Overall Time} & \textbf{Mean} & \textbf{Std Dev} & \textbf{Variance} & \textbf{Conf. Interval} & \textbf{25th Percentile} & \textbf{Median} & \textbf{75th Percentile} & \textbf{Range} & \textbf{Min} & \textbf{Max} \\
+\hline
+Standard Parameters (2 Primes) & 3847 & 859374.
+27891 ms & 223.38817 ms & 110.
+51449 ms & 12213.
+45183 ms\textsuperscript{2} & 95\% [219.89591 ms - 226.88042 ms] & 141.93146 ms & 201.04146 ms & 278.57204 ms & 890.91733 ms & 66.01350 ms & 956.93083 ms \\
+\hline
+Standard Parameters (3 Primes) & 3847 & 522259.
+93065 ms & 135.75772 ms & 79.
+61435 ms & 6338.
+44448 ms\textsuperscript{2} & 95\% [133.24190 ms - 138.27353 ms] & 79.61400 ms & 111.80900 ms & 167.72454 ms & 682.03238 ms & 42.99892 ms & 725.03129 ms \\
+\hline
+Provable Parameters (2 Primes) & 3847 & 935726.
+17065 ms & 243.23529 ms & 116.
+81273 ms & 13645.
+21423 ms\textsuperscript{2} & 95\% [239.54401 ms - 246.92657 ms] & 157.94288 ms & 219.19454 ms & 303.23038 ms & 1007.12354 ms & 69.48767 ms & 1076.61121 ms \\
+\hline
+Provable Parameters (3 Primes) & 3847 & 586821.
+93877 ms & 152.54015 ms & 89.
+76538 ms & 8057.82387 ms\textsuperscript{2} & 95\% [149.70356 ms - 155.37673 ms] & 88.34038 ms & 125.12150 ms & 189.
+92954 ms & 732.55608 ms & 42.01850 ms & 774.57458 ms \\
+\hline
+\end{tabular}
+\label{keyGen_3072bit_table}
+\end{table}
+\begin{table}[H]
+\caption{\textbf{Standard vs Provably Secure Key Configurations for 4096-bit Key Size}}
+\centering
+
+\begin{tabular}{|p{2.5cm}|p{1cm}|p{1.5cm}|p{1.5cm}|p{1.5cm}|p{1.5cm}|p{2.5cm}|p{1.5cm}|p{1.5cm}|p{1.5cm}|p{1.5cm}|p{1.5cm}|p{1.65cm}|}
+
+\hline
+\textbf{Parameter Type} & \textbf{Trials} & \textbf{Overall Time} & \textbf{Mean} & \textbf{Std Dev} & \textbf{Variance} & \textbf{Conf. Interval} & \textbf{25th Percentile} & \textbf{Median} & \textbf{75th Percentile} & \textbf{Range} & \textbf{Min} & \textbf{Max} \\
+\hline
+Standard Parameters (2 Primes) & 3847 & 2512465.
+59783 ms & 653.09737 ms & 349.82224 ms & 122375.
+60291 ms\textsuperscript{2} & 95\% [642.04299 ms - 664.15175 ms] & 394.05558 ms & 568.76025 ms & 823.37171 ms & 2480.62675 ms & 156.76954 ms & 2637.39629 ms \\
+\hline
+Standard Parameters (3 Primes) & 3847 & 1524916.
+73096 ms & 396.39114 ms & 244.54868 ms & 59804.
+05520 ms\textsuperscript{2} & 95\% [388.66341 ms - 404.11888 ms] & 220.45496 ms & 326.98117 ms & 497.99713 ms & 2063.10838 ms & 103.00438 ms & 2166.11275 ms \\
+\hline
+Provable Parameters (2 Primes) & 3847 & 2494789.
+87108 ms & 648.50270 ms & 340.86642 ms & 116189.
+91836 ms\textsuperscript{2} & 95\% [637.73132 ms - 659.27407 ms] & 396.17483 ms & 577.23179 ms & 823.48121 ms & 2562.00825 ms & 144.18433 ms & 2706.19258 ms \\
+\hline
+Provable Parameters (3 Primes) & 3847 & 1516030.
+63440 ms & 394.08127 ms & 251.03722 ms & 63019.
+68474 ms\textsuperscript{2} & 95\% [386.14849 ms - 402.01404 ms] & 218.82379 ms & 318.45613 ms & 490.04521 ms & 1877.85863 ms & 99.98625 ms & 1977.84488 ms \\
+\hline
+\end{tabular}
+\label{keyGen_4096bit_table}
+\end{table}
+
+\begin{table}[H]
+\caption{\textbf{Standard vs Provably Secure Key Configurations for 5120-bit Key Size}}
+\centering
+
+\begin{tabular}{|p{2.5cm}|p{1cm}|p{1.5cm}|p{1.5cm}|p{1.5cm}|p{1.5cm}|p{2.5cm}|p{1.5cm}|p{1.75cm}|p{1.6cm}|p{1.5cm}|p{1.5cm}|p{1.55cm}|}
+
+\hline
+\textbf{Parameter Type} & \textbf{Trials} & \textbf{Overall Time} & \textbf{Mean} & \textbf{Std Dev} & \textbf{Variance} & \textbf{Conf. Interval} & \textbf{25th Percentile} & \textbf{Median} & \textbf{75th Percentile} & \textbf{Range} & \textbf{Min} & \textbf{Max} \\
+\hline
+Standard Parameters (2 Primes) & 3847 & 5139570.
+81048 ms & 1335.
+99449 ms & 768.65487 ms & 590830.
+30418 ms\textsuperscript{2} & 95\% [1311.70500 ms - 1360.28398 ms] & 764.87479 ms & 1181.51417 ms & 1742.
+38763 ms & 6430.
+46850 ms & 213.62488 ms & 6644.
+09338 ms \\
+\hline
+Standard Parameters (3 Primes) & 3847 & 3127106.
+74416 ms & 812.
+86892 ms & 581.48345 ms & 338123.
+00804 ms\textsuperscript{2} & 95\% [794.49405 ms - 831.24380 ms] & 406.25875 ms & 644.99658 ms & 1035.
+09046 ms & 6498.
+48363 ms & 149.57371 ms & 6648.
+05733 ms \\
+\hline
+Provable Parameters (2 Primes) & 3847 & 5177297.
+05958 ms & 1345.
+80116 ms & 789.79128 ms & 623770.
+26124 ms\textsuperscript{2} & 95\% [1320.84376 ms - 1370.75856 ms] & 757.04067 ms & 1157.88358 ms & 1740.
+98383 ms & 5979.
+87283 ms & 216.35467 ms & 6196.
+22750 ms \\
+\hline
+Provable Parameters (3 Primes) & 3847 & 3096978.
+48924 ms & 805.
+03730 ms & 555.58792 ms & 308677.
+94012 ms\textsuperscript{2} & 95\% [787.48072 ms - 822.59387 ms] & 409.86204 ms & 636.65933 ms & 1035.
+07746 ms & 4388.
+49479 ms & 156.91004 ms & 4545.
+40483 ms \\
+\hline
+\end{tabular}
+\label{keyGen_5120bit_table}
+\end{table}
+
+\begin{table}[H]
+\caption{\textbf{Standard vs Provably Secure Key Configurations for 6144-bit Key Size}}
+\centering
+
+\begin{tabular}{|p{2.5cm}|p{1cm}|p{1.5cm}|p{1.6cm}|p{1.3cm}|p{1.5cm}|p{2.5cm}|p{1.5cm}|p{1.38cm}|p{1.7cm}|p{1.5cm}|p{1.5cm}|p{1.7cm}|}
+
+\hline
+\textbf{Parameter Type} & \textbf{Trials} & \textbf{Overall Time} & \textbf{Mean} & \textbf{Std Dev} & \textbf{Variance} & \textbf{Conf. Interval} & \textbf{25th Percentile} & \textbf{Median} & \textbf{75th Percentile} & \textbf{Range} & \textbf{Min} & \textbf{Max} \\
+\hline
+Standard Parameters (2 Primes) & 3847 & 10025508.
+51280 ms & 2606.
+05888 ms & 1614.
+90918 ms & 2607931.
+66202 ms\textsuperscript{2} & 95\% [2555.02776 ms - 2657.09000 ms] & 1417.
+27975 ms & 2245.
+02108 ms & 3422.26542 ms & 11525.
+95642 ms & 341.26588 ms & 11867.
+22229 ms \\
+\hline
+Standard Parameters (3 Primes) & 3847 & 5937935.
+29067 ms & 1543.
+52360 ms & 1162.
+66910 ms & 1351799.
+44484 ms\textsuperscript{2} & 95\% [1506.78326 ms - 1580.26394 ms] & 715.
+96850 ms & 1207.
+89275 ms & 1981.24696 ms & 8259.
+66388 ms & 269.06354 ms & 8528.
+72742 ms \\
+\hline
+Provable Parameters (2 Primes) & 3847 & 9976397.
+40289 ms & 2593.
+29280 ms & 1566.
+57388 ms & 2454153.
+70771 ms\textsuperscript{2} & 95\% [2543.78908 ms - 2642.79653 ms] & 1420.
+57613 ms & 2256.
+76554 ms & 3417.35108 ms & 10998.
+30175 ms & 320.67396 ms & 11318.
+97571 ms \\
+\hline
+Provable Parameters (3 Primes) & 3847 & 5899550.
+30713 ms & 1533.
+54570 ms & 1147.
+96010 ms & 1317812.
+38040 ms\textsuperscript{2} & 95\% [1497.27017 ms - 1569.82123 ms] & 721.
+49154 ms & 1194.
+99279 ms & 2007.73946 ms & 11288.
+17233 ms & 224.15396 ms & 11512.
+32629 ms \\
+\hline
+\end{tabular}
+\label{keyGen_6144bit_table}
+\end{table}
+
+%TC:endignore
+
+\end{landscape}
+
+
   
-\begin{figure}[H]
-  
-    \centering % Center the images
-     \caption{Standard vs Provably Secure Key Configurations for 2048-bit Key Size}
-    % First image in a minipage
-    \begin{minipage}{\textwidth}
-        \centering
-        \fbox{\includegraphics[width=\textwidth]{main_pictures/keyGen/keyGen_2048bit_table1_1.png}} 
-        \fbox{\includegraphics[width=\textwidth]{main_pictures/keyGen/keyGen_2048bit_table2_1.png}}
-        \label{fig:image1}
-    \end{minipage}
-      \label{keyGen_2048bit_table}
-  \end{figure}
-  
-\begin{figure}[H]
-
-    \centering % Center the images
-     \caption{Standard vs Provably Secure Key Configurations for 3072-bit Key Size}
-    % First image in a minipage
-    \begin{minipage}{\textwidth}
-        \centering
-        \fbox{\includegraphics[width=\textwidth]{main_pictures/keyGen/keyGen_3072bit_table1_1.png}} 
-        \fbox{\includegraphics[width=\textwidth]{main_pictures/keyGen/keyGen_3072bit_table2_1.png}}
-        \label{fig:image1}
-    \end{minipage}
-     \label{keyGen_3072bit_table}
-\end{figure}
-
-\begin{figure}[H]
-
-    \centering % Center the images
-     \caption{Standard vs Provably Secure Key Configurations for 4096-bit Key Size}
-    % First image in a minipage
-    \begin{minipage}{\textwidth}
-        \centering
-        \fbox{\includegraphics[width=\textwidth]{main_pictures/keyGen/keyGen_4096bit_table1_1.png}} 
-        \fbox{\includegraphics[width=\textwidth]{main_pictures/keyGen/keyGen_4096bit_table2_1.png}}
-        \label{fig:image1}
-    \end{minipage}
-         \label{keyGen_4096bit_table}
-\end{figure}
-
-\begin{figure}[H]
-
-    \centering % Center the images
-     \caption{Standard vs Provably Secure Key Configurations for 5120-bit Key Size}
-    % First image in a minipage
-    \begin{minipage}{\textwidth}
-        \centering
-        \fbox{\includegraphics[width=\textwidth]{main_pictures/keyGen/keyGen_5120bit_table1_1.png}} 
-        \fbox{\includegraphics[width=\textwidth]{main_pictures/keyGen/keyGen_5120bit_table2_1.png}}
-        \label{fig:image1}
-    \end{minipage}
-         \label{keyGen_5120bit_table}
-\end{figure}
-
-\begin{figure}[H]
-
-    \centering % Center the images
-     \caption{Standard vs Provably Secure Key Configurations for 6144-bit Key Size}
-    % First image in a minipage
-    \begin{minipage}{\textwidth}
-        \centering
-        \fbox{\includegraphics[width=\textwidth]{main_pictures/keyGen/keyGen_6144bit_table1_1.png}} 
-        \fbox{\includegraphics[width=\textwidth]{main_pictures/keyGen/keyGen_6144bit_table2_1.png}}
-        \label{fig:image1}
-    \end{minipage}
-        \label{keyGen_6144bit_table}
-\end{figure}
-
-
-
 Tables \ref{keyGen_1024bit_table} to \ref{keyGen_6144bit_table} show timing statistics in milliseconds (correct to 5 decimal places) for both standard and provably secure key configurations across a range of key sizes, incrementing by 1024 bits from 1024 to 6144 bits. 
 
 
 \textbf{Comparing 2 vs 3 primes within parameter groups}
+
 
 Table \ref{tab:2vs3primes_percentage} illustrates the percentage difference in mean generation times when moving from 2-prime to 3-prime configurations for each parameter group. 
 
@@ -2352,87 +2541,561 @@ At the largest tested size of 6144 bits \ref{keyGen_6144bit_table}, the efficien
 
 
 \subsection*{Summary}
-Throughout the analysis, as expected, the time taken for key generation increases with the key size. However, the increase is not linear; it tends to grow more than proportionally, reflecting the greater computational complexity involved in generating and handling larger primes. Particularly notable in this context is the significant escalation in standard deviation and variance at larger key sizes for both standard and provably secure configurations. 
-
+Throughout the analysis, as expected, the time taken for key generation increases with the key size. However, the increase is not linear; it tends to grow more than proportional, reflecting the greater computational complexity involved in generating and handling larger primes. This complexity becomes particularly evident through the marked rise in standard deviation and variance in larger key sizes for both standard and provably secure configurations.
 While provably secure parameters exhibit some efficiency improvements, these gains are relatively minimal, especially as key sizes grow larger. The increased variability at larger key sizes, as indicated by higher standard deviation and variance, obscures the true impact of opting for provably secure parameters since the small percentage difference may fall within the broader range of natural variability of the key generation process. Consequently, although provably secure configurations show efficiency improvements at smaller key sizes, their practical significance wanes with increasing key sizes.
 
-In essence there is no significant difference between key generation using standard versus provably secure configurations and the distinction between the two becomes negligible, with increasingly larger key sizes. This observation challenges the expectation that using provably secure parameters would impede performance. It implies that adopting provably secure key configurations might not only be a security upgrade but also a practically viable choice that in some cases offers an improvement in performance.
+In essence, when considering solely the smaller value of e used in provably secure configurations as the distinguishing factor as compared to standard configurations, there is no significant difference in key generation between both types. Moreover the distinction between the two becomes negligible, with increasingly larger key sizes. 
 
+However, if the increased number of primes (to three) used for both configuration types is taken into account, the results point towards a notable efficiency advantage for 3-prime configurations over 2-prime configurations across all key sizes. Notably, it's important to acknowledge that while the extra prime is utilised in both configuration types, its necessity stems also as implication of the proofs, so can thus be considered a form of provably secure key configuration in its own right. 
+
+The counterintuitive results suggests that adopting provably secure parameters—which would have been presumed to be less efficient due to enhancing security— actually offer performance benefits. The first scenario reflecting minimal improvements at lower key sizes can attributed to the use of  a smaller e values. In the second scenario, there is an inherent and significant advantage of using 3-prime configurations over 2-prime configuration and one that that intensifies with increasing key size.
+
+
+
+
+
+\begin{landscape}
+\pagestyle{empty}%
 
 \section{Signature Creation Results}
 \subsection{Signature Creation Results (PKCS\#1 v1.5)}
 
-\begin{figure}[H]
-    \centering % Center the images
-     \caption{Instantiation of PKCS\#1 v1.5 with standard vs provably secure parameters (1024-bit Key Size) for signature creation}
-    % First image in a minipage
-    \begin{minipage}{\textwidth}
-        \centering
-        \fbox{\includegraphics[width=\textwidth]{main_pictures/pkcs/pkcs_sign_1024bit_table1_1.png}} 
-        \fbox{\includegraphics[width=\textwidth]{main_pictures/pkcs/pkcs_sign_1024bit_table2_1.png}}
-    \end{minipage}
-            \label{pkcs_sign_1024bit_table}
-  \end{figure}
-  
-\begin{figure}[H]
-    \centering % Center the images
-     \caption{Instantiation of PKCS\#1 v1.5 with standard vs provably secure parameters (2048-bit Key Size) for signature creation}
-    % First image in a minipage
-    \begin{minipage}{\textwidth}
-        \centering
-        \fbox{\includegraphics[width=\textwidth]{main_pictures/pkcs/pkcs_sign_2048bit_table1_1.png}} 
-        \fbox{\includegraphics[width=\textwidth]{main_pictures/pkcs/pkcs_sign_2048bit_table2_1.png}}
-    \end{minipage}
-            \label{pkcs_sign_2048bit_table}
-  \end{figure}
-  
-\begin{figure}[H]
-    \centering % Center the images
-     \caption{Instantiation of PKCS\#1 v1.5 with standard vs provably secure parameters (3072-bit Key Size) for signature creation}
-    % First image in a minipage
-    \begin{minipage}{\textwidth}
-        \centering
-        \fbox{\includegraphics[width=\textwidth]{main_pictures/pkcs/pkcs_sign_3072bit_table1_1.png}} 
-        \fbox{\includegraphics[width=\textwidth]{main_pictures/pkcs/pkcs_sign_3072bit_table2_1.png}}
-    \end{minipage}
-         \label{pkcs_sign_3072bit_table}
-\end{figure}
+%TC:ignore
+\begin{longtable}{|p{2.3cm}|p{1.8cm}|p{1.0cm}|p{1.7cm}|p{1.2cm}|p{1.5cm}|p{1.8cm}|p{1.5cm}|p{1.2cm}|p{1.5cm}|p{1.3cm}|p{1.2cm}|p{1.3cm}|p{1.3cm}|}
 
-\begin{figure}[H]
-    \centering % Center the images
-     \caption{Instantiation of PKCS\#1 v1.5 with standard vs provably secure parameters (4096-bit Key Size) for signature creation}
-    % First image in a minipage
-    \begin{minipage}{\textwidth}
-        \centering
-        \fbox{\includegraphics[width=\textwidth]{main_pictures/pkcs/pkcs_sign_4096bit_table1_1.png}} 
-        \fbox{\includegraphics[width=\textwidth]{main_pictures/pkcs/pkcs_sign_4096bit_table2_1.png}}
-    \end{minipage}
-             \label{pkcs_sign_4096bit_table}
-\end{figure}
+\caption{\textbf{Instantiation of PKCS\#1 v1.5 with Standard vs Provably Secure Parameters (1024-bit Key Size) for Signature Creation}}
+     \label{pkcs_sign_1024bit_table} \\
+\hline
+\textbf{Parameter Type} & \textbf{Hash Function} & \textbf{Trials} & \textbf{Overall Time} & \textbf{Mean} & \textbf{Std Dev} & \textbf{Variance} & \textbf{Conf. Interval} & \textbf{25th Percentile} & \textbf{Median} & \textbf{75th Percentile} & \textbf{Range} & \textbf{Min} & \textbf{Max} \\
+\hline
+\endfirsthead
 
-\begin{figure}[H]
-    \centering % Center the images
-     \caption{Instantiation of PKCS\#1 v1.5 with standard vs provably secure parameters (5120-bit Key Size) for signature creation}
-    % First image in a minipage
-    \begin{minipage}{\textwidth}
-        \centering
-        \fbox{\includegraphics[width=\textwidth]{main_pictures/pkcs/pkcs_sign_5120bit_table1_1.png}} 
-        \fbox{\includegraphics[width=\textwidth]{main_pictures/pkcs/pkcs_sign_5120bit_table2_1.png}}
-    \end{minipage}
-     \label{pkcs_sign_5120bit_table}
-\end{figure}
+\multicolumn{14}{c}%
+{{\bfseries \tablename\ \thetable{} -- Signature Creation Results for PKCS\#1 v1.5 with 1024-bit Key Size (continued from previous page)}} \\
+\hline
+\textbf{Parameter Type} & \textbf{Hash Function} & \textbf{Trials} & \textbf{Overall Time} & \textbf{Mean} & \textbf{Std Dev} & \textbf{Variance} & \textbf{Conf. Interval} & \textbf{25th Percentile} & \textbf{Median} & \textbf{75th Percentile} & \textbf{Range} & \textbf{Min} & \textbf{Max} \\
+\hline
+\endhead
 
-\begin{figure}[H]
-    \centering % Center the images
-     \caption{Instantiation of PKCS\#1 v1.5 with standard vs provably secure parameters (6144-bit Key Size) for signature creation}
-    % First image in a minipage
-    \begin{minipage}{\textwidth}
-        \centering
-        \fbox{\includegraphics[width=\textwidth]{main_pictures/pkcs/pkcs_sign_6144bit_table1_1.png}} 
-        \fbox{\includegraphics[width=\textwidth]{main_pictures/pkcs/pkcs_sign_6144bit_table2_1.png}}
-    \end{minipage}
-         \label{pkcs_sign_6144bit_table}
-\end{figure}
+\hline \multicolumn{14}{|r|}{{Continued on next page}} \\ \hline
+\endfoot
+
+\hline
+\endlastfoot
+
+Standard Parameters (2 Primes) & SHA-256 & 3847 & 118177.
+02163 ms & 30.
+71927 ms & 33.07081 ms & 1093.
+67843 ms\textsuperscript{2} & 95\% [29.67423 ms - 31.76430 ms] & 3.03771 ms & 22.12350 ms & 50.83954 ms & 140.
+51642 ms & 0.42242 ms & 140.
+93883 ms \\
+\hline
+Standard Parameters (3 Primes) & SHA-256 & 3847 & 115791.
+12898 ms & 30.
+09907 ms & 31.
+98768 ms & 1023.21183 ms\textsuperscript{2} & 95\% [29.08826 ms - 31.10988 ms] & 3.03488 ms & 18.00500 ms & 50.58250 ms & 118.
+82333 ms & 0.42608 ms & 119.
+24942 ms \\
+\hline
+Provable Parameters (2 Primes) & SHA-256 with MGF1 (512bit) & 3847 & 115272.
+70898 ms & 29.
+96431 ms & 31.
+73466 ms & 1007.08866 ms\textsuperscript{2} & 95\% [28.96150 ms - 30.96713 ms] & 3.03171 ms & 18.21867 ms & 50.26879 ms & 113.
+74892 ms & 0.42229 ms & 114.
+17121 ms \\
+\hline
+Provable Parameters (3 Primes) & SHA-256 with MGF1 (512bit) & 3847 & 115671.
+24224 ms & 30.
+06791 ms & 31.
+83358 ms & 1013.37703 ms\textsuperscript{2} & 95\% [29.06197 ms - 31.07385 ms] & 3.03213 ms & 17.74683 ms & 50.27175 ms & 125.
+09771 ms & 0.42179 ms & 125.
+51950 ms \\
+\hline
+Provable Parameters (2 Primes) & SHA-512 with MGF1 (512bit) & 3847 & 116170.
+35977 ms & 30.
+19765 ms & 31.
+86701 ms & 1015.50602 ms\textsuperscript{2} & 95\% [29.19065 ms - 31.20465 ms] & 3.03246 ms & 22.24804 ms & 50.72604 ms & 116.
+11454 ms & 0.42108 ms & 116.
+53563 ms \\
+\hline
+Provable Parameters (3 Primes) & SHA-512 with MGF1 (512bit) & 3847 & 115125.
+70527 ms & 29.
+92610 ms & 31.
+58010 ms & 997.30245 ms\textsuperscript{2} & 95\% [28.92817 ms - 30.92403 ms] & 3.03092 ms & 22.40379 ms & 50.36567 ms & 114.
+46588 ms & 0.42367 ms & 114.
+88954 ms \\
+\hline
+Provable Parameters (2 Primes) & SHAKE-128 (512bit) & 3847 & 115843.
+34085 ms & 30.
+11264 ms & 31.
+82802 ms & 1013.02270 ms\textsuperscript{2} & 95\% [29.10688 ms - 31.11841 ms] & 3.03104 ms & 22.11000 ms & 50.45063 ms & 124.
+24679 ms & 0.42171 ms & 124.
+66850 ms \\
+\hline
+Provable Parameters (3 Primes) & SHAKE-128 (512bit) & 3847 & 116287.
+14955 ms & 30.
+22801 ms & 31.
+88017 ms & 1016.34492 ms\textsuperscript{2} & 95\% [29.22060 ms - 31.23542 ms] & 3.03183 ms & 22.40679 ms & 50.35983 ms & 133.
+25854 ms & 0.42046 ms & 133.
+67900 ms \\
+\hline
+Provable Parameters (2 Primes) & SHAKE-256 (512bit) & 3847 & 116012.
+33564 ms & 30.
+15657 ms & 31.
+81386 ms & 1012.12174 ms\textsuperscript{2} & 95\% [29.15126 ms - 31.16189 ms] & 3.03171 ms & 21.99000 ms & 50.58658 ms & 122.
+58917 ms & 0.42133 ms & 123.
+01050 ms \\
+\hline
+Provable Parameters (3 Primes) & SHAKE-256 (512bit) & 3847 & 115285.
+59635 ms & 29.
+96766 ms & 31.
+57840 ms & 997.19519 ms\textsuperscript{2} & 95\% [28.96978 ms - 30.96554 ms] & 3.03167 ms & 18.76663 ms & 50.47438 ms & 119.
+35754 ms & 0.42046 ms & 119.
+77800 ms \\
+\hline
+
+\end{longtable}
+
+
+\begin{longtable}{|p{2.3cm}|p{1.8cm}|p{1.0cm}|p{1.7cm}|p{1.2cm}|p{1.5cm}|p{1.8cm}|p{1.5cm}|p{1.2cm}|p{1.5cm}|p{1.3cm}|p{1.2cm}|p{1.3cm}|p{1.3cm}|}
+
+\caption{\textbf{Instantiation of PKCS\#1 v1.5 with Standard vs Provably Secure Parameters (2048-bit Key Size) for Signature Creation}}
+     \label{pkcs_sign_2048bit_table} \\
+\hline
+\textbf{Parameter Type} & \textbf{Hash Function} & \textbf{Trials} & \textbf{Overall Time} & \textbf{Mean} & \textbf{Std Dev} & \textbf{Variance} & \textbf{Conf. Interval} & \textbf{25th Percentile} & \textbf{Median} & \textbf{75th Percentile} & \textbf{Range} & \textbf{Min} & \textbf{Max} \\
+\hline
+\endfirsthead
+
+\multicolumn{14}{c}%
+{{\bfseries \tablename\ \thetable{} -- Signature Creation Results for PKCS\#1 v1.5 with 2048-bit Key Size (continued from previous page)}} \\
+\hline
+\textbf{Parameter Type} & \textbf{Hash Function} & \textbf{Trials} & \textbf{Overall Time} & \textbf{Mean} & \textbf{Std Dev} & \textbf{Variance} & \textbf{Conf. Interval} & \textbf{25th Percentile} & \textbf{Median} & \textbf{75th Percentile} & \textbf{Range} & \textbf{Min} & \textbf{Max} \\
+\hline
+\endhead
+
+\hline \multicolumn{14}{|r|}{{Continued on next page}} \\ \hline
+\endfoot
+
+\hline
+\endlastfoot
+
+Standard Parameters (2 Primes) & SHA-256 (1024bit) & 3847 & 115894.
+04309 ms & 30.
+12582 ms & 31.83583 ms & 1013.
+51994 ms\textsuperscript{2} & 95\% [29.11981 ms - 31.13184 ms] & 3.03108 ms & 18.60683 ms & 50.49133 ms & 117.
+63146 ms & 0.42183 ms & 118.
+05329 ms \\
+\hline
+Standard Parameters (3 Primes) & SHA-256 (1024bit) & 3847 & 116100.
+80914 ms & 30.
+17957 ms & 31.75342 ms & 1008.
+27967 ms\textsuperscript{2} & 95\% [29.17616 ms - 31.18298 ms] & 3.03263 ms & 19.40667 ms & 50.79829 ms & 140.
+20000 ms & 0.42175 ms & 140.
+62175 ms \\
+\hline
+Provable Parameters (2 Primes) & SHA-256 with MGF1 (1024bit) & 3847 & 116078.
+59544 ms & 30.
+17380 ms & 31.89360 ms & 1017.
+20177 ms\textsuperscript{2} & 95\% [29.16596 ms - 31.18163 ms] & 3.03221 ms & 22.03592 ms & 50.46375 ms & 143.
+56496 ms & 0.42196 ms & 143.
+98692 ms \\
+\hline
+Provable Parameters (3 Primes) & SHA-256 with MGF1 (1024bit) & 3847 & 116163.
+26252 ms & 30.
+19581 ms & 31.88449 ms & 1016.
+62090 ms\textsuperscript{2} & 95\% [29.18826 ms - 31.20335 ms] & 3.03083 ms & 22.31388 ms & 50.98775 ms & 129.
+38404 ms & 0.42146 ms & 129.
+80550 ms \\
+\hline
+Provable Parameters (2 Primes) & SHA-512 with MGF1 (1024bit) & 3847 & 116442.
+44590 ms & 30.
+26838 ms & 31.96614 ms & 1021.
+83396 ms\textsuperscript{2} & 95\% [29.25825 ms - 31.27851 ms] & 3.03313 ms & 22.35254 ms & 50.78783 ms & 118.
+54888 ms & 0.42700 ms & 118.
+97588 ms \\
+\hline
+Provable Parameters (3 Primes) & SHA-512 with MGF1 (1024bit) & 3847 & 116923.
+53677 ms & 30.
+39343 ms & 31.97411 ms & 1022.
+34388 ms\textsuperscript{2} & 95\% [29.38305 ms - 31.40381 ms] & 3.03263 ms & 22.28929 ms & 51.09275 ms & 127.
+96396 ms & 0.42529 ms & 128.
+38925 ms \\
+\hline
+Provable Parameters (2 Primes) & SHAKE-128 & 3847 (1024bit) & 117215.
+94171 ms & 30.
+46944 ms & 32.21764 ms & 1037.
+97641 ms\textsuperscript{2} & 95\% [29.45136 ms - 31.48752 ms] & 3.03213 ms & 22.39679 ms & 51.17671 ms & 118.
+40113 ms & 0.42204 ms & 118.
+82317 ms \\
+\hline
+Provable Parameters (3 Primes) & SHAKE-128 (1024bit) & 3847 & 116643.
+37989 ms & 30.
+32061 ms & 32.19367 ms & 1036.
+43216 ms\textsuperscript{2} & 95\% [29.30329 ms - 31.33793 ms] & 3.03233 ms & 18.40088 ms & 50.55325 ms & 123.
+30838 ms & 0.42517 ms & 123.
+73354 ms \\
+\hline
+Provable Parameters (2 Primes) & SHAKE-256 (1024bit) & 3847 & 116398.
+67975 ms & 30.
+25700 ms & 32.32774 ms & 1045.
+08307 ms\textsuperscript{2} & 95\% [29.23544 ms - 31.27856 ms] & 3.03133 ms & 21.05121 ms & 50.39117 ms & 124.
+59971 ms & 0.42133 ms & 125.
+02104 ms \\
+\hline
+Provable Parameters (3 Primes) & SHAKE-256 (1024bit) & 3847 & 117083.
+39122 ms & 30.
+43499 ms & 32.77618 ms & 1074.
+27770 ms\textsuperscript{2} & 95\% [29.39926 ms - 31.47071 ms] & 3.03158 ms & 19.80338 ms & 50.94558 ms & 158.
+42054 ms & 0.42033 ms & 158.
+84088 ms \\
+\hline
+
+\end{longtable}
+
+
+
+\begin{longtable}{|p{2.3cm}|p{1.8cm}|p{1.0cm}|p{1.7cm}|p{1.2cm}|p{1.5cm}|p{1.8cm}|p{1.5cm}|p{1.2cm}|p{1.5cm}|p{1.3cm}|p{1.2cm}|p{1.3cm}|p{1.3cm}|}
+
+\caption{\textbf{Instantiation of PKCS\#1 v1.5 with Standard vs Provably Secure Parameters (3072-bit Key Size) for Signature Creation}}
+     \label{pkcs_sign_3072bit_table} \\
+\hline
+\textbf{Parameter Type} & \textbf{Hash Function} & \textbf{Trials} & \textbf{Overall Time} & \textbf{Mean} & \textbf{Std Dev} & \textbf{Variance} & \textbf{Conf. Interval} & \textbf{25th Percentile} & \textbf{Median} & \textbf{75th Percentile} & \textbf{Range} & \textbf{Min} & \textbf{Max} \\
+\hline
+\endfirsthead
+
+\multicolumn{14}{c}%
+{{\bfseries \tablename\ \thetable{} -- Signature Creation Results for PKCS\#1 v1.5 with 3072-bit Key Size (continued from previous page)}} \\
+\hline
+\textbf{Parameter Type} & \textbf{Hash Function} & \textbf{Trials} & \textbf{Overall Time} & \textbf{Mean} & \textbf{Std Dev} & \textbf{Variance} & \textbf{Conf. Interval} & \textbf{25th Percentile} & \textbf{Median} & \textbf{75th Percentile} & \textbf{Range} & \textbf{Min} & \textbf{Max} \\
+\hline
+\endhead
+
+\hline \multicolumn{14}{|r|}{{Continued on next page}} \\ \hline
+\endfoot
+
+\hline
+\endlastfoot
+Standard Parameters (2 Primes) & SHA-256 & 3847 & 117705.
+64336 ms & 30.
+59674 ms & 32.96844 ms & 1086.91792 ms² & 95\% with bounds 29.55493 ms - 31.63854 ms & 3.03146 ms & 18.44171 ms & 51.52792 ms & 128.
+68675 ms & 0.42100 ms & 129.
+10775 ms \\
+\hline
+Standard Parameters (3 Primes) & SHA-256 & 3847 & 117165.
+38414 ms & 30.
+45630 ms & 32.32973 ms & 1045.21151 ms² & 95\% with bounds 29.43468 ms - 31.47792 ms & 3.03329 ms & 21.95804 ms & 51.24796 ms & 122.
+42842 ms & 0.42500 ms & 122.
+85342 ms \\
+\hline
+Provable Parameters (2 Primes) & SHA-256 with MGF1 (1536bit) & 3847 & 116466.
+41138 ms & 30.
+27461 ms & 31.98576 ms & 1023.08857 ms² & 95\% with bounds 29.26386 ms - 31.28536 ms & 3.03283 ms & 22.34921 ms & 50.30683 ms & 152.
+77792 ms & 0.42183 ms & 153.
+19975 ms \\
+\hline
+Provable Parameters (3 Primes) & SHA-256 with MGF1 (1536bit) & 3847 & 116553.
+96427 ms & 30.
+29737 ms & 31.87730 ms & 1016.16221 ms² & 95\% with bounds 29.29004 ms - 31.30469 ms & 3.03250 ms & 22.40579 ms & 51.05638 ms & 122.
+49400 ms & 0.42158 ms & 122.
+91558 ms \\
+\hline
+Provable Parameters (2 Primes) & SHA-512 with MGF1 (1536bit) & 3847 & 116116.
+92751 ms & 30.
+18376 ms & 31.74670 ms & 1007.85299 ms² & 95\% with bounds 29.18057 ms - 31.18696 ms & 3.03183 ms & 22.36933 ms & 50.70367 ms & 122.
+10129 ms & 0.42171 ms & 122.
+52300 ms \\
+\hline
+Provable Parameters (3 Primes) & SHA-512 with MGF1 (1536bit) & 3847 & 116510.
+25554 ms & 30.
+28600 ms & 31.93910 ms & 1020.10617 ms² & 95\% with bounds 29.27673 ms - 31.29528 ms & 3.03142 ms & 22.40842 ms & 50.87596 ms & 120.
+22854 ms & 0.42225 ms & 120.
+65079 ms \\
+\hline
+Provable Parameters (2 Primes) & SHAKE-128 (1536bit) & 3847 & 115793.
+97446 ms & 30.
+09981 ms & 31.79126 ms & 1010.68398 ms² & 95\% with bounds 29.09521 ms - 31.10441 ms & 3.03138 ms & 17.76617 ms & 50.61175 ms & 122.
+37137 ms & 0.42392 ms & 122.
+79529 ms \\
+\hline
+Provable Parameters (3 Primes) & SHAKE-128 (1536bit) & 3847 & 115983.
+36724 ms & 30.
+14904 ms & 31.89507 ms & 1017.29529 ms² & 95\% with bounds 29.14116 ms - 31.15693 ms & 3.03250 ms & 18.95975 ms & 50.37463 ms & 125.
+28946 ms & 0.42508 ms & 125.
+71454 ms \\
+\hline
+Provable Parameters (2 Primes) & SHAKE-256 (1536bit) & 3847 & 115285.
+74923 ms & 29.
+96770 ms & 31.78061 ms & 1010.00743 ms² & 95\% with bounds 28.96343 ms - 30.97197 ms & 3.03254 ms & 17.96900 ms & 50.19038 ms & 138.
+74025 ms & 0.42121 ms & 139.
+16146 ms \\
+\hline
+Provable Parameters (3 Primes) & SHAKE-256 (1536bit) & 3847 & 115970.
+42458 ms & 30.
+14568 ms & 31.84966 ms & 1014.40085 ms² & 95\% with bounds 29.13923 ms - 31.15213 ms & 3.03142 ms & 17.09983 ms & 50.35596 ms & 124.
+84604 ms & 0.42142 ms & 125.
+26746 ms \\
+\hline
+
+\end{longtable}
+
+\begin{longtable}{|p{2.3cm}|p{1.8cm}|p{1.0cm}|p{1.7cm}|p{1.2cm}|p{1.5cm}|p{1.8cm}|p{1.5cm}|p{1.2cm}|p{1.5cm}|p{1.3cm}|p{1.2cm}|p{1.3cm}|p{1.3cm}|}
+
+\caption{\textbf{Instantiation of PKCS\#1 v1.5 with Standard vs Provably Secure Parameters (4096-bit Key Size) for Signature Creation}}
+     \label{pkcs_sign_4096bit_table} \\
+\hline
+\textbf{Parameter Type} & \textbf{Hash Function} & \textbf{Trials} & \textbf{Overall Time} & \textbf{Mean} & \textbf{Std Dev} & \textbf{Variance} & \textbf{Conf. Interval} & \textbf{25th Percentile} & \textbf{Median} & \textbf{75th Percentile} & \textbf{Range} & \textbf{Min} & \textbf{Max} \\
+\hline
+\endfirsthead
+
+\multicolumn{14}{c}%
+{{\bfseries \tablename\ \thetable{} -- Signature Creation Results for PKCS\#1 v1.5 with 4096-bit Key Size (continued from previous page)e}} \\
+\hline
+\textbf{Parameter Type} & \textbf{Hash Function} & \textbf{Trials} & \textbf{Overall Time} & \textbf{Mean} & \textbf{Std Dev} & \textbf{Variance} & \textbf{Conf. Interval} & \textbf{25th Percentile} & \textbf{Median} & \textbf{75th Percentile} & \textbf{Range} & \textbf{Min} & \textbf{Max} \\
+\hline
+\endhead
+
+\hline \multicolumn{14}{|r|}{{Continued on next page}} \\ \hline
+\endfoot
+
+\hline
+\endlastfoot
+Standard Parameters (2 Primes) & SHA-256 & 3847 & 116477.
+05804 ms & 30.
+27737 ms & 32.03323 ms & 1026.12814 ms² & 95\% with bounds 29.26512 ms - 31.28962 ms & 3.03117 ms & 22.38642 ms & 50.94454 ms & 137.
+01371 ms & 0.42096 ms & 137.
+43467 ms \\
+\hline
+Standard Parameters (3 Primes) & SHA-256 & 3847 & 115630.
+60308 ms & 30.
+05734 ms & 31.65295 ms & 1001.90939 ms² & 95\% with bounds 29.05711 ms - 31.05758 ms & 3.03233 ms & 22.36142 ms & 50.44204 ms & 117.
+87071 ms & 0.42179 ms & 118.
+29250 ms \\
+\hline
+Provable Parameters (2 Primes) & SHA-256 with MGF1 (2048bit) & 3847 & 116203.
+62697 ms & 30.
+20630 ms & 31.90966 ms & 1018.22637 ms² & 95\% with bounds 29.19795 ms - 31.21464 ms & 3.03188 ms & 22.40979 ms & 50.50563 ms & 130.
+77621 ms & 0.42279 ms & 131.
+19900 ms \\
+\hline
+Provable Parameters (3 Primes) & SHA-256 with MGF1 (2048bit) & 3847 & 116029.
+59923 ms & 30.
+16106 ms & 31.84316 ms & 1013.98705 ms² & 95\% with bounds 29.15482 ms - 31.16730 ms & 3.03175 ms & 22.14871 ms & 50.50817 ms & 117.
+88046 ms & 0.42267 ms & 118.
+30313 ms \\
+\hline
+Provable Parameters (2 Primes) & SHA-512 with MGF1 (2048bit) & 3847 & 116632.
+21012 ms & 30.
+31770 ms & 32.29462 ms & 1042.94253 ms² & 95\% with bounds 29.29719 ms - 31.33821 ms & 3.03133 ms & 17.67000 ms & 50.82550 ms & 163.
+76354 ms & 0.42146 ms & 164.
+18500 ms \\
+\hline
+Provable Parameters (3 Primes) & SHA-512 with MGF1 (2048bit) & 3847 & 115964.
+05449 ms & 30.
+14402 ms & 31.82126 ms & 1012.59251 ms² & 95\% with bounds 29.13847 ms - 31.14957 ms & 3.03350 ms & 19.80613 ms & 50.36192 ms & 126.
+57013 ms & 0.42188 ms & 126.
+99200 ms \\
+\hline
+Provable Parameters (2 Primes) & SHAKE-128 (2048bit) & 3847 & 115296.
+34676 ms & 29.
+97046 ms & 31.70262 ms & 1005.05589 ms² & 95\% with bounds 28.96865 ms - 30.97226 ms & 3.03254 ms & 17.72296 ms & 49.96438 ms & 120.
+12150 ms & 0.42208 ms & 120.
+54358 ms \\
+\hline
+Provable Parameters (3 Primes) & SHAKE-128 (2048bit) & 3847 & 115307.
+76742 ms & 29.97343 ms & 31.
+69619 ms & 1004.64876 ms² & 95\% with bounds 28.97183 ms - 30.97502 ms & 3.03400 ms & 18.13317 ms & 50.40213 ms & 115.
+79379 ms & 0.42104 ms & 116.
+21483 ms \\
+\hline
+Provable Parameters (2 Primes) & SHAKE-256 (2048bit) & 3847 & 116152.
+32253 ms & 30.
+19296 ms & 31.95081 ms & 1020.85413 ms² & 95\% with bounds 29.18332 ms - 31.20261 ms & 3.03575 ms & 19.52125 ms & 50.71421 ms & 141.
+55213 ms & 0.42121 ms & 141.
+97333 ms \\
+\hline
+Provable Parameters (3 Primes) & SHAKE-256 (2048bit) & 3847 & 115948.
+15903 ms & 30.
+13989 ms & 31.96615 ms & 1021.83485 ms² & 95\% with bounds 29.12976 ms - 31.15002 ms & 3.03442 ms & 22.40546 ms & 50.63800 ms & 168.
+05567 ms & 0.42238 ms & 168.
+47804 ms \\
+\hline
+
+\end{longtable}
+
+
+\begin{longtable}{|p{2.3cm}|p{1.8cm}|p{1.0cm}|p{1.7cm}|p{1.2cm}|p{1.5cm}|p{1.8cm}|p{1.5cm}|p{1.2cm}|p{1.5cm}|p{1.3cm}|p{1.2cm}|p{1.3cm}|p{1.3cm}|}
+
+\caption{\textbf{Instantiation of PKCS\#1 v1.5 with Standard vs Provably Secure Parameters (5120-bit Key Size) for Signature Creation}}
+     \label{pkcs_sign_5120bit_table} \\
+\hline
+\textbf{Parameter Type} & \textbf{Hash Function} & \textbf{Trials} & \textbf{Overall Time} & \textbf{Mean} & \textbf{Std Dev} & \textbf{Variance} & \textbf{Conf. Interval} & \textbf{25th Percentile} & \textbf{Median} & \textbf{75th Percentile} & \textbf{Range} & \textbf{Min} & \textbf{Max} \\
+\hline
+\endfirsthead
+
+\multicolumn{14}{c}%
+{{\bfseries \tablename\ \thetable{} -- Signature Creation Results for PKCS\#1 v1.5 with 5120-bit Key Size (continued from previous page)}} \\
+\hline
+\textbf{Parameter Type} & \textbf{Hash Function} & \textbf{Trials} & \textbf{Overall Time} & \textbf{Mean} & \textbf{Std Dev} & \textbf{Variance} & \textbf{Conf. Interval} & \textbf{25th Percentile} & \textbf{Median} & \textbf{75th Percentile} & \textbf{Range} & \textbf{Min} & \textbf{Max} \\
+\hline
+\endhead
+
+\hline \multicolumn{14}{|r|}{{Continued on next page}} \\ \hline
+\endfoot
+
+\hline
+\endlastfoot
+Standard Parameters (2 Primes) & SHA-256 & 3847 & 115989.
+71794 ms & 30.
+15069 ms & 31.76533 ms & 1009.03590 ms² & 95\% with bounds 29.14691 ms - 31.15448 ms & 3.03417 ms & 22.40783 ms & 50.84492 ms & 129.
+18425 ms & 0.42079 ms & 129.
+60504 ms \\
+\hline
+Standard Parameters (3 Primes) & SHA-256 & 3847 & 115650.
+89943 ms & 30.
+06262 ms & 31.63348 ms & 1000.67682 ms² & 95\% with bounds 29.06300 ms - 31.06224 ms & 3.03467 ms & 22.40542 ms & 50.31250 ms & 122.
+30113 ms & 0.42146 ms & 122.
+72258 ms \\
+\hline
+Provable Parameters (2 Primes) & SHA-256 with MGF1 (2560bit) & 3847 & 116573.
+86325 ms & 30.
+30254 ms & 32.12846 ms & 1032.23770 ms² & 95\% with bounds 29.28728 ms - 31.31780 ms & 3.03404 ms & 22.36004 ms & 50.47217 ms & 130.
+90871 ms & 0.42379 ms & 131.
+33250 ms \\
+\hline
+Provable Parameters (3 Primes) & SHA-256 with MGF1 (2560bit) & 3847 & 115782.
+84073 ms & 30.
+09692 ms & 31.79148 ms & 1010.69826 ms² & 95\% with bounds 29.09231 ms - 31.10153 ms & 3.03521 ms & 17.52829 ms & 50.54267 ms & 137.
+77763 ms & 0.42088 ms & 138.
+19850 ms \\
+\hline
+Provable Parameters (2 Primes) & SHA-512 with MGF1 (2560bit) & 3847 & 115534.
+41875 ms & 30.
+03234 ms & 31.74501 ms & 1007.74593 ms² & 95\% with bounds 29.02920 ms - 31.03548 ms & 3.03488 ms & 19.59029 ms & 50.11175 ms & 132.
+19042 ms & 0.42196 ms & 132.
+61238 ms \\
+\hline
+Provable Parameters (3 Primes) & SHA-512 with MGF1 (2560bit) & 3847 & 115333.
+49845 ms & 29.
+98011 ms & 31.62940 ms & 1000.41918 ms² & 95\% with bounds 28.98063 ms - 30.97960 ms & 3.03408 ms & 17.93683 ms & 50.60075 ms & 128.
+66463 ms & 0.42271 ms & 129.
+08733 ms \\
+\hline
+Provable Parameters (2 Primes) & SHAKE-128 (2560bit) & 3847 & 115767.
+11848 ms & 30.
+09283 ms & 31.86566 ms & 1015.42033 ms² & 95\% with bounds 29.08588 ms - 31.09979 ms & 3.03467 ms & 17.96204 ms & 50.62421 ms & 113.
+48308 ms & 0.42596 ms & 113.
+90904 ms \\
+\hline
+Provable Parameters (3 Primes) & SHAKE-128 (2560bit) & 3847 & 115933.
+87066 ms & 30.
+13618 ms & 31.80781 ms & 1011.73649 ms² & 95\% with bounds 29.13105 ms - 31.14130 ms & 3.03429 ms & 22.16242 ms & 50.28967 ms & 119.
+85496 ms & 0.42133 ms & 120.
+27629 ms \\
+\hline
+Provable Parameters (2 Primes) & SHAKE-256 (2560bit) & 3847 & 116307.
+03245 ms & 30.
+23318 ms & 32.00628 ms & 1024.40179 ms² & 95\% with bounds 29.22178 ms - 31.24458 ms & 3.03388 ms & 22.34100 ms & 51.16583 ms & 135.
+87683 ms & 0.42204 ms & 136.
+29888 ms \\
+\hline
+Provable Parameters (3 Primes) & SHAKE-256 (2560bit) & 3847 & 115746.
+46795 ms & 30.
+08746 ms & 31.66297 ms & 1002.54369 ms² & 95\% with bounds 29.08691 ms - 31.08801 ms & 3.03533 ms & 22.40604 ms & 50.66075 ms & 141.
+37508 ms & 0.42517 ms & 141.
+80025 ms \\
+\hline
+
+\end{longtable}
+
+\begin{longtable}{|p{2.3cm}|p{1.8cm}|p{1.0cm}|p{1.7cm}|p{1.2cm}|p{1.5cm}|p{1.8cm}|p{1.5cm}|p{1.2cm}|p{1.5cm}|p{1.3cm}|p{1.2cm}|p{1.3cm}|p{1.3cm}|}
+
+\caption{\textbf{Instantiation of PKCS\#1 v1.5 with Standard vs Provably Secure Parameters (6144-bit Key Size) for Signature Creation}}
+     \label{pkcs_sign_6144bit_table} \\
+\hline
+\textbf{Parameter Type} & \textbf{Hash Function} & \textbf{Trials} & \textbf{Overall Time} & \textbf{Mean} & \textbf{Std Dev} & \textbf{Variance} & \textbf{Conf. Interval} & \textbf{25th Percentile} & \textbf{Median} & \textbf{75th Percentile} & \textbf{Range} & \textbf{Min} & \textbf{Max} \\
+\hline
+\endfirsthead
+
+\multicolumn{14}{c}%
+{{\bfseries \tablename\ \thetable{} -- Signature Creation Results for PKCS\#1 v1.5 with 6144-bit Key Size (continued from previous page)}} \\
+\hline
+\textbf{Parameter Type} & \textbf{Hash Function} & \textbf{Trials} & \textbf{Overall Time} & \textbf{Mean} & \textbf{Std Dev} & \textbf{Variance} & \textbf{Conf. Interval} & \textbf{25th Percentile} & \textbf{Median} & \textbf{75th Percentile} & \textbf{Range} & \textbf{Min} & \textbf{Max} \\
+\hline
+\endhead
+
+\hline \multicolumn{14}{|r|}{{Continued on next page}} \\ \hline
+\endfoot
+
+\hline
+\endlastfoot
+Standard Parameters (2 Primes) & SHA-256 & 3847 & 116794.
+42671 ms & 30.
+35987 ms & 32.26577 ms & 1041.08001 ms² & 95\% with bounds 29.34027 ms - 31.37947 ms & 3.03458 ms & 22.15775 ms & 50.50138 ms & 142.
+65046 ms & 0.42321 ms & 143.
+07367 ms \\
+\hline
+Standard Parameters (3 Primes) & SHA-256 & 3847 & 115904.
+43480 ms & 30.
+12852 ms & 31.94697 ms & 1020.60914 ms² & 95\% with bounds 29.11900 ms - 31.13805 ms & 3.03513 ms & 20.79950 ms & 50.54058 ms & 131.
+83283 ms & 0.42583 ms & 132.
+25867 ms \\
+\hline
+Provable Parameters (2 Primes) & SHA-256 with MGF1 (3072bit) & 3847 & 116174.
+99635 ms & 30.
+19886 ms & 32.05878 ms & 1027.76519 ms² & 95\% with bounds 29.18580 ms - 31.21191 ms & 3.03529 ms & 18.50317 ms & 50.55283 ms & 136.
+54213 ms & 0.42221 ms & 136.
+96433 ms \\
+\hline
+Provable Parameters (3 Primes) & SHA-256 with MGF1 (3072bit) & 3847 & 116202.
+32548 ms & 30.
+20596 ms & 32.07590 ms & 1028.86344 ms² & 95\% with bounds 29.19236 ms - 31.21956 ms & 3.03433 ms & 18.87758 ms & 49.97367 ms & 117.
+61325 ms & 0.42633 ms & 118.
+03958 ms \\
+\hline
+Provable Parameters (2 Primes) & SHA-512 with MGF1 (3072bit) & 3847 & 115845.
+03774 ms & 30.
+11308 ms & 32.06384 ms & 1028.08979 ms² & 95\% with bounds 29.09987 ms - 31.12630 ms & 3.03471 ms & 18.85367 ms & 50.00321 ms & 132.
+56933 ms & 0.42163 ms & 132.
+99096 ms \\
+\hline
+Provable Parameters (3 Primes) & SHA-512 with MGF1 (3072bit) & 3847 & 115758.
+92520 ms & 30.
+09070 ms & 31.86131 ms & 1015.14326 ms² & 95\% with bounds 29.08388 ms - 31.09752 ms & 3.03521 ms & 18.18292 ms & 50.97504 ms & 116.
+12233 ms & 0.42617 ms & 116.
+54850 ms \\
+\hline
+Provable Parameters (2 Primes) & SHAKE-128 (3072bit) & 3847 & 115839.
+71936 ms & 30.
+11170 ms & 31.96055 ms & 1021.47702 ms² & 95\% with bounds 29.10175 ms - 31.12166 ms & 3.03546 ms & 22.34000 ms & 49.97717 ms & 129.
+19100 ms & 0.42608 ms & 129.
+61708 ms \\
+\hline
+Provable Parameters (3 Primes) & SHAKE-128 (3072bit) & 3847 & 116267.
+96066 ms & 30.
+22302 ms & 32.00080 ms & 1024.05138 ms² & 95\% with bounds 29.21180 ms - 31.23425 ms & 3.03558 ms & 22.23392 ms & 50.52075 ms & 136.
+16608 ms & 0.42404 ms & 136.
+59013 ms \\
+\hline
+Provable Parameters (2 Primes) & SHAKE-256 (3072bit) & 3847 & 117157.
+46986 ms & 30.
+45424 ms & 32.31048 ms & 1043.96698 ms² & 95\% with bounds 29.43323 ms - 31.47525 ms & 3.03467 ms & 22.20038 ms & 51.34767 ms & 145.
+08475 ms & 0.42571 ms & 145.
+51046 ms \\
+\hline
+Provable Parameters (3 Primes) & SHAKE-256 (3072bit) & 3847 & 116655.
+44133 ms & 30.
+32374 ms & 32.06203 ms & 1027.97374 ms² & 95\% with bounds 29.31058 ms - 31.33690 ms & 3.03450 ms & 21.81783 ms & 50.41608 ms & 130.
+49938 ms & 0.42279 ms & 130.
+92217 ms \\
+\hline
+
+
+\end{longtable}
+
+%TC:endignore
+\end{landscape}
+
+
 \begin{comment}
 \textbf{1024-bit Key Size (\ref{pkcs_sign_1024bit_table})}:
 
@@ -2462,99 +3125,374 @@ Standard parameters with 2 primes have a mean time of 30.35987 ms, whereas the p
 \subsection*{Summary}
 
 
-Across all key sizes, PKCS\#1 v1.5 benchmarking results for signature creation demonstrate subtle variations between standard and provably secure parameters. For SHA-256 with standard parameters using two primes, mean times range from 30.71927 ms to 30.35987 ms. For provably secure parameters with two primes, across different hash functions, the mean times vary from 29.96431 ms to 30.45424 ms, indicating a performance variation up to approximately 2.46\%. Using three primes, standard parameters yield mean times from 30.09907 ms to 30.12852 ms, while for provably secure parameters, the range is from 30.06791 ms to 30.32374 ms, suggesting a potential variation of up to 0.65\% across all key sizes. 
+Across all key sizes, benchmarking results for signature creation with PKCS\#1 v1.5 demonstrate subtle variations between standard and provably secure parameters. For SHA-256 with standard parameters using two primes, mean times range from 30.71927 ms to 30.35987 ms. For provably secure parameters with two primes, across different hash functions, the mean times vary from 29.96431 ms to 30.45424 ms, indicating a performance variation up to approximately 2.46\%. Using three primes, standard parameters yield mean times from 30.09907 ms to 30.12852 ms, while for provably secure parameters, the range is from 30.06791 ms to 30.32374 ms, suggesting a potential variation of up to 0.65\% across all key sizes. 
 
 Overall, the fluctuations in mean times across different configurations and hash functions are relatively minor. Given the scale of the operation and the small magnitude of change, these variations could likely be attributed to natural variances rather than a consistent performance trend. The standard deviations and confidence intervals reinforce that the timings are closely clustered, suggesting that any observed differences might not be statistically significant. This data indicates that using provably secure parameters for signature creation with PKCS\#1 v1.5 does not introduce an overhead, and their performance is essentially on par with standard parameters.
 
 \subsection{Signature Creation Results (ANSI X9.31 rDSA)}
 
-Benchmarking across all key sizes for ANSI X9.31 rDSA signature creation reveals a consistent trend. With standard parameters using two primes, SHA-256 mean times range from 30.13104 ms to 30.41202 ms. For provably secure parameters with two primes, the mean times across different hash functions vary from 30.08570 ms to 30.50728 ms, demonstrating a performance variation of up to 1.39\%. With three primes, standard parameters yield mean times from 30.10680 ms to 30.41080 ms, while for provably secure parameters, the range is from 30.10680 ms to 30.86716 ms, indicating a potential variation of up to 1.49\% across all key sizes.
+Benchmarking across all key sizes for signature creation with the ANSI X9.31 scheme reveals a consistent trend. With standard parameters using two primes, SHA-256 mean times range from 30.13104 ms to 30.41202 ms. For provably secure parameters with two primes, the mean times across different hash functions vary from 30.08570 ms to 30.50728 ms, demonstrating a performance variation of up to 1.39\%. With three primes, standard parameters yield mean times from 30.10680 ms to 30.41080 ms, while for provably secure parameters, the range is from 30.10680 ms to 30.86716 ms, indicating a potential variation of up to 1.49\% across all key sizes.
 
 
 These results align with findings from PKCS\#1 v1.5, in that the difference between standard and provably secure parameters is negligible. The small fluctuations in performance times are likely inherent to computational processes and do not signify any significant statistical difference. Therefore it can be inferred that instantiation of ANSI X9.31 rDSA (for signature creation) with provably secure parameters does not introduce an overhead, and rather maintains effectiveness in line with standard parameters.
 
 \subsection{Signature Creation Results (ISO/IEC 9796-2:2010 Signature Scheme 1)}
 
-The ISO/IEC 9796-2:2010 Signature Scheme 1 exhibits a similar performance profile in its benchmarking for signature creation across all key sizes. Standard parameters using two primes for SHA-256 show mean times between 28.57240 ms and 28.72859 ms. For provably secure parameters with two primes, the mean times across different hash functions vary from 28.48672 ms to 28.74465 ms, demonstrating a performance variation of up to 1.39\%. With three primes, standard parameters yield mean times from 28.60973 ms to 28.73497 ms, while for provably secure parameters, the range is from 28.54507 ms to 28.80356 ms, indicating a potential variation of up to 1.49\% across all key sizes.
+The ISO/IEC 9796-2:2010 Signature Scheme exhibits a similar performance profile in its benchmarking for signature creation across all key sizes. Standard parameters using two primes for SHA-256 show mean times between 28.57240 ms and 28.72859 ms. For provably secure parameters with two primes, the mean times across different hash functions vary from 28.48672 ms to 28.74465 ms, demonstrating a performance variation of up to 1.39\%. With three primes, standard parameters yield mean times from 28.60973 ms to 28.73497 ms, while for provably secure parameters, the range is from 28.54507 ms to 28.80356 ms, indicating a potential variation of up to 1.49\% across all key sizes.
 
 
 Like the former two schemes ISO/IEC 9796-2:2010 Signature Scheme 1 demonstrates that the use of provably secure parameters for signature creation yields only negligible differences in performance when compared to standard parameters.  The small fluctuations in performance times are likely inherent to computational processes and do not signify any significant statistical difference. Therefore it can be inferred that instantiation of ISO-IEC 9796-2 Scheme 1 (for signature creation) with provably secure parameters does not introduce an overhead, and rather maintains effectiveness in line with standard parameters.
 
 
+
+
+
+
+\begin{landscape}
+\pagestyle{empty}%
+
 \section{Signature Verification Results}
 
 \subsection{Signature Verification Results (PKCS\#1 v1.5)}
-\begin{figure}[H]
-    \centering % Center the images
-     \caption{Instantiation of PKCS\#1 v1.5 with standard vs provably secure parameters (1024-bit Key Size) for signature verification}
-    % First image in a minipage
-    \begin{minipage}{\textwidth}
-        \centering
-        \fbox{\includegraphics[width=\textwidth]{main_pictures/pkcs/pkcs_verify_1024bit_table1_1.png}} 
-        \fbox{\includegraphics[width=\textwidth]{main_pictures/pkcs/pkcs_verify_1024bit_table2_1.png}}
-    \end{minipage}
-       \label{pkcs_verify_1024bit_table}
-  \end{figure}
-  
-\begin{figure}[H]
-    \centering % Center the images
-     \caption{Instantiation of PKCS\#1 v1.5 with standard vs provably secure parameters (2048-bit Key Size) for signature verification}
-    % First image in a minipage
-    \begin{minipage}{\textwidth}
-        \centering
-        \fbox{\includegraphics[width=\textwidth]{main_pictures/pkcs/pkcs_verify_2048bit_table1_1.png}} 
-        \fbox{\includegraphics[width=\textwidth]{main_pictures/pkcs/pkcs_verify_2048bit_table2_1.png}}
-    \end{minipage}
-           \label{pkcs_verify_2048bit_table}
-  \end{figure}
-  
-\begin{figure}[H]
-    \centering % Center the images
-     \caption{Instantiation of PKCS\#1 v1.5 with standard vs provably secure parameters (3072-bit Key Size) for signature verification}
-    % First image in a minipage
-    \begin{minipage}{\textwidth}
-        \centering
-        \fbox{\includegraphics[width=\textwidth]{main_pictures/pkcs/pkcs_verify_3072bit_table1_1.png}} 
-        \fbox{\includegraphics[width=\textwidth]{main_pictures/pkcs/pkcs_verify_3072bit_table2_1.png}}
-    \end{minipage}
-          \label{pkcs_verify_3072bit_table}
-\end{figure}
+%TC:ignore
+\begin{longtable}{|p{2.3cm}|p{1.8cm}|p{1.0cm}|p{1.7cm}|p{1.4cm}|p{1.5cm}|p{1.8cm}|p{1.5cm}|p{1.43cm}|p{1.5cm}|p{1.3cm}|p{1.4cm}|p{1.3cm}|p{1.3cm}|}
 
-\begin{figure}[H]
-    \centering % Center the images
-     \caption{Instantiation of PKCS\#1 v1.5 with standard vs provably secure parameters (4096-bit Key Size) for signature verification}
-    % First image in a minipage
-    \begin{minipage}{\textwidth}
-        \centering
-        \fbox{\includegraphics[width=\textwidth]{main_pictures/pkcs/pkcs_verify_4096bit_table1_1.png}} 
-        \fbox{\includegraphics[width=\textwidth]{main_pictures/pkcs/pkcs_verify_4096bit_table2_1.png}}
-    \end{minipage}
-         \label{pkcs_verify_4096bit_table}
-\end{figure}
+\caption{\textbf{Instantiation of PKCS\#1 v1.5 with Standard vs Provably Secure Parameters (1024-bit Key Size) for Signature Verification}}
+     \label{pkcs_verify_1024bit_table} \\
+\hline
+\textbf{Parameter Type} & \textbf{Hash Function} & \textbf{Trials} & \textbf{Overall Time} & \textbf{Mean} & \textbf{Std Dev} & \textbf{Variance} & \textbf{Conf. Interval} & \textbf{25th Percentile} & \textbf{Median} & \textbf{75th Percentile} & \textbf{Range} & \textbf{Min} & \textbf{Max} \\
+\hline
+\endfirsthead
 
-\begin{figure}[H]
-    \centering % Center the images
-     \caption{Instantiation of PKCS\#1 v1.5 with standard vs provably secure parameters (5120-bit Key Size) for signature verification}
-    % First image in a minipage
-    \begin{minipage}{\textwidth}
-        \centering
-        \fbox{\includegraphics[width=\textwidth]{main_pictures/pkcs/pkcs_verify_5120bit_table1_1.png}} 
-        \fbox{\includegraphics[width=\textwidth]{main_pictures/pkcs/pkcs_verify_5120bit_table2_1.png}}
-    \end{minipage}
-       \label{pkcs_verify_5120bit_table}
-\end{figure}
+\multicolumn{14}{c}%
+{{\bfseries \tablename\ \thetable{} -- Signature Verification Results for PKCS\#1 v1.5 with 1024-bit Key Size (continued from previous page)}} \\
+\hline
+\textbf{Parameter Type} & \textbf{Hash Function} & \textbf{Trials} & \textbf{Overall Time} & \textbf{Mean} & \textbf{Std Dev} & \textbf{Variance} & \textbf{Conf. Interval} & \textbf{25th Percentile} & \textbf{Median} & \textbf{75th Percentile} & \textbf{Range} & \textbf{Min} & \textbf{Max} \\
+\hline
+\endhead
 
-\begin{figure}[H]
-    \centering % Center the images
-     \caption{Instantiation of PKCS\#1 v1.5 with standard vs provably secure parameters (6144-bit Key Size) for signature verification}
-    % First image in a minipage
-    \begin{minipage}{\textwidth}
-        \centering
-        \fbox{\includegraphics[width=\textwidth]{main_pictures/pkcs/pkcs_verify_6144bit_table1_1.png}} 
-        \fbox{\includegraphics[width=\textwidth]{main_pictures/pkcs/pkcs_verify_6144bit_table2_1.png}}
-    \end{minipage}
-         \label{pkcs_verify_6144bit_table}
-\end{figure}
+\hline \multicolumn{14}{|r|}{{Continued on next page}} \\ \hline
+\endfoot
+
+\hline
+\endlastfoot
+
+Standard Parameters (2 Primes) & SHA-256 & 3847 & 1935.
+65263 ms & 0.50316 ms & 0.74488 ms & 0.55485 ms\textsuperscript{2} & 95\% with bounds 0.47962 ms - 0.52670 ms & 0.45304 ms & 0.47025 ms & 0.49883 ms & 45.73475 ms & 0.43825 ms & 46.17300 ms \\
+\hline
+Standard Parameters (3 Primes) & SHA-256 & 3847 & 1899.
+38441 ms & 0.49373 ms & 0.73907 ms & 0.54622 ms\textsuperscript{2} & 95\% with bounds 0.47038 ms - 0.51709 ms & 0.45117 ms & 0.47133 ms & 0.48325 ms & 45.40883 ms & 0.43017 ms & 45.83900 ms \\
+\hline
+Provable Parameters (2 Primes) & SHA-256 with MGF1 (512bit) & 3847 & 595.
+76908 ms & 0.15487 ms & 0.50898 ms & 0.25906 ms\textsuperscript{2} & 95\% with bounds 0.13878 ms - 0.17095 ms & 0.12179 ms & 0.13258 ms & 0.15304 ms & 31.43017 ms & 0.11896 ms & 31.54913 ms \\
+\hline
+Provable Parameters (3 Primes) & SHA-256 with MGF1 (512bit) & 3847 & 565.
+91815 ms & 0.14711 ms & 0.50140 ms & 0.25140 ms\textsuperscript{2} & 95\% with bounds 0.13126 ms - 0.16295 ms & 0.12113 ms & 0.12388 ms & 0.13713 ms & 30.99375 ms & 0.11888 ms & 31.11263 ms \\
+\hline
+Provable Parameters (2 Primes) & SHA-512 with MGF1 (512bit) & 3847 & 495.
+04912 ms & 0.12868 ms & 0.39810 ms & 0.15849 ms\textsuperscript{2} & 95\% with bounds 0.11610 ms - 0.14126 ms & 0.11954 ms & 0.12113 ms & 0.12254 ms & 24.61504 ms & 0.11392 ms & 24.72896 ms \\
+\hline
+Provable Parameters (3 Primes) & SHA-512 with MGF1 (512bit) & 3847 & 493.
+71096 ms & 0.12834 ms & 0.37018 ms & 0.13704 ms\textsuperscript{2} & 95\% with bounds 0.11664 ms - 0.14003 ms & 0.11950 ms & 0.12108 ms & 0.12254 ms & 22.87246 ms & 0.11408 ms & 22.98654 ms \\
+\hline
+Provable Parameters (2 Primes) & SHAKE-128 (512bit) & 3847 & 612.
+16702 ms & 0.15913 ms & 0.57029 ms & 0.32523 ms\textsuperscript{2} & 95\% with bounds 0.14111 ms - 0.17715 ms & 0.11983 ms & 0.12050 ms & 0.14342 ms & 35.11438 ms & 0.11813 ms & 35.23250 ms \\
+\hline
+Provable Parameters (3 Primes) & SHAKE-128 (512bit) & 3847 & 660.
+57271 ms & 0.17171 ms & 0.56759 ms & 0.32215 ms\textsuperscript{2} & 95\% with bounds 0.15378 ms - 0.18965 ms & 0.11958 ms & 0.12450 ms & 0.18204 ms & 34.80358 ms & 0.11788 ms & 34.92146 ms \\
+\hline
+Provable Parameters (2 Primes) & SHAKE-256 (512bit) & 3847 & 491.
+35095 ms & 0.12772 ms & 0.35716 ms & 0.12756 ms\textsuperscript{2} & 95\% with bounds 0.11644 ms - 0.13901 ms & 0.11971 ms & 0.12133 ms & 0.12292 ms & 22.16154 ms & 0.11379 ms & 22.27533 ms \\
+\hline
+Provable Parameters (3 Primes) & SHAKE-256 (512bit) & 3847 & 487.
+03946 ms & 0.12660 ms & 0.23975 ms & 0.05748 ms\textsuperscript{2} & 95\% with bounds 0.11903 ms - 0.13418 ms & 0.11963 ms & 0.12142 ms & 0.12317 ms & 14.76317 ms & 0.11396 ms & 14.87713 ms \\
+\hline
+
+\end{longtable}
+
+\begin{longtable}{|p{2.3cm}|p{1.8cm}|p{1.0cm}|p{1.7cm}|p{1.4cm}|p{1.5cm}|p{1.8cm}|p{1.5cm}|p{1.43cm}|p{1.5cm}|p{1.3cm}|p{1.4cm}|p{1.3cm}|p{1.3cm}|}
+
+\caption{\textbf{Instantiation of PKCS\#1 v1.5 with Standard vs Provably Secure Parameters (2048-bit Key Size) for Signature Verification}}
+     \label{pkcs_verify_2048bit_table} \\
+\hline
+\textbf{Parameter Type} & \textbf{Hash Function} & \textbf{Trials} & \textbf{Overall Time} & \textbf{Mean} & \textbf{Std Dev} & \textbf{Variance} & \textbf{Conf. Interval} & \textbf{25th Percentile} & \textbf{Median} & \textbf{75th Percentile} & \textbf{Range} & \textbf{Min} & \textbf{Max} \\
+\hline
+\endfirsthead
+
+\multicolumn{14}{c}%
+{{\bfseries \tablename\ \thetable{} -- Signature Verification Results for PKCS\#1 v1.5 with 2048-bit Key Size (continued from previous page)}} \\
+\hline
+\textbf{Parameter Type} & \textbf{Hash Function} & \textbf{Trials} & \textbf{Overall Time} & \textbf{Mean} & \textbf{Std Dev} & \textbf{Variance} & \textbf{Conf. Interval} & \textbf{25th Percentile} & \textbf{Median} & \textbf{75th Percentile} & \textbf{Range} & \textbf{Min} & \textbf{Max} \\
+\hline
+\endhead
+
+\hline \multicolumn{14}{|r|}{{Continued on next page}} \\ \hline
+\endfoot
+
+\hline
+\endlastfoot
+Standard Parameters (2 Primes) & SHA-256 & 3847 & 12360.
+20507 ms & 3.21295 ms & 0.43688 ms & 0.19086 ms\textsuperscript{2} & 95\% with bounds 3.19914 ms - 3.22675 ms & 3.04142 ms & 3.05442 ms & 3.13625 ms & 15.32813 ms & 3.02050 ms & 18.34863 ms \\
+\hline
+Standard Parameters (3 Primes) & SHA-256 & 3847 & 12309.
+57280 ms & 3.19978 ms & 0.43425 ms & 0.18858 ms\textsuperscript{2} & 95\% with bounds 3.18606 ms - 3.21351 ms & 3.03496 ms & 3.04775 ms & 3.11233 ms & 15.10000 ms & 2.99213 ms & 18.09213 ms \\
+\hline
+Provable Parameters (2 Primes) & SHA-256 with MGF1 (1024bit) & 3847 & 3454.
+33736 ms & 0.89793 ms & 0.30705 ms & 0.09428 ms\textsuperscript{2} & 95\% with bounds 0.88823 ms - 0.90763 ms & 0.80258 ms & 0.80375 ms & 0.81475 ms & 6.88421 ms & 0.77908 ms & 7.66329 ms \\
+\hline
+Provable Parameters (3 Primes) & SHA-256 with MGF1 (1024bit) & 3847 & 3351.
+32969 ms & 0.87115 ms & 0.28556 ms & 0.08154 ms\textsuperscript{2} & 95\% with bounds 0.86213 ms - 0.88018 ms & 0.80229 ms & 0.80313 ms & 0.80538 ms & 6.81421 ms & 0.79446 ms & 7.60867 ms \\
+\hline
+Provable Parameters (2 Primes) & SHA-512 with MGF1 (1024bit) & 3847 & 3137.
+56072 ms & 0.81559 ms & 0.11375 ms & 0.01294 ms\textsuperscript{2} & 95\% with bounds 0.81199 ms - 0.81918 ms & 0.80204 ms & 0.80275 ms & 0.80413 ms & 3.74258 ms & 0.76763 ms & 4.51021 ms \\
+\hline
+Provable Parameters (3 Primes) & SHA-512 with MGF1 (1024bit) & 3847 & 3142.
+31266 ms & 0.81682 ms & 0.11886 ms & 0.01413 ms\textsuperscript{2} & 95\% with bounds 0.81307 ms - 0.82058 ms & 0.80204 ms & 0.80296 ms & 0.80525 ms & 3.67663 ms & 0.76929 ms & 4.44592 ms \\
+\hline
+Provable Parameters (2 Primes) & SHAKE-128 (1024bit) & 3847 & 3983.
+86380 ms & 1.03558 ms & 0.45253 ms & 0.20478 ms\textsuperscript{2} & 95\% with bounds 1.02128 ms - 1.04988 ms & 0.79367 ms & 0.79792 ms & 1.23363 ms & 6.44908 ms & 0.77271 ms & 7.22179 ms \\
+\hline
+Provable Parameters (3 Primes) & SHAKE-128 (1024bit) & 3847 & 4442.
+47688 ms & 1.15479 ms & 0.47014 ms & 0.22103 ms\textsuperscript{2} & 95\% with bounds 1.13993 ms - 1.16965 ms & 0.79429 ms & 0.90275 ms & 1.38596 ms & 6.27900 ms & 0.76992 ms & 7.04892 ms \\
+\hline
+Provable Parameters (2 Primes) & SHAKE-256 (1024bit) & 3847 & 3081.
+04226 ms & 0.80089 ms & 0.09818 ms & 0.00964 ms\textsuperscript{2} & 95\% with bounds 0.79779 ms - 0.80400 ms & 0.78525 ms & 0.79358 ms & 0.79792 ms & 4.00133 ms & 0.75942 ms & 4.76075 ms \\
+\hline
+Provable Parameters (3 Primes) & SHAKE-256 (1024bit) & 3847 & 3065.
+32076 ms & 0.79681 ms & 0.08804 ms & 0.00775 ms\textsuperscript{2} & 95\% with bounds 0.79403 ms - 0.79959 ms & 0.78117 ms & 0.79275 ms & 0.79592 ms & 3.49146 ms & 0.75971 ms & 4.25117 ms \\
+\hline
+
+
+
+\end{longtable}
+
+
+\begin{longtable}{|p{2.3cm}|p{1.8cm}|p{1.0cm}|p{1.7cm}|p{1.4cm}|p{1.5cm}|p{1.8cm}|p{1.5cm}|p{1.43cm}|p{1.5cm}|p{1.3cm}|p{1.4cm}|p{1.3cm}|p{1.3cm}|}
+
+\caption{\textbf{Instantiation of PKCS\#1 v1.5 with Standard vs Provably Secure Parameters (3072-bit Key Size) for Signature Verification}}
+     \label{pkcs_verify_3072bit_table} \\
+\hline
+\textbf{Parameter Type} & \textbf{Hash Function} & \textbf{Trials} & \textbf{Overall Time} & \textbf{Mean} & \textbf{Std Dev} & \textbf{Variance} & \textbf{Conf. Interval} & \textbf{25th Percentile} & \textbf{Median} & \textbf{75th Percentile} & \textbf{Range} & \textbf{Min} & \textbf{Max} \\
+\hline
+\endfirsthead
+
+\multicolumn{14}{c}%
+{{\bfseries \tablename\ \thetable{} -- Signature Verification Results for PKCS\#1 v1.5 with 3072-bit Key Size (continued from previous page)}} \\
+\hline
+\textbf{Parameter Type} & \textbf{Hash Function} & \textbf{Trials} & \textbf{Overall Time} & \textbf{Mean} & \textbf{Std Dev} & \textbf{Variance} & \textbf{Conf. Interval} & \textbf{25th Percentile} & \textbf{Median} & \textbf{75th Percentile} & \textbf{Range} & \textbf{Min} & \textbf{Max} \\
+\hline
+\endhead
+
+\hline \multicolumn{14}{|r|}{{Continued on next page}} \\ \hline
+\endfoot
+
+\hline
+\endlastfoot
+Standard Parameters (2 Primes) & SHA-256 & 3847 & 38486.
+02661 ms & 10.00417 ms & 0.72094 ms & 0.51975 ms\textsuperscript{2} & 95\% with bounds 9.98138 ms - 10.02695 ms & 9.62929 ms & 9.70171 ms & 9.93058 ms & 8.11871 ms & 9.44650 ms & 17.56521 ms \\
+\hline
+Standard Parameters (3 Primes) & SHA-256 & 3847 & 38404.
+63349 ms & 9.98301 ms & 0.71029 ms & 0.50451 ms\textsuperscript{2} & 95\% with bounds 9.96056 ms - 10.00545 ms & 9.61963 ms & 9.69317 ms & 9.89058 ms & 8.84187 ms & 9.42796 ms & 18.26983 ms \\
+\hline
+Provable Parameters (2 Primes) & SHA-256 with MGF1 (1536bit) & 3847 & 10559.
+97723 ms & 2.74499 ms & 0.65171 ms & 0.42472 ms\textsuperscript{2} & 95\% with bounds 2.72440 ms - 2.76558 ms & 2.51746 ms & 2.52008 ms & 2.53367 ms & 5.67433 ms & 2.46408 ms & 8.13842 ms \\
+\hline
+Provable Parameters (3 Primes) & SHA-256 with MGF1 (1536bit) & 3847 & 10352.
+14080 ms & 2.69096 ms & 0.60061 ms & 0.36073 ms\textsuperscript{2} & 95\% with bounds 2.67199 ms - 2.70994 ms & 2.51754 ms & 2.51988 ms & 2.52300 ms & 5.94338 ms & 2.44158 ms & 8.38496 ms \\
+\hline
+Provable Parameters (2 Primes) & SHA-512 with MGF1 (1536bit) & 3847 & 9869.
+79314 ms & 2.56558 ms & 0.26480 ms & 0.07012 ms\textsuperscript{2} & 95\% with bounds 2.55721 ms - 2.57395 ms & 2.51646 ms & 2.51771 ms & 2.51992 ms & 5.75088 ms & 2.43788 ms & 8.18875 ms \\
+\hline
+Provable Parameters (3 Primes) & SHA-512 with MGF1 (1536bit) & 3847 & 9896.
+49390 ms & 2.57252 ms & 0.25284 ms & 0.06393 ms\textsuperscript{2} & 95\% with bounds 2.56453 ms - 2.58051 ms & 2.51654 ms & 2.51792 ms & 2.52092 ms & 3.44142 ms & 2.44167 ms & 5.88308 ms \\
+\hline
+Provable Parameters (2 Primes) & SHAKE-128 (1536bit) & 3847 & 13454.
+99051 ms & 3.49753 ms & 1.18705 ms & 1.40910 ms\textsuperscript{2} & 95\% with bounds 3.46002 ms - 3.53504 ms & 2.52929 ms & 2.60992 ms & 4.52546 ms & 6.01850 ms & 2.44896 ms & 8.46746 ms \\
+\hline
+Provable Parameters (3 Primes) & SHAKE-128 (1536bit) & 3847 & 14259.
+50291 ms & 3.70666 ms & 1.14678 ms & 1.31509 ms\textsuperscript{2} & 95\% with bounds 3.67042 ms - 3.74289 ms & 2.52825 ms & 3.69283 ms & 4.75942 ms & 6.62200 ms & 2.48496 ms & 9.10696 ms \\
+\hline
+Provable Parameters (2 Primes) & SHAKE-256 (1536bit) & 3847 & 9832.
+45230 ms & 2.55588 ms & 0.18170 ms & 0.03302 ms\textsuperscript{2} & 95\% with bounds 2.55013 ms - 2.56162 ms & 2.51892 ms & 2.52438 ms & 2.54346 ms & 5.48925 ms & 2.42392 ms & 7.91317 ms \\
+\hline
+Provable Parameters (3 Primes) & SHAKE-256 (1536bit) & 3847 & 9764.
+40055 ms & 2.53819 ms & 0.11865 ms & 0.01408 ms\textsuperscript{2} & 95\% with bounds 2.53444 ms - 2.54194 ms & 2.50754 ms & 2.52371 ms & 2.53454 ms & 2.56504 ms & 2.41796 ms & 4.98300 ms \\
+\hline
+
+
+\end{longtable}
+
+
+
+\begin{longtable}{|p{2.3cm}|p{1.8cm}|p{1.0cm}|p{1.7cm}|p{1.4cm}|p{1.5cm}|p{1.8cm}|p{1.5cm}|p{1.43cm}|p{1.5cm}|p{1.3cm}|p{1.4cm}|p{1.3cm}|p{1.3cm}|}
+
+\caption{\textbf{Instantiation of PKCS\#1 v1.5 with Standard vs Provably Secure Parameters (4096-bit Key Size) for Signature Verification}}
+     \label{pkcs_verify_4096bit_table} \\
+\hline
+\textbf{Parameter Type} & \textbf{Hash Function} & \textbf{Trials} & \textbf{Overall Time} & \textbf{Mean} & \textbf{Std Dev} & \textbf{Variance} & \textbf{Conf. Interval} & \textbf{25th Percentile} & \textbf{Median} & \textbf{75th Percentile} & \textbf{Range} & \textbf{Min} & \textbf{Max} \\
+\hline
+\endfirsthead
+
+\multicolumn{14}{c}%
+{{\bfseries \tablename\ \thetable{} -- Signature Verification Results for PKCS\#1 v1.5 with 4096-bit Key Size (continued from previous page)}} \\
+\hline
+\textbf{Parameter Type} & \textbf{Hash Function} & \textbf{Trials} & \textbf{Overall Time} & \textbf{Mean} & \textbf{Std Dev} & \textbf{Variance} & \textbf{Conf. Interval} & \textbf{25th Percentile} & \textbf{Median} & \textbf{75th Percentile} & \textbf{Range} & \textbf{Min} & \textbf{Max} \\
+\hline
+\endhead
+
+\hline \multicolumn{14}{|r|}{{Continued on next page}} \\ \hline
+\endfoot
+
+\hline
+\endlastfoot
+Standard Parameters (2 Primes) & SHA-256 & 3847 & 88359.
+61297 ms & 22.96845 ms & 1.28920 ms & 1.66204 ms\textsuperscript{2} & 95\% with bounds 22.92771 ms - 23.00919 ms & 22.36813 ms & 22.49146 ms & 22.78083 ms & 11.28154 ms & 21.83721 ms & 33.11875 ms \\
+\hline
+Standard Parameters (3 Primes) & SHA-256 & 3847 & 88075.
+88337 ms & 22.89469 ms & 1.31200 ms & 1.72133 ms\textsuperscript{2} & 95\% with bounds 22.85323 ms - 22.93615 ms & 22.30988 ms & 22.44346 ms & 22.68775 ms & 25.71575 ms & 21.90171 ms & 47.61746 ms \\
+\hline
+Provable Parameters (2 Primes) & SHA-256 with MGF1 (2048bit) & 3847 & 24217.
+45378 ms & 6.29515 ms & 1.35900 ms & 1.84689 ms\textsuperscript{2} & 95\% with bounds 6.25221 ms - 6.33810 ms & 5.80854 ms & 5.81638 ms & 5.83463 ms & 14.27529 ms & 5.66600 ms & 19.94129 ms \\
+\hline
+Provable Parameters (3 Primes) & SHA-256 with MGF1 (2048bit) & 3847 & 24025.
+22649 ms & 6.24518 ms & 1.43174 ms & 2.04988 ms\textsuperscript{2} & 95\% with bounds 6.19994 ms - 6.29043 ms & 5.80533 ms & 5.81150 ms & 5.82529 ms & 35.29513 ms & 5.73788 ms & 41.03300 ms \\
+\hline
+Provable Parameters (2 Primes) & SHA-512 with MGF1 (2048bit) & 3847 & 23268.
+64877 ms & 6.04852 ms & 0.68305 ms & 0.46656 ms\textsuperscript{2} & 95\% with bounds 6.02693 ms - 6.07010 ms & 5.80671 ms & 5.81442 ms & 5.86492 ms & 8.03696 ms & 5.60508 ms & 13.64204 ms \\
+\hline
+Provable Parameters (3 Primes) & SHA-512 with MGF1 (2048bit) & 3847 & 23527.
+35175 ms & 6.11577 ms & 0.83822 ms & 0.70261 ms\textsuperscript{2} & 95\% with bounds 6.08928 ms - 6.14225 ms & 5.80804 ms & 5.82300 ms & 5.96350 ms & 24.75138 ms & 5.57613 ms & 30.32750 ms \\
+\hline
+Provable Parameters (2 Primes) & SHAKE-128 (2048bit) & 3847 & 31116.
+05236 ms & 8.08839 ms & 2.40681 ms & 5.79275 ms\textsuperscript{2} & 95\% with bounds 8.01234 ms - 8.16445 ms & 5.83375 ms & 7.08050 ms & 10.31288 ms & 11.51325 ms & 5.69467 ms & 17.20792 ms \\
+\hline
+Provable Parameters (3 Primes) & SHAKE-128 (2048bit) & 3847 & 33521.
+67960 ms & 8.71372 ms & 2.36527 ms & 5.59452 ms\textsuperscript{2} & 95\% with bounds 8.63898 ms - 8.78846 ms & 5.85675 ms & 9.43021 ms & 10.79529 ms & 20.15792 ms & 5.66688 ms & 25.82479 ms \\
+\hline
+Provable Parameters (2 Primes) & SHAKE-256 (2048bit) & 3847 & 23562.
+75911 ms & 6.12497 ms & 0.59029 ms & 0.34845 ms\textsuperscript{2} & 95\% with bounds 6.10632 ms - 6.14362 ms & 5.79171 ms & 5.84521 ms & 6.31038 ms & 6.57133 ms & 5.55508 ms & 12.12642 ms \\
+\hline
+Provable Parameters (3 Primes) & SHAKE-256 (2048bit) & 3847 & 23185.
+26052 ms & 6.02684 ms & 0.52548 ms & 0.27613 ms\textsuperscript{2} & 95\% with bounds 6.01024 ms - 6.04345 ms & 5.78763 ms & 5.80704 ms & 6.01171 ms & 4.19604 ms & 5.58571 ms & 9.78175 ms \\
+\hline
+
+\end{longtable}
+
+
+\begin{longtable}{|p{2.3cm}|p{1.8cm}|p{1.0cm}|p{1.7cm}|p{1.4cm}|p{1.5cm}|p{1.8cm}|p{1.5cm}|p{1.43cm}|p{1.5cm}|p{1.3cm}|p{1.4cm}|p{1.3cm}|p{1.3cm}|}
+
+\caption{\textbf{Instantiation of PKCS\#1 v1.5 with Standard vs Provably Secure Parameters (5120-bit Key Size) for Signature Verification}}
+     \label{pkcs_verify_5120bit_table} \\
+\hline
+\textbf{Parameter Type} & \textbf{Hash Function} & \textbf{Trials} & \textbf{Overall Time} & \textbf{Mean} & \textbf{Std Dev} & \textbf{Variance} & \textbf{Conf. Interval} & \textbf{25th Percentile} & \textbf{Median} & \textbf{75th Percentile} & \textbf{Range} & \textbf{Min} & \textbf{Max} \\
+\hline
+\endfirsthead
+
+\multicolumn{14}{c}%
+{{\bfseries \tablename\ \thetable{} -- Signature Verification Results for PKCS\#1 v1.5 with 5120-bit Key Size (continued from previous page)}} \\
+\hline
+\textbf{Parameter Type} & \textbf{Hash Function} & \textbf{Trials} & \textbf{Overall Time} & \textbf{Mean} & \textbf{Std Dev} & \textbf{Variance} & \textbf{Conf. Interval} & \textbf{25th Percentile} & \textbf{Median} & \textbf{75th Percentile} & \textbf{Range} & \textbf{Min} & \textbf{Max} \\
+\hline
+\endhead
+
+\hline \multicolumn{14}{|r|}{{Continued on next page}} \\ \hline
+\endfoot
+
+\hline
+\endlastfoot
+Standard Parameters (2 Primes) & SHA-256 & 3847 & 169935.
+19686 ms & 44.17343 ms & 1.84724 ms & 3.41228 ms\textsuperscript{2} & 95\% with bounds 44.11506 ms - 44.23181 ms & 43.22571 ms & 43.40458 ms & 44.30425 ms & 15.43700 ms & 42.42633 ms & 57.86333 ms \\
+\hline
+Standard Parameters (3 Primes) & SHA-256 & 3847 & 169921.
+92543 ms & 44.16998 ms & 2.01151 ms & 4.04618 ms\textsuperscript{2} & 95\% with bounds 44.10642 ms - 44.23355 ms & 43.18446 ms & 43.34983 ms & 44.27850 ms & 28.36283 ms & 42.00542 ms & 70.36825 ms \\
+\hline
+Provable Parameters (2 Primes) & SHA-256 with MGF1 (2560bit) & 3847 & 46198.
+25162 ms & 12.00890 ms & 1.98786 ms & 3.95159 ms\textsuperscript{2} & 95\% with bounds 11.94609 ms - 12.07172 ms & 11.07296 ms & 11.09358 ms & 11.90650 ms & 18.17513 ms & 10.77775 ms & 28.95288 ms \\
+\hline
+Provable Parameters (3 Primes) & SHA-256 with MGF1 (2560bit) & 3847 & 45697.
+33293 ms & 11.87869 ms & 1.87974 ms & 3.53343 ms\textsuperscript{2} & 95\% with bounds 11.81929 ms - 11.93809 ms & 11.06913 ms & 11.08858 ms & 11.64438 ms & 16.92000 ms & 10.78438 ms & 27.70438 ms \\
+\hline
+Provable Parameters (2 Primes) & SHA-512 with MGF1 (2560bit) & 3847 & 45492.
+36744 ms & 11.82541 ms & 1.61004 ms & 2.59223 ms\textsuperscript{2} & 95\% with bounds 11.77454 ms - 11.87629 ms & 11.07596 ms & 11.10146 ms & 11.73858 ms & 20.39979 ms & 10.80600 ms & 31.20579 ms \\
+\hline
+Provable Parameters (3 Primes) & SHA-512 with MGF1 (2560bit) & 3847 & 44978.
+71718 ms & 11.69189 ms & 1.49972 ms & 2.24916 ms\textsuperscript{2} & 95\% with bounds 11.64450 ms - 11.73929 ms & 11.07271 ms & 11.08863 ms & 11.43333 ms & 15.66908 ms & 10.83467 ms & 26.50375 ms \\
+\hline
+Provable Parameters (2 Primes) & SHAKE-128 (2560bit) & 3847 & 59009.
+80406 ms & 15.33917 ms & 3.92526 ms & 15.40767 ms\textsuperscript{2} & 95\% with bounds 15.21514 ms - 15.46321 ms & 11.25092 ms & 14.43013 ms & 18.92900 ms & 17.62775 ms & 11.06871 ms & 28.69646 ms \\
+\hline
+Provable Parameters (3 Primes) & SHAKE-128 (2560bit) & 3847 & 62254.
+31009 ms & 16.18256 ms & 3.72545 ms & 13.87895 ms\textsuperscript{2} & 95\% with bounds 16.06484 ms - 16.30028 ms & 12.47021 ms & 16.59179 ms & 19.53071 ms & 17.07046 ms & 11.03833 ms & 28.10879 ms \\
+\hline
+Provable Parameters (2 Primes) & SHAKE-256 (2560bit) & 3847 & 51082.
+81012 ms & 13.27861 ms & 1.91544 ms & 3.66892 ms\textsuperscript{2} & 95\% with bounds 13.21808 ms - 13.33914 ms & 11.28621 ms & 13.13592 ms & 14.64883 ms & 8.90063 ms & 10.72979 ms & 19.63042 ms \\
+\hline
+Provable Parameters (3 Primes) & SHAKE-256 (2560bit) & 3847 & 48671.
+21057 ms & 12.65173 ms & 1.87752 ms & 3.52508 ms\textsuperscript{2} & 95\% with bounds 12.59240 ms - 12.71106 ms & 11.12317 ms & 11.67671 ms & 14.36733 ms & 10.32212 ms & 10.72242 ms & 21.04454 ms \\
+\hline
+
+
+\end{longtable}
+
+
+\begin{longtable}{|p{2.3cm}|p{1.8cm}|p{1.0cm}|p{1.7cm}|p{1.4cm}|p{1.5cm}|p{1.8cm}|p{1.5cm}|p{1.43cm}|p{1.5cm}|p{1.3cm}|p{1.4cm}|p{1.3cm}|p{1.37cm}|}
+
+\caption{\textbf{Instantiation of PKCS\#1 v1.5 with Standard vs Provably Secure Parameters (6144-bit Key Size) for Signature Verification}}
+     \label{pkcs_verift_6144bit_table} \\
+\hline
+\textbf{Parameter Type} & \textbf{Hash Function} & \textbf{Trials} & \textbf{Overall Time} & \textbf{Mean} & \textbf{Std Dev} & \textbf{Variance} & \textbf{Conf. Interval} & \textbf{25th Percentile} & \textbf{Median} & \textbf{75th Percentile} & \textbf{Range} & \textbf{Min} & \textbf{Max} \\
+\hline
+\endfirsthead
+
+\multicolumn{14}{c}%
+{{\bfseries \tablename\ \thetable{} -- Signature Verification Results for PKCS\#1 v1.5 with 6144-bit Key Size (continued from previous page)}} \\
+\hline
+\textbf{Parameter Type} & \textbf{Hash Function} & \textbf{Trials} & \textbf{Overall Time} & \textbf{Mean} & \textbf{Std Dev} & \textbf{Variance} & \textbf{Conf. Interval} & \textbf{25th Percentile} & \textbf{Median} & \textbf{75th Percentile} & \textbf{Range} & \textbf{Min} & \textbf{Max} \\
+\hline
+\endhead
+
+\hline \multicolumn{14}{|r|}{{Continued on next page}} \\ \hline
+\endfoot
+
+\hline
+\endlastfoot
+
+Standard Parameters (2 Primes) & SHA-256 & 3847 & 296306.
+25244 ms & 77.02268 ms & 3.19379 ms & 10.20030 ms\textsuperscript{2} & 95\% with bounds 76.92176 ms - 77.12360 ms & 74.37396 ms & 75.73354 ms & 79.35575 ms & 36.13004 ms & 73.26321 ms & 109.39325 ms \\
+\hline
+Standard Parameters (3 Primes) & SHA-256 & 3847 & 296639.
+26064 ms & 77.10924 ms & 3.18941 ms & 10.17234 ms\textsuperscript{2} & 95\% with bounds 77.00846 ms - 77.21003 ms & 74.38850 ms & 75.87250 ms & 79.50800 ms & 32.56900 ms & 73.25621 ms & 105.82521 ms \\
+\hline
+Provable Parameters (2 Primes) & SHA-256 with MGF1 (3072bit) & 3847 & 84420.
+43423 ms & 21.94449 ms & 3.25507 ms & 10.59550 ms\textsuperscript{2} & 95\% with bounds 21.84162 ms - 22.04735 ms & 19.11221 ms & 20.53608 ms & 24.55863 ms & 20.76429 ms & 18.56113 ms & 39.32542 ms \\
+\hline
+Provable Parameters (3 Primes) & SHA-256 with MGF1 (3072bit) & 3847 & 82400.
+89174 ms & 21.41952 ms & 3.22146 ms & 10.37778 ms\textsuperscript{2} & 95\% with bounds 21.31772 ms - 21.52132 ms & 19.03471 ms & 19.45213 ms & 23.71388 ms & 32.74246 ms & 18.57579 ms & 51.31825 ms \\
+\hline
+Provable Parameters (2 Primes) & SHA-512 with MGF1 (3072bit) & 3847 & 79602.
+19070 ms & 20.69202 ms & 2.77829 ms & 7.71890 ms\textsuperscript{2} & 95\% with bounds 20.60422 ms - 20.77981 ms & 19.06058 ms & 19.11979 ms & 21.20788 ms & 19.01275 ms & 18.56308 ms & 37.57583 ms \\
+\hline
+Provable Parameters (3 Primes) & SHA-512 with MGF1 (3072bit) & 3847 & 78031.
+66703 ms & 20.28377 ms & 2.46433 ms & 6.07293 ms\textsuperscript{2} & 95\% with bounds 20.20590 ms - 20.36164 ms & 19.05408 ms & 19.09392 ms & 20.09071 ms & 23.70913 ms & 18.49196 ms & 42.20108 ms \\
+\hline
+Provable Parameters (2 Primes) & SHAKE-128 (3072bit) & 3847 & 96534.
+66416 ms & 25.09349 ms & 4.77897 ms & 22.83855 ms\textsuperscript{2} & 95\% with bounds 24.94248 ms - 25.24451 ms & 20.42575 ms & 25.48513 ms & 28.01608 ms & 36.83583 ms & 18.73254 ms & 55.56838 ms \\
+\hline
+Provable Parameters (3 Primes) & SHAKE-128 (3072bit) & 3847 & 101976.
+94084 ms & 26.50817 ms & 4.61972 ms & 21.34185 ms\textsuperscript{2} & 95\% with bounds 26.36219 ms - 26.65416 ms & 22.84925 ms & 26.46979 ms & 29.35967 ms & 38.98429 ms & 18.85371 ms & 57.83800 ms \\
+\hline
+Provable Parameters (2 Primes) & SHAKE-256 (3072bit) & 3847 & 89083.
+67929 ms & 23.15666 ms & 3.11272 ms & 9.68900 ms\textsuperscript{2} & 95\% with bounds 23.05830 ms - 23.25502 ms & 21.04308 ms & 22.51788 ms & 24.88388 ms & 19.13483 ms & 18.51896 ms & 37.65379 ms \\
+\hline
+Provable Parameters (3 Primes) & SHAKE-256 (3072bit) & 3847 & 84593.
+52247 ms & 21.98948 ms & 2.77411 ms & 7.69567 ms\textsuperscript{2} & 95\% with bounds 21.90182 ms - 22.07714 ms & 19.25813 ms & 22.03479 ms & 23.38508 ms & 32.34371 ms & 18.38225 ms & 50.72596 ms \\
+\hline
+
+
+\end{longtable}
+%TC:endignore
+
+\end{landscape}
 
 
 
@@ -2586,13 +3524,12 @@ Like the former two schemes ISO/IEC 9796-2:2010 Signature Scheme 1 demonstrates 
 
 The analysis revealed a surprising outcome: employing provably secure parameters in the PKCS\#1 v1.5 signature scheme led to significant improvement in verification times as compared to doing the same with standard parameters, challenging initial expectations. This unexpected efficiency gain can be attributed primarily to the relationship between the public exponent e and the hash function's output size in determining the computational efficiency of signature verification. It's established that smaller values of e result in more efficient verification processes, as they require fewer bits and operations for exponentiation. The results were aligned with this.
 
-The key determinant of computational time was found to be the use of smaller 'e' values in provably secure configurations, as opposed to the arbitrary values in standard configurations. The role of the hash function and its output size, while still relevant, was secondary to the choice of 'e'. This effectively balanced any potential negative impact on computational time from employing large hash output sizes ($\lambda / 2$) in provably secure instantiations of the PKCS\#1 scheme. 
+The key determinant of computational time was found to be the use of smaller 'e' values in provably secure configurations, as opposed to the arbitrary values used in standard configurations. The role of the hash function and its output size, while still relevant, was secondary to the choice of 'e'. This effectively balanced any potential negative impact on computational time from employing large hash output sizes ($\lambda / 2$) in provably secure instantiations of the PKCS\#1 scheme. 
 
 Upon isolating the value of e, variations in signature verification time emerged across the range of hash functions used in provably secure instantiations. This was evident even without altering the hash output size, but merely by employing different variable-length hash functions with their varying levels of security and/or construction mechanisms used to achieve the same output size.
 
 For instance, the results revealed a direct correlation between the strength of the hash function and the relative improvements in verification times. Higher-strength hash functions such as SHA-512 with MGF1 and SHAKE-256 not only demonstrated the greatest improvements in verification times but also maintained the lowest variances across key sizes. On the other hand, SHAKE-128, which represents the lowest security level among the variable-length hash functions, consistently demonstrated the highest variance and the least improvement among the provably secure instantiations for all key sizes.
 
-\newpage
 \textbf{SHAKE-128 in different prime settings}
 
 For all hash functions used in provably secure instantiations bar SHAKE-128, the improvement in verification times as compared between 2 prime and 3 primes was negligible. However, Interestingly for SHAKE-128, there was a noticeable difference between 2 and 3 prime provably secure instantiations. 3 prime provably secure instantiations were slower in signature verifications and thus lead to smallest improvement in verification times for every key size. The difference in improvement between 2 and 3 primes for SHAKE-128 ranged from 1.79\% to 3.18\%  less improvement for 3 primes compared to 2 primes.
@@ -2600,13 +3537,15 @@ For all hash functions used in provably secure instantiations bar SHAKE-128, the
 
 Overall the data indicates there is a significant improvement in verification time from instantiating the PKCS\#1 v1.5 signature scheme using provably secure parameters, with improvements for the full set of key sizes ranging from 64.78\% to 75.07\% in the 2 prime setting and 61.94\% to 75.1\% in the 3 prime setting, contingent upon the security level of the hash function employed for instantiation. Additionally the data indicates that while SHAKE-128 offers improvement in verification times in both 2 and 3 prime settings, the relative efficiency is somewhat reduced in the 3 prime setup for all key sizes.
 
+\newpage
+
 \subsection{Signature Verification Results (ANSI X9.31 rDSA)}
 
 The analysis of the ANSI X9.31 rDSA scheme corroborates the findings from the PKCS\#1 v1.5 scheme, indicating that provably secure parameters substantially enhance verification times across all key sizes.
 
 \textbf{Hash Function Influence:}  
 
-The Results from ANSI X9.31 rDSA scheme reinforce the secondary impact of the hash function's output size and type on computational time in relation to values of e. Moreover, higher-strength hash functions, demonstrated superior efficiency in verification time reduction with low variance.
+The Results from the ANSI X9.31 rDSA scheme reinforce the secondary impact of the hash function's output size and type on computational time in relation to values of e. Moreover, higher-strength hash functions, demonstrated superior efficiency in verification time reduction with low variance.
 
 \textbf{SHAKE-128 Discrepancy:} 
 
@@ -2627,7 +3566,7 @@ The Results from ISO/IEC 9796-2:2010 Signature Scheme 1 again reinforce the seco
 
 SHAKE-128, within provably secure instantiations of ISO/IEC 9796-2:2010 Signature Scheme 1 exhibited notable differences between 2-prime and 3-prime settings. Again the improvement in verification time was less pronounced in 3-prime configurations, with differences ranging from 0.23\%  to 10.6\%. 
 
-Overall, the analysis of the ISO/IEC 9796-2:2010 Signature Scheme 1 scheme demonstrates that employing provably secure parameters leads to significant improvements in verification times, with reductions ranging from 69.64\% to 75.26\% in 2-prime settings and 62.14\% to 75.08\% in 3-prime settings. These gains are influenced by the security level of the hash function employed, with SHAKE-128 presenting unique variations in efficiency between different prime settings.
+Overall, the analysis of the ISO/IEC 9796-2:2010 Signature Scheme demonstrates that employing provably secure parameters leads to significant improvements in verification times, with reductions ranging from 69.64\% to 75.26\% in 2-prime settings and 62.14\% to 75.08\% in 3-prime settings. These gains are influenced by the security level of the hash function employed, with SHAKE-128 presenting unique variations in efficiency between different prime settings.
 
 
 
@@ -2730,15 +3669,111 @@ Across all key sizes, we observe a consistent pattern where provably secure para
 
 \end{comment}
 
+\begin{comment}
+\subsection{Overview of Results}
+Overall, the results indicated that the integration of provably secure parameters into deterministic signature schemes, far from being a computational burden, can rather lead to substantial improvements in verification times (hash function dependent), while there is no observed impact on signature creation. In terms of key generation, the impact varies based on whether the focus is on the use of smaller exponent values ('e') or the inclusion of additional primes. While smaller 'e' values show minimal effects, the introduction of a third prime factor notably enhances key generation efficiency across all key sizes.
+
+
+\subsection*{Summary}
+
+The analysis revealed a surprising outcome: employing provably secure parameters in the PKCS\#1 v1.5 signature scheme led to significant improvement in verification times as compared to doing the same with standard parameters, challenging initial expectations. This unexpected efficiency gain can be attributed primarily to the relationship between the public exponent e and the hash function's output size in determining the computational efficiency of signature verification. It's established that smaller values of e result in more efficient verification processes, as they require fewer bits and operations for exponentiation. The results were aligned with this.
+
+The key determinant of computational time was found to be the use of smaller 'e' values in provably secure configurations, as opposed to the arbitrary values used in standard configurations. The role of the hash function and its output size, while still relevant, was secondary to the choice of 'e'. This effectively balanced any potential negative impact on computational time from employing large hash output sizes ($\lambda / 2$) in provably secure instantiations of the PKCS\#1 scheme. 
+
+Upon isolating the value of e, variations in signature verification time emerged across the range of hash functions used in provably secure instantiations. This was evident even without altering the hash output size, but merely by employing different variable-length hash functions with their varying levels of security and/or construction mechanisms used to achieve the same output size.
+
+For instance, the results revealed a direct correlation between the strength of the hash function and the relative improvements in verification times. Higher-strength hash functions such as SHA-512 with MGF1 and SHAKE-256 not only demonstrated the greatest improvements in verification times but also maintained the lowest variances across key sizes. On the other hand, SHAKE-128, which represents the lowest security level among the variable-length hash functions, consistently demonstrated the highest variance and the least improvement among the provably secure instantiations for all key sizes.
+
+\textbf{SHAKE-128 in different prime settings}
+
+For all hash functions used in provably secure instantiations bar SHAKE-128, the improvement in verification times as compared between 2 prime and 3 primes was negligible. However, Interestingly for SHAKE-128, there was a noticeable difference between 2 and 3 prime provably secure instantiations. 3 prime provably secure instantiations were slower in signature verifications and thus lead to smallest improvement in verification times for every key size. The difference in improvement between 2 and 3 primes for SHAKE-128 ranged from 1.79\% to 3.18\%  less improvement for 3 primes compared to 2 primes.
+
+
+Overall the data indicates there is a significant improvement in verification time from instantiating the PKCS\#1 v1.5 signature scheme using provably secure parameters, with improvements for the full set of key sizes ranging from 64.78\% to 75.07\% in the 2 prime setting and 61.94\% to 75.1\% in the 3 prime setting, contingent upon the security level of the hash function employed for the specific instantiation. Additionally the data indicates that while SHAKE-128 offers improvement in verification times in both 2 and 3 prime settings, the relative efficiency is somewhat reduced in the 3 prime setup for all key sizes.
+
+\end{comment}
 
 \chapter{Conclusion}
-To be done.
+This project was undertaken to practically apply the theoretical concepts from the security proofs introduced  in \cite{jager2018security}. It involved implementing deterministic RSA signature schemes with provably secure parameters to identify their burden on computational time. A significant revelation was that, contrary to initial expectations, the integration of provably secure parameters did not lead to an increase in computational time.
+
+\section{Main Findings}
+
+\subsection{Key Generation}
+The first major finding was that in terms of key generation, the impact varies based on whether the focus is on the use of smaller exponent values ('e') or the inclusion of additional primes.  While smaller 'e' values exhibited negligible differences, the inclusion of a third prime factor markedly improved key generation efficiency, with the benefit escalating in correlation with key size. The finding of the third prime factor substantially enhancing key generation efficiency resonates with existing research and accepted theories. As \cite{Hinek+2008+117+147} indicates, the complexity of finding primes does not scale linearly with the bit-length of the desired prime, making multi-prime RSA key generation more efficient for a modulus of equivalent size.
+
+\subsection{Signature Creation}
+In terms of signature creation, the findings revealed essentially no difference from employing provably secure parameters, regardless of the use of smaller 'e' values or increase in number of primes. This aligns with theoretical expectations. Firstly, since the RSA signature creation algorithm (and the bit-length of the modulus $\lambda$) remains consistent whether a two-prime or three-prime configuration is employed and thus its computational cost should be the same in both cases. This provides the first part of the explanation as to why signature creation remained unaffected by the use of provably secure parameters. 
+The other factor involved, being the smaller values of e completes the explanation. Since the computational cost of signature creation is dictated by the operations involving the private exponent 'd' which is more closely influenced by the size of the modulus, variations in 'e', whether smaller or larger, have negligible influence. 
+
+
+\subsection{Signature Verification}
+The most striking and unexpected findings to emerge were those related to signature verification. The employment of provably secure parameters in the signature schemes led to a substantial improvement in verification times. The primary factor contributing to this reduction in computational time was identified as the use of smaller 'e' values in provably secure configurations. The role of the variable length hash functions and their configuration to emit large hash output sizes of $\lambda / 2$ was secondary to the choice of 'e' and effectively balanced out any of the potential negative impact on computational time from adopting provably secure instantiations. 
+
+\subsubsection{Interplay between Choice of e and choice of Hash functions in provably secure instantiations}
+
+Based on the practical assumptions I made for the project as per \ref{notionProv}, including the defintion of a Provably Secure Key Configuration with a small 'e' value as opposed to a standard configuration where any value of 'e' is permitted, the improved efficiency in signature verification could have been anticipated. The preference for smaller 'e' values is a well-established and widely practiced approach, primarily because it expedites the signature verification process by reducing the time needed for modular exponentiation operations. Although it should be noted that typically, real-world choices for small 'e' are fixed Fermat prime numbers, which are much lower but still within the range of $\leqslant \displaystyle2^{\frac{\lambda}{4}}$. Supporting this point, Bos et al. in \cite{10.1007/978-3-642-32009-5_37} observed that 99.5\% of X.509 certificates in 2011 utilised an 'e' value of 65537.
+
+Furthermore, while the standard parameter instantiations were conjectured to involve a 256-bit hash output, the increase to $\lambda / 2$ for each key size, which is generally an integer smaller than 10000 is inconsequential. In this project, for instance, the largest key size investigated was 6144 bits. The relative increase in hash output size, though larger by a factor of 12, is microscopic compared to the dramatic reduction in the number of operations needed for modular exponentiation when transitioning from a standard parameter instantiation with an arbitrarily large 'e' to a smaller 'e' value in a provably secure key configuration. The complexity of finding primes not scaling linearly with the bit-length of the desired prime has already been discussed, so as you can imagine, going the opposite direction and selecting a smaller value of e to the minimum of a factor of 4, decreases the computational workload exponentially hence explaining the improvement in verification times.
+
+\subsubsection{Performance variations from usage of different Hash functions in provably secure instantiations}
+
+The results revealed notable variations in performance when different hash functions were used in provably secure settings  after isolating the 'e' value. Despite identical hash output sizes, stronger hash functions like SHA-512 with MGF1 and SHAKE-256 showed the greatest improvements in verification times. Contrarily, the inclusion of a third prime—a factor expected to be neutral—led to slower verification times with SHAKE-128, the weakest of the tested hash functions. This discrepancy was observed across all key sizes and signature schemes, with three-prime configurations being up to 10\% slower in some cases than their two-prime counterparts.
+
+
+These performance differences hint at a less straightforward relationship between the inherent characteristics of the hash functions, the structure of the modulus (particularly the Java BigInteger composition stemming from multi-prime configurations), and the overall efficiency of the verification process. The exact reasons for these differences are not entirely clear. 
+
+\begin{comment}
+It might be the case that the stronger hash functions provide certain computational advantages or efficiencies when integrated into the RSA verification process. There are also other factors at play such as hash functions from same family such as SHAKE having multiple distinct variants of a central design. This could impact the way specific hash functions interact with the RSA algorithm, possibly due to their internal design, efficiency in processing large data sets, or optimisation for modern hardware. The specific discrepancy observed with SHAKE-128 in two vs. three-prime settings could be linked to subtle interactions with the internal structure of Java BigInteger moduli, which are not typically significant but that interacts properties or construction details specific to SHAKE-128. 
+\end{comment}
+
+Further research would be necessary to fully understand the underlying causes of why higher-security hash functions perform better when used to achieve the enlarged hash output of the same length in provably secure instantiations and second, the discrepancy observed with SHAKE-128 in two vs. three-prime settings. For the latter it should be determined whether it is specific to some unexpected side effect of interaction with multi-prime Java BigInteger moduli, a broader issue, or perhaps linked to something entirely different, yet to be uncovered. 
+
+\section{Limitations}
+Although this project demonstrated neutral to significant improvements in computational time by employing provably secure parameters (varying with the operation performed), its assumptions about standard parameters limit the generalisability to real-world applications. For example, standard parameters were defined to include a range of arbitrary 'e' values, intending to cover all practical RSA instantiations. Yet, in reality, the most commonly used value for 'e' is 65537, along with other fixed Fermat primes, due to their efficiency in exponentiation.  These widely used values fall within the range deemed provably secure in this project.  In real-world scenarios, combining these commonly chosen 'e' values with larger hash outputs, of $\lambda$/2, would constitute a provably secure instantiation of a signature scheme.
+
+While the project did not explicitly measure the computational differences when accompanying increased hash output sizes with these smaller, real world 'e' values, it does aid in the understanding of the potential impact of such configurations. For instance, given that 'e' remains constant, any observable differences in computation time would likely be attributed to variations in hash output size. This inference is supported by findings where differences emerged based on the security level of the variable length hash function used alone e.g., merely using different variable-length hash functions to achieve identical hash output sizes.
+Hence, it's reasonable to anticipate that integrating larger hash outputs with commonly used 'e' values in deterministic RSA signature schemes would cause a burden on computation time. The next logical step in related research would be to explicitly investigate and quantify the computational effects of combining real world 'e' values with enlarged hash outputs in signature scheme implementations.
+
+With regard to the to the hardware used, another limitation needs to be acknowledged. The hardware used for testing, particularly an Apple M1 Pro CPU with ARM architecture, represents a modern computational context but may not reflect the diverse environments where the considered schemes typically operate. These include constrained legacy systems or lower-performance settings like EMV chip-and-pin cards and secure network protocols. The ARM architecture's unique performance dynamics and optimisations might differ from the more common x86 architectures in real-world applications. Therefore, while the benchmarking results offer valuable insights into cryptographic operations on modern hardware, their applicability to the wide variety of real-world scenarios, especially where older systems are still in use, may be limited.
+
+\begin{comment}
+With regard to the to the hardware used, another limitation needs to be acknowledged.  it's crucial to consider the hardware specifications used in the tests—a computing environment featuring an Apple M1 Pro CPU and ARM architecture for the instruction set. While this setup represents a modern computational context, in the real world, the considered schemes, often operate in diverse environments, including constrained legacy systems or lower-performance settings like EMV chip-and-pin cards and secure network protocols. Particularly, the ARM architecture employed in could potentially have manifested in unique performance dynamics and optimisations, distinct from those in traditional x86 architectures the schemes would mostly be used on in the real world. So while the benchmarking results provide valuable insights into the performance of the cryptographic operations on modern consumer-grade hardware, they may not be fully applicable or generalisable to the diverse range of use cases that comprise real-world implementations where these older schemes are still operational.  
+\end{comment}
+
+\section{Closing Remarks}
+
+While acknowledging the constraints previously discussed, one strength of this project lies in the fact that it represented a comprehensive examination of the potential implications of using provably secure parameters in real-world deterministic signature schemes of the RSA type. 
+This included coverage of six key sizes along with a large scale message batch of nearly 4000 messages. Additionally, the inclusion of the four extendable output hash functions catered to a representative range of scenarios relevant to provably secure instantiations. Meanwhile the performance of tests on three signature schemes offered a complete and more reliable understanding into the effects by accounting for the full range of operational perspectives relevant to the described setting.
+
+The developed application not only met all its essential requirements but also successfully integrated various non-essential features, such as the landmark  cross-parameter benchmarking mode, support for multiple standard/extendable output hash functions, and graphical views of benchmarking results. 
+The foremost non-essential requirement in cross-parameter benchmarking mode had a transformative effect to the extent that it ultimately superseded the normal benchmarking mode as the direct feature that was used to deliver on the aims of the project. Looking back, a more ambitious initial feature set could have streamlined the integration of the more advanced features like parallel tasks during benchmarking and the comparative benchmarking features. This resulted in a considerable extension of the anticipated coding timeframe. Nonetheless, solutions were found, that enabled implementation of all proposed extensions to be fulfilled.
+
+
+
+
+
+
+
+
+
+
 
 
 
 %%%% ADD YOUR BIBLIOGRAPHY HERE
-\newpage
+\cleardoublepage
+\phantomsection
+\addcontentsline{toc}{chapter}{List of Tables}
+\listoftables
 
+
+
+\phantomsection
+\addcontentsline{toc}{chapter}{List of Figures}
+\listoffigures
+
+\cleardoublepage
+\phantomsection
 \addcontentsline{toc}{chapter}{Bibliography}
 \printbibliography
 \label{endpage}
