@@ -190,4 +190,4 @@ Resources are configured to be included from the following directories:
 
 ## Release 1.04
 
-- This release fixes the issue of signature verification failing cross-parameter benchmarking mode.
+- This release fixes the issue of signature verification failing in cross-parameter benchmarking mode.
