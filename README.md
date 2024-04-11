@@ -21,7 +21,7 @@ manual:
 To run the application, using the provided jar, run
 
 ```
-java -jar digital-signature-benchmarking-1.0.jar
+java -jar digital-signature-benchmarking-1.04.jar
 ```
 
 from the command line in the same directory that this README is contained in.
